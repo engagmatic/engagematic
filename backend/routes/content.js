@@ -13,6 +13,7 @@ import {
 } from "../middleware/validation.js";
 import { body } from "express-validator";
 import linkedinProfileService from "../services/linkedinProfileService.js";
+import subscriptionService from "../services/subscriptionService.js";
 import axios from "axios";
 import * as cheerio from "cheerio";
 
@@ -600,6 +601,19 @@ router.post(
       console.log("🔍 Analyzing LinkedIn profile for user:", userId);
       console.log("Profile URL:", profileUrl);
 
+      // Subscription check (premium feature)
+      const canUse = await subscriptionService.canPerformAction(
+        userId,
+        "analyze_linkedin"
+      );
+      if (!canUse.allowed) {
+        return res.status(429).json({
+          success: false,
+          message: canUse.reason || "Not allowed",
+          code: "SUBSCRIPTION_LIMIT_EXCEEDED",
+        });
+      }
+
       // Extract profile data
       const profileResult = await linkedinProfileService.extractProfileData(
         profileUrl
@@ -612,6 +626,9 @@ router.post(
           error: profileResult.error,
         });
       }
+
+      // Record usage
+      await subscriptionService.recordUsage(userId, "analyze_linkedin");
 
       // Store profile insights in user's data (optional)
       // You could save this to a user profile collection

@@ -4,13 +4,14 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb } from "lucide-react";
+import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb, Crown, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useContentGeneration } from "../hooks/useContentGeneration";
 import { usePersonas } from "../hooks/usePersonas";
 import { useLinkedInProfile } from "../hooks/useLinkedInProfile";
 import apiClient from "../services/api.js";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "../components/Navigation";
 import { SEO, pageSEO } from "@/components/SEO";
@@ -53,6 +54,7 @@ const PostGenerator = () => {
   const navigate = useNavigate();
   const { isGenerating, generatedContent, generatePost, copyToClipboard, saveContent } = useContentGeneration();
   const { profileData, analyzeProfile, isAnalyzing } = useLinkedInProfile();
+  const { subscription } = useSubscription();
 
   // Use user's personas first, fall back to samples only if no user personas
   useEffect(() => {
@@ -303,13 +305,57 @@ const PostGenerator = () => {
               </div>
             </Card>
 
-            {/* Hook Selection */}
+            {/* Hook Selection with Premium Trending Generator */}
             <Card className="shadow-lg border-2">
               <div className="p-6">
-                <label className="text-sm font-semibold flex items-center gap-2 mb-4">
-                  Choose Your Viral Hook *
-                  {isLoadingHooks && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-                </label>
+                <div className="flex items-center justify-between mb-4">
+                  <label className="text-sm font-semibold flex items-center gap-2">
+                    Choose Your Viral Hook *
+                    {isLoadingHooks && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {subscription?.plan === 'trial' && (
+                      <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border bg-muted">
+                        <Lock className="h-3 w-3" /> Premium
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (subscription?.plan === 'trial') {
+                          toast({
+                            title: 'Premium feature',
+                            description: 'Upgrade to generate fresh, trending hooks with AI',
+                          });
+                          navigate('/pricing');
+                          return;
+                        }
+                        try {
+                          setIsLoadingHooks(true);
+                          const res = await apiClient.getHooks();
+                          if (res.success && res.data.hooks.length > 0) {
+                            // Take a different slice to simulate “trending”
+                            const shuffled = [...res.data.hooks].sort(() => 0.5 - Math.random());
+                            setHooks(shuffled.slice(0, 10));
+                            setSelectedHook(shuffled[0]);
+                            toast({ title: 'Trending hooks loaded ✨' });
+                          } else {
+                            toast({ title: 'No hooks available', description: 'Please try again later', variant: 'destructive' });
+                          }
+                        } catch (e) {
+                          console.error(e);
+                          toast({ title: 'Failed to load hooks', variant: 'destructive' });
+                        } finally {
+                          setIsLoadingHooks(false);
+                        }
+                      }}
+                      className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-md border bg-card hover:bg-muted transition"
+                    >
+                      <Crown className="h-3 w-3 text-yellow-500" />
+                      Generate Trending Hooks
+                    </button>
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {hooks.slice(0, 10).map((hook) => {
@@ -376,6 +422,14 @@ const PostGenerator = () => {
                       )}
                     </Button>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    💡 We'll analyze your profile to auto-fill your persona details
+                  </p>
+                  {subscription?.plan === 'trial' && (
+                    <div className="mt-3 text-xs text-blue-900 bg-blue-100 border border-blue-200 rounded-md p-2 flex items-center gap-2">
+                      <Lock className="h-3 w-3" /> Premium feature — upgrade to unlock unlimited insights
+                    </div>
+                  )}
                 </div>
               </Card>
             )}
@@ -405,6 +459,32 @@ const PostGenerator = () => {
                   <p className="text-xs text-green-600 mt-2">
                     ✨ Your content will be optimized based on these insights
                   </p>
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                    <div className="rounded-md border bg-white p-3">
+                      <div className="font-semibold mb-1">How we use it</div>
+                      <ul className="list-disc ml-4 space-y-1 text-muted-foreground">
+                        <li>Adjust tone and vocabulary to your experience level</li>
+                        <li>Prioritize topics aligned with your content focus</li>
+                        <li>Insert industry-specific hashtags</li>
+                      </ul>
+                    </div>
+                    <div className="rounded-md border bg-white p-3">
+                      <div className="font-semibold mb-1">Expected impact</div>
+                      <ul className="list-disc ml-4 space-y-1 text-muted-foreground">
+                        <li>Higher relevance and authenticity</li>
+                        <li>Better engagement at optimal times</li>
+                        <li>Improved hashtag discovery</li>
+                      </ul>
+                    </div>
+                    <div className="rounded-md border bg-white p-3">
+                      <div className="font-semibold mb-1">You can edit</div>
+                      <ul className="list-disc ml-4 space-y-1 text-muted-foreground">
+                        <li>Focus area and tone preferences</li>
+                        <li>Hashtag set before posting</li>
+                        <li>Call-to-action style</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </Card>
             )}
