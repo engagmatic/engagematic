@@ -286,7 +286,7 @@ const FAQPage = () => {
               </Link>
               <Link to="/help">
                 <Button variant="outline" size="lg">
-                  Help Center
+                  Resources
                 </Button>
               </Link>
             </div>

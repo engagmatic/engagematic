@@ -1,47 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Play, Sparkles, Wand2, MessageSquare, TrendingUp, User } from "lucide-react";
+import { ArrowRight, Play, Sparkles, Star } from "lucide-react";
 import heroImage from "@/assets/hero-pulse.jpg";
-
-const features = [
-  {
-    icon: User,
-    title: "AI Persona Engine",
-    description: "Learns your unique voice & creates authentic content that sounds like YOU",
-    color: "text-blue-500"
-  },
-  {
-    icon: TrendingUp,
-    title: "Viral Hook Generator",
-    description: "50+ proven hooks that stop the scroll & get 3x more engagement",
-    color: "text-green-500"
-  },
-  {
-    icon: MessageSquare,
-    title: "Smart Comment AI",
-    description: "Generate genuine comments that build real professional relationships",
-    color: "text-purple-500"
-  },
-  {
-    icon: Wand2,
-    title: "LinkedIn Analytics",
-    description: "Track what works & optimize your content for maximum reach",
-    color: "text-pink-500"
-  }
-];
 
 export const Hero = () => {
   return (
     <section className="relative min-h-[90vh] flex items-center gradient-hero overflow-hidden">
       {/* Subtle integration tile grid background (inspired style) */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.65]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.65] hidden md:block">
         <div className="absolute left-1/2 -translate-x-1/2 top-[-120px] rotate-6">
-          <div className="grid grid-cols-10 gap-3">
+          <div className="grid grid-cols-8 lg:grid-cols-10 gap-2 lg:gap-3">
             {Array.from({ length: 70 }).map((_, i) => (
               <div
                 key={i}
-                className="h-10 w-10 rounded-xl border border-yellow-100/40 bg-white/30 backdrop-blur-[2px] shadow-sm"
+                className="h-8 w-8 lg:h-10 lg:w-10 rounded-xl border border-yellow-100/40 bg-white/30 backdrop-blur-[2px] shadow-sm"
               />
             ))}
           </div>
@@ -53,8 +26,8 @@ export const Hero = () => {
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse-glow animation-delay-1000" />
       
       <div className="container mx-auto px-4 py-20 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8 animate-fade-in-up">
+        {/* Centered hero core */}
+        <div className="max-w-3xl mx-auto text-center space-y-8 animate-fade-in-up">
               <Badge className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
               <Sparkles className="w-4 h-4" />
               7-Day Free Trial • No Credit Card Required
@@ -67,11 +40,58 @@ export const Hero = () => {
               </span>{" "}
               Again.
             </h1>            
-            <p className="text-xl lg:text-2xl text-muted-foreground max-w-2xl leading-relaxed">
+            <p className="text-xl lg:text-2xl text-muted-foreground max-w-2xl leading-relaxed mx-auto">
               <span className="text-foreground font-semibold">AI that writes in your voice.</span> Show up. Stand out.
             </p>
+
+            {/* Feature cards around the headline (premium UI) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-5xl mx-auto">
+              {/* Hooks */}
+              <div className="rounded-2xl border bg-white shadow-card p-6 hover-lift text-left">
+                <div className="text-xs font-semibold text-muted-foreground mb-2">Hooks</div>
+                <div className="flex items-center gap-2 mb-2">
+                  <img src="https://img.icons8.com/fluency/48/sparkling.png" alt="Hooks" className="h-5 w-5" />
+                  <h4 className="text-base font-semibold">50+ viral openings</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">Proven patterns that stop the scroll and start conversations.</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Story</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Question</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Insight</span>
+                </div>
+              </div>
+
+              {/* Story */}
+              <div className="rounded-2xl border bg-white shadow-card p-6 hover-lift text-left">
+                <div className="text-xs font-semibold text-muted-foreground mb-2">Story</div>
+                <div className="flex items-center gap-2 mb-2">
+                  <img src="https://img.icons8.com/fluency/48/speech-bubble.png" alt="Story" className="h-5 w-5" />
+                  <h4 className="text-base font-semibold">Your voice</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">Question, insight, persona. Your authentic voice baked into every post.</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Persona</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Insight</span>
+                </div>
+              </div>
+
+              {/* Professional */}
+              <div className="rounded-2xl border bg-white shadow-card p-6 hover-lift text-left">
+                <div className="text-xs font-semibold text-muted-foreground mb-2">Professional</div>
+                <div className="flex items-center gap-2 mb-2">
+                  <img src="https://img.icons8.com/color/48/combo-chart--v1.png" alt="Professional" className="h-5 w-5" />
+                  <h4 className="text-base font-semibold">Optimized to perform</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">Uses your LinkedIn profile insights, best posting times, and top tags.</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Best time</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Top tags</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Tone fit</span>
+                </div>
+              </div>
+            </div>
             
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 justify-center">
               <Button size="lg" className="group shadow-pulse hover-pulse text-base h-14 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                 Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -82,14 +102,26 @@ export const Hero = () => {
               </Button>
             </div>
 
+            {/* Social proof below CTAs */}
+            <div className="mt-3 flex items-center justify-center gap-3 text-xs text-muted-foreground">
+              <div className="flex items-center gap-0.5 text-yellow-500">
+                <Star className="h-4 w-4 fill-current" />
+                <Star className="h-4 w-4 fill-current" />
+                <Star className="h-4 w-4 fill-current" />
+                <Star className="h-4 w-4 fill-current" />
+                <Star className="h-4 w-4 fill-current" />
+              </div>
+              <span>Rated 5/5 by 500+ creators</span>
+            </div>
+
             <div className="flex flex-col gap-3 pt-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                 </svg>
                 <span className="font-semibold text-green-600">Free 7-day trial • No credit card required</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                 </svg>
@@ -97,26 +129,19 @@ export const Hero = () => {
               </div>
             </div>
             
-            {/* Premium feature cards row (inspired style) */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
-              <div className="rounded-2xl border bg-card/70 backdrop-blur shadow-sm p-5 hover:shadow-md transition-shadow">
-                <div className="mb-2 text-xs font-semibold text-muted-foreground">Connect</div>
-                <div className="text-base font-semibold">Plug into your workflow</div>
-                <p className="text-sm text-muted-foreground mt-1">Paste URLs, use templates, and analyze profiles to personalize content.</p>
-              </div>
-              <div className="rounded-2xl border bg-card/70 backdrop-blur shadow-sm p-5 hover:shadow-md transition-shadow">
-                <div className="mb-2 text-xs font-semibold text-muted-foreground">AI Models</div>
-                <div className="text-base font-semibold">Model-agnostic</div>
-                <p className="text-sm text-muted-foreground mt-1">Optimized for Gemini now; flexible to support more models later.</p>
-              </div>
-              <div className="rounded-2xl border bg-card/70 backdrop-blur shadow-sm p-5 hover:shadow-md transition-shadow">
-                <div className="mb-2 text-xs font-semibold text-muted-foreground">Control</div>
-                <div className="text-base font-semibold">Human-in-the-loop</div>
-                <p className="text-sm text-muted-foreground mt-1">Review, edit, and customize before posting—always your voice.</p>
+            {/* Trust bar */}
+            <div className="pt-6">
+              <div className="text-xs text-muted-foreground mb-3">Trusted by creators and operators at</div>
+              <div className="flex flex-wrap items-center gap-4 opacity-80">
+                <div className="h-6 w-20 rounded-md bg-muted" />
+                <div className="h-6 w-16 rounded-md bg-muted" />
+                <div className="h-6 w-24 rounded-md bg-muted" />
+                <div className="h-6 w-16 rounded-md bg-muted" />
+                <div className="h-6 w-20 rounded-md bg-muted" />
               </div>
             </div>
 
-            <div className="flex items-center gap-6 lg:gap-8 pt-6 border-t border-border/50">
+            <div className="flex items-center justify-center gap-6 lg:gap-8 pt-6 border-t border-border/50">
               <div>
                 <div className="text-2xl lg:text-3xl font-bold text-foreground">500+</div>
                 <div className="text-xs lg:text-sm text-muted-foreground">Beta Users</div>
@@ -133,39 +158,10 @@ export const Hero = () => {
               </div>
             </div>
           </div>
-          
-          <div className="relative animate-fade-in-up animation-delay-300">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 opacity-20 blur-3xl rounded-3xl" />
-            <img 
-              src={heroImage} 
-              alt="LinkedInPulse Dashboard Preview" 
-              className="relative rounded-3xl shadow-elevated hover-lift w-full"
-            />
-          </div>
-        </div>
 
-        {/* Feature Cards */}
-        <div className="mt-20 pt-12 border-t border-border/50">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <Card 
-                  key={index}
-                  className="p-6 border hover-lift group cursor-pointer bg-card/50 backdrop-blur-sm"
-                >
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ${feature.color}`}>
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {feature.description}
-                  </p>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
+        {/* Removed older duplicate section; cards are now integrated near headline */}
+
+        {/* Removed legacy features grid (replaced by new premium cards above) */}
       </div>
     </section>
   );

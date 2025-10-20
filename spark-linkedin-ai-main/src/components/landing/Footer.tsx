@@ -39,8 +39,8 @@ export const Footer = () => {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="#features" className="hover:text-foreground transition-smooth">Features</a></li>
                 <li><a href="#pricing" className="hover:text-foreground transition-smooth">Pricing</a></li>
-                <li><Link to="/roadmap" className="hover:text-foreground transition-smooth">Roadmap</Link></li>
-                <li><Link to="/changelog" className="hover:text-foreground transition-smooth">Changelog</Link></li>
+                {/* Roadmap removed */}
+                {/* Changelog removed */}
               </ul>
             </div>
             
@@ -48,8 +48,8 @@ export const Footer = () => {
               <h3 className="font-semibold mb-4">Resources</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/blogs" className="hover:text-foreground transition-smooth">Blog</Link></li>
-                <li><Link to="/help" className="hover:text-foreground transition-smooth">Help Center</Link></li>
-                <li><Link to="/community" className="hover:text-foreground transition-smooth">Community</Link></li>
+                <li><Link to="/resources" className="hover:text-foreground transition-smooth">Resources</Link></li>
+                {/* Community removed */}
                 <li><Link to="/templates" className="hover:text-foreground transition-smooth">Templates</Link></li>
               </ul>
             </div>

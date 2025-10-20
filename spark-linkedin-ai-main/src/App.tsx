@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
+import AppLayout from "./components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import PostGenerator from "./pages/PostGenerator";
 import CommentGenerator from "./pages/CommentGenerator";
@@ -19,10 +20,8 @@ import TermsOfServicePage from "./pages/TermsOfServicePage";
 import FAQPage from "./pages/FAQPage";
 import ContactPage from "./pages/ContactPage";
 import HelpCenterPage from "./pages/HelpCenterPage";
-import CommunityPage from "./pages/CommunityPage";
 import TemplatesPage from "./pages/TemplatesPage";
-import RoadmapPage from "./pages/RoadmapPage";
-import ChangelogPage from "./pages/ChangelogPage";
+// Roadmap and Changelog removed
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,30 +35,30 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
                 <Routes>
-                  <Route path="/" element={<Index />} />
+                  {/* Public auth pages without layout */}
                   <Route path="/auth/login" element={<Login />} />
                   <Route path="/auth/register" element={<Register />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/post-generator" element={<PostGenerator />} />
-                  <Route path="/comment-generator" element={<CommentGenerator />} />
-                  
-                  {/* Blog Routes */}
-                  <Route path="/blogs" element={<BlogsPage />} />
-                  <Route path="/blogs/:slug" element={<BlogPostPage />} />
-                  
-                  {/* Static Pages */}
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/privacy" element={<PrivacyPolicyPage />} />
-                  <Route path="/terms" element={<TermsOfServicePage />} />
-                  <Route path="/faq" element={<FAQPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
-                  <Route path="/help" element={<HelpCenterPage />} />
-                  <Route path="/community" element={<CommunityPage />} />
-                  <Route path="/templates" element={<TemplatesPage />} />
-                  <Route path="/roadmap" element={<RoadmapPage />} />
-                  <Route path="/changelog" element={<ChangelogPage />} />
-                  
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+                  {/* All other pages share header/footer */}
+                  <Route element={<AppLayout />}>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/post-generator" element={<PostGenerator />} />
+                    <Route path="/comment-generator" element={<CommentGenerator />} />
+                    {/* Blog Routes */}
+                    <Route path="/blogs" element={<BlogsPage />} />
+                    <Route path="/blogs/:slug" element={<BlogPostPage />} />
+                    {/* Static Pages */}
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                    <Route path="/terms" element={<TermsOfServicePage />} />
+                    <Route path="/faq" element={<FAQPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/resources" element={<HelpCenterPage />} />
+                    <Route path="/templates" element={<TemplatesPage />} />
+                  </Route>
+
+                  {/* Catch-all */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
           </BrowserRouter>

@@ -280,21 +280,7 @@ const ContactPage = () => {
               </div>
             </Card>
 
-            {/* FAQ Link */}
-            <Card className="p-6 gradient-card shadow-card">
-              <h3 className="text-xl font-bold mb-4">Quick Help</h3>
-              <p className="text-muted-foreground mb-4">
-                Before reaching out, check our FAQ section for instant answers to common questions.
-              </p>
-              <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="/faq">Browse FAQ</a>
-                </Button>
-                <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="/help">Help Center</a>
-                </Button>
-              </div>
-            </Card>
+            {/* Quick Help removed as requested */}
           </div>
         </div>
 

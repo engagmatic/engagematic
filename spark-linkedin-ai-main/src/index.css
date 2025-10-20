@@ -6,6 +6,11 @@
 All colors MUST be HSL.
 */
 
+/* Global font (Inter) */
+html {
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -44,12 +49,12 @@ All colors MUST be HSL.
     --gradient-pulse: linear-gradient(135deg, hsl(211 100% 40%), hsl(280 85% 60%), hsl(340 82% 52%));
     --gradient-hero: linear-gradient(180deg, hsl(211 100% 97%), hsl(280 85% 97%));
     --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(211 100% 99%));
-    
+
     /* Shadows */
     --shadow-pulse: 0 0 30px hsl(211 100% 40% / 0.3);
     --shadow-card: 0 4px 20px hsl(211 100% 40% / 0.08);
     --shadow-elevated: 0 10px 40px hsl(211 100% 40% / 0.12);
-    
+
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -100,7 +105,7 @@ All colors MUST be HSL.
     --border: 215 25% 30%;
     --input: 215 25% 30%;
     --ring: 211 100% 50%;
-    
+
     --gradient-pulse: linear-gradient(135deg, hsl(211 100% 50%), hsl(280 85% 60%), hsl(340 82% 52%));
     --gradient-hero: linear-gradient(180deg, hsl(215 28% 17%), hsl(215 28% 20%));
     --shadow-pulse: 0 0 30px hsl(211 100% 50% / 0.4);
@@ -130,31 +135,31 @@ All colors MUST be HSL.
   .gradient-pulse {
     background: var(--gradient-pulse);
   }
-  
+
   .gradient-hero {
     background: var(--gradient-hero);
   }
-  
+
   .gradient-card {
     background: var(--gradient-card);
   }
-  
+
   .shadow-pulse {
     box-shadow: var(--shadow-pulse);
   }
-  
+
   .shadow-card {
     box-shadow: var(--shadow-card);
   }
-  
+
   .shadow-elevated {
     box-shadow: var(--shadow-elevated);
   }
-  
+
   .transition-smooth {
     transition: var(--transition-smooth);
   }
-  
+
   .transition-bounce {
     transition: var(--transition-bounce);
   }
@@ -164,6 +169,7 @@ All colors MUST be HSL.
       opacity: 1;
       transform: scale(1);
     }
+
     50% {
       opacity: 0.8;
       transform: scale(1.05);
@@ -174,15 +180,19 @@ All colors MUST be HSL.
     0%, 100% {
       transform: scale(1);
     }
+
     14% {
       transform: scale(1.1);
     }
+
     28% {
       transform: scale(1);
     }
+
     42% {
       transform: scale(1.1);
     }
+
     70% {
       transform: scale(1);
     }
@@ -197,10 +207,18 @@ All colors MUST be HSL.
   }
 
   .hover-lift {
-    @apply transition-smooth hover:-translate-y-1 hover:shadow-elevated;
+    @apply transition-smooth;
+  }
+
+  .hover-lift:hover {
+    @apply -translate-y-1 shadow-elevated;
   }
 
   .hover-pulse {
-    @apply transition-smooth hover:shadow-pulse;
+    @apply transition-smooth;
+  }
+
+  .hover-pulse:hover {
+    @apply shadow-pulse;
   }
 }

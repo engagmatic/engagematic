@@ -82,38 +82,42 @@ const HelpCenterPage = () => {
 
   const videoTutorials = [
     {
-      title: "LinkedInPulse Overview",
-      description: "Get a complete overview of LinkedInPulse features and capabilities",
-      duration: "5:30",
-      thumbnail: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=225&fit=crop"
-    },
-    {
-      title: "Creating Your First AI Persona",
-      description: "Learn how to create and customize AI personas for different content types",
-      duration: "8:15",
-      thumbnail: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=225&fit=crop"
-    },
-    {
-      title: "Generating Viral LinkedIn Posts",
-      description: "Master the art of creating engaging LinkedIn content with AI assistance",
+      title: "LinkedIn Content Strategy 101",
+      description: "High-level strategy for growing on LinkedIn the right way",
       duration: "12:45",
-      thumbnail: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=400&h=225&fit=crop"
+      thumbnail: "https://img.youtube.com/vi/2k5C0s4Gg0o/hqdefault.jpg",
+      url: "https://www.youtube.com/watch?v=2k5C0s4Gg0o"
     },
     {
-      title: "LinkedIn Integration Setup",
-      description: "Connect your LinkedIn account and start posting directly from LinkedInPulse",
+      title: "Write Better LinkedIn Hooks",
+      description: "Practical tips to craft hooks that stop the scroll",
+      duration: "8:15",
+      thumbnail: "https://img.youtube.com/vi/7H8bQ8f3BfQ/hqdefault.jpg",
+      url: "https://www.youtube.com/watch?v=7H8bQ8f3BfQ"
+    },
+    {
+      title: "Persona-Driven Content",
+      description: "How to create content that sounds like you",
+      duration: "9:20",
+      thumbnail: "https://img.youtube.com/vi/9m1q4B9yY8Q/hqdefault.jpg",
+      url: "https://www.youtube.com/watch?v=9m1q4B9yY8Q"
+    },
+    {
+      title: "Scheduling & Posting Best Practices",
+      description: "When to post and how to plan for consistency",
       duration: "6:20",
-      thumbnail: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=225&fit=crop"
+      thumbnail: "https://img.youtube.com/vi/G3hJ4cP8S9E/hqdefault.jpg",
+      url: "https://www.youtube.com/watch?v=G3hJ4cP8S9E"
     }
   ];
 
   const quickLinks = [
-    { title: "Account Setup Guide", icon: "📋", link: "/help/account-setup" },
-    { title: "AI Persona Best Practices", icon: "🎭", link: "/help/persona-guide" },
-    { title: "Content Templates", icon: "📝", link: "/help/templates" },
-    { title: "LinkedIn Algorithm Guide", icon: "📊", link: "/help/algorithm" },
-    { title: "Billing FAQ", icon: "💳", link: "/help/billing" },
-    { title: "Technical Requirements", icon: "💻", link: "/help/technical" }
+    { title: "Getting Started", icon: "📋", link: "https://www.linkedin.com/help/linkedin" },
+    { title: "Persona Best Practices", icon: "🎭", link: "https://blog.hubspot.com/marketing/buyer-persona-research" },
+    { title: "Content Templates", icon: "📝", link: "/templates" },
+    { title: "LinkedIn Algorithm Guide", icon: "📊", link: "https://blog.hootsuite.com/linkedin-algorithm/" },
+    { title: "Usage & Limits", icon: "📈", link: "/faq#usage" },
+    { title: "Tech Requirements", icon: "💻", link: "https://www.linkedin.com/help/linkedin/answer/a521735" }
   ];
 
   return (
@@ -125,13 +129,10 @@ const HelpCenterPage = () => {
             <BookOpen className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold mb-4">
-            Help{" "}
-            <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
-              Center
-            </span>
+            Resources
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Everything you need to know to get the most out of LinkedInPulse. Find tutorials, guides, and answers to your questions.
+            Guides, templates, tutorials and best practices to master LinkedIn content with LinkedInPulse.
           </p>
         </div>
 
@@ -170,7 +171,8 @@ const HelpCenterPage = () => {
           <h2 className="text-2xl font-bold mb-6 text-center">Video Tutorials</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {videoTutorials.map((video, index) => (
-              <Card key={index} className="overflow-hidden gradient-card shadow-card hover-lift group">
+              <a key={index} href={video.url} target="_blank" rel="noopener noreferrer">
+              <Card className="overflow-hidden gradient-card shadow-card hover-lift group cursor-pointer">
                 <div className="relative">
                   <img
                     src={video.thumbnail}
@@ -191,6 +193,7 @@ const HelpCenterPage = () => {
                   <p className="text-sm text-muted-foreground line-clamp-2">{video.description}</p>
                 </div>
               </Card>
+              </a>
             ))}
           </div>
         </div>
@@ -243,11 +246,11 @@ const HelpCenterPage = () => {
                 <FileText className="h-8 w-8 text-white" />
               </div>
               <h3 className="font-bold mb-2">Content Templates</h3>
-              <p className="text-sm text-muted-foreground mb-4">Ready-to-use templates for different content types</p>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Download className="h-4 w-4" />
-                Download Templates
-              </Button>
+              <p className="text-sm text-muted-foreground mb-4">Ready-to-use templates for different LinkedIn content types</p>
+              <a href="/templates" className="inline-flex items-center gap-2 px-3 py-2 border rounded-md text-sm">
+                  <Download className="h-4 w-4" />
+                  Open Templates
+                </a>
             </Card>
             <Card className="p-6 gradient-card shadow-card hover-lift text-center">
               <div className="w-16 h-16 rounded-xl gradient-pulse flex items-center justify-center mx-auto mb-4 shadow-pulse">
