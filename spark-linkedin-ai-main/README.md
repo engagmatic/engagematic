@@ -1,73 +1,231 @@
-# Welcome to your Lovable project
+# LinkedInPulse - Complete SaaS Application
 
-## Project info
+A full-stack LinkedIn content generation platform powered by AI, featuring subscription management, usage tracking, and analytics.
 
-**URL**: https://lovable.dev/projects/89283e17-dbda-4312-8296-dd5ec717550e
+## 🚀 Features
 
-## How can I edit this code?
+### Frontend (React + Vite + TypeScript)
+- **Modern UI**: Built with Tailwind CSS and shadcn/ui components
+- **Authentication**: JWT-based login/register with protected routes
+- **Content Generation**: AI-powered LinkedIn post and comment generation
+- **Persona Management**: Create and manage custom AI personas
+- **Analytics Dashboard**: Real-time usage statistics and engagement metrics
+- **Responsive Design**: Mobile-first design with beautiful gradients and animations
 
-There are several ways of editing your application.
+### Backend (Node.js + Express + MongoDB)
+- **RESTful API**: Complete API with authentication, content generation, and analytics
+- **AI Integration**: Google Gemini API for intelligent content generation
+- **Payment Processing**: Razorpay integration for subscription management
+- **Usage Tracking**: Quota management and analytics
+- **Security**: JWT authentication, rate limiting, input validation
 
-**Use Lovable**
+## 📋 Prerequisites
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/89283e17-dbda-4312-8296-dd5ec717550e) and start prompting.
+- Node.js 18+
+- MongoDB Atlas account
+- Google AI API key
+- Razorpay account (for payments)
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠 Installation & Setup
 
-**Use your preferred IDE**
+### 1. Backend Setup
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```bash
+cd backend
+npm install
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Create a `.env` file in the backend directory:
+```env
+NODE_ENV=development
+PORT=5000
 
-Follow these steps:
+# Database
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/
+DB_NAME=linkedinpulse
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# JWT
+JWT_SECRET=your-super-secret-jwt-key
+JWT_EXPIRE=7d
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Google AI
+GOOGLE_AI_API_KEY=your-google-ai-api-key
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Razorpay
+RAZORPAY_KEY_ID=your-razorpay-key-id
+RAZORPAY_KEY_SECRET=your-razorpay-key-secret
+RAZORPAY_WEBHOOK_SECRET=your-razorpay-webhook-secret
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Frontend
+FRONTEND_URL=http://localhost:5173
+```
+
+Start the backend server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### 2. Frontend Setup
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+cd spark-linkedin-ai-main
+npm install
+```
 
-**Use GitHub Codespaces**
+Create a `.env` file in the frontend directory:
+```env
+VITE_API_URL=http://localhost:5000/api
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Start the frontend development server:
+```bash
+npm run dev
+```
 
-## What technologies are used for this project?
+## 🎯 Usage
 
-This project is built with:
+1. **Register**: Create a new account with 7-day free trial
+2. **Create Persona**: Set up your AI persona for authentic content
+3. **Generate Content**: Create LinkedIn posts and comments using AI
+4. **Track Usage**: Monitor your monthly quota and engagement
+5. **Upgrade**: Subscribe to Pro plan for more features
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 💳 Pricing Plans
 
-## How can I deploy this project?
+### Starter Plan
+- **Price**: ₹299/$9 monthly, ₹2499/$89 yearly
+- **Features**: 300 posts + 300 comments/month, 3 personas
+- **Perfect for**: Individual creators and professionals
 
-Simply open [Lovable](https://lovable.dev/projects/89283e17-dbda-4312-8296-dd5ec717550e) and click on Share -> Publish.
+### Pro Plan
+- **Price**: ₹799/$18 monthly, ₹6499/$159 yearly
+- **Features**: 2000 posts + 2000 comments/month, 10 personas
+- **Perfect for**: Power users and agencies
 
-## Can I connect a custom domain to my Lovable project?
+## 🔧 API Endpoints
 
-Yes, you can!
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/me` - Get current user
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Content Generation
+- `POST /api/content/posts/generate` - Generate LinkedIn posts
+- `POST /api/content/comments/generate` - Generate comments
+- `GET /api/content/history` - Get content history
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### Persona Management
+- `GET /api/personas` - Get user personas
+- `POST /api/personas` - Create persona
+- `PUT /api/personas/:id` - Update persona
+
+### Analytics
+- `GET /api/analytics/dashboard` - Dashboard statistics
+- `GET /api/analytics/usage` - Usage statistics
+
+### Subscription
+- `GET /api/subscription/current` - Current subscription
+- `POST /api/subscription/create` - Create subscription
+- `POST /api/subscription/upgrade` - Upgrade plan
+
+## 🗄 Database Schema
+
+### User Model
+```javascript
+{
+  name: String,
+  email: String (unique),
+  password: String (hashed),
+  plan: String (starter/pro),
+  subscriptionStatus: String,
+  trialEndsAt: Date
+}
+```
+
+### Usage Model
+```javascript
+{
+  userId: ObjectId,
+  month: String (YYYY-MM),
+  postsGenerated: Number,
+  commentsGenerated: Number,
+  totalTokensUsed: Number
+}
+```
+
+### Content Model
+```javascript
+{
+  userId: ObjectId,
+  type: String (post/comment),
+  content: String,
+  topic: String,
+  personaId: ObjectId,
+  engagementScore: Number
+}
+```
+
+## 🚀 Deployment
+
+### Backend Deployment
+1. Set up MongoDB Atlas production database
+2. Configure environment variables for production
+3. Deploy to your preferred platform (Vercel, Railway, etc.)
+4. Set up Razorpay webhooks
+
+### Frontend Deployment
+1. Update API URL in environment variables
+2. Build the application: `npm run build`
+3. Deploy to Vercel, Netlify, or your preferred platform
+
+## 🔒 Security Features
+
+- JWT authentication with secure token management
+- Password hashing with bcrypt
+- Rate limiting to prevent abuse
+- Input validation and sanitization
+- CORS protection
+- Helmet security headers
+
+## 📊 Monitoring & Analytics
+
+- Real-time usage tracking
+- Engagement score calculation
+- Monthly quota management
+- Growth metrics and trends
+- Content performance analytics
+
+## 🧪 Testing
+
+```bash
+# Backend tests
+cd backend
+npm test
+
+# Frontend tests
+cd spark-linkedin-ai-main
+npm test
+```
+
+## 📝 License
+
+MIT License - see LICENSE file for details
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📞 Support
+
+For support and questions:
+- Email: support@linkedinpulse.com
+- Documentation: [docs.linkedinpulse.com](https://docs.linkedinpulse.com)
+- Issues: GitHub Issues
+
+---
+
+**Built with ❤️ for LinkedIn creators and professionals**
