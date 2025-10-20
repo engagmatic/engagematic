@@ -530,36 +530,38 @@ const PostGenerator = () => {
               </div>
             </Card>
 
-            {/* Creative Suggestions */}
+            {/* Creative Suggestions - stabilized responsive grid */}
             {creativeSuggestions.length > 0 && (
               <Card className="shadow-lg mt-6">
                 <div className="p-6">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                     <Lightbulb className="h-5 w-5" />
                     Creative Format Suggestions
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     💡 Boost engagement with these LinkedIn post formats
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {creativeSuggestions.map((suggestion, index) => (
-                      <div key={index} className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border border-blue-200 hover:shadow-md transition-shadow">
+                      <div
+                        key={index}
+                        className="p-4 rounded-lg border bg-card hover:bg-muted transition-colors"
+                      >
                         <div className="flex items-start gap-3">
-                          <div className="text-2xl">{suggestion.icon}</div>
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-blue-900 mb-1">{suggestion.title}</h4>
-                            <p className="text-sm text-blue-700 mb-2">{suggestion.description}</p>
-                            <div className="bg-blue-100 p-2 rounded text-xs text-blue-800">
-                              <strong>💡 Pro tip:</strong> {suggestion.tips}
+                          <div className="text-2xl leading-none">{suggestion.icon}</div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold mb-1 truncate">{suggestion.title}</h4>
+                            <p className="text-sm text-muted-foreground mb-2 line-clamp-3">
+                              {suggestion.description}
+                            </p>
+                            <div className="bg-muted p-2 rounded text-xs">
+                              <strong>Pro tip:</strong> {suggestion.tips}
                             </div>
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-4 text-center">
-                    🚀 Mix and match these formats for maximum engagement
-                  </p>
                 </div>
               </Card>
             )}

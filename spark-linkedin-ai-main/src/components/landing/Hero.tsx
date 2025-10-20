@@ -34,7 +34,21 @@ const features = [
 export const Hero = () => {
   return (
     <section className="relative min-h-[90vh] flex items-center gradient-hero overflow-hidden">
-      {/* Animated pulse circles */}
+      {/* Subtle integration tile grid background (inspired style) */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.65]">
+        <div className="absolute left-1/2 -translate-x-1/2 top-[-120px] rotate-6">
+          <div className="grid grid-cols-10 gap-3">
+            {Array.from({ length: 70 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-10 w-10 rounded-xl border border-yellow-100/40 bg-white/30 backdrop-blur-[2px] shadow-sm"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Animated glow accents */}
       <div className="absolute top-20 left-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse-glow" />
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse-glow animation-delay-1000" />
       
@@ -83,6 +97,25 @@ export const Hero = () => {
               </div>
             </div>
             
+            {/* Premium feature cards row (inspired style) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
+              <div className="rounded-2xl border bg-card/70 backdrop-blur shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div className="mb-2 text-xs font-semibold text-muted-foreground">Connect</div>
+                <div className="text-base font-semibold">Plug into your workflow</div>
+                <p className="text-sm text-muted-foreground mt-1">Paste URLs, use templates, and analyze profiles to personalize content.</p>
+              </div>
+              <div className="rounded-2xl border bg-card/70 backdrop-blur shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div className="mb-2 text-xs font-semibold text-muted-foreground">AI Models</div>
+                <div className="text-base font-semibold">Model-agnostic</div>
+                <p className="text-sm text-muted-foreground mt-1">Optimized for Gemini now; flexible to support more models later.</p>
+              </div>
+              <div className="rounded-2xl border bg-card/70 backdrop-blur shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div className="mb-2 text-xs font-semibold text-muted-foreground">Control</div>
+                <div className="text-base font-semibold">Human-in-the-loop</div>
+                <p className="text-sm text-muted-foreground mt-1">Review, edit, and customize before posting—always your voice.</p>
+              </div>
+            </div>
+
             <div className="flex items-center gap-6 lg:gap-8 pt-6 border-t border-border/50">
               <div>
                 <div className="text-2xl lg:text-3xl font-bold text-foreground">500+</div>

@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Check, Heart, Loader2, Sparkles, MessageCircle, ExternalLink, TrendingUp, Star, Lightbulb } from "lucide-react";
+import { Copy, Check, Heart, Loader2, Sparkles, MessageCircle, ExternalLink, TrendingUp, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePersonas } from "@/hooks/usePersonas";
@@ -22,7 +22,7 @@ const CommentGenerator = () => {
   const [generatedComments, setGeneratedComments] = useState([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [isFetchingFromUrl, setIsFetchingFromUrl] = useState(false);
-  const [creativeSuggestions, setCreativeSuggestions] = useState([]);
+  // Removed creative suggestions for comment generator per requirements
   
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -116,11 +116,25 @@ const CommentGenerator = () => {
       });
 
       if (result.success) {
-        setGeneratedComments(result.data.comments || []);
-        
-        // Generate creative engagement suggestions
-        generateCreativeSuggestions(postContent.trim());
-        
+        // Normalize to an array of up to 3 comments
+        let comments = [] as any[];
+        const raw = (result.data && (result.data.comments || result.data.content)) as any;
+        if (Array.isArray(raw)) {
+          comments = raw;
+        } else if (typeof raw === 'string') {
+          try {
+            const parsed = JSON.parse(raw);
+            comments = Array.isArray(parsed) ? parsed : [raw];
+          } catch {
+            // Split by double newline or newline as fallback
+            const splits = raw.split(/\n\n+|\n+/).filter(Boolean).map(t => ({ text: t }));
+            comments = splits.length ? splits : [raw];
+          }
+        }
+        // Ensure objects with text field
+        comments = comments.map((c) => (typeof c === 'string' ? { text: c } : c));
+        setGeneratedComments(comments.slice(0, 3));
+
         toast({
           title: "Comments generated! 💬",
           description: "AI-powered comments ready for your engagement",
@@ -142,54 +156,7 @@ const CommentGenerator = () => {
     }
   };
 
-  const generateCreativeSuggestions = (content) => {
-    // Generate creative engagement suggestions for comments
-    const suggestions = [
-      {
-        type: "Follow-up Post",
-        title: "Create a Follow-up Post",
-        description: "Turn your comment into a full LinkedIn post with more details",
-        icon: "📝",
-        tips: "Expand on your comment with personal stories, data, or examples. Tag the original author."
-      },
-      {
-        type: "Video Response",
-        title: "Record a Video Response",
-        description: "Create a short video elaborating on your comment",
-        icon: "🎥",
-        tips: "Keep it 60-90 seconds. Share your screen or record yourself speaking."
-      },
-      {
-        type: "Resource Share",
-        title: "Share a Resource",
-        description: "Comment with a helpful article, tool, or template",
-        icon: "📚",
-        tips: "Make sure it's relevant and valuable. Add a brief explanation of why it's useful."
-      },
-      {
-        type: "Question Thread",
-        title: "Start a Discussion",
-        description: "Ask a thought-provoking question to continue the conversation",
-        icon: "❓",
-        tips: "Make it open-ended and relevant to the original post. Encourage others to share."
-      },
-      {
-        type: "Personal Story",
-        title: "Share Your Experience",
-        description: "Add a personal anecdote that relates to the post",
-        icon: "👤",
-        tips: "Keep it authentic and relevant. Show vulnerability and relatability."
-      },
-      {
-        type: "Data Point",
-        title: "Add Statistics",
-        description: "Share relevant data or research that supports the discussion",
-        icon: "📊",
-        tips: "Cite your sources. Make sure the data is recent and credible."
-      }
-    ];
-    setCreativeSuggestions(suggestions);
-  };
+  // Removed creative suggestions generator
 
   const handleCopy = (text: string, index: number) => {
     copyToClipboard(text);
@@ -375,7 +342,7 @@ const CommentGenerator = () => {
                   Generated Comments
                 </h3>
                 {generatedComments.length > 0 ? (
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                  <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">
                     {generatedComments.map((comment, index) => (
                       <div key={index} className="p-4 bg-muted rounded-lg border">
                         <div className="flex items-start justify-between mb-3">
@@ -427,39 +394,7 @@ const CommentGenerator = () => {
               </div>
             </Card>
 
-            {/* Creative Engagement Suggestions */}
-            {creativeSuggestions.length > 0 && (
-              <Card className="shadow-lg">
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Lightbulb className="h-5 w-5" />
-                    Creative Engagement Ideas
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    💡 Take your engagement to the next level with these strategies
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {creativeSuggestions.map((suggestion, index) => (
-                      <div key={index} className="p-4 bg-gradient-to-br from-green-50 to-blue-50 rounded-lg border border-green-200 hover:shadow-md transition-shadow">
-                        <div className="flex items-start gap-3">
-                          <div className="text-2xl">{suggestion.icon}</div>
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-green-900 mb-1">{suggestion.title}</h4>
-                            <p className="text-sm text-green-700 mb-2">{suggestion.description}</p>
-                            <div className="bg-green-100 p-2 rounded text-xs text-green-800">
-                              <strong>💡 Pro tip:</strong> {suggestion.tips}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-4 text-center">
-                    🚀 Build stronger connections with creative engagement
-                  </p>
-                </div>
-              </Card>
-            )}
+            {/* Creative Engagement Ideas removed as requested */}
           </div>
         </div>
       </div>
