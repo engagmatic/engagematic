@@ -231,40 +231,6 @@ export const Pricing = () => {
           })}
         </div>
 
-        {/* Additional Information */}
-        <div className="mt-16 max-w-3xl mx-auto">
-          <Card className="p-6 bg-card/50 backdrop-blur-sm border">
-            <h3 className="font-semibold text-lg mb-4">Plan Details</h3>
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p className="flex items-start gap-2">
-                <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                Usage quotas reset monthly; additional credits available if needed
-              </p>
-              <p className="flex items-start gap-2">
-                <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                Transparent quotas, no hidden fees
-              </p>
-              <p className="flex items-start gap-2">
-                <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                Upgrade/downgrade anytime—change plans as your needs grow
-              </p>
-              <p className="flex items-start gap-2">
-                <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                Cancel anytime with no questions asked
-              </p>
-            </div>
-          </Card>
-        </div>
-
-        {/* Pricing FAQ Preview */}
-        <div className="mt-12 text-center">
-          <p className="text-muted-foreground mb-4">
-            Have questions about pricing?
-          </p>
-          <Button variant="outline" asChild>
-            <a href="#faq">View FAQ</a>
-          </Button>
-        </div>
       </div>
     </section>
   );

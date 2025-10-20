@@ -10,7 +10,7 @@ export const Footer = () => {
         <div className="container mx-auto px-4 flex items-center justify-between">
           <div className="text-white">
             <div className="font-bold">Ready to boost your LinkedIn pulse?</div>
-            <div className="text-sm opacity-90">Join 10,000+ creators growing their presence</div>
+            <div className="text-sm opacity-90">Join 1000+ creators growing their presence</div>
           </div>
           <Button size="lg" variant="secondary" className="shadow-elevated">
             Get The Pulse!

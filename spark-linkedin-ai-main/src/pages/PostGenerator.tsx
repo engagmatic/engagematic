@@ -13,6 +13,7 @@ import { useLinkedInProfile } from "../hooks/useLinkedInProfile";
 import apiClient from "../services/api.js";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "../components/Navigation";
+import { SEO, pageSEO } from "@/components/SEO";
 
 const hookIcons = {
   story: Heart,
@@ -270,6 +271,7 @@ const PostGenerator = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO {...pageSEO.postGenerator} />
       <Navigation />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}

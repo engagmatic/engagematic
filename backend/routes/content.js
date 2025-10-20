@@ -4,6 +4,7 @@ import Hook from "../models/Hook.js";
 import Persona from "../models/Persona.js";
 import googleAIService from "../services/googleAI.js";
 import usageService from "../services/usageService.js";
+import subscriptionService from "../services/subscriptionService.js";
 import { authenticateToken, checkTrialStatus } from "../middleware/auth.js";
 import {
   validatePostGeneration,
@@ -28,14 +29,16 @@ router.post(
       const { topic, hookId, personaId, persona: personaData } = req.body;
       const userId = req.user._id;
 
-      // Check quota before generation
-      const quotaCheck = await usageService.checkQuotaExceeded(userId, "posts");
-      if (quotaCheck.exceeded) {
+      // Check subscription and quota before generation
+      const canGenerate = await subscriptionService.canPerformAction(
+        userId,
+        "generate_post"
+      );
+      if (!canGenerate.allowed) {
         return res.status(429).json({
           success: false,
-          message: "Monthly post generation limit reached",
-          code: "QUOTA_EXCEEDED",
-          data: quotaCheck,
+          message: canGenerate.reason,
+          code: "SUBSCRIPTION_LIMIT_EXCEEDED",
         });
       }
 
@@ -107,10 +110,17 @@ router.post(
       await content.save();
 
       // Increment usage
+      // Record usage in both systems
       await usageService.incrementUsage(userId, "posts", aiResponse.tokensUsed);
+      await subscriptionService.recordUsage(userId, "generate_post");
 
       // Update hook usage count
       await Hook.findByIdAndUpdate(hookId, { $inc: { usageCount: 1 } });
+
+      // Get updated subscription info
+      const subscription = await subscriptionService.getUserSubscription(
+        userId
+      );
 
       res.json({
         success: true,
@@ -118,6 +128,11 @@ router.post(
         data: {
           content: content,
           quota: await usageService.checkQuotaExceeded(userId, "posts"),
+          subscription: {
+            usage: subscription.usage,
+            tokens: subscription.tokens,
+            limits: subscription.limits,
+          },
         },
       });
     } catch (error) {
@@ -141,17 +156,16 @@ router.post(
       const { postContent, personaId, persona: personaData } = req.body;
       const userId = req.user._id;
 
-      // Check quota before generation
-      const quotaCheck = await usageService.checkQuotaExceeded(
+      // Check subscription and quota before generation
+      const canGenerate = await subscriptionService.canPerformAction(
         userId,
-        "comments"
+        "generate_comment"
       );
-      if (quotaCheck.exceeded) {
+      if (!canGenerate.allowed) {
         return res.status(429).json({
           success: false,
-          message: "Monthly comment generation limit reached",
-          code: "QUOTA_EXCEEDED",
-          data: quotaCheck,
+          message: canGenerate.reason,
+          code: "SUBSCRIPTION_LIMIT_EXCEEDED",
         });
       }
 
@@ -217,11 +231,17 @@ router.post(
 
       await content.save();
 
-      // Increment usage
+      // Record usage in both systems
       await usageService.incrementUsage(
         userId,
         "comments",
         aiResponse.tokensUsed
+      );
+      await subscriptionService.recordUsage(userId, "generate_comment");
+
+      // Get updated subscription info
+      const subscription = await subscriptionService.getUserSubscription(
+        userId
       );
 
       res.json({
@@ -231,6 +251,11 @@ router.post(
           comments: aiResponse.comments,
           content: content,
           quota: await usageService.checkQuotaExceeded(userId, "comments"),
+          subscription: {
+            usage: subscription.usage,
+            tokens: subscription.tokens,
+            limits: subscription.limits,
+          },
         },
       });
     } catch (error) {

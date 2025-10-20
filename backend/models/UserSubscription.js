@@ -1,0 +1,348 @@
+import mongoose from "mongoose";
+
+const userSubscriptionSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true,
+      index: true,
+    },
+
+    // Subscription details
+    plan: {
+      type: String,
+      enum: ["trial", "starter", "pro", "enterprise"],
+      default: "trial",
+      required: true,
+    },
+
+    status: {
+      type: String,
+      enum: ["active", "trial", "expired", "cancelled", "paused"],
+      default: "trial",
+      required: true,
+    },
+
+    // Trial period
+    trialStartDate: {
+      type: Date,
+      default: Date.now,
+    },
+
+    trialEndDate: {
+      type: Date,
+      default: function () {
+        return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+      },
+    },
+
+    // Subscription period
+    subscriptionStartDate: {
+      type: Date,
+      default: null,
+    },
+
+    subscriptionEndDate: {
+      type: Date,
+      default: null,
+    },
+
+    // Token tracking
+    tokens: {
+      total: {
+        type: Number,
+        default: 0,
+      },
+      used: {
+        type: Number,
+        default: 0,
+      },
+      remaining: {
+        type: Number,
+        default: 0,
+      },
+      resetDate: {
+        type: Date,
+        default: function () {
+          const nextMonth = new Date();
+          nextMonth.setMonth(nextMonth.getMonth() + 1);
+          nextMonth.setDate(1); // First day of next month
+          return nextMonth;
+        },
+      },
+    },
+
+    // Plan limits
+    limits: {
+      postsPerMonth: {
+        type: Number,
+        default: 50, // Trial limit
+      },
+      commentsPerMonth: {
+        type: Number,
+        default: 50, // Trial limit
+      },
+      templatesAccess: {
+        type: Boolean,
+        default: true,
+      },
+      linkedinAnalysis: {
+        type: Boolean,
+        default: true,
+      },
+      prioritySupport: {
+        type: Boolean,
+        default: false,
+      },
+    },
+
+    // Billing
+    billing: {
+      amount: {
+        type: Number,
+        default: 0,
+      },
+      currency: {
+        type: String,
+        default: "USD",
+      },
+      interval: {
+        type: String,
+        enum: ["monthly", "yearly"],
+        default: "monthly",
+      },
+      nextBillingDate: {
+        type: Date,
+        default: null,
+      },
+      paymentMethod: {
+        type: String,
+        default: null,
+      },
+    },
+
+    // Usage tracking
+    usage: {
+      postsGenerated: {
+        type: Number,
+        default: 0,
+      },
+      commentsGenerated: {
+        type: Number,
+        default: 0,
+      },
+      templatesUsed: {
+        type: Number,
+        default: 0,
+      },
+      linkedinAnalyses: {
+        type: Number,
+        default: 0,
+      },
+    },
+
+    // Metadata
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Update limits based on plan
+userSubscriptionSchema.pre("save", function (next) {
+  if (this.isModified("plan")) {
+    switch (this.plan) {
+      case "trial":
+        this.limits.postsPerMonth = 50;
+        this.limits.commentsPerMonth = 50;
+        this.limits.templatesAccess = true;
+        this.limits.linkedinAnalysis = true;
+        this.limits.prioritySupport = false;
+        this.billing.amount = 0;
+        break;
+
+      case "starter":
+        this.limits.postsPerMonth = 100;
+        this.limits.commentsPerMonth = 100;
+        this.limits.templatesAccess = true;
+        this.limits.linkedinAnalysis = true;
+        this.limits.prioritySupport = false;
+        this.billing.amount = 9;
+        break;
+
+      case "pro":
+        this.limits.postsPerMonth = 300;
+        this.limits.commentsPerMonth = 300;
+        this.limits.templatesAccess = true;
+        this.limits.linkedinAnalysis = true;
+        this.limits.prioritySupport = true;
+        this.billing.amount = 18;
+        break;
+
+      case "enterprise":
+        this.limits.postsPerMonth = 1000;
+        this.limits.commentsPerMonth = 1000;
+        this.limits.templatesAccess = true;
+        this.limits.linkedinAnalysis = true;
+        this.limits.prioritySupport = true;
+        this.billing.amount = 49;
+        break;
+    }
+  }
+
+  // Calculate remaining tokens
+  this.tokens.remaining = this.tokens.total - this.tokens.used;
+
+  next();
+});
+
+// Method to check if user can perform action
+userSubscriptionSchema.methods.canPerformAction = function (action) {
+  const now = new Date();
+
+  // Check if trial is expired
+  if (this.status === "trial" && now > this.trialEndDate) {
+    return { allowed: false, reason: "Trial expired" };
+  }
+
+  // Check if subscription is active
+  if (this.status === "expired" || this.status === "cancelled") {
+    return { allowed: false, reason: "Subscription expired or cancelled" };
+  }
+
+  // Check usage limits
+  switch (action) {
+    case "generate_post":
+      if (this.usage.postsGenerated >= this.limits.postsPerMonth) {
+        return { allowed: false, reason: "Monthly post limit reached" };
+      }
+      break;
+
+    case "generate_comment":
+      if (this.usage.commentsGenerated >= this.limits.commentsPerMonth) {
+        return { allowed: false, reason: "Monthly comment limit reached" };
+      }
+      break;
+
+    case "use_template":
+      if (!this.limits.templatesAccess) {
+        return {
+          allowed: false,
+          reason: "Templates not available in current plan",
+        };
+      }
+      break;
+
+    case "analyze_linkedin":
+      if (!this.limits.linkedinAnalysis) {
+        return {
+          allowed: false,
+          reason: "LinkedIn analysis not available in current plan",
+        };
+      }
+      break;
+  }
+
+  return { allowed: true };
+};
+
+// Method to record usage
+userSubscriptionSchema.methods.recordUsage = function (action) {
+  switch (action) {
+    case "generate_post":
+      this.usage.postsGenerated += 1;
+      this.tokens.used += 1;
+      break;
+
+    case "generate_comment":
+      this.usage.commentsGenerated += 1;
+      this.tokens.used += 1;
+      break;
+
+    case "use_template":
+      this.usage.templatesUsed += 1;
+      break;
+
+    case "analyze_linkedin":
+      this.usage.linkedinAnalyses += 1;
+      break;
+  }
+
+  this.tokens.remaining = this.tokens.total - this.tokens.used;
+  this.updatedAt = new Date();
+
+  return this.save();
+};
+
+// Method to reset monthly usage
+userSubscriptionSchema.methods.resetMonthlyUsage = function () {
+  const now = new Date();
+
+  if (now >= this.tokens.resetDate) {
+    this.usage.postsGenerated = 0;
+    this.usage.commentsGenerated = 0;
+    this.usage.templatesUsed = 0;
+    this.usage.linkedinAnalyses = 0;
+    this.tokens.used = 0;
+    this.tokens.remaining = this.tokens.total;
+
+    // Set next reset date
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    nextMonth.setDate(1);
+    this.tokens.resetDate = nextMonth;
+
+    this.updatedAt = new Date();
+    return this.save();
+  }
+
+  return Promise.resolve(this);
+};
+
+// Method to upgrade plan
+userSubscriptionSchema.methods.upgradePlan = function (newPlan) {
+  this.plan = newPlan;
+  this.status = "active";
+  this.subscriptionStartDate = new Date();
+
+  // Set subscription end date based on billing interval
+  const endDate = new Date();
+  if (this.billing.interval === "yearly") {
+    endDate.setFullYear(endDate.getFullYear() + 1);
+  } else {
+    endDate.setMonth(endDate.getMonth() + 1);
+  }
+  this.subscriptionEndDate = endDate;
+  this.nextBillingDate = endDate;
+
+  return this.save();
+};
+
+// Static method to create trial subscription
+userSubscriptionSchema.statics.createTrial = function (userId) {
+  return this.create({
+    userId,
+    plan: "trial",
+    status: "trial",
+    trialStartDate: new Date(),
+    trialEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    tokens: {
+      total: 100, // 100 tokens for trial
+      used: 0,
+      remaining: 100,
+    },
+  });
+};
+
+export default mongoose.model("UserSubscription", userSubscriptionSchema);

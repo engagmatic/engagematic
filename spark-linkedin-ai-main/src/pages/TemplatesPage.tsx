@@ -5,6 +5,7 @@ import { FileText, Copy, Download, Star, Users, Calendar, TrendingUp, Check, Eye
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { SEO, pageSEO } from "@/components/SEO";
 
 const TemplatesPage = () => {
   const { toast } = useToast();
@@ -227,6 +228,7 @@ const TemplatesPage = () => {
 
   return (
     <div className="min-h-screen gradient-hero">
+      <SEO {...pageSEO.templates} />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">

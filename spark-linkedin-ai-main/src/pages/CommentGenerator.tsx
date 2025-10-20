@@ -13,6 +13,7 @@ import { useContentGeneration } from "@/hooks/useContentGeneration";
 import { useNavigate } from "react-router-dom";
 import apiClient from "@/services/api";
 import { Navigation } from "@/components/Navigation";
+import { SEO, pageSEO } from "@/components/SEO";
 
 const CommentGenerator = () => {
   const [postContent, setPostContent] = useState("");
@@ -217,6 +218,7 @@ const CommentGenerator = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO {...pageSEO.commentGenerator} />
       <Navigation />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}

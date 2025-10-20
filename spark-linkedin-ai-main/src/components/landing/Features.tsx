@@ -5,17 +5,17 @@ const features = [
   {
     icon: Users,
     title: "AI Persona Engine",
-    description: "Creates content that matches your professional voice and industry expertise."
+    description: "Learns your unique voice & creates authentic content that sounds like YOU - not robotic AI."
   },
   {
     icon: Zap,
-    title: "Smart Hook Generator",
-    description: "AI-generated hooks designed to grab attention and start conversations."
+    title: "50+ Viral Hooks",
+    description: "Proven hooks that stop the scroll & get 3x more engagement than generic posts."
   },
   {
     icon: MessageSquare,
-    title: "Comment Generator",
-    description: "Generate thoughtful comments to engage with others' LinkedIn posts."
+    title: "Smart Comment AI",
+    description: "Generate genuine comments that build real professional relationships & conversations."
   },
   {
     icon: TrendingUp,

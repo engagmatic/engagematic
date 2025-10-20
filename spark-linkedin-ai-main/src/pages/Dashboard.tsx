@@ -6,6 +6,7 @@ import { useDashboard } from "../hooks/useAnalytics";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Navigation } from "../components/Navigation";
+import { SubscriptionStatus } from "../components/SubscriptionStatus";
 
 const Dashboard = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -80,6 +81,11 @@ const Dashboard = () => {
             </span>
           </h1>
           <p className="text-muted-foreground">Track your LinkedIn growth and create engaging content</p>
+        </div>
+
+        {/* Subscription Status */}
+        <div className="mb-8">
+          <SubscriptionStatus />
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
