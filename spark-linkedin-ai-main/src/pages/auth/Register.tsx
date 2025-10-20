@@ -10,6 +10,7 @@ import { Activity, Loader2, Eye, EyeOff, ArrowRight, ArrowLeft, Check, User, Bri
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useLinkedInProfile } from "../../hooks/useLinkedInProfile";
 
 const Register = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -43,6 +44,7 @@ const Register = () => {
   const { register, error, clearError } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { analyzeProfile, isAnalyzing, profileData } = useLinkedInProfile();
 
   const steps = [
     { id: 1, title: "Account Setup", description: "Create your account" },
@@ -94,6 +96,36 @@ const Register = () => {
         ? prev.contentTypes.filter(t => t !== type)
         : [...prev.contentTypes, type]
     }));
+  };
+
+  const handleLinkedInAnalysis = async () => {
+    if (!formData.linkedinUrl.trim()) {
+      toast({
+        title: "LinkedIn URL required",
+        description: "Please enter your LinkedIn profile URL first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const result = await analyzeProfile(formData.linkedinUrl);
+    if (result.success && result.data) {
+      // Auto-fill form with LinkedIn insights
+      setFormData(prev => ({
+        ...prev,
+        industry: result.data.industry || prev.industry,
+        experience: result.data.experienceLevel || prev.experience,
+        writingStyle: result.data.contentStrategy?.tone || prev.writingStyle,
+        tone: result.data.contentStrategy?.tone || prev.tone,
+        expertise: result.data.contentStrategy?.focus || prev.expertise,
+        targetAudience: result.data.contentStrategy?.contentTypes?.join(", ") || prev.targetAudience
+      }));
+
+      toast({
+        title: "Profile analyzed! 🎯",
+        description: "Form auto-filled with LinkedIn insights",
+      });
+    }
   };
 
   const validateStep = (step) => {
@@ -211,13 +243,13 @@ const Register = () => {
   const progress = (currentStep / 4) * 100;
 
   return (
-    <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/5">
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="w-12 h-12 rounded-xl gradient-pulse flex items-center justify-center shadow-pulse">
-              <Activity className="h-7 w-7 text-white animate-heartbeat" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
+              <Activity className="h-7 w-7 text-white animate-pulse" />
             </div>
             <span className="text-2xl font-bold">LinkedInPulse</span>
           </Link>
@@ -228,19 +260,22 @@ const Register = () => {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
-            {steps.map((step) => (
-              <div key={step.id} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex items-center flex-1">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
                   currentStep >= step.id 
-                    ? 'bg-primary text-white' 
+                    ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg' 
                     : 'bg-muted text-muted-foreground'
                 }`}>
-                  {currentStep > step.id ? <Check className="h-4 w-4" /> : step.id}
+                  {currentStep > step.id ? <Check className="h-5 w-5" /> : step.id}
                 </div>
                 <div className="ml-3 hidden sm:block">
                   <div className="text-sm font-medium">{step.title}</div>
                   <div className="text-xs text-muted-foreground">{step.description}</div>
                 </div>
+                {index < steps.length - 1 && (
+                  <div className={`flex-1 h-1 mx-2 rounded ${currentStep > step.id ? 'bg-primary' : 'bg-muted'}`} />
+                )}
               </div>
             ))}
           </div>
@@ -248,7 +283,7 @@ const Register = () => {
         </div>
 
         {/* Step Content */}
-        <Card className="p-8 gradient-card shadow-card">
+        <Card className="p-8 shadow-lg border-2">
           {/* Step 1: Account Setup */}
           {currentStep === 1 && (
             <div className="space-y-6">
@@ -571,15 +606,35 @@ const Register = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="linkedinUrl">LinkedIn Profile URL (Optional)</Label>
-                  <Input
-                    id="linkedinUrl"
-                    name="linkedinUrl"
-                    type="url"
-                    placeholder="https://linkedin.com/in/yourprofile"
-                    value={formData.linkedinUrl}
-                    onChange={(e) => handleChange('linkedinUrl', e.target.value)}
-                    disabled={isLoading}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="linkedinUrl"
+                      name="linkedinUrl"
+                      type="url"
+                      placeholder="https://linkedin.com/in/yourprofile"
+                      value={formData.linkedinUrl}
+                      onChange={(e) => handleChange('linkedinUrl', e.target.value)}
+                      disabled={isLoading}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleLinkedInAnalysis}
+                      disabled={isAnalyzing || !formData.linkedinUrl.trim() || isLoading}
+                      className="gap-2"
+                    >
+                      {isAnalyzing ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4" />
+                      )}
+                      {isAnalyzing ? "Analyzing..." : "Analyze"}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    💡 We'll analyze your profile to auto-fill your persona details
+                  </p>
                 </div>
               </div>
             </div>

@@ -1,36 +1,26 @@
 import { Card } from "@/components/ui/card";
-import { Sparkles, MessageSquare, TrendingUp, Zap, Copy, Users } from "lucide-react";
+import { Sparkles, MessageSquare, TrendingUp, Zap, Users } from "lucide-react";
 
 const features = [
   {
     icon: Users,
-    title: "Persona Engine",
-    description: "AI learns your unique voice and style to create authentic content that sounds like you."
+    title: "AI Persona Engine",
+    description: "Creates content that matches your professional voice and industry expertise."
   },
   {
     icon: Zap,
-    title: "Viral Hook Selector",
-    description: "Choose from proven hooks that stop the scroll and drive engagement."
+    title: "Smart Hook Generator",
+    description: "AI-generated hooks designed to grab attention and start conversations."
   },
   {
     icon: MessageSquare,
-    title: "Genuine Comment Generator",
-    description: "Create thoughtful, human comments that build real relationships."
+    title: "Comment Generator",
+    description: "Generate thoughtful comments to engage with others' LinkedIn posts."
   },
   {
     icon: TrendingUp,
-    title: "Analytics Dashboard",
-    description: "Track your pulse meter and see your engagement grow in real-time."
-  },
-  {
-    icon: Copy,
-    title: "One-Click Copy/Paste",
-    description: "Instantly copy your AI-generated content and paste directly into LinkedIn."
-  },
-  {
-    icon: Sparkles,
-    title: "Engagement Boost",
-    description: "Proven to increase engagement by 6x with authentic, strategic content."
+    title: "Content Templates",
+    description: "Ready-to-use templates for different types of LinkedIn content and industries."
   }
 ];
 
@@ -41,22 +31,22 @@ export const Features = () => {
         <div className="text-center mb-16 space-y-4">
           <h2 className="text-4xl lg:text-5xl font-bold">
             Everything You Need to{" "}
-            <span className="gradient-pulse bg-clip-text text-transparent">Boost Your Pulse</span>
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Create Better Content</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Powerful features designed to amplify your LinkedIn presence and drive authentic engagement.
+            AI-powered tools to help you create engaging LinkedIn posts, comments, and content that resonates with your audience.
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <Card 
                 key={index}
-                className="p-6 hover-lift gradient-card border-border/50 group"
+                className="p-6 hover-lift bg-card/50 backdrop-blur-sm border-border/50 group"
               >
-                <div className="w-12 h-12 rounded-xl gradient-pulse flex items-center justify-center mb-4 shadow-pulse group-hover:animate-heartbeat">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform">
                   <Icon className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">{feature.title}</h3>

@@ -146,7 +146,9 @@ const RoadmapPage = () => {
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold mb-4">
             Product{" "}
-            <span className="gradient-pulse bg-clip-text text-transparent">Roadmap</span>
+            <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
+              Roadmap
+            </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             See what we're building next and how LinkedInPulse will evolve to better serve your professional content creation needs.

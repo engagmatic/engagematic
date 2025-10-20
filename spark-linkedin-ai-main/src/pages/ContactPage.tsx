@@ -130,7 +130,9 @@ const ContactPage = () => {
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold mb-4">
             Contact{" "}
-            <span className="gradient-pulse bg-clip-text text-transparent">Us</span>
+            <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
+              Us
+            </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Have questions? Need help? We're here to support you. Reach out to our team and we'll get back to you as soon as possible.

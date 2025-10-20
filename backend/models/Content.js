@@ -33,7 +33,7 @@ const contentSchema = new mongoose.Schema({
   personaId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Persona',
-    required: true
+    required: false // Made optional to support sample personas
   },
   originalPostContent: {
     type: String,

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Activity, Loader2, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
@@ -53,12 +53,12 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/5">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="w-12 h-12 rounded-xl gradient-pulse flex items-center justify-center shadow-pulse">
-              <Activity className="h-7 w-7 text-white animate-heartbeat" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
+              <Activity className="h-7 w-7 text-white animate-pulse" />
             </div>
             <span className="text-2xl font-bold">LinkedInPulse</span>
           </Link>
@@ -66,7 +66,7 @@ const Login = () => {
           <p className="text-muted-foreground">Sign in to your account to continue</p>
         </div>
 
-        <Card className="p-8 gradient-card shadow-card">
+        <Card className="p-8 shadow-lg border-2">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

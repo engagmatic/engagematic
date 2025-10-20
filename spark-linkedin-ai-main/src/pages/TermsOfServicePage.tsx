@@ -10,12 +10,13 @@ const TermsOfServicePage = () => {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="w-16 h-16 rounded-xl gradient-pulse flex items-center justify-center mx-auto mb-4 shadow-pulse">
+          <div className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-pulse">
             <FileText className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold mb-4">
-            Terms of{" "}
-            <span className="gradient-pulse bg-clip-text text-transparent">Service</span>
+            <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
+              Terms of Service
+            </span>
           </h1>
           <p className="text-xl text-muted-foreground">
             Please read these terms carefully before using LinkedInPulse services.
@@ -26,7 +27,7 @@ const TermsOfServicePage = () => {
         </div>
 
         {/* Introduction */}
-        <Card className="p-8 gradient-card shadow-card mb-8">
+        <Card className="p-8 shadow-card mb-8">
           <div className="flex items-start gap-4 mb-6">
             <Scale className="h-6 w-6 text-primary mt-1" />
             <div>
@@ -45,7 +46,7 @@ const TermsOfServicePage = () => {
         </Card>
 
         {/* Service Description */}
-        <Card className="p-8 gradient-card shadow-card mb-8">
+        <Card className="p-8 shadow-card mb-8">
           <div className="flex items-start gap-4 mb-6">
             <Users className="h-6 w-6 text-primary mt-1" />
             <div>
@@ -66,7 +67,7 @@ const TermsOfServicePage = () => {
         </Card>
 
         {/* User Accounts */}
-        <Card className="p-8 gradient-card shadow-card mb-8">
+        <Card className="p-8 shadow-card mb-8">
           <div className="flex items-start gap-4 mb-6">
             <Shield className="h-6 w-6 text-primary mt-1" />
             <div>
@@ -102,7 +103,7 @@ const TermsOfServicePage = () => {
         </Card>
 
         {/* Acceptable Use */}
-        <Card className="p-8 gradient-card shadow-card mb-8">
+        <Card className="p-8 shadow-card mb-8">
           <div className="flex items-start gap-4 mb-6">
             <AlertTriangle className="h-6 w-6 text-primary mt-1" />
             <div>
@@ -141,7 +142,7 @@ const TermsOfServicePage = () => {
         </Card>
 
         {/* Subscription and Payment */}
-        <Card className="p-8 gradient-card shadow-card mb-8">
+        <Card className="p-8 shadow-card mb-8">
           <div className="flex items-start gap-4 mb-6">
             <FileText className="h-6 w-6 text-primary mt-1" />
             <div>
@@ -186,7 +187,7 @@ const TermsOfServicePage = () => {
         </Card>
 
         {/* Intellectual Property */}
-        <Card className="p-8 gradient-card shadow-card mb-8">
+        <Card className="p-8 shadow-card mb-8">
           <div className="flex items-start gap-4 mb-6">
             <Scale className="h-6 w-6 text-primary mt-1" />
             <div>
@@ -225,7 +226,7 @@ const TermsOfServicePage = () => {
         </Card>
 
         {/* Privacy and Data */}
-        <Card className="p-8 gradient-card shadow-card mb-8">
+        <Card className="p-8 shadow-card mb-8">
           <div className="flex items-start gap-4 mb-6">
             <Shield className="h-6 w-6 text-primary mt-1" />
             <div>
@@ -248,7 +249,7 @@ const TermsOfServicePage = () => {
         </Card>
 
         {/* Service Availability */}
-        <Card className="p-8 gradient-card shadow-card mb-8">
+        <Card className="p-8 shadow-card mb-8">
           <div className="flex items-start gap-4 mb-6">
             <AlertTriangle className="h-6 w-6 text-primary mt-1" />
             <div>
@@ -281,7 +282,7 @@ const TermsOfServicePage = () => {
         </Card>
 
         {/* Limitation of Liability */}
-        <Card className="p-8 gradient-card shadow-card mb-8">
+        <Card className="p-8 shadow-card mb-8">
           <div className="flex items-start gap-4 mb-6">
             <AlertTriangle className="h-6 w-6 text-primary mt-1" />
             <div>
@@ -304,7 +305,7 @@ const TermsOfServicePage = () => {
         </Card>
 
         {/* Termination */}
-        <Card className="p-8 gradient-card shadow-card mb-8">
+        <Card className="p-8 shadow-card mb-8">
           <div className="flex items-start gap-4 mb-6">
             <FileText className="h-6 w-6 text-primary mt-1" />
             <div>
@@ -337,7 +338,7 @@ const TermsOfServicePage = () => {
         </Card>
 
         {/* Governing Law */}
-        <Card className="p-8 gradient-card shadow-card mb-8">
+        <Card className="p-8 shadow-card mb-8">
           <div className="flex items-start gap-4 mb-6">
             <Scale className="h-6 w-6 text-primary mt-1" />
             <div>
@@ -370,7 +371,7 @@ const TermsOfServicePage = () => {
         </Card>
 
         {/* Contact Information */}
-        <Card className="p-8 gradient-card shadow-card">
+        <Card className="p-8 shadow-card">
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Contact Information</h2>
             <p className="text-muted-foreground mb-6">

@@ -39,7 +39,7 @@ export const FAQ = () => {
         <div className="text-center mb-12 space-y-4">
           <h2 className="text-4xl lg:text-5xl font-bold">
             Frequently Asked{" "}
-            <span className="gradient-pulse bg-clip-text text-transparent">Questions</span>
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Questions</span>
           </h2>
           <p className="text-xl text-muted-foreground">
             Everything you need to know about LinkedInPulse
@@ -51,7 +51,7 @@ export const FAQ = () => {
             <AccordionItem 
               key={index} 
               value={`item-${index}`}
-              className="gradient-card border shadow-card rounded-xl px-6"
+              className="bg-card/50 backdrop-blur-sm border shadow-card rounded-xl px-6"
             >
               <AccordionTrigger className="text-left text-lg font-semibold hover:no-underline">
                 {faq.question}

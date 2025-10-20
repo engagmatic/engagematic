@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useDashboard } from "../hooks/useAnalytics";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { Navigation } from "../components/Navigation";
 
 const Dashboard = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -70,11 +71,13 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen gradient-hero">
+      <Navigation />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">
-            Welcome back to your{" "}
-            <span className="gradient-pulse bg-clip-text text-transparent">Pulse</span>
+            <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
+              Welcome back to your Dashboard
+            </span>
           </h1>
           <p className="text-muted-foreground">Track your LinkedIn growth and create engaging content</p>
         </div>

@@ -40,7 +40,7 @@ export const Testimonials = () => {
         <div className="text-center mb-16 space-y-4">
           <h2 className="text-4xl lg:text-5xl font-bold">
             Real Feedback from{" "}
-            <span className="gradient-pulse bg-clip-text text-transparent">Early Users</span>
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Early Users</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Honest reviews from professionals testing LinkedInPulse
@@ -51,7 +51,7 @@ export const Testimonials = () => {
           {testimonials.map((testimonial, index) => (
             <Card 
               key={index}
-              className="p-6 hover-lift gradient-card border-border/50 space-y-4"
+              className="p-6 hover-lift bg-card/50 backdrop-blur-sm border-border/50 space-y-4"
             >
               <p className="text-sm text-muted-foreground italic leading-relaxed">
                 "{testimonial.content}"

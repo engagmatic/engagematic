@@ -75,7 +75,7 @@ export const Pricing = () => {
         <div className="text-center mb-12 space-y-4">
           <h2 className="text-4xl lg:text-5xl font-bold">
             Choose Your{" "}
-            <span className="gradient-pulse bg-clip-text text-transparent">Pulse Plan</span>
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Pulse Plan</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Start free, scale when you're ready. No hidden fees, cancel anytime.
@@ -106,7 +106,7 @@ export const Pricing = () => {
 
         {/* Billing Period Toggle */}
         <div className="flex justify-center mb-12">
-          <div className="inline-flex items-center gap-3 p-1 gradient-card rounded-full border shadow-card">
+          <div className="inline-flex items-center gap-3 p-1 bg-card/50 backdrop-blur-sm rounded-full border shadow-card">
             <Button
               variant={billingPeriod === 'monthly' ? 'default' : 'ghost'}
               size="sm"
@@ -233,7 +233,7 @@ export const Pricing = () => {
 
         {/* Additional Information */}
         <div className="mt-16 max-w-3xl mx-auto">
-          <Card className="p-6 gradient-card border">
+          <Card className="p-6 bg-card/50 backdrop-blur-sm border">
             <h3 className="font-semibold text-lg mb-4">Plan Details</h3>
             <div className="space-y-2 text-sm text-muted-foreground">
               <p className="flex items-start gap-2">

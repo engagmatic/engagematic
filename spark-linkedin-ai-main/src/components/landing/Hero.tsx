@@ -7,26 +7,26 @@ import heroImage from "@/assets/hero-pulse.jpg";
 const features = [
   {
     icon: User,
-    title: "Persona Engine",
-    description: "AI learns your unique voice and writing style for authentic content",
+    title: "AI Persona Engine",
+    description: "Learns your unique voice & creates authentic content that sounds like YOU",
     color: "text-blue-500"
   },
   {
     icon: TrendingUp,
-    title: "Viral Hook Selector",
-    description: "Proven templates that stop the scroll and boost engagement",
+    title: "Viral Hook Generator",
+    description: "50+ proven hooks that stop the scroll & get 3x more engagement",
     color: "text-green-500"
   },
   {
     icon: MessageSquare,
-    title: "Smart Comment Generator",
-    description: "Genuine, human-like comments that build real connections",
+    title: "Smart Comment AI",
+    description: "Generate genuine comments that build real professional relationships",
     color: "text-purple-500"
   },
   {
     icon: Wand2,
-    title: "Pulse Analytics",
-    description: "Track performance and optimize your LinkedIn growth strategy",
+    title: "LinkedIn Analytics",
+    description: "Track what works & optimize your content for maximum reach",
     color: "text-pink-500"
   }
 ];
@@ -47,17 +47,14 @@ export const Hero = () => {
             </Badge>
             
             <h1 className="text-5xl lg:text-7xl font-bold leading-tight tracking-tight">
-              Stop Staring at a
-              Blank Screen.{" "}
-              <span className="gradient-pulse bg-clip-text text-transparent">
-                Start Growing
+              Tired of{" "}
+              <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
+                Writer's Block
               </span>{" "}
-              on LinkedIn.
-            </h1>
-            
+              on LinkedIn?
+            </h1>            
             <p className="text-xl lg:text-2xl text-muted-foreground max-w-2xl leading-relaxed">
-              LinkedInPulse turns your ideas into viral-worthy posts in seconds. 
-              <span className="text-foreground font-medium"> Authentic voice. Real engagement. Zero writer's block.</span>
+              <span className="text-foreground font-semibold">Stop staring at blank screens.</span> Our AI creates engaging LinkedIn posts in 30 seconds that actually get engagement.
             </p>
             
             <div className="flex flex-wrap gap-4">
@@ -93,19 +90,19 @@ export const Hero = () => {
               </div>
               <div className="h-10 w-px bg-border/50" />
               <div>
-                <div className="text-2xl lg:text-3xl font-bold text-foreground">50K+</div>
+                <div className="text-2xl lg:text-3xl font-bold text-foreground">5K+</div>
                 <div className="text-xs lg:text-sm text-muted-foreground">Posts Generated</div>
               </div>
               <div className="h-10 w-px bg-border/50" />
               <div>
-                <div className="text-2xl lg:text-3xl font-bold text-foreground">3x</div>
-                <div className="text-xs lg:text-sm text-muted-foreground">Faster Content</div>
+                <div className="text-2xl lg:text-3xl font-bold text-foreground">30s</div>
+                <div className="text-xs lg:text-sm text-muted-foreground">Avg. Generation Time</div>
               </div>
             </div>
           </div>
           
           <div className="relative animate-fade-in-up animation-delay-300">
-            <div className="absolute inset-0 gradient-pulse opacity-20 blur-3xl rounded-3xl" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 opacity-20 blur-3xl rounded-3xl" />
             <img 
               src={heroImage} 
               alt="LinkedInPulse Dashboard Preview" 
@@ -122,7 +119,7 @@ export const Hero = () => {
               return (
                 <Card 
                   key={index}
-                  className="p-6 gradient-card border hover-lift group cursor-pointer"
+                  className="p-6 border hover-lift group cursor-pointer bg-card/50 backdrop-blur-sm"
                 >
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ${feature.color}`}>
                     <Icon className="w-6 h-6" />

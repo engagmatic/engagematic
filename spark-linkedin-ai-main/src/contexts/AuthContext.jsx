@@ -1,5 +1,5 @@
-import { createContext, useContext, useReducer, useEffect } from 'react';
-import apiClient from '../services/api.js';
+import { createContext, useContext, useReducer, useEffect } from "react";
+import apiClient from "../services/api.js";
 
 const AuthContext = createContext();
 
@@ -13,13 +13,13 @@ const initialState = {
 
 function authReducer(state, action) {
   switch (action.type) {
-    case 'LOGIN_START':
+    case "LOGIN_START":
       return {
         ...state,
         isLoading: true,
         error: null,
       };
-    case 'LOGIN_SUCCESS':
+    case "LOGIN_SUCCESS":
       return {
         ...state,
         user: action.payload.user,
@@ -28,7 +28,7 @@ function authReducer(state, action) {
         isLoading: false,
         error: null,
       };
-    case 'LOGIN_FAILURE':
+    case "LOGIN_FAILURE":
       return {
         ...state,
         user: null,
@@ -37,7 +37,7 @@ function authReducer(state, action) {
         isLoading: false,
         error: action.payload,
       };
-    case 'LOGOUT':
+    case "LOGOUT":
       return {
         ...state,
         user: null,
@@ -46,17 +46,17 @@ function authReducer(state, action) {
         isLoading: false,
         error: null,
       };
-    case 'UPDATE_USER':
+    case "UPDATE_USER":
       return {
         ...state,
         user: { ...state.user, ...action.payload },
       };
-    case 'SET_LOADING':
+    case "SET_LOADING":
       return {
         ...state,
         isLoading: action.payload,
       };
-    case 'CLEAR_ERROR':
+    case "CLEAR_ERROR":
       return {
         ...state,
         error: null,
@@ -71,44 +71,45 @@ export function AuthProvider({ children }) {
 
   // Check for existing token on mount
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       apiClient.setToken(token);
       // Verify token and get user data
       checkAuthStatus();
     } else {
-      dispatch({ type: 'SET_LOADING', payload: false });
+      dispatch({ type: "SET_LOADING", payload: false });
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   const checkAuthStatus = async () => {
     try {
       const response = await apiClient.getCurrentUser();
       if (response.success) {
         dispatch({
-          type: 'LOGIN_SUCCESS',
+          type: "LOGIN_SUCCESS",
           payload: {
             user: response.data.user,
             token: apiClient.getToken(),
           },
         });
       } else {
-        throw new Error('Invalid token');
+        throw new Error("Invalid token");
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      console.error("Auth check failed:", error);
       apiClient.setToken(null);
-      dispatch({ type: 'LOGIN_FAILURE', payload: error.message });
+      dispatch({ type: "LOGIN_FAILURE", payload: error.message });
     }
   };
 
   const login = async (credentials) => {
-    dispatch({ type: 'LOGIN_START' });
+    dispatch({ type: "LOGIN_START" });
     try {
       const response = await apiClient.login(credentials);
       if (response.success) {
         dispatch({
-          type: 'LOGIN_SUCCESS',
+          type: "LOGIN_SUCCESS",
           payload: {
             user: response.data.user,
             token: response.data.token,
@@ -116,21 +117,21 @@ export function AuthProvider({ children }) {
         });
         return { success: true };
       } else {
-        throw new Error(response.message || 'Login failed');
+        throw new Error(response.message || "Login failed");
       }
     } catch (error) {
-      dispatch({ type: 'LOGIN_FAILURE', payload: error.message });
+      dispatch({ type: "LOGIN_FAILURE", payload: error.message });
       return { success: false, error: error.message };
     }
   };
 
   const register = async (userData) => {
-    dispatch({ type: 'LOGIN_START' });
+    dispatch({ type: "LOGIN_START" });
     try {
       const response = await apiClient.register(userData);
       if (response.success) {
         dispatch({
-          type: 'LOGIN_SUCCESS',
+          type: "LOGIN_SUCCESS",
           payload: {
             user: response.data.user,
             token: response.data.token,
@@ -138,10 +139,10 @@ export function AuthProvider({ children }) {
         });
         return { success: true };
       } else {
-        throw new Error(response.message || 'Registration failed');
+        throw new Error(response.message || "Registration failed");
       }
     } catch (error) {
-      dispatch({ type: 'LOGIN_FAILURE', payload: error.message });
+      dispatch({ type: "LOGIN_FAILURE", payload: error.message });
       return { success: false, error: error.message };
     }
   };
@@ -150,10 +151,10 @@ export function AuthProvider({ children }) {
     try {
       await apiClient.logout();
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
       apiClient.setToken(null);
-      dispatch({ type: 'LOGOUT' });
+      dispatch({ type: "LOGOUT" });
     }
   };
 
@@ -162,12 +163,12 @@ export function AuthProvider({ children }) {
       const response = await apiClient.updateProfile(profileData);
       if (response.success) {
         dispatch({
-          type: 'UPDATE_USER',
+          type: "UPDATE_USER",
           payload: response.data.user,
         });
         return { success: true };
       } else {
-        throw new Error(response.message || 'Profile update failed');
+        throw new Error(response.message || "Profile update failed");
       }
     } catch (error) {
       return { success: false, error: error.message };
@@ -175,7 +176,7 @@ export function AuthProvider({ children }) {
   };
 
   const clearError = () => {
-    dispatch({ type: 'CLEAR_ERROR' });
+    dispatch({ type: "CLEAR_ERROR" });
   };
 
   const value = {
@@ -188,17 +189,13 @@ export function AuthProvider({ children }) {
     checkAuthStatus,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

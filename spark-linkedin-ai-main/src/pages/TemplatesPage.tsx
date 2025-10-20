@@ -1,10 +1,68 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Copy, Download, Star, Users, Calendar, TrendingUp } from "lucide-react";
+import { FileText, Copy, Download, Star, Users, Calendar, TrendingUp, Check, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const TemplatesPage = () => {
+  const { toast } = useToast();
+  const [copiedTemplates, setCopiedTemplates] = useState(new Set());
+  const [previewTemplate, setPreviewTemplate] = useState(null);
+
+  const handleCopyTemplate = async (template, templateIndex, categoryIndex = null) => {
+    try {
+      await navigator.clipboard.writeText(template.preview);
+      const templateId = categoryIndex !== null ? `${categoryIndex}-${templateIndex}` : `popular-${templateIndex}`;
+      setCopiedTemplates(prev => new Set([...prev, templateId]));
+      
+      toast({
+        title: "Template copied! 📋",
+        description: "Template copied to clipboard. Ready to customize!",
+      });
+
+      // Reset copied state after 2 seconds
+      setTimeout(() => {
+        setCopiedTemplates(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(templateId);
+          return newSet;
+        });
+      }, 2000);
+    } catch (error) {
+      toast({
+        title: "Copy failed",
+        description: "Could not copy template to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePreviewTemplate = (template) => {
+    setPreviewTemplate(template);
+  };
+
+  const handleUseTemplate = (template) => {
+    // Navigate to post generator with template pre-filled
+    const templateData = {
+      title: template.title,
+      content: template.preview,
+      category: template.category
+    };
+    
+    // Store template data in localStorage for post generator to use
+    localStorage.setItem('selectedTemplate', JSON.stringify(templateData));
+    
+    toast({
+      title: "Template selected! 🎯",
+      description: "Redirecting to Post Generator with your template...",
+    });
+
+    // Navigate to post generator
+    window.location.href = '/post-generator';
+  };
+
   const templateCategories = [
     {
       title: "Personal Branding",
@@ -177,7 +235,9 @@ const TemplatesPage = () => {
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold mb-4">
             Content{" "}
-            <span className="gradient-pulse bg-clip-text text-transparent">Templates</span>
+            <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
+              Templates
+            </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Ready-to-use templates for creating engaging LinkedIn content. Choose from our curated collection of proven templates that drive engagement and build your professional presence.
@@ -209,12 +269,31 @@ const TemplatesPage = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 gap-2">
-                    <Copy className="h-3 w-3" />
+                  <Button 
+                    size="sm" 
+                    className="flex-1 gap-2"
+                    onClick={() => handleUseTemplate(template)}
+                  >
+                    <FileText className="h-3 w-3" />
                     Use Template
                   </Button>
-                  <Button variant="outline" size="sm">
-                    Preview
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleCopyTemplate(template, index)}
+                  >
+                    {copiedTemplates.has(`popular-${index}`) ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handlePreviewTemplate(template)}
+                  >
+                    <Eye className="h-3 w-3" />
                   </Button>
                 </div>
               </Card>
@@ -253,12 +332,31 @@ const TemplatesPage = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" className="flex-1 gap-2">
-                        <Copy className="h-3 w-3" />
+                      <Button 
+                        size="sm" 
+                        className="flex-1 gap-2"
+                        onClick={() => handleUseTemplate(template)}
+                      >
+                        <FileText className="h-3 w-3" />
                         Use Template
                       </Button>
-                      <Button variant="outline" size="sm">
-                        Preview
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleCopyTemplate(template, templateIndex, categoryIndex)}
+                      >
+                        {copiedTemplates.has(`${categoryIndex}-${templateIndex}`) ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <Copy className="h-3 w-3" />
+                        )}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handlePreviewTemplate(template)}
+                      >
+                        <Eye className="h-3 w-3" />
                       </Button>
                     </div>
                   </Card>
@@ -327,6 +425,51 @@ const TemplatesPage = () => {
             </div>
           </Card>
         </div>
+
+        {/* Preview Modal */}
+        {previewTemplate && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <Card className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold">{previewTemplate.title}</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPreviewTemplate(null)}
+                  >
+                    ✕
+                  </Button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Description:</h4>
+                    <p className="text-muted-foreground">{previewTemplate.description}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">Template Preview:</h4>
+                    <div className="bg-muted/50 p-4 rounded-lg">
+                      <p className="italic">"{previewTemplate.preview}"</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 pt-4">
+                    <Button onClick={() => handleUseTemplate(previewTemplate)} className="flex-1">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Use This Template
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleCopyTemplate(previewTemplate, 0)}
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

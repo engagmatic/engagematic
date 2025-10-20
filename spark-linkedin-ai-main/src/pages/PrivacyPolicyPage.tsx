@@ -15,7 +15,9 @@ const PrivacyPolicyPage = () => {
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold mb-4">
             Privacy{" "}
-            <span className="gradient-pulse bg-clip-text text-transparent">Policy</span>
+            <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
+              Policy
+            </span>
           </h1>
           <p className="text-xl text-muted-foreground">
             Your privacy is important to us. This policy explains how we collect, use, and protect your information.

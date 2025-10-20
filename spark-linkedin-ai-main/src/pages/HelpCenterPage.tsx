@@ -126,7 +126,9 @@ const HelpCenterPage = () => {
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold mb-4">
             Help{" "}
-            <span className="gradient-pulse bg-clip-text text-transparent">Center</span>
+            <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
+              Center
+            </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Everything you need to know to get the most out of LinkedInPulse. Find tutorials, guides, and answers to your questions.
