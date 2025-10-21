@@ -117,10 +117,10 @@ export const Hero = () => {
               <Button 
                 size="lg" 
                 variant="outline"
-                onClick={() => window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank')}
+                  onClick={() => navigate('/features')}
                 className="group text-sm sm:text-base h-12 sm:h-14 px-6 sm:px-8 border-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 w-full sm:w-auto"
               >
-                Watch Demo
+                Learn More
                 <Play className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
               </Button>
             </div>
