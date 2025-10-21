@@ -22,6 +22,7 @@ import ContactPage from "./pages/ContactPage";
 import HelpCenterPage from "./pages/HelpCenterPage";
 import TemplatesPage from "./pages/TemplatesPage";
 import ProfileAnalyzer from "./pages/ProfileAnalyzer";
+import { AdminDashboard } from "./pages/admin/AdminDashboard";
 // Roadmap and Changelog removed
 import NotFound from "./pages/NotFound";
 
@@ -39,6 +40,9 @@ const App = () => (
                   {/* Public auth pages without layout */}
                   <Route path="/auth/login" element={<Login />} />
                   <Route path="/auth/register" element={<Register />} />
+                  
+                  {/* Admin-only route (no layout) */}
+                  <Route path="/admin" element={<AdminDashboard />} />
 
                   {/* All other pages share header/footer */}
                   <Route element={<AppLayout />}>

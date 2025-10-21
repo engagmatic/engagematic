@@ -15,6 +15,7 @@ import subscriptionRoutes from "./routes/subscription.js";
 import waitlistRoutes from "./routes/waitlist.js";
 import profileAnalyzerRoutes from "./routes/profileAnalyzer.js";
 import profileInsightsRoutes from "./routes/profileInsights.js";
+import adminRoutes from "./routes/admin.js";
 
 const app = express();
 
@@ -66,6 +67,7 @@ app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/waitlist", waitlistRoutes);
 app.use("/api/profile-analyzer", profileAnalyzerRoutes);
 app.use("/api/profile-analyzer", profileInsightsRoutes); // Merged route for insights
+app.use("/api/admin", adminRoutes); // Admin-only routes
 
 // 404 handler
 app.use("*", (req, res) => {
