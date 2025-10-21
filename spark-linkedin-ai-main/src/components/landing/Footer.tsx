@@ -1,8 +1,10 @@
 import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export const Footer = () => {
+  const navigate = useNavigate();
+
   return (
     <>
       {/* Sticky CTA Banner */}
@@ -12,7 +14,12 @@ export const Footer = () => {
             <div className="font-bold text-sm sm:text-base">Ready to boost your LinkedIn pulse?</div>
             <div className="text-xs sm:text-sm opacity-90">Join 1000+ creators growing their presence</div>
           </div>
-          <Button size="sm" variant="secondary" className="shadow-elevated w-full sm:w-auto whitespace-nowrap">
+          <Button 
+            size="sm" 
+            variant="secondary" 
+            onClick={() => navigate('/auth/register')}
+            className="shadow-elevated w-full sm:w-auto whitespace-nowrap"
+          >
             Get The Pulse!
           </Button>
         </div>

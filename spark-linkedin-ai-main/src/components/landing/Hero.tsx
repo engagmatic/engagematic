@@ -3,8 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Play, Sparkles, Star } from "lucide-react";
 import heroImage from "@/assets/hero-pulse.jpg";
+import { useNavigate } from "react-router-dom";
 
 export const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative min-h-[90vh] flex items-center gradient-hero overflow-hidden">
       {/* Subtle integration tile grid background (inspired style) */}
@@ -92,11 +95,20 @@ export const Hero = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center px-4">
-              <Button size="lg" className="group shadow-pulse hover-pulse text-sm sm:text-base h-12 sm:h-14 px-6 sm:px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full sm:w-auto">
+              <Button 
+                size="lg" 
+                onClick={() => navigate('/auth/register')}
+                className="group shadow-pulse hover-pulse text-sm sm:text-base h-12 sm:h-14 px-6 sm:px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full sm:w-auto"
+              >
                 Start Free Trial
                 <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5 transition-transform group-hover:translate-x-1" />
               </Button>
-              <Button size="lg" variant="outline" className="group text-sm sm:text-base h-12 sm:h-14 px-6 sm:px-8 border-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 w-full sm:w-auto">
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={() => window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank')}
+                className="group text-sm sm:text-base h-12 sm:h-14 px-6 sm:px-8 border-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 w-full sm:w-auto"
+              >
                 Watch Demo
                 <Play className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
               </Button>
