@@ -15,6 +15,10 @@ import apiClient from "@/services/api";
 import { Navigation } from "@/components/Navigation";
 import { SEO, pageSEO } from "@/components/SEO";
 
+interface GeneratedComment {
+  text: string;
+}
+
 const CommentGenerator = () => {
   const [postContent, setPostContent] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
@@ -117,8 +121,8 @@ const CommentGenerator = () => {
 
       if (result.success) {
         // Normalize to an array of up to 3 comments
-        let comments = [] as any[];
-        const raw = (result.data && (result.data.comments || result.data.content)) as any;
+        let comments: GeneratedComment[] = [];
+        const raw = (result.data && (result.data.comments || result.data.content)) as unknown;
         if (Array.isArray(raw)) {
           comments = raw;
         } else if (typeof raw === 'string') {
@@ -128,11 +132,11 @@ const CommentGenerator = () => {
           } catch {
             // Split by double newline or newline as fallback
             const splits = raw.split(/\n\n+|\n+/).filter(Boolean).map(t => ({ text: t }));
-            comments = splits.length ? splits : [raw];
+            comments = splits.length ? splits : [{ text: raw }];
           }
         }
         // Ensure objects with text field
-        comments = comments.map((c) => (typeof c === 'string' ? { text: c } : c));
+        comments = comments.map((c) => (typeof c === 'string' ? { text: c } : c)) as GeneratedComment[];
         setGeneratedComments(comments.slice(0, 3));
 
         toast({
