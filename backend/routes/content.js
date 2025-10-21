@@ -13,7 +13,6 @@ import {
 } from "../middleware/validation.js";
 import { body } from "express-validator";
 import linkedinProfileService from "../services/linkedinProfileService.js";
-import subscriptionService from "../services/subscriptionService.js";
 import profileInsightsService from "../services/profileInsightsService.js";
 import axios from "axios";
 import * as cheerio from "cheerio";
