@@ -39,11 +39,11 @@ class GoogleAIService {
 
       const result = await this.model.generateContent({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024,
         },
       });
 
@@ -56,7 +56,7 @@ class GoogleAIService {
         "✅ Post generated successfully, length:",
         generatedText.length
       );
-
+      
       return {
         content: generatedText,
         engagementScore,
@@ -85,10 +85,10 @@ class GoogleAIService {
 
       const result = await this.model.generateContent({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.8,
-          topK: 40,
-          topP: 0.95,
+          generationConfig: {
+            temperature: 0.8,
+            topK: 40,
+            topP: 0.95,
           maxOutputTokens: 1024,
         },
       });
@@ -101,7 +101,7 @@ class GoogleAIService {
 
       // Parse multiple comments from the response
       const comments = this.parseGeneratedComments(generatedText);
-
+      
       return {
         content: comments, // Return array of comments
         comments: comments, // Also include for compatibility
@@ -428,7 +428,7 @@ What's the most valuable lesson you've learned in your ${industry.toLowerCase()}
 
   calculateEngagementScore(content) {
     let score = 50; // Base score
-
+    
     // Check for engagement elements
     if (content.includes("?")) score += 10; // Questions
     if (content.includes("!")) score += 5; // Excitement
@@ -436,11 +436,11 @@ What's the most valuable lesson you've learned in your ${industry.toLowerCase()}
     if (content.match(/\d+/)) score += 5; // Numbers/statistics
     if (content.includes("story") || content.includes("experience"))
       score += 10; // Personal elements
-
+    
     // Length bonus (optimal length)
     const wordCount = content.split(" ").length;
     if (wordCount >= 150 && wordCount <= 300) score += 10;
-
+    
     // Ensure score is within bounds
     return Math.min(Math.max(score, 0), 100);
   }

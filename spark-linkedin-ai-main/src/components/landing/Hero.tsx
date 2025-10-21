@@ -42,7 +42,7 @@ export const Hero = () => {
                 Content
               </span>{" "}
               Again.
-            </h1>            
+            </h1>
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl leading-relaxed mx-auto px-4">
               <span className="text-foreground font-semibold">AI that writes in your voice.</span> Show up. Stand out.
             </p>
@@ -117,7 +117,10 @@ export const Hero = () => {
               <Button 
                 size="lg" 
                 variant="outline"
-                  onClick={() => navigate('/features')}
+                onClick={() => {
+                  const featuresSection = document.getElementById('features');
+                  featuresSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
                 className="group text-sm sm:text-base h-12 sm:h-14 px-6 sm:px-8 border-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 w-full sm:w-auto"
               >
                 Learn More
@@ -163,7 +166,7 @@ export const Hero = () => {
                 <div className="h-5 w-16 sm:h-6 sm:w-20 rounded-md bg-muted" />
               </div>
             </div>
-
+            
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 lg:gap-8 pt-6 border-t border-border/50 px-4">
               <div className="text-center">
                 <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">500+</div>
@@ -181,7 +184,7 @@ export const Hero = () => {
               </div>
             </div>
           </div>
-
+          
         {/* Removed older duplicate section; cards are now integrated near headline */}
 
         {/* Removed legacy features grid (replaced by new premium cards above) */}

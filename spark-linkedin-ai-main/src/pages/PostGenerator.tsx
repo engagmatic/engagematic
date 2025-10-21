@@ -48,7 +48,7 @@ const PostGenerator = () => {
   // SIMPLIFIED: Just use sample personas directly, no complex creation logic
   const { personas, samplePersonas, isLoading: personasLoading } = usePersonas();
   const [selectedPersona, setSelectedPersona] = useState(null);
-
+  
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -106,7 +106,7 @@ const PostGenerator = () => {
         }
       } finally {
         if (isMounted) {
-          setIsLoadingHooks(false);
+        setIsLoadingHooks(false);
         }
       }
     };
@@ -186,7 +186,7 @@ const PostGenerator = () => {
       });
       return;
     }
-    
+
     if (!selectedHook) {
       toast({
         title: "Hook required",
@@ -195,7 +195,7 @@ const PostGenerator = () => {
       });
       return;
     }
-    
+
     if (!selectedPersona) {
       toast({
         title: "Persona required",
@@ -293,16 +293,16 @@ const PostGenerator = () => {
             {/* Topic Input */}
             <Card className="shadow-lg">
               <div className="p-6">
-                <label className="block text-sm font-semibold mb-2">
+              <label className="block text-sm font-semibold mb-2">
                   What do you want to post about? *
-                </label>
-                <Textarea
+              </label>
+              <Textarea
                   placeholder="E.g., My journey from junior developer to tech lead, lessons from building my startup, productivity tips for remote workers..."
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
                   className="min-h-[120px] resize-none"
-                />
-              </div>
+              />
+            </div>
             </Card>
 
             {/* Hook Selection with Premium Trending Generator */}
@@ -312,7 +312,7 @@ const PostGenerator = () => {
                   <label className="text-sm font-semibold flex items-center gap-2">
                     Choose Your Viral Hook *
                     {isLoadingHooks && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-                  </label>
+              </label>
                   <div className="flex items-center gap-2">
                     {subscription?.plan === 'trial' && (
                       <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border bg-muted">
@@ -428,9 +428,9 @@ const PostGenerator = () => {
                   {subscription?.plan === 'trial' && (
                     <div className="mt-3 text-xs text-blue-900 bg-blue-100 border border-blue-200 rounded-md p-2 flex items-center gap-2">
                       <Lock className="h-3 w-3" /> Premium feature — upgrade to unlock unlimited insights
-                    </div>
-                  )}
                 </div>
+              )}
+            </div>
               </Card>
             )}
 
@@ -538,7 +538,7 @@ const PostGenerator = () => {
                     )}
                   </div>
                 )}
-              </div>
+            </div>
             </Card>
 
             {/* Generate Button */}
@@ -607,8 +607,8 @@ const PostGenerator = () => {
                     <p className="text-sm">Your generated post will appear here</p>
                   </div>
                 )}
-              </div>
-            </Card>
+          </div>
+        </Card>
 
             {/* Creative Suggestions - stabilized responsive grid */}
             {creativeSuggestions.length > 0 && (
