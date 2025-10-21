@@ -33,14 +33,14 @@ export const Hero = () => {
               7-Day Free Trial • No Credit Card Required
             </Badge>
             
-            <h1 className="text-5xl lg:text-7xl font-bold leading-tight tracking-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold leading-tight tracking-tight px-4">
               Never Run Out of{" "}
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Content
               </span>{" "}
               Again.
             </h1>            
-            <p className="text-xl lg:text-2xl text-muted-foreground max-w-2xl leading-relaxed mx-auto">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl leading-relaxed mx-auto px-4">
               <span className="text-foreground font-semibold">AI that writes in your voice.</span> Show up. Stand out.
             </p>
 
@@ -91,14 +91,14 @@ export const Hero = () => {
               </div>
             </div>
             
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Button size="lg" className="group shadow-pulse hover-pulse text-base h-14 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center px-4">
+              <Button size="lg" className="group shadow-pulse hover-pulse text-sm sm:text-base h-12 sm:h-14 px-6 sm:px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full sm:w-auto">
                 Start Free Trial
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5 transition-transform group-hover:translate-x-1" />
               </Button>
-              <Button size="lg" variant="outline" className="group text-base h-14 px-8 border-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50">
+              <Button size="lg" variant="outline" className="group text-sm sm:text-base h-12 sm:h-14 px-6 sm:px-8 border-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 w-full sm:w-auto">
                 Watch Demo
-                <Play className="ml-2 h-5 w-5" />
+                <Play className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
               </Button>
             </div>
 
@@ -114,46 +114,46 @@ export const Hero = () => {
               <span>Rated 5/5 by 500+ creators</span>
             </div>
 
-            <div className="flex flex-col gap-3 pt-2">
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+            <div className="flex flex-col gap-3 pt-2 px-4">
+              <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                 </svg>
                 <span className="font-semibold text-green-600">Free 7-day trial • No credit card required</span>
               </div>
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                 </svg>
-                Up to 300 posts & comments/month • Cancel anytime
+                <span>Up to 300 posts & comments/month • Cancel anytime</span>
               </div>
             </div>
             
             {/* Trust bar */}
-            <div className="pt-6">
+            <div className="pt-6 px-4">
               <div className="text-xs text-muted-foreground mb-3">Trusted by creators and operators at</div>
-              <div className="flex flex-wrap items-center gap-4 opacity-80">
-                <div className="h-6 w-20 rounded-md bg-muted" />
-                <div className="h-6 w-16 rounded-md bg-muted" />
-                <div className="h-6 w-24 rounded-md bg-muted" />
-                <div className="h-6 w-16 rounded-md bg-muted" />
-                <div className="h-6 w-20 rounded-md bg-muted" />
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 opacity-80">
+                <div className="h-5 w-16 sm:h-6 sm:w-20 rounded-md bg-muted" />
+                <div className="h-5 w-14 sm:h-6 sm:w-16 rounded-md bg-muted" />
+                <div className="h-5 w-20 sm:h-6 sm:w-24 rounded-md bg-muted" />
+                <div className="h-5 w-14 sm:h-6 sm:w-16 rounded-md bg-muted" />
+                <div className="h-5 w-16 sm:h-6 sm:w-20 rounded-md bg-muted" />
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-6 lg:gap-8 pt-6 border-t border-border/50">
-              <div>
-                <div className="text-2xl lg:text-3xl font-bold text-foreground">500+</div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 lg:gap-8 pt-6 border-t border-border/50 px-4">
+              <div className="text-center">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">500+</div>
                 <div className="text-xs lg:text-sm text-muted-foreground">Beta Users</div>
               </div>
-              <div className="h-10 w-px bg-border/50" />
-              <div>
-                <div className="text-2xl lg:text-3xl font-bold text-foreground">5K+</div>
+              <div className="h-8 sm:h-10 w-px bg-border/50 hidden sm:block" />
+              <div className="text-center">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">5K+</div>
                 <div className="text-xs lg:text-sm text-muted-foreground">Posts Generated</div>
               </div>
-              <div className="h-10 w-px bg-border/50" />
-              <div>
-                <div className="text-2xl lg:text-3xl font-bold text-foreground">30s</div>
+              <div className="h-8 sm:h-10 w-px bg-border/50 hidden sm:block" />
+              <div className="text-center">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">30s</div>
                 <div className="text-xs lg:text-sm text-muted-foreground">Avg. Generation Time</div>
               </div>
             </div>

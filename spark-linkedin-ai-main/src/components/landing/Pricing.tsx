@@ -3,6 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Globe, IndianRupee, Zap, Rocket } from "lucide-react";
 import { useState } from "react";
+import { WaitlistModal } from "@/components/WaitlistModal";
+import { useNavigate } from "react-router-dom";
 
 type Currency = 'INR' | 'USD';
 type BillingPeriod = 'monthly' | 'yearly';
@@ -59,6 +61,9 @@ const plans = [
 export const Pricing = () => {
   const [currency, setCurrency] = useState<Currency>('USD');
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly');
+  const [waitlistModalOpen, setWaitlistModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string>("");
+  const navigate = useNavigate();
 
   const getPrice = (plan: typeof plans[0]) => {
     const price = billingPeriod === 'monthly' 
@@ -69,15 +74,37 @@ export const Pricing = () => {
 
   const getCurrencySymbol = () => currency === 'INR' ? '₹' : '$';
 
+  const handlePlanClick = (plan: typeof plans[0]) => {
+    // Free Trial (Starter) - redirect to registration
+    if (plan.name === "Starter" && !plan.comingSoon) {
+      navigate("/auth/register");
+      return;
+    }
+
+    // Paid plans - show waitlist modal
+    if (plan.comingSoon) {
+      setSelectedPlan(plan.name);
+      setWaitlistModalOpen(true);
+    }
+  };
+
   return (
-    <section id="pricing" className="py-24 gradient-hero">
+    <>
+      <WaitlistModal
+        open={waitlistModalOpen}
+        onClose={() => setWaitlistModalOpen(false)}
+        plan={selectedPlan}
+        billingPeriod={billingPeriod}
+        currency={currency}
+      />
+    <section id="pricing" className="py-12 sm:py-16 md:py-24 gradient-hero">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12 space-y-4">
-          <h2 className="text-4xl lg:text-5xl font-bold">
+        <div className="text-center mb-8 sm:mb-12 space-y-3 sm:space-y-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold px-4">
             Choose Your{" "}
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Pulse Plan</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
             Start free, scale when you're ready. No hidden fees, cancel anytime.
           </p>
         </div>
@@ -131,7 +158,7 @@ export const Pricing = () => {
           </div>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
           {plans.map((plan, index) => {
             const PlanIcon = plan.icon;
             return (
@@ -210,7 +237,7 @@ export const Pricing = () => {
                         : ''
                     }`}
                     variant={plan.popular ? 'default' : 'outline'}
-                    disabled={plan.comingSoon}
+                    onClick={() => handlePlanClick(plan)}
                   >
                     {plan.cta}
                   </Button>
@@ -233,5 +260,6 @@ export const Pricing = () => {
 
       </div>
     </section>
+    </>
   );
 };

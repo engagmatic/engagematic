@@ -279,6 +279,18 @@ class ApiClient {
   async getInvoices() {
     return this.request("/subscription/invoices");
   }
+
+  // Waitlist methods
+  async joinWaitlist(waitlistData) {
+    return this.request("/waitlist/join", {
+      method: "POST",
+      body: JSON.stringify(waitlistData),
+    });
+  }
+
+  async getWaitlistStats() {
+    return this.request("/waitlist/stats");
+  }
 }
 
 export default new ApiClient();

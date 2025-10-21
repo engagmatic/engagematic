@@ -6,22 +6,22 @@ export const Footer = () => {
   return (
     <>
       {/* Sticky CTA Banner */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 gradient-pulse p-4 shadow-elevated">
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="text-white">
-            <div className="font-bold">Ready to boost your LinkedIn pulse?</div>
-            <div className="text-sm opacity-90">Join 1000+ creators growing their presence</div>
+      <div className="fixed bottom-0 left-0 right-0 z-40 gradient-pulse p-3 sm:p-4 shadow-elevated">
+        <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="text-white text-center sm:text-left">
+            <div className="font-bold text-sm sm:text-base">Ready to boost your LinkedIn pulse?</div>
+            <div className="text-xs sm:text-sm opacity-90">Join 1000+ creators growing their presence</div>
           </div>
-          <Button size="lg" variant="secondary" className="shadow-elevated">
+          <Button size="sm" variant="secondary" className="shadow-elevated w-full sm:w-auto whitespace-nowrap">
             Get The Pulse!
           </Button>
         </div>
       </div>
       
       {/* Main Footer */}
-      <footer className="bg-secondary/30 border-t pb-24">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
+      <footer className="bg-secondary/30 border-t pb-20 sm:pb-24">
+        <div className="container mx-auto px-4 py-8 sm:py-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-xl gradient-pulse flex items-center justify-center shadow-pulse">
