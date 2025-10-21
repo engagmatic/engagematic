@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Activity, User, LogOut, Home, MessageSquare, FileText, BarChart3, Settings } from "lucide-react";
+import { Activity, User, LogOut, Home, MessageSquare, FileText, BarChart3, Settings, Target } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
@@ -21,6 +21,7 @@ export const Navigation = () => {
     { path: '/dashboard', label: 'Dashboard', icon: Home },
     { path: '/post-generator', label: 'Post Generator', icon: FileText },
     { path: '/comment-generator', label: 'Comment Generator', icon: MessageSquare },
+    { path: '/profile-analyzer', label: 'Profile Analyzer', icon: Target },
     { path: '/templates', label: 'Templates', icon: FileText },
   ];
 

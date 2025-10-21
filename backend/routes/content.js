@@ -14,6 +14,7 @@ import {
 import { body } from "express-validator";
 import linkedinProfileService from "../services/linkedinProfileService.js";
 import subscriptionService from "../services/subscriptionService.js";
+import profileInsightsService from "../services/profileInsightsService.js";
 import axios from "axios";
 import * as cheerio from "cheerio";
 
@@ -83,11 +84,17 @@ router.post(
         personaTone: persona.tone,
       });
 
+      // Get profile insights for enhanced personalization
+      const profileInsights = await profileInsightsService.buildEnhancedContext(
+        userId
+      );
+
       const aiResponse = await googleAIService.generatePost(
         topic,
         hook.text,
         persona,
-        req.body.linkedinInsights || null
+        req.body.linkedinInsights || null,
+        profileInsights
       );
 
       console.log("✅ AI response received:", {
@@ -203,9 +210,15 @@ router.post(
         personaTone: persona.tone,
       });
 
+      // Get profile insights for enhanced personalization
+      const profileInsights = await profileInsightsService.buildEnhancedContext(
+        userId
+      );
+
       const aiResponse = await googleAIService.generateComment(
         postContent,
-        persona
+        persona,
+        profileInsights
       );
 
       console.log("✅ AI comment response received:", {

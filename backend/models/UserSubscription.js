@@ -92,6 +92,10 @@ const userSubscriptionSchema = new mongoose.Schema(
         type: Boolean,
         default: true,
       },
+      profileAnalyses: {
+        type: Number,
+        default: 1, // Trial: 1 analysis only
+      },
       prioritySupport: {
         type: Boolean,
         default: false,
@@ -141,6 +145,10 @@ const userSubscriptionSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
+      profileAnalyses: {
+        type: Number,
+        default: 0,
+      },
     },
 
     // Metadata
@@ -168,6 +176,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.commentsPerMonth = 50;
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
+        this.limits.profileAnalyses = 1; // Only 1 analysis for trial
         this.limits.prioritySupport = false;
         this.billing.amount = 0;
         break;
@@ -177,6 +186,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.commentsPerMonth = 100;
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
+        this.limits.profileAnalyses = 5; // 5 per month for starter
         this.limits.prioritySupport = false;
         this.billing.amount = 9;
         break;
@@ -186,6 +196,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.commentsPerMonth = 300;
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
+        this.limits.profileAnalyses = 20; // 20 per month for pro
         this.limits.prioritySupport = true;
         this.billing.amount = 18;
         break;
@@ -195,6 +206,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.commentsPerMonth = 1000;
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
+        this.limits.profileAnalyses = -1; // Unlimited
         this.limits.prioritySupport = true;
         this.billing.amount = 49;
         break;
@@ -252,6 +264,31 @@ userSubscriptionSchema.methods.canPerformAction = function (action) {
         };
       }
       break;
+
+    case "analyze_profile":
+      // Check if feature is available
+      if (this.limits.profileAnalyses === 0) {
+        return {
+          allowed: false,
+          reason:
+            "Profile analysis not available in your plan. Please upgrade.",
+          code: "FEATURE_NOT_AVAILABLE",
+        };
+      }
+      // Check usage limit (unlimited = -1)
+      if (
+        this.limits.profileAnalyses !== -1 &&
+        this.usage.profileAnalyses >= this.limits.profileAnalyses
+      ) {
+        return {
+          allowed: false,
+          reason: `Profile analysis limit (${this.limits.profileAnalyses}) reached. Upgrade for more analyses.`,
+          code: "ANALYSIS_LIMIT_EXCEEDED",
+          current: this.usage.profileAnalyses,
+          limit: this.limits.profileAnalyses,
+        };
+      }
+      break;
   }
 
   return { allowed: true };
@@ -268,6 +305,10 @@ userSubscriptionSchema.methods.recordUsage = function (action) {
     case "generate_comment":
       this.usage.commentsGenerated += 1;
       this.tokens.used += 1;
+      break;
+
+    case "analyze_profile":
+      this.usage.profileAnalyses += 1;
       break;
 
     case "use_template":

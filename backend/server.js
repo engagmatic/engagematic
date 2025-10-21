@@ -13,6 +13,8 @@ import hookRoutes from "./routes/hooks.js";
 import analyticsRoutes from "./routes/analytics.js";
 import subscriptionRoutes from "./routes/subscription.js";
 import waitlistRoutes from "./routes/waitlist.js";
+import profileAnalyzerRoutes from "./routes/profileAnalyzer.js";
+import profileInsightsRoutes from "./routes/profileInsights.js";
 
 const app = express();
 
@@ -62,6 +64,8 @@ app.use("/api/hooks", hookRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/waitlist", waitlistRoutes);
+app.use("/api/profile-analyzer", profileAnalyzerRoutes);
+app.use("/api/profile-analyzer", profileInsightsRoutes); // Merged route for insights
 
 // 404 handler
 app.use("*", (req, res) => {

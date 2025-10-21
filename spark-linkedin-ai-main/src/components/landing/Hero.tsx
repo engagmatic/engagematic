@@ -49,47 +49,46 @@ export const Hero = () => {
 
             {/* Feature cards around the headline (premium UI) */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-5xl mx-auto">
-              {/* Hooks */}
+              {/* AI Persona */}
               <div className="rounded-2xl border bg-white shadow-card p-6 hover-lift text-left">
-                <div className="text-xs font-semibold text-muted-foreground mb-2">Hooks</div>
+                <div className="text-xs font-semibold text-muted-foreground mb-2">Persona</div>
                 <div className="flex items-center gap-2 mb-2">
-                  <img src="https://img.icons8.com/fluency/48/sparkling.png" alt="Hooks" className="h-5 w-5" />
-                  <h4 className="text-base font-semibold">50+ viral openings</h4>
+                  <img src="https://img.icons8.com/fluency/48/user.png" alt="Persona" className="h-5 w-5" />
+                  <h4 className="text-base font-semibold">Your authentic voice</h4>
                 </div>
-                <p className="text-sm text-muted-foreground">Proven patterns that stop the scroll and start conversations.</p>
+                <p className="text-sm text-muted-foreground">AI learns your unique style and creates content that sounds like YOU, not a robot.</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Story</span>
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Question</span>
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Insight</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Authentic</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Voice AI</span>
                 </div>
               </div>
 
-              {/* Story */}
+              {/* Profile Analyzer */}
               <div className="rounded-2xl border bg-white shadow-card p-6 hover-lift text-left">
-                <div className="text-xs font-semibold text-muted-foreground mb-2">Story</div>
+                <div className="text-xs font-semibold text-muted-foreground mb-2">Analyzer</div>
                 <div className="flex items-center gap-2 mb-2">
-                  <img src="https://img.icons8.com/fluency/48/speech-bubble.png" alt="Story" className="h-5 w-5" />
-                  <h4 className="text-base font-semibold">Your voice</h4>
+                  <img src="https://img.icons8.com/fluency/48/target.png" alt="Analyzer" className="h-5 w-5" />
+                  <h4 className="text-base font-semibold">Profile optimization</h4>
                 </div>
-                <p className="text-sm text-muted-foreground">Question, insight, persona. Your authentic voice baked into every post.</p>
+                <p className="text-sm text-muted-foreground">Get AI-powered score & actionable tips to boost your LinkedIn visibility.</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Persona</span>
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Insight</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Score</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Tips</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Insights</span>
                 </div>
               </div>
 
-              {/* Professional */}
+              {/* Smart Comments */}
               <div className="rounded-2xl border bg-white shadow-card p-6 hover-lift text-left">
-                <div className="text-xs font-semibold text-muted-foreground mb-2">Professional</div>
+                <div className="text-xs font-semibold text-muted-foreground mb-2">Engagement</div>
                 <div className="flex items-center gap-2 mb-2">
-                  <img src="https://img.icons8.com/color/48/combo-chart--v1.png" alt="Professional" className="h-5 w-5" />
-                  <h4 className="text-base font-semibold">Optimized to perform</h4>
+                  <img src="https://img.icons8.com/fluency/48/speech-bubble.png" alt="Comments" className="h-5 w-5" />
+                  <h4 className="text-base font-semibold">Smart comments</h4>
                 </div>
-                <p className="text-sm text-muted-foreground">Uses your LinkedIn profile insights, best posting times, and top tags.</p>
+                <p className="text-sm text-muted-foreground">Generate genuine comments that build real relationships and conversations.</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Best time</span>
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Top tags</span>
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Tone fit</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Genuine</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Engage</span>
                 </div>
               </div>
             </div>

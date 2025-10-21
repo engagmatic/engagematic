@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Sparkles, MessageSquare, TrendingUp, Zap, Users } from "lucide-react";
+import { Sparkles, MessageSquare, TrendingUp, Zap, Users, Target } from "lucide-react";
 
 const features = [
   {
@@ -8,9 +8,9 @@ const features = [
     description: "Learns your unique voice & creates authentic content that sounds like YOU - not robotic AI."
   },
   {
-    icon: Zap,
-    title: "50+ Viral Hooks",
-    description: "Proven hooks that stop the scroll & get 3x more engagement than generic posts."
+    icon: Target,
+    title: "Profile Analyzer",
+    description: "Get AI-powered profile score & optimization tips to boost your LinkedIn visibility & engagement."
   },
   {
     icon: MessageSquare,

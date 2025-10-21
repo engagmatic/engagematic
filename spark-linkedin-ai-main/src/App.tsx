@@ -21,6 +21,7 @@ import FAQPage from "./pages/FAQPage";
 import ContactPage from "./pages/ContactPage";
 import HelpCenterPage from "./pages/HelpCenterPage";
 import TemplatesPage from "./pages/TemplatesPage";
+import ProfileAnalyzer from "./pages/ProfileAnalyzer";
 // Roadmap and Changelog removed
 import NotFound from "./pages/NotFound";
 
@@ -56,6 +57,7 @@ const App = () => (
                     <Route path="/contact" element={<ContactPage />} />
                     <Route path="/resources" element={<HelpCenterPage />} />
                     <Route path="/templates" element={<TemplatesPage />} />
+                    <Route path="/profile-analyzer" element={<ProfileAnalyzer />} />
                   </Route>
 
                   {/* Catch-all */}

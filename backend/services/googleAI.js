@@ -10,7 +10,13 @@ class GoogleAIService {
     });
   }
 
-  async generatePost(topic, hook, persona, linkedinInsights = null) {
+  async generatePost(
+    topic,
+    hook,
+    persona,
+    linkedinInsights = null,
+    profileInsights = null
+  ) {
     try {
       console.log("🤖 Generating post with Google AI...");
       console.log("Topic:", topic);
@@ -65,13 +71,17 @@ class GoogleAIService {
     }
   }
 
-  async generateComment(postContent, persona) {
+  async generateComment(postContent, persona, profileInsights = null) {
     try {
       console.log("💬 Generating comments with Google AI...");
       console.log("Post content:", postContent.substring(0, 100) + "...");
       console.log("Persona:", persona.name);
 
-      const prompt = this.buildCommentPrompt(postContent, persona);
+      const prompt = this.buildCommentPrompt(
+        postContent,
+        persona,
+        profileInsights
+      );
 
       const result = await this.model.generateContent({
         contents: [{ parts: [{ text: prompt }] }],
@@ -103,7 +113,13 @@ class GoogleAIService {
     }
   }
 
-  buildPostPrompt(topic, hook, persona, linkedinInsights = null) {
+  buildPostPrompt(
+    topic,
+    hook,
+    persona,
+    linkedinInsights = null,
+    profileInsights = null
+  ) {
     let basePrompt = `You are a LinkedIn content creator with the following persona:
     
 Name: ${persona.name}
@@ -129,6 +145,11 @@ LinkedIn Profile Insights:
 - Industry Hashtags: ${linkedinInsights.hashtagSuggestions?.industry?.join(
         ", "
       )}`;
+    }
+
+    // Add profile analyzer insights if available (from Profile Analyzer tool)
+    if (profileInsights) {
+      basePrompt += `\n\n${profileInsights}`;
     }
 
     basePrompt += `
@@ -168,8 +189,8 @@ Generate only the post content, no additional explanations.`;
     return basePrompt;
   }
 
-  buildCommentPrompt(postContent, persona) {
-    return `You are commenting on this LinkedIn post as someone with the following persona:
+  buildCommentPrompt(postContent, persona, profileInsights = null) {
+    let prompt = `You are commenting on this LinkedIn post as someone with the following persona:
     
 Name: ${persona.name}
 Industry: ${persona.industry}
@@ -178,6 +199,7 @@ Tone: ${persona.tone}
 Writing Style: ${persona.writingStyle}
 Description: ${persona.description}
 
+${profileInsights ? `\n${profileInsights}\n` : ""}
 Post content: "${postContent}"
 
 Generate 3 different genuine, thoughtful comments that:
@@ -213,6 +235,8 @@ Engagement score range: 1-10 (10 being highest engagement potential)
 Types: personal_story, value_add, enthusiastic_support, question, insight, experience_share
 
 JSON only, no other text.`;
+
+    return prompt;
   }
 
   parseGeneratedComments(generatedText) {
