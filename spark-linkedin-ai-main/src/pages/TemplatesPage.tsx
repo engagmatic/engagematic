@@ -5,7 +5,8 @@ import { FileText, Copy, Download, Star, Users, Calendar, TrendingUp, Check, Eye
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { SEO, pageSEO } from "@/components/SEO";
+import { SEO } from "@/components/SEO";
+import { pageSEO } from "@/constants/seo";
 
 const TemplatesPage = () => {
   const { toast } = useToast();

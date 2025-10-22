@@ -13,7 +13,8 @@ import { useLinkedInProfile } from "../hooks/useLinkedInProfile";
 import apiClient from "../services/api.js";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
-import { SEO, pageSEO } from "@/components/SEO";
+import { SEO } from "@/components/SEO";
+import { pageSEO } from "@/constants/seo";
 
 const hookIcons = {
   story: Heart,

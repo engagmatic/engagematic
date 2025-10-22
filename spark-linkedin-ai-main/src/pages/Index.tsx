@@ -3,7 +3,8 @@ import { Features } from "@/components/landing/Features";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Pricing } from "@/components/landing/Pricing";
 import { FAQ } from "@/components/landing/FAQ";
-import { SEO, pageSEO } from "@/components/SEO";
+import { SEO } from "@/components/SEO";
+import { pageSEO } from "@/constants/seo";
 
 const Index = () => {
   return (

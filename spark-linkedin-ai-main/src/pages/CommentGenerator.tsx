@@ -12,7 +12,8 @@ import { usePersonas } from "@/hooks/usePersonas";
 import { useContentGeneration } from "@/hooks/useContentGeneration";
 import { useNavigate } from "react-router-dom";
 import apiClient from "@/services/api";
-import { SEO, pageSEO } from "@/components/SEO";
+import { SEO } from "@/components/SEO";
+import { pageSEO } from "@/constants/seo";
 import { COMMENT_TYPES, DEFAULT_COMMENT_TYPE } from "@/constants/commentTypes";
 
 interface GeneratedComment {
