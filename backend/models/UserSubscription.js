@@ -94,7 +94,7 @@ const userSubscriptionSchema = new mongoose.Schema(
       },
       profileAnalyses: {
         type: Number,
-        default: 1, // Trial: 1 analysis only
+        default: 3, // Trial: 3 analyses
       },
       prioritySupport: {
         type: Boolean,
@@ -176,7 +176,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.commentsPerMonth = 50;
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
-        this.limits.profileAnalyses = 1; // Only 1 analysis for trial
+        this.limits.profileAnalyses = 3; // 3 analyses for trial
         this.limits.prioritySupport = false;
         this.billing.amount = 0;
         break;
@@ -299,24 +299,27 @@ userSubscriptionSchema.methods.recordUsage = function (action) {
   switch (action) {
     case "generate_post":
       this.usage.postsGenerated += 1;
-      this.tokens.used += 1;
+      this.tokens.used += 5; // 5 tokens per post (increased from 1)
       break;
 
     case "generate_comment":
       this.usage.commentsGenerated += 1;
-      this.tokens.used += 1;
+      this.tokens.used += 3; // 3 tokens per comment (increased from 1)
       break;
 
     case "analyze_profile":
       this.usage.profileAnalyses += 1;
+      this.tokens.used += 10; // 10 tokens per profile analysis
       break;
 
     case "use_template":
       this.usage.templatesUsed += 1;
+      this.tokens.used += 2; // 2 tokens per template use
       break;
 
     case "analyze_linkedin":
       this.usage.linkedinAnalyses += 1;
+      this.tokens.used += 8; // 8 tokens per LinkedIn analysis
       break;
   }
 
@@ -335,6 +338,7 @@ userSubscriptionSchema.methods.resetMonthlyUsage = function () {
     this.usage.commentsGenerated = 0;
     this.usage.templatesUsed = 0;
     this.usage.linkedinAnalyses = 0;
+    this.usage.profileAnalyses = 0; // Reset profile analyses count
     this.tokens.used = 0;
     this.tokens.remaining = this.tokens.total;
 

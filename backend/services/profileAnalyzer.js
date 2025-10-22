@@ -1,4 +1,4 @@
-import linkedinProfileService from "./linkedinProfileService.js";
+import realLinkedInScraper from "./realLinkedInScraper.js";
 import googleAI from "./googleAI.js";
 import ProfileAnalysis from "../models/ProfileAnalysis.js";
 
@@ -8,10 +8,13 @@ class ProfileAnalyzer {
    */
   async analyzeProfile(profileUrl, userId) {
     try {
-      console.log("🔍 Analyzing LinkedIn profile:", profileUrl);
+      console.log(
+        "🔍 Analyzing LinkedIn profile with REAL scraping:",
+        profileUrl
+      );
 
-      // Extract profile data
-      const profileResult = await linkedinProfileService.extractProfileData(
+      // Extract profile data using REAL scraper
+      const profileResult = await realLinkedInScraper.extractProfileData(
         profileUrl
       );
 
@@ -20,6 +23,9 @@ class ProfileAnalyzer {
       }
 
       const profileData = profileResult.data;
+      const scrapingMethod = profileResult.method;
+
+      console.log(`✅ Profile data extracted using method: ${scrapingMethod}`);
 
       // Calculate scores
       const scores = this.calculateScores(profileData);
@@ -208,73 +214,123 @@ class ProfileAnalyzer {
   }
 
   /**
-   * Generate AI-powered recommendations
+   * Generate AI-powered recommendations using Google Generative AI
    */
   async generateRecommendations(profileData, scores) {
     try {
-      const prompt = `You are a LinkedIn profile optimization expert. Analyze this profile and provide specific, actionable recommendations.
+      const prompt = `You are a world-class LinkedIn profile optimization expert with deep industry knowledge.
 
-Current Profile:
-- Headline: ${profileData.headline || "Missing"}
-- About Section: ${profileData.about || "Missing"}
+ANALYZE THIS REAL LINKEDIN PROFILE:
+
+📊 Current Profile Data:
+- Headline: ${profileData.headline || "❌ Missing"}
+- About Section: ${profileData.about || "❌ Missing"}
 - Industry: ${profileData.industry || "Not specified"}
 - Location: ${profileData.location || "Not specified"}
 - Skills: ${profileData.skills?.join(", ") || "None listed"}
+- Experience: ${profileData.experience || "Not provided"}
 
-Current Scores:
-- Headline: ${scores.headline}/10
-- About: ${scores.about}/10
-- Overall: ${scores.overall}/100
+📈 Current Performance Scores:
+- Headline Quality: ${scores.headline}/10
+- About Section: ${scores.about}/10
+- Profile Completeness: ${scores.completeness}/10
+- Keyword Optimization: ${scores.keywords}/10
+- Engagement Potential: ${scores.engagement}/10
+- Overall Score: ${scores.overall}/100
 
-Generate the following in JSON format:
+🎯 YOUR MISSION:
+Provide industry-specific, actionable, and highly personalized recommendations to transform this profile into a top 1% LinkedIn profile.
+
+CRITICAL REQUIREMENTS:
+1. Analyze the actual content and industry context
+2. Provide 3 completely different headline options (each 80-120 characters)
+3. Rewrite the about section (250-350 words) with:
+   - Compelling hook opening
+   - Personal story/journey
+   - Key achievements with numbers
+   - Clear value proposition
+   - Strong call-to-action
+4. Suggest 10 highly relevant skills based on the industry
+5. Provide 8-12 SEO keywords for better profile visibility
+6. Give 5-8 specific, actionable improvements with priority levels
+7. Each improvement should be unique, specific, and immediately actionable
+
+Return ONLY valid JSON (no markdown, no extra text):
 {
-  "headlines": [3 improved headline options that are keyword-rich and value-focused],
-  "aboutSection": "A rewritten 300-word about section with storytelling, achievements, and a clear CTA",
-  "skills": [10 relevant skills to add based on industry],
-  "keywords": [8 SEO keywords to incorporate],
+  "headlines": ["headline option 1", "headline option 2", "headline option 3"],
+  "aboutSection": "complete rewritten about section text",
+  "skills": ["skill1", "skill2", ... 10 skills total],
+  "keywords": ["keyword1", "keyword2", ... 8-12 keywords],
   "improvements": [
-    {"priority": "high|medium|low", "category": "headline|about|skills|photo|experience", "suggestion": "specific actionable advice"}
-  ]
-}
+    {
+      "priority": "high",
+      "category": "headline|about|skills|photo|experience|engagement|networking",
+      "suggestion": "specific actionable advice with context",
+      "expectedImpact": "what improvement this will bring"
+    }
+  ],
+  "industryInsights": {
+    "trends": ["current trend 1", "current trend 2", "current trend 3"],
+    "opportunities": "specific opportunities in this industry",
+    "competitiveEdge": "how to stand out in this industry"
+  }
+}`;
 
-Only return valid JSON, no additional text.`;
+      // Use the correct Google AI method
+      const response = await googleAI.generatePost(
+        "LinkedIn profile optimization",
+        prompt,
+        {
+          name: "LinkedIn Expert",
+          tone: "professional",
+          writingStyle: "analytical",
+        }
+      );
 
-      const response = await googleAI.generateContent(prompt);
+      console.log("✅ AI recommendations generated, parsing response...");
 
       // Parse AI response
       let recommendations;
       try {
+        // The response from generatePost is an object with content property
+        const textContent = response.content || JSON.stringify(response);
+
         // Try to extract JSON from response
-        const jsonMatch = response.match(/\{[\s\S]*\}/);
+        const jsonMatch = textContent.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           recommendations = JSON.parse(jsonMatch[0]);
+          console.log("✅ Successfully parsed AI recommendations");
         } else {
-          throw new Error("No JSON found in response");
+          throw new Error("No JSON found in AI response");
         }
       } catch (parseError) {
-        console.log("⚠️ AI response parsing failed, using fallback");
+        console.log("⚠️ AI response parsing failed, using enhanced fallback");
         recommendations = this.getFallbackRecommendations(profileData, scores);
       }
 
       return recommendations;
     } catch (error) {
-      console.error("❌ Recommendation generation error:", error);
+      console.error("❌ Recommendation generation error:", error.message);
+      console.log("📝 Using enhanced fallback recommendations");
       return this.getFallbackRecommendations(profileData, scores);
     }
   }
 
   /**
-   * Fallback recommendations if AI fails
+   * Enhanced fallback recommendations with industry-specific insights
    */
   getFallbackRecommendations(profileData, scores) {
     const improvements = [];
+    const industry = profileData.industry || "Professional Services";
+    const experienceLevel = profileData.experienceLevel || "Mid-level";
 
+    // Generate specific, actionable improvements
     if (scores.headline < 7) {
       improvements.push({
         priority: "high",
         category: "headline",
-        suggestion:
-          "Improve your headline by adding your role, value proposition, and key skills. Aim for 50-120 characters.",
+        suggestion: `Your headline needs optimization. Include: (1) Your role/title, (2) Key value you provide, (3) Industry expertise. Current headline scores ${scores.headline}/10. Target 80-120 characters with keywords like "${industry}".`,
+        expectedImpact: "3x more profile views and better recruiter targeting",
       });
     }
 
@@ -282,63 +338,505 @@ Only return valid JSON, no additional text.`;
       improvements.push({
         priority: "high",
         category: "about",
-        suggestion:
-          "Rewrite your about section with a personal story, key achievements, and a clear call-to-action. Aim for 200-300 words.",
+        suggestion: `Rewrite your about section with this structure: Opening hook (2 sentences) → Your story/journey (3-4 sentences) → Key achievements with numbers (3-5 bullet points) → What makes you unique → Clear CTA. Current score: ${scores.about}/10.`,
+        expectedImpact: "5x higher engagement and connection acceptance rate",
       });
     }
 
     if (scores.keywords < 5) {
       improvements.push({
-        priority: "medium",
+        priority: "high",
         category: "keywords",
-        suggestion:
-          "Add more industry-relevant keywords throughout your profile for better search visibility.",
+        suggestion: `Add ${industry}-specific keywords throughout your profile. Top keywords to include: ${this.getIndustryKeywords(
+          industry
+        )
+          .slice(0, 5)
+          .join(", ")}. Current keyword score: ${scores.keywords}/10.`,
+        expectedImpact: "2x better search visibility and ranking",
       });
     }
 
+    if (scores.completeness < 8) {
+      improvements.push({
+        priority: "medium",
+        category: "completeness",
+        suggestion:
+          "Complete all profile sections: Add a professional photo, custom banner, featured section, skills (aim for 20+), accomplishments, and licenses/certifications.",
+        expectedImpact:
+          "LinkedIn algorithm favors complete profiles - expect 40% more visibility",
+      });
+    }
+
+    if (scores.engagement < 7) {
+      improvements.push({
+        priority: "medium",
+        category: "engagement",
+        suggestion:
+          "Boost engagement potential: (1) Post 2-3x per week, (2) Comment on 10+ posts daily, (3) Use carousel/video content, (4) Share personal stories and insights, not just articles.",
+        expectedImpact: "Build thought leadership and 10x your network reach",
+      });
+    }
+
+    improvements.push({
+      priority: "medium",
+      category: "networking",
+      suggestion: `Connect with ${industry} leaders. Send 10-15 personalized connection requests daily. Join and participate in 5+ ${industry}-related LinkedIn groups.`,
+      expectedImpact:
+        "Expand your network by 500+ quality connections in 3 months",
+    });
+
+    improvements.push({
+      priority: "low",
+      category: "photo",
+      suggestion:
+        "Update your profile photo to a professional headshot with: good lighting, solid background, smiling face, business casual attire. Add a custom banner image related to your industry.",
+      expectedImpact: "14x more profile views (LinkedIn data)",
+    });
+
+    // Industry-specific headline options
+    const headlines = this.generateIndustryHeadlines(
+      industry,
+      experienceLevel,
+      profileData
+    );
+
+    // Industry-specific about section
+    const aboutSection = this.generateIndustryAboutSection(
+      industry,
+      experienceLevel,
+      profileData
+    );
+
+    // Industry-specific skills
+    const skills = this.getIndustrySkills(industry, experienceLevel);
+
+    // Industry-specific keywords
+    const keywords = this.getIndustryKeywords(industry);
+
+    // Industry insights
+    const industryInsights = this.getIndustryInsights(industry);
+
     return {
-      headlines: [
-        `${
-          profileData.industry || "Professional"
-        } Expert | Helping Companies Grow | ${
-          profileData.location || "Global"
-        }`,
-        `${
-          profileData.industry || "Senior"
-        } Leader | Driving Innovation & Results | Open to Connect`,
-        `Experienced ${
-          profileData.industry || "Professional"
-        } | Strategy & Execution | Let's Connect`,
+      headlines,
+      aboutSection,
+      skills,
+      keywords,
+      improvements,
+      industryInsights,
+    };
+  }
+
+  /**
+   * Generate industry-specific headlines
+   */
+  generateIndustryHeadlines(industry, level, profile) {
+    const name = profile.fullName || "Professional";
+    const location = profile.location || "";
+
+    const templates = {
+      Technology: [
+        `${level} ${industry} Leader | Building Scalable Solutions | ${location}`,
+        `Software Engineer | Transforming Ideas into Code | AI & Cloud Expert`,
+        `Tech Innovator | Driving Digital Transformation | Open to Opportunities`,
       ],
-      aboutSection: `I'm a passionate ${
-        profileData.industry || "professional"
-      } with a proven track record of delivering results. With extensive experience in ${
-        profileData.industry || "my field"
-      }, I help organizations achieve their goals through strategic thinking and hands-on execution.\n\nThroughout my career, I've successfully led initiatives that drive growth, innovation, and operational excellence. I believe in the power of collaboration and continuous learning.\n\nLet's connect! I'm always open to discussing new opportunities, partnerships, and ways to create value together.`,
-      skills: [
-        "Leadership",
+      Marketing: [
+        `${industry} Strategist | Growing Brands Through Data-Driven Campaigns`,
+        `Digital Marketing Expert | 3x ROI on Ad Spend | B2B/B2C Specialist`,
+        `Growth Marketer | Helping Startups Scale | Content & SEO Expert`,
+      ],
+      Business: [
+        `${level} Business Leader | Strategy & Operations | Driving 20%+ Growth`,
+        `Management Consultant | Transforming Organizations | MBA | ${location}`,
+        `Business Development Expert | Building Partnerships | Revenue Growth`,
+      ],
+      Sales: [
+        `Top 10% Sales Leader | $5M+ Revenue Generated | B2B SaaS Specialist`,
+        `Sales Executive | Closing 7-Figure Deals | Helping Teams Hit Quota`,
+        `Enterprise Sales | Building Client Relationships | Consistent Achiever`,
+      ],
+      Finance: [
+        `${industry} Professional | CFO Advisory | Strategic Financial Planning`,
+        `Financial Analyst | Data-Driven Insights | Investment Strategy`,
+        `Finance Leader | M&A Expert | Driving Business Value`,
+      ],
+      Healthcare: [
+        `${industry} Professional | Improving Patient Outcomes | ${location}`,
+        `Healthcare Leader | Clinical Excellence | Quality Improvement`,
+        `Medical Professional | Evidence-Based Practice | Patient-Centered Care`,
+      ],
+      Education: [
+        `Educator & Mentor | Inspiring Future Leaders | ${location}`,
+        `${level} Education Professional | Curriculum Design | Student Success`,
+        `Teacher & Coach | Building Confidence Through Learning`,
+      ],
+    };
+
+    return (
+      templates[industry] || [
+        `${level} ${industry} Professional | Driving Results | ${location}`,
+        `Experienced ${industry} Leader | Strategy & Execution | Let's Connect`,
+        `${industry} Expert | Helping Organizations Succeed | Open to Connect`,
+      ]
+    );
+  }
+
+  /**
+   * Generate industry-specific about section
+   */
+  generateIndustryAboutSection(industry, level, profile) {
+    const sections = {
+      Technology: `I'm a passionate technology professional with a track record of building innovative solutions that solve real problems.
+
+🚀 What I Do:
+• Design and develop scalable software systems
+• Lead technical teams and drive product strategy
+• Bridge the gap between business needs and technical execution
+
+💡 My Approach:
+I believe in clean code, continuous learning, and collaborative problem-solving. Whether it's architecting cloud infrastructure or mentoring junior developers, I focus on creating long-term value.
+
+📊 Impact:
+Throughout my career, I've helped companies accelerate their digital transformation, improve system performance by 3x+, and build engineering cultures that attract top talent.
+
+🤝 Let's Connect:
+I'm always interested in discussing technology trends, exploring new opportunities, and connecting with fellow innovators. Feel free to reach out!`,
+
+      Marketing: `I help brands grow through data-driven marketing strategies that deliver real ROI.
+
+🎯 My Expertise:
+• Digital marketing strategy and execution
+• Content marketing and SEO optimization
+• Performance analytics and conversion optimization
+• Brand positioning and messaging
+
+📈 Track Record:
+I've helped companies increase their online presence by 300%+, reduce customer acquisition costs by 40%, and build engaged communities that drive sustainable growth.
+
+💪 My Philosophy:
+Great marketing tells a story, solves a problem, and builds relationships. I combine creativity with analytics to create campaigns that resonate and convert.
+
+🚀 Let's Collaborate:
+Whether you're a startup looking to scale or an established brand seeking fresh perspectives, I'd love to connect and explore how we can create value together.`,
+
+      Business: `I'm a strategic business leader focused on driving growth, operational excellence, and organizational transformation.
+
+🎯 Core Competencies:
+• Business strategy and market expansion
+• Operations optimization and process improvement
+• Team leadership and talent development
+• P&L management and financial planning
+
+📊 Proven Results:
+I've led initiatives that delivered 20%+ revenue growth, improved operational efficiency by 30%, and built high-performing teams that consistently exceed targets.
+
+💡 Leadership Philosophy:
+I believe in empowering teams, making data-informed decisions, and creating sustainable competitive advantages through innovation and execution excellence.
+
+🤝 Open to Connect:
+I'm passionate about solving complex business challenges and mentoring the next generation of leaders. Let's connect and share insights!`,
+    };
+
+    return (
+      sections[industry] ||
+      `I'm a ${level.toLowerCase()} ${industry.toLowerCase()} professional with a passion for excellence and continuous improvement.
+
+Throughout my career, I've focused on delivering results, building relationships, and creating value for organizations and teams I work with.
+
+🎯 My Expertise:
+• Strategic thinking and problem-solving
+• Team collaboration and leadership
+• Industry knowledge and best practices
+• Continuous learning and adaptation
+
+💪 My Approach:
+I believe in combining analytical thinking with creative solutions. Whether working independently or as part of a team, I'm committed to achieving outstanding results.
+
+📈 Professional Impact:
+I've successfully contributed to projects that drive growth, improve efficiency, and create positive change within organizations.
+
+🤝 Let's Connect:
+I'm always open to connecting with fellow professionals, exploring new opportunities, and sharing insights. Feel free to reach out!`
+    );
+  }
+
+  /**
+   * Get industry-specific skills
+   */
+  getIndustrySkills(industry, level) {
+    const skillSets = {
+      Technology: [
+        "Software Development",
+        "Cloud Computing",
+        "System Architecture",
+        "Agile/Scrum",
+        "DevOps",
+        "API Design",
+        "Database Management",
+        "Cybersecurity",
+        "AI/Machine Learning",
+        "Technical Leadership",
+      ],
+      Marketing: [
+        "Digital Marketing",
+        "Content Strategy",
+        "SEO/SEM",
+        "Marketing Analytics",
+        "Social Media Marketing",
+        "Brand Management",
+        "Campaign Management",
+        "Marketing Automation",
+        "Copywriting",
+        "Growth Hacking",
+      ],
+      Business: [
         "Strategic Planning",
-        "Team Management",
-        "Project Management",
+        "Business Development",
+        "P&L Management",
+        "Operations Management",
+        "Change Management",
+        "Stakeholder Management",
+        "Financial Analysis",
+        "Market Research",
+        "Negotiation",
+        "Executive Leadership",
+      ],
+      Sales: [
+        "B2B Sales",
+        "Enterprise Sales",
+        "Account Management",
+        "Sales Strategy",
+        "CRM (Salesforce)",
+        "Lead Generation",
+        "Pipeline Management",
+        "Consultative Selling",
+        "Relationship Building",
+        "Contract Negotiation",
+      ],
+      Finance: [
+        "Financial Analysis",
+        "Financial Modeling",
+        "Budgeting & Forecasting",
+        "Corporate Finance",
+        "Risk Management",
+        "Investment Analysis",
+        "Financial Reporting",
+        "M&A",
+        "Excel/Financial Tools",
+        "Strategic Planning",
+      ],
+      Healthcare: [
+        "Patient Care",
+        "Clinical Excellence",
+        "Healthcare Management",
+        "Medical Documentation",
+        "HIPAA Compliance",
+        "Quality Improvement",
+        "Evidence-Based Practice",
+        "Team Collaboration",
+        "Patient Safety",
+        "Healthcare Technology",
+      ],
+      Education: [
+        "Curriculum Development",
+        "Student Engagement",
+        "Assessment & Evaluation",
+        "Instructional Design",
+        "Classroom Management",
+        "Educational Technology",
+        "Differentiated Instruction",
+        "Mentoring",
+        "Educational Leadership",
+        "Learning Analytics",
+      ],
+    };
+
+    return (
+      skillSets[industry] || [
+        "Leadership",
+        "Strategic Thinking",
         "Communication",
+        "Project Management",
+        "Team Building",
         "Problem Solving",
         "Data Analysis",
-        "Business Development",
-        "Innovation",
+        "Process Improvement",
         "Stakeholder Management",
+        "Innovation",
+      ]
+    );
+  }
+
+  /**
+   * Get industry-specific keywords
+   */
+  getIndustryKeywords(industry) {
+    const keywordSets = {
+      Technology: [
+        "Software Engineer",
+        "Full Stack",
+        "Cloud",
+        "DevOps",
+        "Agile",
+        "Tech Lead",
+        "Solutions Architect",
+        "API",
+        "Microservices",
+        "AI",
+        "Data",
+        "Innovation",
       ],
-      keywords: [
+      Marketing: [
+        "Digital Marketing",
+        "Growth",
+        "SEO",
+        "Content Marketing",
+        "Brand Strategy",
+        "Marketing Analytics",
+        "Social Media",
+        "Campaigns",
+        "ROI",
+        "Lead Generation",
+        "Conversion Optimization",
+      ],
+      Business: [
+        "Business Strategy",
+        "Leadership",
+        "Operations",
+        "Growth",
+        "P&L",
+        "Management",
+        "Transformation",
+        "Innovation",
+        "Execution",
+        "Strategic Planning",
+        "Business Development",
+      ],
+      Sales: [
+        "Sales Leadership",
+        "B2B",
+        "Enterprise Sales",
+        "Revenue Growth",
+        "Account Executive",
+        "Sales Strategy",
+        "Quota Attainment",
+        "Pipeline",
+        "Client Relationships",
+        "Deal Closing",
+      ],
+      Finance: [
+        "Financial Analysis",
+        "CFO",
+        "Finance",
+        "Investment",
+        "M&A",
+        "Financial Modeling",
+        "Corporate Finance",
+        "FP&A",
+        "Strategic Finance",
+        "Risk Management",
+      ],
+      Healthcare: [
+        "Healthcare",
+        "Patient Care",
+        "Clinical",
+        "Medical",
+        "Healthcare Management",
+        "Quality Improvement",
+        "Patient Safety",
+        "Healthcare IT",
+        "Compliance",
+      ],
+      Education: [
+        "Education",
+        "Teaching",
+        "Learning",
+        "Curriculum",
+        "Student Success",
+        "Educational Leadership",
+        "Instructional Design",
+        "EdTech",
+        "Assessment",
+        "Mentoring",
+      ],
+    };
+
+    return (
+      keywordSets[industry] || [
+        "Professional",
         "Leadership",
         "Strategy",
-        "Growth",
+        "Management",
         "Innovation",
+        "Excellence",
         "Results-Driven",
-        "Team Building",
-        "Digital Transformation",
+        "Team Player",
+        "Growth",
         "Industry Expert",
-      ],
-      improvements,
+      ]
+    );
+  }
+
+  /**
+   * Get industry-specific insights
+   */
+  getIndustryInsights(industry) {
+    const insights = {
+      Technology: {
+        trends: [
+          "AI & Machine Learning adoption accelerating",
+          "Cloud-native architectures becoming standard",
+          "DevSecOps and security-first development",
+          "Low-code/no-code platforms growing",
+          "Remote-first engineering teams",
+        ],
+        opportunities:
+          "High demand for full-stack developers with cloud expertise. Specialize in AI/ML, cybersecurity, or cloud architecture for premium opportunities.",
+        competitiveEdge:
+          "Build in public, contribute to open source, create technical content, and showcase real projects. Certifications in AWS/Azure/GCP highly valued.",
+      },
+      Marketing: {
+        trends: [
+          "AI-powered marketing automation",
+          "Short-form video content dominance",
+          "Privacy-first marketing strategies",
+          "Influencer marketing maturation",
+          "Personalization at scale",
+        ],
+        opportunities:
+          "Growth marketing roles in B2B SaaS are booming. Performance marketing with strong analytics skills commands premium salaries.",
+        competitiveEdge:
+          "Demonstrate ROI with case studies, build your personal brand on LinkedIn/Twitter, stay ahead with emerging platforms, and master marketing analytics.",
+      },
+      Business: {
+        trends: [
+          "Digital transformation acceleration",
+          "Sustainable business practices",
+          "Remote/hybrid work models",
+          "Data-driven decision making",
+          "Agile organization structures",
+        ],
+        opportunities:
+          "Strategy consulting, digital transformation leadership, and interim executive roles are in high demand.",
+        competitiveEdge:
+          "Get an MBA or executive education, build a strong professional network, publish thought leadership content, and develop cross-functional expertise.",
+      },
     };
+
+    return (
+      insights[industry] || {
+        trends: [
+          "Digital transformation",
+          "Remote work",
+          "Sustainability focus",
+          "Data-driven decisions",
+          "Innovation imperative",
+        ],
+        opportunities:
+          "Focus on developing in-demand skills, building your professional network, and staying current with industry trends.",
+        competitiveEdge:
+          "Continuous learning, thought leadership, strong professional brand, and demonstrable results will set you apart.",
+      }
+    );
   }
 
   /**

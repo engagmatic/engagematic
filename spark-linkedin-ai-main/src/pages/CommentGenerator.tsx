@@ -12,8 +12,8 @@ import { usePersonas } from "@/hooks/usePersonas";
 import { useContentGeneration } from "@/hooks/useContentGeneration";
 import { useNavigate } from "react-router-dom";
 import apiClient from "@/services/api";
-import { Navigation } from "@/components/Navigation";
 import { SEO, pageSEO } from "@/components/SEO";
+import { COMMENT_TYPES, DEFAULT_COMMENT_TYPE } from "@/constants/commentTypes";
 
 interface GeneratedComment {
   text: string;
@@ -23,6 +23,7 @@ const CommentGenerator = () => {
   const [postContent, setPostContent] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [selectedPersona, setSelectedPersona] = useState(null);
+  const [commentType, setCommentType] = useState(DEFAULT_COMMENT_TYPE);
   const [generatedComments, setGeneratedComments] = useState([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [isFetchingFromUrl, setIsFetchingFromUrl] = useState(false);
@@ -116,7 +117,8 @@ const CommentGenerator = () => {
     try {
       const result = await generateComment({
         postContent: postContent.trim(),
-        persona: selectedPersona
+        persona: selectedPersona,
+        commentType: commentType
       });
 
       if (result.success) {
@@ -190,7 +192,6 @@ const CommentGenerator = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO {...pageSEO.commentGenerator} />
-      <Navigation />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
@@ -311,6 +312,57 @@ const CommentGenerator = () => {
                     {selectedPersona.expertise && (
                       <div><strong>Expertise:</strong> {Array.isArray(selectedPersona.expertise) ? selectedPersona.expertise.join(', ') : selectedPersona.expertise}</div>
                     )}
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Comment Type Selection */}
+            <Card className="shadow-lg border-2 border-primary/20">
+              <div className="p-4 sm:p-6">
+                <label className="block text-sm font-semibold mb-3 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Choose Comment Style *
+                </label>
+                <Select value={commentType} onValueChange={setCommentType}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select comment type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COMMENT_TYPES.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        <div className="flex items-center gap-3 py-1">
+                          <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-bold text-primary">{type.icon}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm">{type.label}</div>
+                            <div className="text-xs text-muted-foreground line-clamp-1">{type.description}</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {commentType && (
+                  <div className="mt-3 p-3 sm:p-4 bg-gradient-to-br from-primary/5 to-purple/5 border border-primary/20 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-primary-foreground">
+                          {COMMENT_TYPES.find(t => t.value === commentType)?.icon}
+                        </span>
+                      </div>
+                      <Badge variant="default" className="text-xs">
+                        {COMMENT_TYPES.find(t => t.value === commentType)?.label}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {COMMENT_TYPES.find(t => t.value === commentType)?.description}
+                    </p>
+                    <div className="p-2 sm:p-3 bg-background/50 rounded border border-primary/10">
+                      <p className="text-xs font-medium text-primary mb-1">Example:</p>
+                      <p className="text-xs italic leading-relaxed">"{COMMENT_TYPES.find(t => t.value === commentType)?.example}"</p>
+                    </div>
                   </div>
                 )}
               </div>

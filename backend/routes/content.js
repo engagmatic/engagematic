@@ -160,7 +160,12 @@ router.post(
   validateCommentGeneration,
   async (req, res) => {
     try {
-      const { postContent, personaId, persona: personaData } = req.body;
+      const {
+        postContent,
+        personaId,
+        persona: personaData,
+        commentType,
+      } = req.body;
       const userId = req.user._id;
 
       // Check subscription and quota before generation
@@ -207,6 +212,7 @@ router.post(
         postContent: postContent.substring(0, 100) + "...",
         personaName: persona.name,
         personaTone: persona.tone,
+        commentType: commentType || "value_add",
       });
 
       // Get profile insights for enhanced personalization
@@ -217,7 +223,8 @@ router.post(
       const aiResponse = await googleAIService.generateComment(
         postContent,
         persona,
-        profileInsights
+        profileInsights,
+        commentType
       );
 
       console.log("✅ AI comment response received:", {

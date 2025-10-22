@@ -64,7 +64,7 @@ export const adminOnly = [
       }
 
       const decoded = jwt.verify(token, config.JWT_SECRET);
-      req.user = decoded;
+      req.user = { userId: decoded.userId };
       next();
     } catch (error) {
       res.status(401).json({

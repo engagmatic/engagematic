@@ -5,7 +5,6 @@ import { useAuth } from "../contexts/AuthContext";
 import { useDashboard } from "../hooks/useAnalytics";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { Navigation } from "../components/Navigation";
 import { SubscriptionStatus } from "../components/SubscriptionStatus";
 
 const Dashboard = () => {
@@ -72,7 +71,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen gradient-hero">
-      <Navigation />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">

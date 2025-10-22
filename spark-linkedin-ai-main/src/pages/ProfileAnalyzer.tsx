@@ -18,7 +18,6 @@ import {
   Award,
   Lightbulb
 } from "lucide-react";
-import { Navigation } from "../components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import apiClient from "../services/api";
 
@@ -92,8 +91,6 @@ const ProfileAnalyzer = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <Navigation />
-      
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="text-center mb-8">
@@ -203,11 +200,12 @@ const ProfileAnalyzer = () => {
 
             {/* Recommendations Tabs */}
             <Tabs defaultValue="headlines" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="headlines">Headlines</TabsTrigger>
                 <TabsTrigger value="about">About Section</TabsTrigger>
                 <TabsTrigger value="skills">Skills</TabsTrigger>
                 <TabsTrigger value="improvements">Improvements</TabsTrigger>
+                <TabsTrigger value="insights">Industry Insights</TabsTrigger>
               </TabsList>
 
               {/* Headlines */}
@@ -360,13 +358,71 @@ const ProfileAnalyzer = () => {
                           </Badge>
                           <div className="flex-1">
                             <div className="font-semibold capitalize mb-1">{improvement.category}</div>
-                            <p className="text-sm">{improvement.suggestion}</p>
+                            <p className="text-sm mb-2">{improvement.suggestion}</p>
+                            {improvement.expectedImpact && (
+                              <div className="flex items-start gap-2 mt-2 p-2 bg-white/50 rounded border border-primary/20">
+                                <TrendingUp className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                                <p className="text-xs text-primary font-medium">
+                                  Expected Impact: {improvement.expectedImpact}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 </Card>
+              </TabsContent>
+
+              {/* Industry Insights */}
+              <TabsContent value="insights" className="space-y-4">
+                {analysis.recommendations.industryInsights ? (
+                  <>
+                    <Card className="p-6 border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-purple/5">
+                      <div className="flex items-center gap-2 mb-4">
+                        <TrendingUp className="h-5 w-5 text-primary" />
+                        <h3 className="text-xl font-bold">Current Industry Trends</h3>
+                      </div>
+                      <div className="space-y-3">
+                        {analysis.recommendations.industryInsights.trends?.map((trend, i) => (
+                          <div key={i} className="flex items-start gap-3 p-3 bg-white/70 rounded-lg">
+                            <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-xs font-bold text-primary">{i + 1}</span>
+                            </div>
+                            <p className="text-sm flex-1">{trend}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+
+                    <Card className="p-6 border-2 border-green-200 bg-green-50">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Target className="h-5 w-5 text-green-600" />
+                        <h3 className="text-xl font-bold text-green-900">Opportunities</h3>
+                      </div>
+                      <p className="text-base text-green-800 leading-relaxed">
+                        {analysis.recommendations.industryInsights.opportunities}
+                      </p>
+                    </Card>
+
+                    <Card className="p-6 border-2 border-blue-200 bg-blue-50">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Award className="h-5 w-5 text-blue-600" />
+                        <h3 className="text-xl font-bold text-blue-900">Competitive Edge</h3>
+                      </div>
+                      <p className="text-base text-blue-800 leading-relaxed">
+                        {analysis.recommendations.industryInsights.competitiveEdge}
+                      </p>
+                    </Card>
+                  </>
+                ) : (
+                  <Card className="p-6">
+                    <p className="text-muted-foreground text-center">
+                      Industry insights not available for this analysis
+                    </p>
+                  </Card>
+                )}
               </TabsContent>
             </Tabs>
 

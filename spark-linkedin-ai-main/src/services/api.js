@@ -78,10 +78,16 @@ class ApiClient {
 
   // Auth methods
   async register(userData) {
-    return this.request("/auth/register", {
+    const response = await this.request("/auth/register", {
       method: "POST",
       body: JSON.stringify(userData),
     });
+
+    if (response.success && response.data.token) {
+      this.setToken(response.data.token);
+    }
+
+    return response;
   }
 
   async login(credentials) {

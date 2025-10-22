@@ -39,11 +39,11 @@ class GoogleAIService {
 
       const result = await this.model.generateContent({
         contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024,
+        generationConfig: {
+          temperature: 0.8,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048, // Increased from 1024 to ensure complete posts
         },
       });
 
@@ -56,7 +56,7 @@ class GoogleAIService {
         "✅ Post generated successfully, length:",
         generatedText.length
       );
-      
+
       return {
         content: generatedText,
         engagementScore,
@@ -71,25 +71,32 @@ class GoogleAIService {
     }
   }
 
-  async generateComment(postContent, persona, profileInsights = null) {
+  async generateComment(
+    postContent,
+    persona,
+    profileInsights = null,
+    commentType = "value_add"
+  ) {
     try {
       console.log("💬 Generating comments with Google AI...");
       console.log("Post content:", postContent.substring(0, 100) + "...");
       console.log("Persona:", persona.name);
+      console.log("Comment type:", commentType);
 
       const prompt = this.buildCommentPrompt(
         postContent,
         persona,
-        profileInsights
+        profileInsights,
+        commentType
       );
 
       const result = await this.model.generateContent({
         contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.8,
-            topK: 40,
-            topP: 0.95,
-          maxOutputTokens: 1024,
+        generationConfig: {
+          temperature: 0.8,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048, // Increased to ensure complete comments
         },
       });
 
@@ -101,7 +108,7 @@ class GoogleAIService {
 
       // Parse multiple comments from the response
       const comments = this.parseGeneratedComments(generatedText);
-      
+
       return {
         content: comments, // Return array of comments
         comments: comments, // Also include for compatibility
@@ -154,19 +161,23 @@ LinkedIn Profile Insights:
 
     basePrompt += `
 
-Create a LinkedIn post about: "${topic}"
+Create a high-quality, engaging LinkedIn post about: "${topic}"
 
-Use this hook to start: "${hook}"
+Start with this exact hook: "${hook}"
 
-Requirements:
-1. Start with the provided hook
-2. Write in the persona's authentic voice and style
-3. Make it engaging and professional
-4. Include relevant insights or personal experiences
-5. End with a call-to-action or thought-provoking question
-6. Keep it between 150-300 words
-7. Use line breaks for readability
-8. Make it sound human and authentic, not AI-generated`;
+CRITICAL REQUIREMENTS - Must complete ALL of these:
+1. Start with the provided hook exactly as given
+2. Write in ${persona.name}'s authentic voice (${persona.tone} tone, ${persona.writingStyle} style)
+3. Make it highly valuable and actionable - provide real insights, not generic advice
+4. Include specific examples, numbers, or personal experiences where relevant
+5. Use short paragraphs (2-3 sentences max) and bullet points for readability
+6. Structure: Hook → Context/Story → Main Insights (3-5 points) → Call-to-Action
+7. Keep it between 200-350 words for optimal LinkedIn engagement
+8. End with a strong call-to-action or thought-provoking question
+9. Sound 100% human and authentic - avoid corporate jargon and AI-sounding phrases
+10. Use emojis sparingly (1-2 max) and only if they add value
+
+COMPLETE THE ENTIRE POST - do not cut off mid-sentence. Generate the full, polished post.`;
 
     if (linkedinInsights?.contentStrategy?.contentTypes) {
       basePrompt += `
@@ -189,52 +200,105 @@ Generate only the post content, no additional explanations.`;
     return basePrompt;
   }
 
-  buildCommentPrompt(postContent, persona, profileInsights = null) {
-    let prompt = `You are commenting on this LinkedIn post as someone with the following persona:
-    
-Name: ${persona.name}
-Industry: ${persona.industry}
-Experience Level: ${persona.experience}
-Tone: ${persona.tone}
-Writing Style: ${persona.writingStyle}
-Description: ${persona.description}
+  buildCommentPrompt(
+    postContent,
+    persona,
+    profileInsights = null,
+    commentType = "value_add"
+  ) {
+    // Define comment type specific instructions
+    const typeInstructions = {
+      personal_story:
+        "Share a brief personal story or experience (20-40 words) that directly relates to the post. Make it authentic and relatable.",
+      value_add:
+        "Provide a quick actionable tip, insight, or framework (20-40 words) that adds value to the discussion. Be specific and practical.",
+      question:
+        "Ask a thoughtful, engaging question (20-40 words) that encourages discussion and shows genuine interest. Reference specific points from the post.",
+      insight:
+        "Offer a sharp, unique perspective or observation (20-40 words) that makes people think. Be direct and insightful.",
+      experience_share:
+        "Share how you've experienced or applied this concept (20-40 words) in your professional journey. Be specific and concise.",
+      enthusiastic_support:
+        "Show strong agreement with specific reasoning (20-40 words). Explain WHY you agree, citing specific aspects from the post.",
+    };
 
-${profileInsights ? `\n${profileInsights}\n` : ""}
-Post content: "${postContent}"
+    const typeExamples = {
+      personal_story:
+        "This! We lost 6 months because we couldn't let go of the original vision. Ego is expensive. 💯",
+      value_add:
+        "Love this framework. We call it 'Strategic Refinement' - same concept, same results. 🎯",
+      question:
+        "The 'evolving without ego' part hit hard. Been there. How do you handle pushback from stakeholders?",
+      insight:
+        "Spot on. Momentum needs process, not just passion. Learned this the hard way!",
+      experience_share:
+        "Seen this play out 100 times. The daily grind > initial hype. Every. Single. Time.",
+      enthusiastic_support:
+        "This is gold. The 'evolving without ego' mindset separates good teams from great ones.",
+    };
 
-Generate 3 different genuine, thoughtful comments that:
-1. Show you've read and understood the post
-2. Add value or share relevant experiences
-3. Maintain the persona's authentic voice
-4. Are supportive and professional
-5. Encourage further discussion
-6. Are between 50-150 words each
-7. Sound human and genuine, not AI-generated
-8. Each comment should have a different angle/approach
+    let prompt = `You are writing SHORT LinkedIn comments as ${persona.name} (${
+      persona.tone
+    } tone, ${persona.writingStyle} style).
 
-Return ONLY a JSON array with engagement scores like this:
+POST:
+"${postContent}"
+
+🎯 FOCUS: Generate "${commentType}" style comments
+${typeInstructions[commentType] || typeInstructions.value_add}
+
+CRITICAL COMMENT REQUIREMENTS:
+1. **SUPER SHORT**: 20-40 words maximum (like real human LinkedIn comments!)
+2. **DIRECTLY ADDRESS THE POST**: Reference specific points from the post content
+3. **BE RELATABLE**: Share a quick personal insight or experience that connects
+4. **NATURAL & CONVERSATIONAL**: Write like you're texting a colleague, not writing an essay
+5. **ADD VALUE**: Give a quick tip, insight, or perspective - but keep it BRIEF
+6. **AUTHENTIC TONE**: Use ${
+      persona.tone
+    } tone naturally - no corporate buzzwords
+7. **NO FLUFF**: Cut all unnecessary words - get straight to the point
+8. **HUMAN-LIKE**: Use contractions, casual language, real emotions
+9. **ENGAGING**: Ask a short question OR share a micro-story OR give a sharp insight
+10. **COMPLETE**: Full sentences, but SHORT ones
+
+BAD EXAMPLE (too long, too formal):
+"Absolutely spot on! The greatest killer of sustained growth is a leader or team clinging too tightly to the initial perfect vision. Your emphasis on 'evolving without ego' hits the nail right on the head. For us, this translates directly to leadership effectiveness..."
+
+GOOD EXAMPLE for "${commentType}" style:
+"${typeExamples[commentType] || typeExamples.value_add}"
+
+MORE GOOD EXAMPLES (short, crisp, valuable):
+- "This! We lost 6 months because we couldn't let go of the original vision. Ego is expensive. 💯"
+- "The 'evolving without ego' part hit hard. Been there. How do you handle pushback from stakeholders?"
+- "Love this framework. We call it 'Strategic Refinement' - same concept, same results. 🎯"
+- "Spot on. Momentum needs process, not just passion. Learned this the hard way!"
+- "This is gold. The daily grind > initial hype. Every. Single. Time."
+
+Generate 3 SHORT, crisp "${commentType}" style comments (20-40 words each):
+
+Return ONLY JSON:
 [
   {
-    "text": "This resonates so much! I've experienced the exact same journey...",
+    "text": "Your 20-40 word ${commentType} comment here - directly referencing the post",
     "engagementScore": 8.5,
-    "type": "personal_story"
+    "type": "${commentType}"
   },
   {
-    "text": "Incredibly valuable perspective. Your point about consistency...",
-    "engagementScore": 7.8,
-    "type": "value_add"
+    "text": "Another short ${commentType} comment with specific value",
+    "engagementScore": 9.0,
+    "type": "${commentType}"
   },
   {
-    "text": "Love this! The authenticity piece is so underrated...",
-    "engagementScore": 9.2,
-    "type": "enthusiastic_support"
+    "text": "Third crisp ${commentType} comment - keep it valuable and brief",
+    "engagementScore": 8.8,
+    "type": "${commentType}"
   }
 ]
 
-Engagement score range: 1-10 (10 being highest engagement potential)
-Types: personal_story, value_add, enthusiastic_support, question, insight, experience_share
+Types: personal_story, value_add, question, insight, experience_share, enthusiastic_support
+Scores: 7.5-9.5 (higher for more engaging)
 
-JSON only, no other text.`;
+JSON ONLY.`;
 
     return prompt;
   }
@@ -428,7 +492,7 @@ What's the most valuable lesson you've learned in your ${industry.toLowerCase()}
 
   calculateEngagementScore(content) {
     let score = 50; // Base score
-    
+
     // Check for engagement elements
     if (content.includes("?")) score += 10; // Questions
     if (content.includes("!")) score += 5; // Excitement
@@ -436,11 +500,11 @@ What's the most valuable lesson you've learned in your ${industry.toLowerCase()}
     if (content.match(/\d+/)) score += 5; // Numbers/statistics
     if (content.includes("story") || content.includes("experience"))
       score += 10; // Personal elements
-    
+
     // Length bonus (optimal length)
     const wordCount = content.split(" ").length;
     if (wordCount >= 150 && wordCount <= 300) score += 10;
-    
+
     // Ensure score is within bounds
     return Math.min(Math.max(score, 0), 100);
   }

@@ -13,7 +13,6 @@ import { useLinkedInProfile } from "../hooks/useLinkedInProfile";
 import apiClient from "../services/api.js";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
-import { Navigation } from "../components/Navigation";
 import { SEO, pageSEO } from "@/components/SEO";
 
 const hookIcons = {
@@ -274,7 +273,6 @@ const PostGenerator = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO {...pageSEO.postGenerator} />
-      <Navigation />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
@@ -489,12 +487,34 @@ const PostGenerator = () => {
               </Card>
             )}
 
-            {/* Persona Selection - SIMPLIFIED */}
-            <Card className="shadow-lg">
+            {/* Persona Selection - Enhanced with onboarding persona */}
+            <Card className="shadow-lg border-2">
               <div className="p-6">
-                <label className="block text-sm font-semibold mb-3">
-                  Choose Your Persona *
-                </label>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-semibold flex items-center gap-2">
+                    Choose Your Persona *
+                    {personas.length > 0 && personas[0]?.source === 'onboarding' && (
+                      <Badge variant="default" className="text-xs">Your Persona</Badge>
+                    )}
+                  </label>
+                  {subscription?.plan === 'trial' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        toast({
+                          title: 'Premium Feature',
+                          description: 'Upgrade to Premium to create and edit custom personas',
+                        });
+                        navigate('/pricing');
+                      }}
+                      className="gap-2 text-xs"
+                    >
+                      <Crown className="h-3 w-3" />
+                      Edit Personas
+                    </Button>
+                  )}
+                </div>
                 <Select 
                   value={selectedPersona?.name || selectedPersona?._id} 
                   onValueChange={(value) => {
@@ -508,12 +528,13 @@ const PostGenerator = () => {
                     <SelectValue placeholder="Select a persona" />
                   </SelectTrigger>
                   <SelectContent>
-                    {/* Show user personas first */}
+                    {/* Show user personas first (including onboarding persona) */}
                     {personas.length > 0 && (
                       <>
                         {personas.map((persona) => (
                           <SelectItem key={persona._id} value={persona._id}>
                             {persona.name} {persona.industry && `- ${persona.industry}`}
+                            {persona.source === 'onboarding' && ' ✨ (Your Onboarding Persona)'}
                           </SelectItem>
                         ))}
                       </>
@@ -531,10 +552,32 @@ const PostGenerator = () => {
                   </SelectContent>
                 </Select>
                 {selectedPersona && (
-                  <div className="mt-3 p-3 bg-muted rounded-md text-sm">
-                    <div><strong>Tone:</strong> {selectedPersona.tone}</div>
+                  <div className="mt-3 p-4 bg-gradient-to-r from-primary/5 to-purple/5 border border-primary/20 rounded-lg text-sm space-y-2">
+                    <div className="flex items-center justify-between">
+                      <strong className="text-primary">Active Persona:</strong>
+                      <span className="font-medium">{selectedPersona.name}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <strong>Tone:</strong>
+                      <span>{selectedPersona.tone}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <strong>Style:</strong>
+                      <span>{selectedPersona.writingStyle}</span>
+                    </div>
                     {selectedPersona.expertise && (
-                      <div><strong>Expertise:</strong> {Array.isArray(selectedPersona.expertise) ? selectedPersona.expertise.join(', ') : selectedPersona.expertise}</div>
+                      <div className="pt-2 border-t border-primary/10">
+                        <strong>Expertise:</strong>
+                        <p className="text-muted-foreground mt-1 line-clamp-2">
+                          {Array.isArray(selectedPersona.expertise) ? selectedPersona.expertise.join(', ') : selectedPersona.expertise}
+                        </p>
+                      </div>
+                    )}
+                    {selectedPersona.source === 'onboarding' && (
+                      <div className="pt-2 flex items-center gap-1 text-xs text-primary">
+                        <Sparkles className="h-3 w-3" />
+                        <span>Using your personalized onboarding persona</span>
+                      </div>
                     )}
                   </div>
                 )}
@@ -610,33 +653,33 @@ const PostGenerator = () => {
           </div>
         </Card>
 
-            {/* Creative Suggestions - stabilized responsive grid */}
+            {/* Creative Suggestions - Enhanced responsive layout */}
             {creativeSuggestions.length > 0 && (
-              <Card className="shadow-lg mt-6">
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                    <Lightbulb className="h-5 w-5" />
+              <Card className="shadow-lg mt-6 border-2">
+                <div className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold mb-2 flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
                     Creative Format Suggestions
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-4">
                     💡 Boost engagement with these LinkedIn post formats
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {creativeSuggestions.map((suggestion, index) => (
                       <div
                         key={index}
-                        className="p-4 rounded-lg border bg-card hover:bg-muted transition-colors"
+                        className="p-3 sm:p-4 rounded-lg border-2 bg-card hover:bg-gradient-to-br hover:from-primary/5 hover:to-purple/5 hover:border-primary/30 transition-all duration-200 hover:shadow-md"
                       >
-                        <div className="flex items-start gap-3">
-                          <div className="text-2xl leading-none">{suggestion.icon}</div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold mb-1 truncate">{suggestion.title}</h4>
-                            <p className="text-sm text-muted-foreground mb-2 line-clamp-3">
-                              {suggestion.description}
-                            </p>
-                            <div className="bg-muted p-2 rounded text-xs">
-                              <strong>Pro tip:</strong> {suggestion.tips}
-                            </div>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2">
+                            <div className="text-xl sm:text-2xl">{suggestion.icon}</div>
+                            <h4 className="font-semibold text-sm sm:text-base flex-1">{suggestion.title}</h4>
+                          </div>
+                          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                            {suggestion.description}
+                          </p>
+                          <div className="bg-primary/5 border border-primary/10 p-2 rounded text-xs">
+                            <strong className="text-primary">Pro tip:</strong> {suggestion.tips}
                           </div>
                         </div>
                       </div>

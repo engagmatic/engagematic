@@ -11,6 +11,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useLinkedInProfile } from "../../hooks/useLinkedInProfile";
+import { WRITING_STYLES, TONE_OPTIONS, INDUSTRIES, EXPERIENCE_LEVELS, CONTENT_TYPES } from "@/constants/personaOptions";
 
 const Register = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -53,30 +54,6 @@ const Register = () => {
     { id: 4, title: "Preferences", description: "Customize your experience" }
   ];
 
-  const industries = [
-    "Technology", "Healthcare", "Finance", "Education", "Marketing", "Sales",
-    "Consulting", "Real Estate", "Manufacturing", "Retail", "Media", "Non-profit",
-    "Government", "Legal", "Other"
-  ];
-
-  const experienceLevels = [
-    "Student/Entry Level", "1-3 years", "3-5 years", "5-10 years", "10+ years", "Executive"
-  ];
-
-  const writingStyles = [
-    "Professional & Formal", "Conversational & Friendly", "Authoritative & Expert",
-    "Storytelling & Personal", "Data-Driven & Analytical", "Motivational & Inspiring"
-  ];
-
-  const tones = [
-    "Confident", "Humble", "Enthusiastic", "Thoughtful", "Direct", "Empathetic"
-  ];
-
-  const contentTypes = [
-    "Industry Insights", "Personal Stories", "Educational Content", "Behind-the-Scenes",
-    "Thought Leadership", "Career Advice", "Product Updates", "Company Culture"
-  ];
-
   const postingFrequencies = [
     "Daily", "3-4 times per week", "2-3 times per week", "Weekly", "Bi-weekly"
   ];
@@ -108,24 +85,15 @@ const Register = () => {
       return;
     }
 
-    const result = await analyzeProfile(formData.linkedinUrl);
-    if (result.success && result.data) {
-      // Auto-fill form with LinkedIn insights
-      setFormData(prev => ({
-        ...prev,
-        industry: result.data.industry || prev.industry,
-        experience: result.data.experienceLevel || prev.experience,
-        writingStyle: result.data.contentStrategy?.tone || prev.writingStyle,
-        tone: result.data.contentStrategy?.tone || prev.tone,
-        expertise: result.data.contentStrategy?.focus || prev.expertise,
-        targetAudience: result.data.contentStrategy?.contentTypes?.join(", ") || prev.targetAudience
-      }));
-
-      toast({
-        title: "Profile analyzed! 🎯",
-        description: "Form auto-filled with LinkedIn insights",
-      });
-    }
+    // Skip LinkedIn analysis during registration - it requires authentication
+    // This is optional and can be done after account creation
+    toast({
+      title: "LinkedIn URL saved! ✓",
+      description: "We'll analyze your profile after you create your account. Complete registration to continue.",
+    });
+    
+    // Just save the URL for now
+    // The analysis can be done after login from the dashboard or profile settings
   };
 
   const validateStep = (step) => {
@@ -426,7 +394,7 @@ const Register = () => {
                       <SelectValue placeholder="Select your industry" />
                     </SelectTrigger>
                     <SelectContent>
-                      {industries.map((industry) => (
+                      {INDUSTRIES.map((industry) => (
                         <SelectItem key={industry} value={industry}>
                           {industry}
                         </SelectItem>
@@ -442,7 +410,7 @@ const Register = () => {
                       <SelectValue placeholder="Select your experience level" />
                     </SelectTrigger>
                     <SelectContent>
-                      {experienceLevels.map((level) => (
+                      {EXPERIENCE_LEVELS.map((level) => (
                         <SelectItem key={level} value={level}>
                           {level}
                         </SelectItem>
@@ -487,9 +455,15 @@ const Register = () => {
                       <SelectValue placeholder="How do you like to write?" />
                     </SelectTrigger>
                     <SelectContent>
-                      {writingStyles.map((style) => (
-                        <SelectItem key={style} value={style}>
-                          {style}
+                      {WRITING_STYLES.map((style) => (
+                        <SelectItem key={style.value} value={style.value}>
+                          <div className="flex items-center gap-2">
+                            <span>{style.icon}</span>
+                            <div>
+                              <div className="font-medium">{style.label}</div>
+                              <div className="text-xs text-muted-foreground">{style.desc}</div>
+                            </div>
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -503,9 +477,15 @@ const Register = () => {
                       <SelectValue placeholder="What tone should your content have?" />
                     </SelectTrigger>
                     <SelectContent>
-                      {tones.map((tone) => (
-                        <SelectItem key={tone} value={tone}>
-                          {tone}
+                      {TONE_OPTIONS.map((tone) => (
+                        <SelectItem key={tone.value} value={tone.value}>
+                          <div className="flex items-center gap-2">
+                            <span>{tone.icon}</span>
+                            <div>
+                              <div className="font-medium">{tone.label}</div>
+                              <div className="text-xs text-muted-foreground">{tone.desc}</div>
+                            </div>
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -571,7 +551,7 @@ const Register = () => {
                 <div className="space-y-2">
                   <Label>Content Types You Want to Create</Label>
                   <div className="grid grid-cols-2 gap-2">
-                    {contentTypes.map((type) => (
+                    {CONTENT_TYPES.map((type) => (
                       <Button
                         key={type}
                         type="button"
@@ -621,19 +601,15 @@ const Register = () => {
                       type="button"
                       variant="outline"
                       onClick={handleLinkedInAnalysis}
-                      disabled={isAnalyzing || !formData.linkedinUrl.trim() || isLoading}
+                      disabled={!formData.linkedinUrl.trim() || isLoading}
                       className="gap-2"
                     >
-                      {isAnalyzing ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Sparkles className="h-4 w-4" />
-                      )}
-                      {isAnalyzing ? "Analyzing..." : "Analyze"}
+                      <Sparkles className="h-4 w-4" />
+                      Save URL
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    💡 We'll analyze your profile to auto-fill your persona details
+                    💡 Optional: We can analyze your profile after registration to enhance your persona
                   </p>
                 </div>
               </div>

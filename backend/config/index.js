@@ -30,7 +30,7 @@ export const config = {
     process.env.RAZORPAY_WEBHOOK_SECRET || "your-razorpay-webhook-secret",
 
   // Frontend URL
-  FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:5173",
+  FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:8080",
 
   // Rate Limiting - Increased for development
   RATE_LIMIT_WINDOW_MS: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Activity, User, LogOut, Menu, X } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Activity, User, LogOut, Menu, Home, FileText, MessageSquare, Target, LayoutGrid } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useState } from "react";
 import {
@@ -12,6 +12,7 @@ import {
 export const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -36,6 +37,15 @@ export const Header = () => {
     }
   };
 
+  // Navigation items for authenticated users
+  const navItems = [
+    { path: '/dashboard', label: 'Dashboard', icon: Home },
+    { path: '/post-generator', label: 'Posts', icon: FileText },
+    { path: '/comment-generator', label: 'Comments', icon: MessageSquare },
+    { path: '/profile-analyzer', label: 'Analyzer', icon: Target },
+    { path: '/templates', label: 'Templates', icon: LayoutGrid },
+  ];
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
@@ -48,7 +58,28 @@ export const Header = () => {
           </Link>
           
           {/* Desktop Navigation */}
-          {!isAuthenticated && (
+          {isAuthenticated ? (
+            <nav className="hidden md:flex items-center gap-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="hidden lg:inline">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          ) : (
             <nav className="hidden md:flex items-center gap-6">
               <button 
                 onClick={() => scrollToSection('features')}
@@ -75,30 +106,24 @@ export const Header = () => {
           <div className="hidden sm:flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-4 w-4 text-primary" />
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                    <User className="h-4 w-4 text-white" />
                   </div>
-                  <span className="text-sm font-medium hidden lg:block">
-                    {user?.name}
-                  </span>
+                  <div className="hidden lg:block">
+                    <p className="text-xs font-medium leading-none">{user?.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{user?.email}</p>
+                  </div>
                 </div>
                 <Button 
-                  variant="ghost" 
+                  variant="outline" 
                   onClick={handleLogout}
                   disabled={isLoggingOut}
                   className="gap-2"
                   size="sm"
                 >
                   <LogOut className="h-4 w-4" />
-                  <span className="hidden md:inline">{isLoggingOut ? 'Signing out...' : 'Sign Out'}</span>
-                </Button>
-                <Button 
-                  onClick={() => navigate('/dashboard')}
-                  className="shadow-pulse hover-pulse"
-                  size="sm"
-                >
-                  Dashboard
+                  <span className="hidden md:inline">{isLoggingOut ? 'Signing out...' : 'Logout'}</span>
                 </Button>
               </>
             ) : (
@@ -130,59 +155,79 @@ export const Header = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[280px] sm:w-[350px]">
               <div className="flex flex-col gap-6 mt-8">
-                {!isAuthenticated && (
-                  <nav className="flex flex-col gap-4">
-                    <button 
-                      onClick={() => scrollToSection('features')}
-                      className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
-                    >
-                      Features
-                    </button>
-                    <button 
-                      onClick={() => scrollToSection('pricing')}
-                      className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
-                    >
-                      Pricing
-                    </button>
-                    <button 
-                      onClick={() => scrollToSection('faq')}
-                      className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
-                    >
-                      FAQ
-                    </button>
-                  </nav>
-                )}
-
-                <div className="flex flex-col gap-3 pt-4 border-t">
-                  {isAuthenticated ? (
-                    <>
-                      <div className="flex items-center gap-3 pb-2">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <User className="h-5 w-5 text-primary" />
-                        </div>
-                        <span className="text-sm font-medium">{user?.name}</span>
+                {isAuthenticated ? (
+                  <>
+                    {/* User Profile in Mobile */}
+                    <div className="flex items-center gap-3 pb-4 border-b">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                        <User className="h-5 w-5 text-white" />
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{user?.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                      </div>
+                    </div>
+
+                    {/* Navigation Links in Mobile */}
+                    <nav className="flex flex-col gap-2">
+                      {navItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = location.pathname === item.path;
+                        return (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                              isActive
+                                ? 'bg-primary text-primary-foreground'
+                                : 'text-foreground hover:bg-muted'
+                            }`}
+                          >
+                            <Icon className="h-4 w-4" />
+                            {item.label}
+                          </Link>
+                        );
+                      })}
+                    </nav>
+
+                    {/* Logout Button */}
+                    <div className="pt-4 border-t mt-auto">
                       <Button 
-                        onClick={() => {
-                          navigate('/dashboard');
-                          setMobileMenuOpen(false);
-                        }}
-                        className="w-full shadow-pulse hover-pulse"
-                      >
-                        Dashboard
-                      </Button>
-                      <Button 
-                        variant="ghost" 
+                        variant="outline" 
                         onClick={handleLogout}
                         disabled={isLoggingOut}
                         className="w-full gap-2"
                       >
                         <LogOut className="h-4 w-4" />
-                        {isLoggingOut ? 'Signing out...' : 'Sign Out'}
+                        {isLoggingOut ? 'Signing out...' : 'Logout'}
                       </Button>
-                    </>
-                  ) : (
-                    <>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <nav className="flex flex-col gap-4">
+                      <button 
+                        onClick={() => scrollToSection('features')}
+                        className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
+                      >
+                        Features
+                      </button>
+                      <button 
+                        onClick={() => scrollToSection('pricing')}
+                        className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
+                      >
+                        Pricing
+                      </button>
+                      <button 
+                        onClick={() => scrollToSection('faq')}
+                        className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
+                      >
+                        FAQ
+                      </button>
+                    </nav>
+
+                    <div className="flex flex-col gap-3 pt-4 border-t">
                       <Button 
                         onClick={() => {
                           navigate('/auth/login');
@@ -202,9 +247,9 @@ export const Header = () => {
                       >
                         Start Free Trial
                       </Button>
-                    </>
-                  )}
-                </div>
+                    </div>
+                  </>
+                )}
               </div>
             </SheetContent>
           </Sheet>
