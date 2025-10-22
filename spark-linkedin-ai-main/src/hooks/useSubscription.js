@@ -13,12 +13,22 @@ export function useSubscription() {
   const fetchSubscription = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await apiClient.request("/subscription");
+      // Fetch both subscription and usage stats
+      const [subscriptionResponse, usageResponse] = await Promise.all([
+        apiClient.request("/subscription"),
+        apiClient.request("/subscription/usage"),
+      ]);
 
-      if (response.success) {
-        setSubscription(response.data);
+      if (subscriptionResponse.success && usageResponse.success) {
+        // Merge subscription and usage data
+        const mergedData = {
+          ...subscriptionResponse.data,
+          ...usageResponse.data,
+        };
+        setSubscription(mergedData);
+        setUsage(usageResponse.data);
       } else {
-        throw new Error(response.message || "Failed to fetch subscription");
+        throw new Error("Failed to fetch subscription");
       }
     } catch (error) {
       console.error("Subscription fetch error:", error);

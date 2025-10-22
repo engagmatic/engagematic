@@ -123,15 +123,21 @@ export const SubscriptionStatus = () => {
         {/* Tokens */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Tokens</span>
-            <span className="text-sm text-muted-foreground">
-              {getTokensUsed()}/{getTokensTotal()}
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-yellow-500" />
+              <span className="text-sm font-medium">Tokens Available</span>
+            </div>
+            <span className="text-sm font-semibold text-foreground">
+              {getTokensRemaining()}/{getTokensTotal()}
             </span>
           </div>
           <Progress 
-            value={(getTokensUsed() / getTokensTotal()) * 100} 
-            className="h-2"
+            value={(getTokensRemaining() / getTokensTotal()) * 100} 
+            className="h-2 bg-gray-200"
           />
+          <p className="text-xs text-muted-foreground mt-1">
+            {getTokensUsed()} tokens used
+          </p>
         </div>
 
         {/* Posts */}
