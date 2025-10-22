@@ -3,6 +3,8 @@ import { body, validationResult } from "express-validator";
 import { authenticateToken } from "../middleware/auth.js";
 import profileAnalyzer from "../services/profileAnalyzer.js";
 import subscriptionService from "../services/subscriptionService.js";
+import pdfExportService from "../services/pdfExportService.js";
+import ProfileAnalysis from "../models/ProfileAnalysis.js";
 
 const router = express.Router();
 
@@ -96,6 +98,75 @@ router.get("/history", authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch analysis history",
+    });
+  }
+});
+
+// Export analysis as PDF
+router.get("/export-pdf/:analysisId", authenticateToken, async (req, res) => {
+  try {
+    const { analysisId } = req.params;
+    const userId = req.user.userId;
+
+    console.log("📄 Generating PDF for analysis:", analysisId);
+
+    // Find the analysis
+    const analysis = await ProfileAnalysis.findById(analysisId);
+
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        message: "Analysis not found",
+      });
+    }
+
+    // Check ownership
+    if (analysis.userId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized access to this analysis",
+      });
+    }
+
+    // Prepare data for PDF
+    const pdfData = {
+      scores: analysis.scores,
+      recommendations: {
+        headlines: analysis.suggestedHeadlines || [],
+        aboutSection: analysis.suggestedAbout || "",
+        skills: analysis.suggestedSkills || [],
+        keywords: analysis.keywords || [],
+        improvements: analysis.recommendations || [],
+        industryInsights: analysis.industryInsights || {},
+      },
+      profileData: analysis.profileData || {},
+      analyzedAt: analysis.analyzedAt,
+    };
+
+    // Generate PDF
+    const pdfBuffer = await pdfExportService.generateProfileAnalysisPDF(
+      pdfData
+    );
+
+    // Set response headers for PDF download
+    const fileName = `LinkedIn_Analysis_${
+      analysis.profileData.fullName || "Report"
+    }_${new Date().toISOString().split("T")[0]}.pdf`;
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    res.setHeader("Content-Length", pdfBuffer.length);
+
+    console.log("✅ PDF generated successfully:", fileName);
+
+    // Send PDF
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("❌ PDF export error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to generate PDF",
+      error: error.message,
     });
   }
 });

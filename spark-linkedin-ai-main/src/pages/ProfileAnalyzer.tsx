@@ -76,6 +76,63 @@ const ProfileAnalyzer = () => {
     setTimeout(() => setCopiedSection(""), 2000);
   };
 
+  const handleExportPDF = async () => {
+    if (!analysis || !analysis.id) {
+      toast({
+        title: "No Analysis Available",
+        description: "Please analyze a profile first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Generating PDF...",
+        description: "Please wait while we create your report",
+      });
+
+      // Get token for authenticated request
+      const token = localStorage.getItem('token');
+      
+      // Fetch PDF from backend
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/profile-analyzer/export-pdf/${analysis.id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      // Get PDF blob
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `LinkedIn_Profile_Analysis_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "PDF Downloaded! 🎉",
+        description: "Your analysis report has been saved",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: error.message || "Failed to export PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getScoreColor = (score) => {
     if (score >= 80) return "text-green-600";
     if (score >= 60) return "text-yellow-600";
@@ -429,11 +486,19 @@ const ProfileAnalyzer = () => {
             {/* Export Actions */}
             <Card className="p-6">
               <div className="flex flex-wrap gap-4 justify-center">
-                <Button size="lg" className="gap-2">
+                <Button size="lg" className="gap-2" onClick={handleExportPDF}>
                   <Download className="h-5 w-5" />
                   Export as PDF
                 </Button>
-                <Button size="lg" variant="outline" className="gap-2">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="gap-2"
+                  onClick={() => {
+                    setAnalysis(null);
+                    setProfileUrl("");
+                  }}
+                >
                   <Sparkles className="h-5 w-5" />
                   Analyze Another Profile
                 </Button>

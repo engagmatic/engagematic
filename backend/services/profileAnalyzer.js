@@ -218,63 +218,113 @@ class ProfileAnalyzer {
    */
   async generateRecommendations(profileData, scores) {
     try {
-      const prompt = `You are a world-class LinkedIn profile optimization expert with deep industry knowledge.
+      const prompt = `You are a TOP 1% LinkedIn growth strategist with 10+ years of experience optimizing profiles for executives, founders, and thought leaders. You understand the LinkedIn algorithm inside-out (2024 updates), SSI scoring, and what makes profiles rank #1 in recruiter/buyer searches.
 
-ANALYZE THIS REAL LINKEDIN PROFILE:
+📊 PROFILE TO ANALYZE:
 
-📊 Current Profile Data:
-- Headline: ${profileData.headline || "❌ Missing"}
-- About Section: ${profileData.about || "❌ Missing"}
-- Industry: ${profileData.industry || "Not specified"}
-- Location: ${profileData.location || "Not specified"}
-- Skills: ${profileData.skills?.join(", ") || "None listed"}
-- Experience: ${profileData.experience || "Not provided"}
+Headline: ${profileData.headline || "❌ MISSING (CRITICAL!)"}
+About: ${profileData.about || "❌ MISSING (CRITICAL!)"}
+Industry: ${profileData.industry || "Unknown"}
+Location: ${profileData.location || "Unknown"}
+Skills: ${profileData.skills?.join(", ") || "None"}
+Experience: ${profileData.experience || "Not provided"}
 
-📈 Current Performance Scores:
-- Headline Quality: ${scores.headline}/10
-- About Section: ${scores.about}/10
-- Profile Completeness: ${scores.completeness}/10
-- Keyword Optimization: ${scores.keywords}/10
-- Engagement Potential: ${scores.engagement}/10
-- Overall Score: ${scores.overall}/100
+Current Scores:
+- Headline: ${scores.headline}/10 | About: ${scores.about}/10 | Completeness: ${
+        scores.completeness
+      }/10
+- Keywords: ${scores.keywords}/10 | Engagement: ${
+        scores.engagement
+      }/10 | **OVERALL: ${scores.overall}/100**
 
-🎯 YOUR MISSION:
-Provide industry-specific, actionable, and highly personalized recommendations to transform this profile into a top 1% LinkedIn profile.
+---
 
-CRITICAL REQUIREMENTS:
-1. Analyze the actual content and industry context
-2. Provide 3 completely different headline options (each 80-120 characters)
-3. Rewrite the about section (250-350 words) with:
-   - Compelling hook opening
-   - Personal story/journey
-   - Key achievements with numbers
-   - Clear value proposition
-   - Strong call-to-action
-4. Suggest 10 highly relevant skills based on the industry
-5. Provide 8-12 SEO keywords for better profile visibility
-6. Give 5-8 specific, actionable improvements with priority levels
-7. Each improvement should be unique, specific, and immediately actionable
+🎯 YOUR MISSION: Transform this into a TOP 1% LinkedIn profile that:
+✅ Ranks #1 in recruiter/client searches
+✅ Gets 10x more profile views
+✅ Drives inbound opportunities daily
+✅ Builds trust and authority instantly
 
-Return ONLY valid JSON (no markdown, no extra text):
+🔥 LINKEDIN ALGORITHM SECRETS (Apply These):
+1. **Keyword Density**: LinkedIn searches prioritize first 3-5 words in headline + about section
+2. **SSI Score Boost**: Complete profiles with 10+ skills, custom URL, and rich media get priority
+3. **Engagement Signals**: Profiles with recent activity (posts, comments) rank 5x higher
+4. **Semantic Search**: Use BOTH role titles AND outcome/value keywords (not just job titles!)
+5. **Mobile-First**: 60% of profile views are mobile - keep headlines concise, about sections scannable
+
+📝 CRITICAL REQUIREMENTS:
+
+**HEADLINES (3 options, each 80-120 chars):**
+- Start with ROLE | VALUE PROPOSITION | KEY SKILL/NICHE
+- Use power words: "Helping", "Building", "Scaling", "Driving", "Transforming"
+- Include 1-2 niche keywords for SEO
+- NO generic buzzwords ("passionate", "results-driven", "dedicated")
+- Make it sound HUMAN, not corporate
+
+**ABOUT SECTION (250-300 words, ultra-scannable):**
+Structure:
+1. **HOOK (1-2 sentences)**: Start with a bold statement or relatable problem
+2. **CREDIBILITY (2-3 sentences)**: Years of experience, big wins, numbers/metrics
+3. **VALUE (3-4 bullet points)**: What you help clients/teams achieve (be SPECIFIC)
+4. **PERSONAL TOUCH (1-2 sentences)**: What drives you, unique perspective
+5. **CTA (1 sentence)**: Clear next step (DM, email, book a call)
+
+Write like a human having coffee with someone - NO corporate jargon, NO fluff!
+
+**SKILLS (10 most relevant):**
+- Mix of hard skills (technical) + soft skills (leadership, strategy)
+- Prioritize skills with high search volume in ${
+        profileData.industry || "your industry"
+      }
+- Skills that appear in job descriptions for senior roles
+
+**SEO KEYWORDS (8-12):**
+- Job titles people search for (e.g., "Senior Data Scientist", "Marketing Director")
+- Industry terms (e.g., "SaaS Marketing", "Fintech", "AI/ML")
+- Skill combinations (e.g., "Python + AWS", "Growth Marketing + Analytics")
+
+**IMPROVEMENTS (5-7 actionable steps):**
+- Each must be SPECIFIC and IMMEDIATELY ACTIONABLE (not vague advice)
+- Explain exactly HOW to do it (step-by-step if needed)
+- Quantify expected impact (e.g., "20% more views", "2x connection rate")
+- Focus on LinkedIn algorithm hacks, not generic profile tips
+
+**INDUSTRY INSIGHTS:**
+- 3 REAL trends happening NOW in ${
+        profileData.industry || "this industry"
+      } (not generic BS)
+- Specific opportunities for professionals in this field
+- Tactical advice on how to stand out (not "be authentic" - give REAL tactics!)
+
+---
+
+🚨 CRITICAL: Return ONLY valid JSON (no markdown, no explanations):
+
 {
-  "headlines": ["headline option 1", "headline option 2", "headline option 3"],
-  "aboutSection": "complete rewritten about section text",
-  "skills": ["skill1", "skill2", ... 10 skills total],
-  "keywords": ["keyword1", "keyword2", ... 8-12 keywords],
+  "headlines": [
+    "Option 1 here (80-120 chars, starts with role|value|skill)",
+    "Option 2 here (different angle, same format)",
+    "Option 3 here (bold/unique, same format)"
+  ],
+  "aboutSection": "Full rewritten about section here (250-300 words, ultra-scannable with line breaks, NO corporate jargon, sounds like a real human)",
+  "skills": ["skill1", "skill2", "skill3", "skill4", "skill5", "skill6", "skill7", "skill8", "skill9", "skill10"],
+  "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5", "keyword6", "keyword7", "keyword8", "keyword9", "keyword10"],
   "improvements": [
     {
-      "priority": "high",
-      "category": "headline|about|skills|photo|experience|engagement|networking",
-      "suggestion": "specific actionable advice with context",
-      "expectedImpact": "what improvement this will bring"
+      "priority": "critical",
+      "category": "headline",
+      "suggestion": "EXACT step-by-step what to do (be ULTRA specific, include examples)",
+      "expectedImpact": "Quantified result (e.g., '3x more recruiter searches')"
     }
   ],
   "industryInsights": {
-    "trends": ["current trend 1", "current trend 2", "current trend 3"],
-    "opportunities": "specific opportunities in this industry",
-    "competitiveEdge": "how to stand out in this industry"
+    "trends": ["Real trend 1 happening NOW", "Real trend 2", "Real trend 3"],
+    "opportunities": "Specific opportunities in this industry RIGHT NOW (2024)",
+    "competitiveEdge": "TACTICAL advice to stand out (no fluff - real strategies!)"
   }
-}`;
+}
+
+Make it SO GOOD that the person immediately feels the value and implements your suggestions today!`;
 
       // Use the correct Google AI method
       const response = await googleAI.generatePost(

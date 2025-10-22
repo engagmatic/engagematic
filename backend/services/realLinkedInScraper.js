@@ -1,10 +1,13 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 import googleAI from "./googleAI.js";
+import puppeteerScraper from "./puppeteerLinkedInScraper.js";
 
 /**
  * Real LinkedIn Profile Scraper using multiple methods
+ * - Puppeteer Browser Automation (FREE, most reliable for public profiles)
  * - Proxycurl API (professional, requires API key)
+ * - RapidAPI (requires API key)
  * - Public profile scraping with AI enhancement
  * - Fallback to AI-powered analysis
  */
@@ -12,6 +15,7 @@ class RealLinkedInScraper {
   constructor() {
     this.proxycurlApiKey = process.env.PROXYCURL_API_KEY || null;
     this.rapidApiKey = process.env.RAPIDAPI_KEY || null;
+    this.usePuppeteer = true; // Enable Puppeteer by default (FREE!)
   }
 
   /**
@@ -28,8 +32,20 @@ class RealLinkedInScraper {
 
       let profileData = null;
 
-      // Method 1: Try Proxycurl API (most reliable)
-      if (this.proxycurlApiKey) {
+      // Method 1: Try Puppeteer Browser Automation (FREE & RELIABLE!)
+      if (this.usePuppeteer && !profileData) {
+        console.log("🤖 Attempting Puppeteer browser scraping (FREE)...");
+        const puppeteerResult = await puppeteerScraper.scrapeProfile(profileUrl);
+        if (puppeteerResult.success && puppeteerResult.data) {
+          console.log("✅ Successfully scraped with Puppeteer!");
+          return { success: true, data: puppeteerResult.data, method: "puppeteer" };
+        } else {
+          console.log("⚠️ Puppeteer scraping failed:", puppeteerResult.error);
+        }
+      }
+
+      // Method 2: Try Proxycurl API (requires API key)
+      if (this.proxycurlApiKey && !profileData) {
         console.log("📡 Attempting Proxycurl API scraping...");
         profileData = await this.scrapeWithProxycurl(profileUrl);
         if (profileData) {
@@ -38,7 +54,7 @@ class RealLinkedInScraper {
         }
       }
 
-      // Method 2: Try RapidAPI LinkedIn scraper
+      // Method 3: Try RapidAPI LinkedIn scraper (requires API key)
       if (this.rapidApiKey && !profileData) {
         console.log("📡 Attempting RapidAPI scraping...");
         profileData = await this.scrapeWithRapidAPI(profileUrl);
@@ -48,7 +64,7 @@ class RealLinkedInScraper {
         }
       }
 
-      // Method 3: Public profile scraping + AI enhancement
+      // Method 4: Public profile scraping + AI enhancement
       if (!profileData) {
         console.log("🤖 Using public scraping + AI enhancement...");
         profileData = await this.scrapePublicProfile(profileUrl);
