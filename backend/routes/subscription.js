@@ -149,9 +149,7 @@ router.post(
   "/upgrade",
   authenticateToken,
   [
-    body("plan")
-      .isIn(["starter", "pro", "enterprise"])
-      .withMessage("Valid plan is required"),
+    body("plan").isIn(["starter", "pro"]).withMessage("Valid plan is required"),
     body("billingInterval")
       .optional()
       .isIn(["monthly", "yearly"])

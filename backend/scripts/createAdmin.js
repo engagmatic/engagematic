@@ -67,7 +67,7 @@ async function createAdminUser() {
       isAdmin: true,
       isActive: true,
       subscriptionStatus: "active",
-      plan: "enterprise", // Give admin enterprise plan
+      plan: "pro", // Give admin pro plan
     });
 
     await adminUser.save();

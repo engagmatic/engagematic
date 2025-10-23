@@ -1,232 +1,174 @@
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Users,
+import { useEffect, useState } from 'react';
+import { AdminLayout } from '../../components/admin/AdminLayout';
+import { Card } from '@/components/ui/card';
+import { 
+  Users, 
+  FileText, 
+  MessageSquare, 
   TrendingUp,
   DollarSign,
-  FileText,
-  MessageSquare,
-  Target,
   Activity,
-  RefreshCw,
   UserCheck,
   UserPlus,
-  Percent,
-} from "lucide-react";
-import apiClient from "@/services/api";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+  ArrowUpRight,
+  ArrowDownRight
+} from 'lucide-react';
 
-interface DashboardData {
-  overview: {
-    totalUsers: number;
-    activeUsers: number;
-    todaySignups: number;
-    trialUsers: number;
-    paidUsers: number;
-    conversionRate: number;
-    waitlistCount: number;
-  };
-  content: {
-    totalPosts: number;
-    totalComments: number;
-    todayPosts: number;
-    todayComments: number;
-    profileAnalyses: number;
-  };
-  revenue: {
-    mrr: number;
-    arr: number;
-  };
-  topCreators: Array<{
-    name: string;
-    email: string;
-    contentCount: number;
-  }>;
+interface DashboardStats {
+  totalUsers: number;
+  activeUsers: number;
+  newUsersToday: number;
+  totalPosts: number;
+  totalComments: number;
+  totalRevenue: number;
+  conversionRate: number;
+  growthRate: number;
 }
 
-export const AdminDashboard = () => {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const navigate = useNavigate();
-  const { toast } = useToast();
+export default function AdminDashboard() {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    activeUsers: 0,
+    newUsersToday: 0,
+    totalPosts: 0,
+    totalComments: 0,
+    totalRevenue: 0,
+    conversionRate: 0,
+    growthRate: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchDashboard = async () => {
+  useEffect(() => {
+    fetchDashboardStats();
+  }, []);
+
+  const fetchDashboardStats = async () => {
     try {
-      setLoading(true);
-      const response = await apiClient.request("/admin/dashboard", {
-        method: "GET",
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch('http://localhost:5000/api/admin/stats', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
-      if (response.success) {
-        setData(response.data);
-        setLastUpdated(new Date());
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data);
       }
-    } catch (error: any) {
-      if (error.message?.includes("Admin")) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have admin privileges",
-          variant: "destructive",
-        });
-        navigate("/dashboard");
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to load dashboard data",
-          variant: "destructive",
-        });
-      }
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchDashboard();
-
-    // Auto-refresh every 60 seconds
-    const interval = setInterval(() => {
-      fetchDashboard();
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  if (loading && !data) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
-        <div className="text-center">
-          <RefreshCw className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading admin dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!data) {
-    return null;
-  }
-
-  const stats = [
+  const statCards = [
     {
-      title: "Total Users",
-      value: data.overview.totalUsers,
+      title: 'Total Users',
+      value: stats.totalUsers,
       icon: Users,
-      change: `+${data.overview.todaySignups} today`,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      change: '+12%',
+      positive: true,
+      color: 'from-blue-500 to-blue-600'
     },
     {
-      title: "Active Users",
-      value: data.overview.activeUsers,
+      title: 'Active Users',
+      value: stats.activeUsers,
       icon: UserCheck,
-      change: `${((data.overview.activeUsers / data.overview.totalUsers) * 100).toFixed(1)}%`,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
+      change: '+8%',
+      positive: true,
+      color: 'from-green-500 to-green-600'
     },
     {
-      title: "Paid Users",
-      value: data.overview.paidUsers,
+      title: 'New Today',
+      value: stats.newUsersToday,
       icon: UserPlus,
-      change: `${data.overview.conversionRate}% conversion`,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
+      change: '+24',
+      positive: true,
+      color: 'from-purple-500 to-purple-600'
     },
     {
-      title: "MRR",
-      value: `$${data.revenue.mrr.toFixed(0)}`,
-      icon: DollarSign,
-      change: `$${data.revenue.arr.toFixed(0)} ARR`,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-    },
-  ];
-
-  const contentStats = [
-    {
-      title: "Total Posts",
-      value: data.content.totalPosts,
+      title: 'Posts Generated',
+      value: stats.totalPosts,
       icon: FileText,
-      today: data.content.todayPosts,
-      color: "text-blue-600",
+      change: '+156',
+      positive: true,
+      color: 'from-pink-500 to-pink-600'
     },
     {
-      title: "Total Comments",
-      value: data.content.totalComments,
+      title: 'Comments Generated',
+      value: stats.totalComments,
       icon: MessageSquare,
-      today: data.content.todayComments,
-      color: "text-purple-600",
+      change: '+89',
+      positive: true,
+      color: 'from-orange-500 to-orange-600'
     },
     {
-      title: "Profile Analyses",
-      value: data.content.profileAnalyses,
-      icon: Target,
-      today: 0,
-      color: "text-pink-600",
+      title: 'Revenue',
+      value: `$${stats.totalRevenue.toLocaleString()}`,
+      icon: DollarSign,
+      change: '+18%',
+      positive: true,
+      color: 'from-emerald-500 to-emerald-600'
     },
+    {
+      title: 'Conversion Rate',
+      value: `${stats.conversionRate}%`,
+      icon: TrendingUp,
+      change: '+2.3%',
+      positive: true,
+      color: 'from-cyan-500 to-cyan-600'
+    },
+    {
+      title: 'Growth Rate',
+      value: `${stats.growthRate}%`,
+      icon: Activity,
+      change: '+5.1%',
+      positive: true,
+      color: 'from-indigo-500 to-indigo-600'
+    }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Header */}
-      <div className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <Activity className="h-6 w-6 text-primary" />
-                Admin Dashboard
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Last updated: {lastUpdated.toLocaleTimeString()}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="gap-1">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                Live
-              </Badge>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchDashboard}
-                disabled={loading}
-                className="gap-2"
-              >
-                <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                Refresh
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/dashboard")}
-              >
-                Exit Admin
-              </Button>
-            </div>
-          </div>
+    <AdminLayout>
+      <div className="space-y-8">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Welcome back! Here's what's happening with LinkedInPulse.
+          </p>
         </div>
-      </div>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Overview Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => {
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {statCards.map((stat) => {
             const Icon = stat.icon;
+            
             return (
-              <Card key={index} className="p-6 hover-lift">
+              <Card key={stat.title} className="p-6 hover:shadow-lg transition-shadow">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">{stat.title}</p>
-                    <p className="text-3xl font-bold mb-2">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.change}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                      {stat.title}
+                    </p>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {isLoading ? '...' : stat.value}
+                    </h3>
+                    <div className="flex items-center gap-1 mt-2">
+                      {stat.positive ? (
+                        <ArrowUpRight className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <ArrowDownRight className="h-4 w-4 text-red-600" />
+                      )}
+                      <span className={`text-sm font-medium ${stat.positive ? 'text-green-600' : 'text-red-600'}`}>
+                        {stat.change}
+                      </span>
+                      <span className="text-xs text-gray-500">vs last week</span>
+                    </div>
                   </div>
-                  <div className={`p-3 rounded-xl ${stat.bgColor}`}>
-                    <Icon className={`h-6 w-6 ${stat.color}`} />
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}>
+                    <Icon className="h-6 w-6 text-white" />
                   </div>
                 </div>
               </Card>
@@ -234,103 +176,67 @@ export const AdminDashboard = () => {
           })}
         </div>
 
-        {/* Content Stats */}
-        <Card className="p-6 mb-8">
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            Content Metrics
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {contentStats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <div key={index} className="border rounded-lg p-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Icon className={`h-5 w-5 ${stat.color}`} />
-                    <p className="font-semibold">{stat.title}</p>
-                  </div>
-                  <p className="text-3xl font-bold mb-1">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">
-                    +{stat.today} today
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </Card>
-
-        {/* User Breakdown */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Recent Activity Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Recent Users */}
           <Card className="p-6">
-            <h2 className="text-xl font-bold mb-6">User Breakdown</h2>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <span className="font-medium">Trial Users</span>
-                <Badge variant="secondary">{data.overview.trialUsers}</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <span className="font-medium">Paid Users</span>
-                <Badge className="bg-green-600">{data.overview.paidUsers}</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <span className="font-medium">Waitlist</span>
-                <Badge variant="outline">{data.overview.waitlistCount}</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg">
-                <span className="font-medium flex items-center gap-2">
-                  <Percent className="h-4 w-4" />
-                  Conversion Rate
-                </span>
-                <Badge className="bg-primary">{data.overview.conversionRate}%</Badge>
-              </div>
-            </div>
-          </Card>
-
-          {/* Top Creators */}
-          <Card className="p-6">
-            <h2 className="text-xl font-bold mb-6">Top Content Creators</h2>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              Recent Users
+            </h3>
             <div className="space-y-3">
-              {data.topCreators.slice(0, 5).map((creator, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline" className="w-8 h-8 flex items-center justify-center">
-                      {index + 1}
-                    </Badge>
-                    <div>
-                      <p className="font-medium text-sm">{creator.name}</p>
-                      <p className="text-xs text-muted-foreground">{creator.email}</p>
-                    </div>
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                    U{i}
                   </div>
-                  <Badge variant="secondary">{creator.contentCount} posts</Badge>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      User {i}
+                    </p>
+                    <p className="text-xs text-gray-500">Joined 2 hours ago</p>
+                  </div>
+                  <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                    Active
+                  </span>
                 </div>
               ))}
             </div>
           </Card>
+
+          {/* Recent Activity */}
+          <Card className="p-6">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              Recent Activity
+            </h3>
+            <div className="space-y-3">
+              {[
+                { action: 'Post generated', user: 'John Doe', time: '5 min ago', icon: FileText },
+                { action: 'Comment created', user: 'Jane Smith', time: '12 min ago', icon: MessageSquare },
+                { action: 'New signup', user: 'Mike Johnson', time: '23 min ago', icon: UserPlus },
+                { action: 'Profile analyzed', user: 'Sarah Wilson', time: '34 min ago', icon: Activity },
+                { action: 'Post generated', user: 'Tom Brown', time: '45 min ago', icon: FileText }
+              ].map((activity, i) => {
+                const Icon = activity.icon;
+                return (
+                  <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                      <Icon className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {activity.action}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {activity.user} • {activity.time}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
         </div>
-
-        {/* Quick Actions */}
-        <Card className="p-6">
-          <h2 className="text-xl font-bold mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button variant="outline" className="justify-start gap-2">
-              <Users className="h-4 w-4" />
-              View All Users
-            </Button>
-            <Button variant="outline" className="justify-start gap-2">
-              <MessageSquare className="h-4 w-4" />
-              View Waitlist
-            </Button>
-            <Button variant="outline" className="justify-start gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Analytics Report
-            </Button>
-          </div>
-        </Card>
       </div>
-    </div>
+    </AdminLayout>
   );
-};
-
+}

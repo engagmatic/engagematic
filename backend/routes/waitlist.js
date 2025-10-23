@@ -23,7 +23,7 @@ router.post(
       .isURL()
       .withMessage("Valid LinkedIn URL required"),
     body("plan")
-      .isIn(["starter", "pro", "enterprise"])
+      .isIn(["starter", "pro"])
       .withMessage("Valid plan selection required"),
     body("billingPeriod")
       .optional()

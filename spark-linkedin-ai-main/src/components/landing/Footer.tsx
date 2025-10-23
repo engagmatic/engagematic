@@ -1,4 +1,3 @@
-import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -31,9 +30,11 @@ export const Footer = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl gradient-pulse flex items-center justify-center shadow-pulse">
-                  <Activity className="h-6 w-6 text-white" />
-                </div>
+                <img 
+                  src="/logo.svg" 
+                  alt="LinkedInPulse Logo" 
+                  className="w-10 h-10"
+                />
                 <span className="text-xl font-bold">LinkedInPulse</span>
               </div>
               <p className="text-sm text-muted-foreground">

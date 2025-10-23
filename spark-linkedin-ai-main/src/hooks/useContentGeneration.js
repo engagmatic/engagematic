@@ -1,12 +1,14 @@
 import { useState, useCallback } from "react";
 import apiClient from "../services/api.js";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export function useContentGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState(null);
   const [quotaInfo, setQuotaInfo] = useState(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const generatePost = useCallback(
     async (postData) => {
@@ -27,12 +29,18 @@ export function useContentGeneration() {
       } catch (error) {
         console.error("Post generation error:", error);
 
-        if (error.message.includes("QUOTA_EXCEEDED")) {
+        if (
+          error.message.includes("QUOTA_EXCEEDED") ||
+          error.message.includes("SUBSCRIPTION_LIMIT_EXCEEDED")
+        ) {
           toast({
-            title: "Quota exceeded! 📊",
-            description:
-              "You've reached your monthly limit. Upgrade your plan for more content.",
+            title: "⚠️ Monthly Limit Reached",
+            description: "Upgrade now to keep creating amazing content!",
             variant: "destructive",
+            action: {
+              label: "View Plans",
+              onClick: () => navigate("/pricing"),
+            },
           });
         } else {
           toast({
@@ -47,7 +55,7 @@ export function useContentGeneration() {
         setIsGenerating(false);
       }
     },
-    [toast]
+    [toast, navigate]
   );
 
   const generateComment = useCallback(
@@ -69,12 +77,18 @@ export function useContentGeneration() {
       } catch (error) {
         console.error("Comment generation error:", error);
 
-        if (error.message.includes("QUOTA_EXCEEDED")) {
+        if (
+          error.message.includes("QUOTA_EXCEEDED") ||
+          error.message.includes("SUBSCRIPTION_LIMIT_EXCEEDED")
+        ) {
           toast({
-            title: "Quota exceeded! 📊",
-            description:
-              "You've reached your monthly limit. Upgrade your plan for more content.",
+            title: "⚠️ Monthly Limit Reached",
+            description: "Upgrade now to keep creating amazing content!",
             variant: "destructive",
+            action: {
+              label: "View Plans",
+              onClick: () => navigate("/pricing"),
+            },
           });
         } else {
           toast({
@@ -89,7 +103,7 @@ export function useContentGeneration() {
         setIsGenerating(false);
       }
     },
-    [toast]
+    [toast, navigate]
   );
 
   const saveContent = useCallback(

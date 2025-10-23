@@ -13,7 +13,7 @@ const userSubscriptionSchema = new mongoose.Schema(
     // Subscription details
     plan: {
       type: String,
-      enum: ["trial", "starter", "pro", "enterprise"],
+      enum: ["trial", "starter", "pro"],
       default: "trial",
       required: true,
     },
@@ -78,11 +78,11 @@ const userSubscriptionSchema = new mongoose.Schema(
     limits: {
       postsPerMonth: {
         type: Number,
-        default: 50, // Trial limit
+        default: 25, // Trial limit (reduced to encourage upgrade)
       },
       commentsPerMonth: {
         type: Number,
-        default: 50, // Trial limit
+        default: 25, // Trial limit (reduced to encourage upgrade)
       },
       templatesAccess: {
         type: Boolean,
@@ -172,43 +172,33 @@ userSubscriptionSchema.pre("save", function (next) {
   if (this.isModified("plan")) {
     switch (this.plan) {
       case "trial":
-        this.limits.postsPerMonth = 50;
-        this.limits.commentsPerMonth = 50;
+        this.limits.postsPerMonth = 25; // Reduced to 50% to encourage upgrade
+        this.limits.commentsPerMonth = 25; // Reduced to 50% to encourage upgrade
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
-        this.limits.profileAnalyses = 3; // 3 analyses for trial
+        this.limits.profileAnalyses = 1; // Only 1 analysis for trial
         this.limits.prioritySupport = false;
         this.billing.amount = 0;
         break;
 
       case "starter":
-        this.limits.postsPerMonth = 100;
-        this.limits.commentsPerMonth = 100;
+        this.limits.postsPerMonth = 75; // ~2.5 posts per day
+        this.limits.commentsPerMonth = 100; // ~3-4 comments per day
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
-        this.limits.profileAnalyses = 5; // 5 per month for starter
+        this.limits.profileAnalyses = 3; // 3 per month for starter
         this.limits.prioritySupport = false;
-        this.billing.amount = 9;
+        this.billing.amount = 12; // $12/month
         break;
 
       case "pro":
-        this.limits.postsPerMonth = 300;
-        this.limits.commentsPerMonth = 300;
+        this.limits.postsPerMonth = 200; // ~6-7 posts per day
+        this.limits.commentsPerMonth = 400; // ~13-14 comments per day
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
-        this.limits.profileAnalyses = 20; // 20 per month for pro
+        this.limits.profileAnalyses = 10; // 10 per month for pro
         this.limits.prioritySupport = true;
-        this.billing.amount = 18;
-        break;
-
-      case "enterprise":
-        this.limits.postsPerMonth = 1000;
-        this.limits.commentsPerMonth = 1000;
-        this.limits.templatesAccess = true;
-        this.limits.linkedinAnalysis = true;
-        this.limits.profileAnalyses = -1; // Unlimited
-        this.limits.prioritySupport = true;
-        this.billing.amount = 49;
+        this.billing.amount = 24; // $24/month (2x starter)
         break;
     }
   }
@@ -383,9 +373,9 @@ userSubscriptionSchema.statics.createTrial = function (userId) {
     trialStartDate: new Date(),
     trialEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     tokens: {
-      total: 100, // 100 tokens for trial
+      total: 50, // Reduced from 100 to 50 to encourage upgrade
       used: 0,
-      remaining: 100,
+      remaining: 50,
     },
   });
 };

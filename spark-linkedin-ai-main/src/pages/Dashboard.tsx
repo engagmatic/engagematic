@@ -105,32 +105,104 @@ const Dashboard = () => {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
+          {/* Post Generator Card */}
           <Link to="/post-generator">
-            <Card className="p-8 hover-lift gradient-card border-border/50 group cursor-pointer">
-              <div className="w-16 h-16 rounded-xl gradient-pulse flex items-center justify-center mb-4 shadow-pulse group-hover:animate-heartbeat">
-                <FileText className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold mb-2">Post Generator</h3>
-              <p className="text-muted-foreground mb-4">
-                Create viral-worthy LinkedIn posts with AI that sounds authentically like you
-              </p>
-              <div className="text-primary font-medium group-hover:translate-x-2 transition-smooth inline-flex items-center">
-                Start Creating →
+            <Card className="relative overflow-hidden p-8 hover:shadow-2xl transition-all duration-300 group cursor-pointer border-2 hover:border-blue-400 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+              {/* Decorative background elements */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-bl-full" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-pink-400/10 to-blue-400/10 rounded-tr-full" />
+              
+              <div className="relative">
+                {/* Icon Badge */}
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center mb-6 shadow-2xl group-hover:scale-110 transition-transform duration-300">
+                  <FileText className="h-10 w-10 text-white" />
+                </div>
+                
+                {/* Badge */}
+                <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full mb-3">
+                  ✨ AI-POWERED
+                </div>
+                
+                {/* Title */}
+                <h3 className="text-3xl font-bold mb-3 text-gray-900">Post Generator</h3>
+                
+                {/* Description */}
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Create viral-worthy LinkedIn posts with AI that sounds authentically like you
+                </p>
+                
+                {/* Features List */}
+                <ul className="space-y-2 mb-6">
+                  <li className="flex items-center gap-2 text-sm text-gray-700">
+                    <span className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">✓</span>
+                    <span>15 AI personas + custom voice</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-700">
+                    <span className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">✓</span>
+                    <span>Viral hooks & smart formatting</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-700">
+                    <span className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">✓</span>
+                    <span>Zero-edit, LinkedIn-ready</span>
+                  </li>
+                </ul>
+                
+                {/* CTA */}
+                <div className="inline-flex items-center gap-2 text-blue-600 font-bold group-hover:gap-4 transition-all duration-300">
+                  <span>Start Creating</span>
+                  <span className="text-xl">→</span>
+                </div>
               </div>
             </Card>
           </Link>
 
+          {/* Comment Generator Card */}
           <Link to="/comment-generator">
-            <Card className="p-8 hover-lift gradient-card border-border/50 group cursor-pointer">
-              <div className="w-16 h-16 rounded-xl gradient-pulse flex items-center justify-center mb-4 shadow-pulse group-hover:animate-heartbeat">
-                <MessageSquare className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold mb-2">Comment Generator</h3>
-              <p className="text-muted-foreground mb-4">
-                Generate genuine, human-like comments that build real professional relationships
-              </p>
-              <div className="text-primary font-medium group-hover:translate-x-2 transition-smooth inline-flex items-center">
-                Generate Comments →
+            <Card className="relative overflow-hidden p-8 hover:shadow-2xl transition-all duration-300 group cursor-pointer border-2 hover:border-purple-400 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+              {/* Decorative background elements */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-bl-full" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-orange-400/10 to-purple-400/10 rounded-tr-full" />
+              
+              <div className="relative">
+                {/* Icon Badge */}
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 flex items-center justify-center mb-6 shadow-2xl group-hover:scale-110 transition-transform duration-300">
+                  <MessageSquare className="h-10 w-10 text-white" />
+                </div>
+                
+                {/* Badge */}
+                <div className="inline-block px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full mb-3">
+                  💬 ENGAGEMENT BOOST
+                </div>
+                
+                {/* Title */}
+                <h3 className="text-3xl font-bold mb-3 text-gray-900">Comment Generator</h3>
+                
+                {/* Description */}
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Generate genuine, human-like comments that build real professional relationships
+                </p>
+                
+                {/* Features List */}
+                <ul className="space-y-2 mb-6">
+                  <li className="flex items-center gap-2 text-sm text-gray-700">
+                    <span className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">✓</span>
+                    <span>Context-aware responses</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-700">
+                    <span className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">✓</span>
+                    <span>Natural conversation flow</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-700">
+                    <span className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">✓</span>
+                    <span>Build authentic connections</span>
+                  </li>
+                </ul>
+                
+                {/* CTA */}
+                <div className="inline-flex items-center gap-2 text-purple-600 font-bold group-hover:gap-4 transition-all duration-300">
+                  <span>Generate Comments</span>
+                  <span className="text-xl">→</span>
+                </div>
               </div>
             </Card>
           </Link>

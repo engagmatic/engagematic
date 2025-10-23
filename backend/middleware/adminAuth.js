@@ -1,77 +1,100 @@
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+import Admin from "../models/Admin.js";
 import { config } from "../config/index.js";
 
 /**
- * Middleware to verify admin access
- * Must be used after authenticateToken middleware
+ * Admin Authentication Middleware
+ * Verifies JWT token and checks if user is an admin
  */
-export const requireAdmin = async (req, res, next) => {
+const adminAuth = async (req, res, next) => {
   try {
-    // Check if user is authenticated (should be set by authenticateToken middleware)
-    if (!req.user || !req.user.userId) {
+    // Get token from header
+    const authHeader = req.header("Authorization");
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
-        message: "Authentication required",
+        message: "Access denied. No token provided.",
       });
     }
 
-    // Fetch user from database
-    const user = await User.findById(req.user.userId).select("+isAdmin");
+    const token = authHeader.replace("Bearer ", "");
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+    // Verify token
+    const decoded = jwt.verify(
+      token,
+      config.ADMIN_JWT_SECRET || config.JWT_SECRET
+    );
 
-    // Check if user is admin
-    if (!user.isAdmin) {
+    // Check if token is for admin
+    if (decoded.type !== "admin") {
       return res.status(403).json({
         success: false,
         message: "Access denied. Admin privileges required.",
-        code: "ADMIN_ONLY",
       });
     }
 
-    // Attach user to request for further use
-    req.adminUser = user;
+    // Check if admin exists and is active
+    const admin = await Admin.findById(decoded.adminId).select("-password");
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin account not found",
+      });
+    }
+
+    if (!admin.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Admin account is deactivated",
+      });
+    }
+
+    // Attach admin info to request
+    req.admin = {
+      adminId: admin._id,
+      username: admin.username,
+      role: admin.role,
+      email: admin.email,
+    };
+
     next();
   } catch (error) {
-    console.error("Admin auth error:", error);
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token",
+      });
+    }
+
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Token expired. Please login again.",
+      });
+    }
+
+    console.error("Admin auth middleware error:", error);
     res.status(500).json({
       success: false,
-      message: "Admin authentication failed",
+      message: "Server error during authentication",
     });
   }
 };
 
 /**
- * Combined middleware for admin routes (auth + admin check)
+ * Super Admin Only Middleware
+ * Must be used after adminAuth middleware
  */
-export const adminOnly = [
-  // Import authenticateToken here to avoid circular dependency
-  async (req, res, next) => {
-    try {
-      const token = req.header("Authorization")?.replace("Bearer ", "");
+const superAdminOnly = (req, res, next) => {
+  if (req.admin.role !== "super_admin") {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied. Super admin privileges required.",
+    });
+  }
+  next();
+};
 
-      if (!token) {
-        return res.status(401).json({
-          success: false,
-          message: "No authentication token provided",
-        });
-      }
-
-      const decoded = jwt.verify(token, config.JWT_SECRET);
-      req.user = { userId: decoded.userId };
-      next();
-    } catch (error) {
-      res.status(401).json({
-        success: false,
-        message: "Invalid or expired token",
-      });
-    }
-  },
-  requireAdmin,
-];
+export { adminAuth, superAdminOnly };

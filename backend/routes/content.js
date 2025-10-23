@@ -19,6 +19,28 @@ import * as cheerio from "cheerio";
 
 const router = express.Router();
 
+// Log share clicks (for analytics)
+router.post("/share-log", authenticateToken, async (req, res) => {
+  try {
+    const { contentId, platform } = req.body;
+
+    console.log(
+      `📤 Share logged: ${platform} - Content: ${contentId} - User: ${req.user._id}`
+    );
+
+    // You can expand this to store share analytics in the database if needed
+    // For now, just log it
+
+    res.json({
+      success: true,
+      message: "Share logged successfully",
+    });
+  } catch (error) {
+    console.error("Share log error:", error);
+    res.json({ success: true }); // Silent fail - don't break user experience
+  }
+});
+
 // Generate LinkedIn post - SIMPLIFIED to accept persona data directly
 router.post(
   "/posts/generate",
@@ -74,7 +96,21 @@ router.post(
         });
       }
 
-      // Generate content using Google AI
+      // Get user profile for personalization
+      const user = req.user;
+      const userProfile = {
+        jobTitle: user.profile?.jobTitle || null,
+        company: user.profile?.company || null,
+        industry: user.profile?.industry || null,
+        experience: user.profile?.experience || null,
+        goals: user.persona?.goals || null,
+        targetAudience: user.persona?.targetAudience || null,
+        expertise: user.persona?.expertise || null,
+      };
+
+      console.log("👤 User Profile for Personalization:", userProfile);
+
+      // Generate content using Google AI with user profile
       console.log("📝 Calling Google AI service...");
       console.log("Data:", {
         topic,
@@ -93,7 +129,8 @@ router.post(
         hook.text,
         persona,
         req.body.linkedinInsights || null,
-        profileInsights
+        profileInsights,
+        userProfile // Pass user profile for deep personalization
       );
 
       console.log("✅ AI response received:", {

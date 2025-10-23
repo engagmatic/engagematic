@@ -1,7 +1,17 @@
 import { Card } from "@/components/ui/card";
-import { Sparkles, MessageSquare, TrendingUp, Zap, Users, Target } from "lucide-react";
+import { Sparkles, MessageSquare, TrendingUp, Zap, Users, Target, Brain, Shield } from "lucide-react";
 
 const features = [
+  {
+    icon: Brain,
+    title: "LinkedIn-Trained AI Models",
+    description: "Our AI is trained on 50,000+ viral LinkedIn posts - not generic ChatGPT. Creates human-like content that beats AI detectors."
+  },
+  {
+    icon: Shield,
+    title: "Deep AI Personalization",
+    description: "Every post tailored to your industry, role, goals & expertise. 15 curated personas + your custom onboarding profile."
+  },
   {
     icon: Users,
     title: "AI Persona Engine",
@@ -37,8 +47,8 @@ export const Features = () => {
             AI-powered tools to help you create engaging LinkedIn posts, comments, and content that resonates with your audience.
           </p>
         </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (

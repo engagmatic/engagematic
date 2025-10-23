@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Activity, User, LogOut, Menu, Home, FileText, MessageSquare, Target, LayoutGrid, Crown } from "lucide-react";
+import { User, LogOut, Menu, Home, FileText, MessageSquare, Target, LayoutGrid, Crown } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useState } from "react";
@@ -52,9 +52,11 @@ export const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl gradient-pulse flex items-center justify-center shadow-pulse">
-              <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-white animate-heartbeat" />
-            </div>
+            <img 
+              src="/logo.svg" 
+              alt="LinkedInPulse Logo" 
+              className="w-8 h-8 sm:w-10 sm:h-10 hover:scale-110 transition-transform duration-200"
+            />
             <span className="text-lg sm:text-xl font-bold">LinkedInPulse</span>
           </Link>
           

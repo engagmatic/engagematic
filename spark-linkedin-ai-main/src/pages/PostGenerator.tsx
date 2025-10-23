@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb, Crown, Lock } from "lucide-react";
+import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb, Crown, Lock, Share2, Download, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useContentGeneration } from "../hooks/useContentGeneration";
@@ -15,6 +15,8 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { pageSEO } from "@/constants/seo";
+import { EXPANDED_PERSONAS, PERSONA_CATEGORIES } from "@/constants/expandedPersonas";
+import { formatForLinkedIn } from "@/utils/linkedinFormatting";
 
 const hookIcons = {
   story: Heart,
@@ -56,7 +58,7 @@ const PostGenerator = () => {
   const { profileData, analyzeProfile, isAnalyzing } = useLinkedInProfile();
   const { subscription } = useSubscription();
 
-  // Use user's personas first, fall back to samples only if no user personas
+  // Use user's personas first, fall back to expanded personas
   useEffect(() => {
     if (selectedPersona) return; // Already have a persona
 
@@ -64,11 +66,11 @@ const PostGenerator = () => {
     if (personas.length > 0) {
       setSelectedPersona(personas[0]);
       console.log('✅ User persona selected:', personas[0].name);
-    } else if (samplePersonas.length > 0) {
-      setSelectedPersona(samplePersonas[0]);
-      console.log('✅ Sample persona selected:', samplePersonas[0].name);
+    } else if (EXPANDED_PERSONAS.length > 0) {
+      setSelectedPersona(EXPANDED_PERSONAS[0]);
+      console.log('✅ Expanded persona selected:', EXPANDED_PERSONAS[0].name);
     }
-  }, [personas, samplePersonas, selectedPersona]);
+  }, [personas, selectedPersona]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -123,45 +125,24 @@ const PostGenerator = () => {
     const suggestions = [
       {
         type: "Carousel",
-        title: "Create a Carousel Post",
-        description: `Break down ${topic} into 5-7 slides with key points, statistics, or steps`,
+        title: "Carousel Post",
+        description: `Break down "${topic}" into 5-7 engaging slides with key insights and visuals`,
         icon: "📊",
-        tips: "Use Canva or PowerPoint. Each slide should have one main point with visuals."
+        tips: "Use Canva or Figma. Keep each slide focused on 1 main point. Add your logo for branding."
       },
       {
         type: "Video",
-        title: "Record a Video",
-        description: `Share your personal experience with ${topic} in a 2-3 minute video`,
+        title: "Short Video",
+        description: `Record a 60-90 second authentic video sharing your perspective on "${topic}"`,
         icon: "🎥",
-        tips: "Use LinkedIn's native video feature. Start with a hook, share your story, end with a call-to-action."
+        tips: "Hook viewers in first 3 seconds. Be genuine and conversational. End with a clear CTA."
       },
       {
-        type: "Image Series",
-        title: "Post Image Series",
-        description: `Create 3-4 related images showing different aspects of ${topic}`,
-        icon: "🖼️",
-        tips: "Use consistent branding. Each image should tell part of the story. Post them as separate posts or carousel."
-      },
-      {
-        type: "PDF Document",
-        title: "Share a PDF Guide",
-        description: `Create a comprehensive guide about ${topic} and share as a PDF attachment`,
+        type: "Document",
+        title: "PDF Guide",
+        description: `Create a valuable 2-3 page PDF guide or checklist about "${topic}"`,
         icon: "📄",
-        tips: "Keep it 2-3 pages max. Include actionable steps, infographics, or checklists."
-      },
-      {
-        type: "Poll",
-        title: "Create a Poll",
-        description: `Ask your network about their experience with ${topic} using LinkedIn's poll feature`,
-        icon: "📊",
-        tips: "Make it engaging and relevant. Use the results to create follow-up content."
-      },
-      {
-        type: "Document Share",
-        title: "Share a Document",
-        description: `Upload a presentation, checklist, or template related to ${topic}`,
-        icon: "📋",
-        tips: "Make it downloadable and valuable. Include your branding and contact info."
+        tips: "Include actionable steps, visuals, and your contact info. Make it downloadable."
       }
     ];
     setCreativeSuggestions(suggestions);
@@ -244,7 +225,8 @@ const PostGenerator = () => {
 
   const handleCopy = async () => {
     if (generatedContent) {
-      await copyToClipboard(generatedContent.content);
+      const formattedPost = formatForLinkedIn(generatedContent.content);
+      await copyToClipboard(formattedPost);
     }
   };
 
@@ -517,39 +499,49 @@ const PostGenerator = () => {
                   )}
                 </div>
                 <Select 
-                  value={selectedPersona?.name || selectedPersona?._id} 
+                  value={selectedPersona?.name || selectedPersona?._id || selectedPersona?.id} 
                   onValueChange={(value) => {
-                    // Find persona from either user personas or samples
-                    const allPersonas = [...personas, ...samplePersonas];
-                    const found = allPersonas.find(p => p.name === value || p._id === value);
+                    // Find persona from either user personas or expanded personas
+                    const allPersonas = [...personas, ...EXPANDED_PERSONAS];
+                    const found = allPersonas.find(p => p.name === value || p._id === value || p.id === value);
                     if (found) setSelectedPersona(found);
                   }}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a persona" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[400px]">
                     {/* Show user personas first (including onboarding persona) */}
                     {personas.length > 0 && (
                       <>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                          Your Personas
+                        </div>
                         {personas.map((persona) => (
                           <SelectItem key={persona._id} value={persona._id}>
                             {persona.name} {persona.industry && `- ${persona.industry}`}
-                            {persona.source === 'onboarding' && ' ✨ (Your Onboarding Persona)'}
+                            {persona.source === 'onboarding' && ' ✨'}
                           </SelectItem>
                         ))}
                       </>
                     )}
-                    {/* Then show sample personas if no user personas */}
-                    {personas.length === 0 && samplePersonas.length > 0 && (
-                      <>
-                        {samplePersonas.map((persona, idx) => (
-                          <SelectItem key={`sample-${idx}`} value={persona.name}>
-                            {persona.name} {persona.industry && `- ${persona.industry}`} (Sample)
-                          </SelectItem>
-                        ))}
-                      </>
-                    )}
+                    {/* Show expanded personas organized by category */}
+                    {PERSONA_CATEGORIES.map((category) => {
+                      const categoryPersonas = EXPANDED_PERSONAS.filter(p => p.category === category);
+                      if (categoryPersonas.length === 0) return null;
+                      return (
+                        <div key={category}>
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1">
+                            {category}
+                          </div>
+                          {categoryPersonas.map((persona) => (
+                            <SelectItem key={persona.id} value={persona.id}>
+                              {persona.icon} {persona.name}
+                            </SelectItem>
+                          ))}
+                        </div>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
                 {selectedPersona && (
@@ -607,14 +599,14 @@ const PostGenerator = () => {
           </div>
 
           {/* Right Column - Generated Content */}
-          <div className="lg:col-span-1">
-            <Card className="shadow-lg sticky top-4">
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="shadow-lg">
               <div className="p-6">
                 <h3 className="text-lg font-semibold mb-4">Generated Post</h3>
                 {generatedContent ? (
                   <div className="space-y-4">
                     <div className="p-4 bg-muted rounded-lg max-h-96 overflow-y-auto">
-                      <p className="whitespace-pre-wrap text-sm">{generatedContent.content}</p>
+                      <p className="whitespace-pre-wrap text-sm">{formatForLinkedIn(generatedContent.content)}</p>
                     </div>
                     
                     {generatedContent.engagementScore && (
@@ -624,25 +616,108 @@ const PostGenerator = () => {
                       </div>
                     )}
 
-                    <div className="flex gap-2">
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={handleCopy}
+                        >
+                          <Copy className="mr-2 h-4 w-4" />
+                          Copy
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={handleSave}
+                        >
+                          <Save className="mr-2 h-4 w-4" />
+                          Save
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={async () => {
+                            const formattedText = formatForLinkedIn(generatedContent.content);
+                            const blob = new Blob([formattedText], { type: 'text/plain' });
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `linkedin-post-${Date.now()}.txt`;
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            toast({ title: "Downloaded successfully!" });
+                          }}
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          Download
+                        </Button>
+                      </div>
+                      
+                      {/* Share on LinkedIn Button */}
                       <Button 
-                        variant="outline" 
                         size="sm" 
-                        className="flex-1"
-                        onClick={handleCopy}
+                        className="w-full bg-[#0077B5] hover:bg-[#006396] text-white"
+                        onClick={async () => {
+                          try {
+                            // Step 1: Copy post to clipboard with LinkedIn formatting
+                            const formattedPost = formatForLinkedIn(generatedContent.content);
+                            await navigator.clipboard.writeText(formattedPost);
+                            
+                            // Step 2: Log analytics
+                            try {
+                              await apiClient.post('/content/share-log', {
+                                contentId: generatedContent._id,
+                                platform: 'linkedin'
+                              });
+                            } catch (e) {
+                              // Silent fail for analytics
+                              console.log('Analytics log failed:', e);
+                            }
+                            
+                            // Step 3: Open LinkedIn's create post page
+                            const linkedInPostUrl = 'https://www.linkedin.com/feed/?shareActive=true';
+                            const popup = window.open(linkedInPostUrl, '_blank', 'width=800,height=700');
+                            
+                            if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+                              // Popup blocked
+                              toast({
+                                title: "✅ Post Copied!",
+                                description: "Popup blocked. Post copied to clipboard - open LinkedIn and paste (Ctrl+V)",
+                                variant: "default"
+                              });
+                            } else {
+                              // Success
+                              toast({
+                                title: "✅ Post Copied & LinkedIn Opened!",
+                                description: "Just paste (Ctrl+V or Cmd+V) in the LinkedIn post box and hit Post!"
+                              });
+                            }
+                          } catch (error) {
+                            console.error('Share error:', error);
+                            // Fallback to manual copy
+                            toast({
+                              title: "Opening LinkedIn...",
+                              description: "Copy the post above and paste it into LinkedIn",
+                              variant: "default"
+                            });
+                            window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank');
+                          }
+                        }}
                       >
-                        <Copy className="mr-2 h-4 w-4" />
-                        Copy
+                        <Share2 className="mr-2 h-4 w-4" />
+                        Copy & Open LinkedIn
+                        <ExternalLink className="ml-2 h-3 w-3" />
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={handleSave}
-                      >
-                        <Save className="mr-2 h-4 w-4" />
-                        Save
-                      </Button>
+                      <p className="text-xs text-muted-foreground text-center">
+                        💡 Auto-copies your post → Opens LinkedIn → Just paste (Ctrl+V) and post!
+                      </p>
+                      <p className="text-xs text-muted-foreground text-center opacity-70">
+                        Powered by LinkedInPulse
+                      </p>
                     </div>
                   </div>
                 ) : (
@@ -654,35 +729,61 @@ const PostGenerator = () => {
           </div>
         </Card>
 
-            {/* Creative Suggestions - Enhanced responsive layout */}
+            {/* Creative Suggestions - World-Class Design */}
             {creativeSuggestions.length > 0 && (
-              <Card className="shadow-lg mt-6 border-2">
-                <div className="p-4 sm:p-6">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2 flex items-center gap-2">
-                    <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
-                    Creative Format Suggestions
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-                    💡 Boost engagement with these LinkedIn post formats
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                    {creativeSuggestions.map((suggestion, index) => (
+              <Card className="shadow-xl border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50">
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-yellow-500 rounded-lg">
+                      <Lightbulb className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">
+                        Creative Format Suggestions
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Boost engagement with these LinkedIn formats
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    {creativeSuggestions.map((suggestion, idx) => (
                       <div
-                        key={index}
-                        className="p-3 sm:p-4 rounded-lg border-2 bg-card hover:bg-gradient-to-br hover:from-primary/5 hover:to-purple/5 hover:border-primary/30 transition-all duration-200 hover:shadow-md"
+                        key={idx}
+                        className="group relative bg-white border-2 border-gray-200 rounded-xl p-5 hover:border-yellow-400 hover:shadow-lg transition-all duration-300 cursor-pointer"
                       >
-                        <div className="flex flex-col gap-2">
-                          <div className="flex items-center gap-2">
-                            <div className="text-xl sm:text-2xl">{suggestion.icon}</div>
-                            <h4 className="font-semibold text-sm sm:text-base flex-1">{suggestion.title}</h4>
-                          </div>
-                          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
-                            {suggestion.description}
+                        {/* Number Badge */}
+                        <div className="absolute -top-3 -right-3 bg-gradient-to-br from-yellow-400 to-orange-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-sm shadow-lg group-hover:scale-110 transition-transform">
+                          {idx + 1}
+                        </div>
+                        
+                        {/* Header */}
+                        <div className="mb-3">
+                          <h4 className="font-bold text-lg text-gray-900 mb-1 flex items-center gap-2">
+                            <span className="text-2xl">{suggestion.icon}</span>
+                            {suggestion.title}
+                          </h4>
+                          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                            High Engagement Format
                           </p>
-                          <div className="bg-primary/5 border border-primary/10 p-2 rounded text-xs">
-                            <strong className="text-primary">Pro tip:</strong> {suggestion.tips}
+                        </div>
+                        
+                        {/* Description */}
+                        <p className="text-sm text-gray-700 mb-3 leading-relaxed">
+                          {suggestion.description}
+                        </p>
+                        
+                        {/* Quick Tip */}
+                        <div className="flex items-start gap-2.5 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                          <span className="flex-shrink-0 text-lg">💡</span>
+                          <div>
+                            <p className="text-xs font-semibold text-yellow-900 mb-1">Pro Tip:</p>
+                            <p className="text-xs text-gray-700 leading-relaxed">{suggestion.tips}</p>
                           </div>
                         </div>
+                        
+                        {/* Hover Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 to-orange-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                       </div>
                     ))}
                   </div>

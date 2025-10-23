@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Activity, User, LogOut, Home, MessageSquare, FileText, BarChart3, Settings, Target, Crown, Lock } from "lucide-react";
+import { User, LogOut, Home, MessageSquare, FileText, BarChart3, Settings, Target, Crown, Lock } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
@@ -35,9 +35,11 @@ export const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
-              <Activity className="h-6 w-6 text-white animate-pulse" />
-            </div>
+            <img 
+              src="/logo.svg" 
+              alt="LinkedInPulse Logo" 
+              className="w-10 h-10 hover:scale-110 transition-transform duration-200"
+            />
             <span className="text-xl font-bold">LinkedInPulse</span>
           </Link>
           

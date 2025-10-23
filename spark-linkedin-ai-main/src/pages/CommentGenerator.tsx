@@ -15,6 +15,7 @@ import apiClient from "@/services/api";
 import { SEO } from "@/components/SEO";
 import { pageSEO } from "@/constants/seo";
 import { COMMENT_TYPES, DEFAULT_COMMENT_TYPE } from "@/constants/commentTypes";
+import { EXPANDED_PERSONAS, PERSONA_CATEGORIES } from "@/constants/expandedPersonas";
 
 interface GeneratedComment {
   text: string;
@@ -36,7 +37,7 @@ const CommentGenerator = () => {
   const { isGenerating, generateComment, copyToClipboard } = useContentGeneration();
   const navigate = useNavigate();
 
-  // Use user's personas first, fall back to samples only if no user personas
+  // Use user's personas first, fall back to expanded personas
   useEffect(() => {
     if (selectedPersona) return; // Already have a persona
 
@@ -44,11 +45,11 @@ const CommentGenerator = () => {
     if (personas.length > 0) {
       setSelectedPersona(personas[0]);
       console.log('✅ User persona selected for comments:', personas[0].name);
-    } else if (samplePersonas.length > 0) {
-      setSelectedPersona(samplePersonas[0]);
-      console.log('✅ Sample persona selected for comments:', samplePersonas[0].name);
+    } else if (EXPANDED_PERSONAS.length > 0) {
+      setSelectedPersona(EXPANDED_PERSONAS[0]);
+      console.log('✅ Expanded persona selected for comments:', EXPANDED_PERSONAS[0].name);
     }
-  }, [personas, samplePersonas, selectedPersona]);
+  }, [personas, selectedPersona]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -254,17 +255,40 @@ const CommentGenerator = () => {
                     <h4 className="font-semibold text-green-800">Method 2: Direct Content</h4>
                   </div>
                   <Textarea
-                    placeholder="Paste the LinkedIn post content here..."
+                    placeholder="Paste the full LinkedIn post content here (with emojis and formatting)..."
                     value={postContent}
                     onChange={(e) => setPostContent(e.target.value)}
                     className="min-h-[150px] resize-none"
                   />
                   <p className="text-xs text-green-600 mt-2">
-                    💡 Copy and paste the post content directly for immediate processing
+                    💡 Copy and paste the post content directly - emojis and formatting preserved
                   </p>
                 </div>
               </div>
             </Card>
+
+            {/* LinkedIn Post Context Display */}
+            {postContent && (
+              <Card className="shadow-lg border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+                <div className="p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <MessageCircle className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-blue-800">Post Context</h3>
+                    <Badge variant="secondary" className="ml-auto">Ready for AI</Badge>
+                  </div>
+                  
+                  <div className="p-4 bg-white border-2 border-blue-100 rounded-lg max-h-[300px] overflow-y-auto">
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                      {postContent}
+                    </p>
+                  </div>
+                  
+                  <div className="mt-3 p-3 bg-blue-100 border border-blue-200 rounded-md text-xs text-blue-700">
+                    <strong>📋 Using this context:</strong> The AI will analyze this post and generate relevant, engaging comments tailored to your selected persona and comment type.
+                  </div>
+                </div>
+              </Card>
+            )}
 
             {/* Persona Selection */}
             <Card className="shadow-lg">
@@ -273,38 +297,49 @@ const CommentGenerator = () => {
                   Choose Your Persona *
                 </label>
                 <Select 
-                  value={selectedPersona?.name || selectedPersona?._id} 
+                  value={selectedPersona?.name || selectedPersona?._id || selectedPersona?.id} 
                   onValueChange={(value) => {
-                    // Find persona from either user personas or samples
-                    const allPersonas = [...personas, ...samplePersonas];
-                    const found = allPersonas.find(p => p.name === value || p._id === value);
+                    // Find persona from either user personas or expanded personas
+                    const allPersonas = [...personas, ...EXPANDED_PERSONAS];
+                    const found = allPersonas.find(p => p.name === value || p._id === value || p.id === value);
                     if (found) setSelectedPersona(found);
                   }}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a persona" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[400px]">
                     {/* Show user personas first */}
                     {personas.length > 0 && (
                       <>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                          Your Personas
+                        </div>
                         {personas.map((persona) => (
                           <SelectItem key={persona._id} value={persona._id}>
                             {persona.name} {persona.industry && `- ${persona.industry}`}
+                            {persona.source === 'onboarding' && ' ✨'}
                           </SelectItem>
                         ))}
                       </>
                     )}
-                    {/* Then show sample personas if no user personas */}
-                    {personas.length === 0 && samplePersonas.length > 0 && (
-                      <>
-                        {samplePersonas.map((persona, idx) => (
-                          <SelectItem key={`sample-${idx}`} value={persona.name}>
-                            {persona.name} {persona.industry && `- ${persona.industry}`} (Sample)
-                          </SelectItem>
-                        ))}
-                      </>
-                    )}
+                    {/* Show expanded personas organized by category */}
+                    {PERSONA_CATEGORIES.map((category) => {
+                      const categoryPersonas = EXPANDED_PERSONAS.filter(p => p.category === category);
+                      if (categoryPersonas.length === 0) return null;
+                      return (
+                        <div key={category}>
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1">
+                            {category}
+                          </div>
+                          {categoryPersonas.map((persona) => (
+                            <SelectItem key={persona.id} value={persona.id}>
+                              {persona.icon} {persona.name}
+                            </SelectItem>
+                          ))}
+                        </div>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
                 {selectedPersona && (

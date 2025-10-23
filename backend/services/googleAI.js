@@ -15,7 +15,8 @@ class GoogleAIService {
     hook,
     persona,
     linkedinInsights = null,
-    profileInsights = null
+    profileInsights = null,
+    userProfile = null
   ) {
     try {
       console.log("🤖 Generating post with Google AI...");
@@ -29,12 +30,17 @@ class GoogleAIService {
           linkedinInsights.experienceLevel
         );
       }
+      if (userProfile) {
+        console.log("👤 User Profile:", userProfile);
+      }
 
       const prompt = this.buildPostPrompt(
         topic,
         hook,
         persona,
-        linkedinInsights
+        linkedinInsights,
+        profileInsights,
+        userProfile
       );
 
       const result = await this.model.generateContent({
@@ -125,7 +131,8 @@ class GoogleAIService {
     hook,
     persona,
     linkedinInsights = null,
-    profileInsights = null
+    profileInsights = null,
+    userProfile = null
   ) {
     let basePrompt = `You are a LinkedIn content creator with the following persona:
     
@@ -135,6 +142,34 @@ Experience Level: ${persona.experience}
 Tone: ${persona.tone}
 Writing Style: ${persona.writingStyle}
 Description: ${persona.description}`;
+
+    // Add user profile for DEEP personalization
+    if (
+      userProfile &&
+      (userProfile.jobTitle || userProfile.industry || userProfile.goals)
+    ) {
+      basePrompt += `
+
+🎯 USER PROFILE CONTEXT (Use this to deeply personalize the content):
+${userProfile.jobTitle ? `- Current Role: ${userProfile.jobTitle}` : ""}
+${userProfile.company ? `- Company: ${userProfile.company}` : ""}
+${userProfile.industry ? `- Industry: ${userProfile.industry}` : ""}
+${userProfile.experience ? `- Experience Level: ${userProfile.experience}` : ""}
+${userProfile.goals ? `- Professional Goals: ${userProfile.goals}` : ""}
+${
+  userProfile.targetAudience
+    ? `- Target Audience: ${userProfile.targetAudience}`
+    : ""
+}
+${userProfile.expertise ? `- Areas of Expertise: ${userProfile.expertise}` : ""}
+
+**CRITICAL**: Use these details to:
+1. Reference their specific role/industry in examples
+2. Align content with their professional goals
+3. Target their specific audience
+4. Showcase their expertise areas
+5. Make the post feel authentically theirs (not generic)`;
+    }
 
     // Add LinkedIn insights if available
     if (linkedinInsights) {
@@ -165,20 +200,43 @@ Create a high-quality, engaging LinkedIn post about: "${topic}"
 
 Start with this exact hook: "${hook}"
 
-CRITICAL REQUIREMENTS - Must complete ALL of these:
-1. Start with the provided hook exactly as given
-2. Write in ${persona.name}'s authentic voice (${persona.tone} tone, ${persona.writingStyle} style)
-3. Make it highly valuable and actionable - provide real insights, not generic advice
-4. Include specific examples, numbers, or personal experiences where relevant
-5. Use short paragraphs (2-3 sentences max) and bullet points for readability
-6. Structure: Hook → Context/Story → Main Insights (3-5 points) → Call-to-Action
-7. **LENGTH LIMIT**: Keep between 250-400 words (max 2800 characters). This is CRITICAL!
-8. End with a strong call-to-action or thought-provoking question
-9. Sound 100% human and authentic - avoid corporate jargon and AI-sounding phrases
-10. Use emojis sparingly (1-2 max) and only if they add value
+🎯 CRITICAL REQUIREMENTS - Must complete ALL of these:
 
-COMPLETE THE ENTIRE POST - do not cut off mid-sentence. Generate the full, polished post.
-DO NOT exceed 2800 characters total (including spaces and line breaks).`;
+**PROFESSIONAL & HUMAN-LIKE:**
+1. Write like a REAL professional, not an AI - avoid phrases like "delve into", "in conclusion", "furthermore", "moreover"
+2. Use natural language, contractions (I'm, you're, it's), and conversational flow
+3. NO corporate jargon or buzzwords ("synergy", "leverage", "paradigm shift", "disrupt")
+4. Sound 100% authentic - like you're sharing insights over coffee, not writing a business report
+
+**VOICE & TONE:**
+5. Write in ${persona.name}'s voice (${persona.tone} tone, ${persona.writingStyle} style)
+6. Be genuinely helpful - provide REAL insights people can act on today
+7. Share specific examples, numbers, or personal experiences (make it relatable)
+
+**FORMATTING & STRUCTURE:**
+8. Structure: Hook → Brief Context → Main Insights (3-5 bullet points) → Strong CTA
+9. Use **bold** for 3-5 KEY PHRASES that deserve emphasis (e.g., **game-changing**, **critical mistake**, **biggest lesson**)
+10. Short paragraphs (2-3 sentences max) with line breaks for readability
+11. Use bullet points (→ or •) for lists - makes content scannable
+
+**EMOJIS - USE WISELY:**
+12. Use 1-3 emojis MAXIMUM, and ONLY where they add genuine emphasis or emotion
+13. Place them strategically: after impactful statements, before key insights, or in the CTA
+14. DO NOT use generic emojis (✨🚀💡) - prefer context-specific ones (🎯📊💰🔥⚡)
+15. If emojis feel forced, DON'T use them at all
+
+**LENGTH & COMPLETION:**
+16. **LENGTH**: 200-300 words (max 200 characters including spaces)
+17. End with a thought-provoking question or clear call-to-action
+18. COMPLETE THE ENTIRE POST - never cut off mid-sentence
+
+**LINKEDIN-READY OUTPUT:**
+19. Format must be copy-paste ready - no encoding issues, clean text
+20. Preserve bold (**text**) for easy copying to LinkedIn
+21. No hashtags unless specifically requested (they look spammy)
+22. Every word should add value - zero fluff, zero filler
+
+GENERATE A PROFESSIONAL POST THAT REQUIRES ZERO EDITING AND LOOKS INDISTINGUISHABLE FROM A TOP 1% LINKEDIN CREATOR.`;
 
     if (linkedinInsights?.contentStrategy?.contentTypes) {
       basePrompt += `

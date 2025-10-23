@@ -16,6 +16,7 @@ import waitlistRoutes from "./routes/waitlist.js";
 import profileAnalyzerRoutes from "./routes/profileAnalyzer.js";
 import profileInsightsRoutes from "./routes/profileInsights.js";
 import adminRoutes from "./routes/admin.js";
+import adminAuthRoutes from "./routes/adminAuth.js";
 
 const app = express();
 
@@ -23,6 +24,14 @@ const app = express();
 app.use(helmet());
 
 // CORS configuration
+const allowedOrigins = [
+  config.FRONTEND_URL,
+  "https://linkedinpulse.com",
+  "https://www.linkedinpulse.com",
+  "http://linkedinpulse.com",
+  "http://www.linkedinpulse.com",
+];
+
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -35,11 +44,13 @@ const corsOptions = {
       if (isLocalhost) return callback(null, true);
     }
 
-    // Allow the configured frontend URL
-    if (origin === config.FRONTEND_URL) {
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
+    // Log rejected origins for debugging
+    console.warn(`CORS blocked origin: ${origin}`);
     callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
@@ -84,7 +95,10 @@ app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/waitlist", waitlistRoutes);
 app.use("/api/profile-analyzer", profileAnalyzerRoutes);
 app.use("/api/profile-analyzer", profileInsightsRoutes); // Merged route for insights
-app.use("/api/admin", adminRoutes); // Admin-only routes
+
+// Admin routes
+app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication
+app.use("/api/admin", adminRoutes); // Admin-only dashboard routes
 
 // 404 handler
 app.use("*", (req, res) => {

@@ -59,10 +59,10 @@ async function createAdminUser() {
 
     await adminUser.save();
 
-    // Create enterprise subscription for admin
+    // Create pro subscription for admin
     const subscription = await UserSubscription.create({
       userId: adminUser._id,
-      plan: "enterprise",
+      plan: "pro",
       status: "active",
       limits: {
         postsPerMonth: -1, // Unlimited

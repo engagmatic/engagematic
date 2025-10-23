@@ -15,21 +15,27 @@ const plans = [
     icon: Zap,
     iconColor: "text-blue-500",
     iconBg: "bg-blue-500/10",
-    priceMonthly: { INR: 299, USD: 9 },
-    priceYearly: { INR: 2499, USD: 89 },
+    priceMonthly: { INR: 299, USD: 12 },
+    priceYearly: { INR: 2499, USD: 120 },
     savingsText: "Save 2 months",
-    description: "Best for creators & solo professionals",
+    description: "Perfect for creators & solo professionals",
     features: [
-      "Up to 300 LinkedIn post generations/month",
-      "Up to 300 comment generations/month",
-      "Persona-powered AI post writing",
+      "LinkedIn-trained AI models (not generic ChatGPT)",
+      "Human-like posts that beat AI detectors",
+      "75 LinkedIn post generations/month (~4/day)",
+      "100 comment generations/month (~6/day)",
+      "3 LinkedIn profile analyses/month",
+      "15 curated AI personas + your onboarding persona",
       "Viral hook suggestions with every post",
-      "Basic persona setup and onboarding",
-      "Responsive support by email",
-      "Access on mobile & desktop devices"
+      "Smart emoji placement & auto-formatting",
+      "Copy & share directly to LinkedIn (1-click)",
+      "Zero-edit content ready to post instantly",
+      "Export & download posts with formatting",
+      "Responsive support by email"
     ],
     cta: "Start Free Trial",
     popular: true,
+    comingSoon: false,
     trial: "7-Day Free Trial"
   },
   {
@@ -37,23 +43,28 @@ const plans = [
     icon: Rocket,
     iconColor: "text-purple-500",
     iconBg: "bg-purple-500/10",
-    priceMonthly: { INR: 799, USD: 18 },
-    priceYearly: { INR: 6499, USD: 159 },
+    priceMonthly: { INR: 799, USD: 24 },
+    priceYearly: { INR: 6499, USD: 240 },
     savingsText: "Save 2 months",
-    description: "Advanced features for power users",
+    description: "Advanced features for power users & teams",
     features: [
-      "Up to 2,000 post generations/month",
-      "Up to 2,000 comment generations/month",
-      "All Starter features included",
+      "Everything in Starter, plus:",
+      "200 post generations/month (~10/day)",
+      "400 comment generations/month (~17/day)",
+      "10 LinkedIn profile analyses/month",
+      "Advanced AI trained on 50K+ viral LinkedIn posts",
+      "Deep personalization using your onboarding data",
       "Advanced persona customization (multi-persona)",
+      "LinkedIn insights & analytics integration",
+      "Trending hook generator (AI-powered)",
       "Export/share post packs",
       "Engagement Pulse Analytics dashboard",
       "Priority support (24-hour response)",
       "Early access to new features"
     ],
-    cta: "Join Waitlist",
+    cta: "Start Free Trial",
     popular: false,
-    comingSoon: true,
+    comingSoon: false,
     trial: "7-Day Free Trial"
   }
 ];
@@ -75,17 +86,8 @@ export const Pricing = () => {
   const getCurrencySymbol = () => currency === 'INR' ? '₹' : '$';
 
   const handlePlanClick = (plan: typeof plans[0]) => {
-    // Free Trial (Starter) - redirect to registration
-    if (plan.name === "Starter" && !plan.comingSoon) {
-      navigate("/auth/register");
-      return;
-    }
-
-    // Paid plans - show waitlist modal
-    if (plan.comingSoon) {
-      setSelectedPlan(plan.name);
-      setWaitlistModalOpen(true);
-    }
+    // New users start free trial (redirect to registration)
+    navigate("/auth/register");
   };
 
   return (
@@ -214,21 +216,19 @@ export const Pricing = () => {
                     )}
                   </div>
 
-                  {!plan.comingSoon && (
-                    <div className="space-y-2 pb-4 border-b">
-                      <Badge variant="secondary" className="text-xs">
-                        {plan.trial}
-                      </Badge>
-                      <p className="text-xs text-muted-foreground flex items-center gap-2">
-                        <Check className="w-3 h-3 text-primary" />
-                        No credit card required
-                      </p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-2">
-                        <Check className="w-3 h-3 text-primary" />
-                        Cancel anytime
-                      </p>
-                    </div>
-                  )}
+                  <div className="space-y-2 pb-4 border-b">
+                    <Badge variant="secondary" className="text-xs">
+                      {plan.trial}
+                    </Badge>
+                    <p className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Check className="w-3 h-3 text-primary" />
+                      No credit card required
+                    </p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Check className="w-3 h-3 text-primary" />
+                      Cancel anytime
+                    </p>
+                  </div>
                   
                   <Button 
                     className={`w-full ${

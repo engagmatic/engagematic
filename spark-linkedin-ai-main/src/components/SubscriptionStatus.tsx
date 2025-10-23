@@ -66,13 +66,6 @@ export const SubscriptionStatus = () => {
       color: "text-purple-500",
       bgColor: "bg-purple-50",
       borderColor: "border-purple-200"
-    },
-    enterprise: {
-      name: "Enterprise",
-      icon: Crown,
-      color: "text-gold-500",
-      bgColor: "bg-yellow-50",
-      borderColor: "border-yellow-200"
     }
   };
 
@@ -202,10 +195,10 @@ export const SubscriptionStatus = () => {
       {/* Action Buttons */}
       <div className="mt-6 flex gap-2">
         {(isTrialActive || isTrialExpired) && (
-          <Button asChild className="flex-1">
-            <Link to="/pricing">
+          <Button asChild className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+            <Link to="/waitlist">
               <TrendingUp className="w-4 h-4 mr-2" />
-              Upgrade Plan
+              Join Waitlist for Paid Plans
             </Link>
           </Button>
         )}

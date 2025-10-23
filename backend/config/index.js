@@ -18,6 +18,12 @@ export const config = {
     "your-super-secret-jwt-key-change-this-in-production",
   JWT_EXPIRE: process.env.JWT_EXPIRE || "7d",
 
+  // Admin JWT (separate secret for admin authentication)
+  ADMIN_JWT_SECRET:
+    process.env.ADMIN_JWT_SECRET ||
+    process.env.JWT_SECRET ||
+    "your-super-secret-admin-jwt-key-change-this-in-production",
+
   // Google AI
   GOOGLE_AI_API_KEY:
     process.env.GOOGLE_AI_API_KEY || "AIzaSyB_x5suyfwTsNkJcRy0qmEoEp9viuawxec",
@@ -36,4 +42,7 @@ export const config = {
   RATE_LIMIT_WINDOW_MS: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes
   RATE_LIMIT_MAX_REQUESTS:
     parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000, // Increased from 100 to 1000
+
+  // RapidAPI (LinkedIn Scraper)
+  RAPIDAPI_KEY: process.env.RAPIDAPI_KEY || "your-rapidapi-key-here",
 };

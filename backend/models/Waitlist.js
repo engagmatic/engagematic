@@ -26,7 +26,7 @@ const waitlistSchema = new mongoose.Schema(
     },
     plan: {
       type: String,
-      enum: ["starter", "pro", "enterprise"],
+      enum: ["starter", "pro"],
       required: true,
     },
     billingPeriod: {

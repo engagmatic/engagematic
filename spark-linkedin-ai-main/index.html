@@ -25,11 +25,11 @@
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://linkedinpulse.ai/" />
+  <meta property="og:url" content="https://www.linkedinpulse.com/" />
   <meta property="og:title" content="LinkedInPulse - AI-Powered LinkedIn Content Generator" />
   <meta property="og:description"
     content="Create engaging LinkedIn posts, comments, and content in 30 seconds with AI. Stop writer's block and start growing your professional network." />
-  <meta property="og:image" content="https://linkedinpulse.ai/og-image.png" />
+  <meta property="og:image" content="https://www.linkedinpulse.com/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:site_name" content="LinkedInPulse" />
@@ -37,11 +37,11 @@
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://linkedinpulse.ai/" />
+  <meta name="twitter:url" content="https://www.linkedinpulse.com/" />
   <meta name="twitter:title" content="LinkedInPulse - AI-Powered LinkedIn Content Generator" />
   <meta name="twitter:description"
     content="Create engaging LinkedIn posts, comments, and content in 30 seconds with AI. Stop writer's block and start growing your professional network." />
-  <meta name="twitter:image" content="https://linkedinpulse.ai/og-image.png" />
+  <meta name="twitter:image" content="https://www.linkedinpulse.com/og-image.png" />
   <meta name="twitter:creator" content="@linkedinpulse" />
   <meta name="twitter:site" content="@linkedinpulse" />
 
@@ -54,7 +54,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
   <!-- Canonical URL -->
-  <link rel="canonical" href="https://linkedinpulse.ai/" />
+  <link rel="canonical" href="https://www.linkedinpulse.com/" />
 
   <!-- Preconnect to external domains -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -70,19 +70,22 @@
       "@type": "SoftwareApplication",
       "name": "LinkedInPulse",
       "description": "AI-powered LinkedIn content generator that creates engaging posts, comments, and content in 30 seconds",
-      "url": "https://linkedinpulse.ai",
+      "url": "https://www.linkedinpulse.com",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web Browser",
       "offers": {
-        "@type": "Offer",
-        "price": "9",
+        "@type": "AggregateOffer",
         "priceCurrency": "USD",
-        "priceValidUntil": "2025-12-31"
+        "lowPrice": "12",
+        "highPrice": "24",
+        "offerCount": "2"
       },
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": "4.8",
-        "ratingCount": "500"
+        "ratingCount": "1000",
+        "bestRating": "5",
+        "worstRating": "1"
       },
       "author": {
         "@type": "Organization",
@@ -93,11 +96,20 @@
         "name": "LinkedInPulse",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://linkedinpulse.ai/logo.png"
+          "url": "https://www.linkedinpulse.com/logo.svg"
         }
       }
     }
     </script>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
 </head>
 
 <body>

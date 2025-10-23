@@ -64,7 +64,7 @@ const FAQPage = () => {
       questions: [
         {
           question: "What subscription plans do you offer?",
-          answer: "We offer three main plans: Starter (free trial with 5 posts/month), Professional ($29/month with 50 posts/month), and Enterprise ($99/month with unlimited posts). Each plan includes different features like analytics, priority support, and advanced AI capabilities."
+          answer: "We offer two main plans: Starter ($12/month with 75 posts and 100 comments per month), and Pro ($24/month with 200 posts and 400 comments per month). Both plans include AI-powered content generation, 15 curated personas plus your custom onboarding persona, LinkedIn profile analysis, and more. Start with a 7-day free trial!"
         },
         {
           question: "Can I change my subscription plan anytime?",
@@ -90,7 +90,7 @@ const FAQPage = () => {
       questions: [
         {
           question: "Is my data secure with LinkedInPulse?",
-          answer: "Absolutely! We use enterprise-grade security measures including SSL encryption, secure data centers, and regular security audits. Your data is encrypted both in transit and at rest, and we never share your personal information with third parties."
+          answer: "Absolutely! We use bank-grade security measures including SSL encryption, secure data centers, and regular security audits. Your data is encrypted both in transit and at rest, and we never share your personal information with third parties."
         },
         {
           question: "What data do you collect and how is it used?",
@@ -116,7 +116,7 @@ const FAQPage = () => {
         },
         {
           question: "Do you offer training or onboarding sessions?",
-          answer: "Yes! We provide comprehensive onboarding tutorials, video guides, and webinars. Enterprise customers also receive dedicated training sessions and account management support."
+          answer: "Yes! We provide comprehensive onboarding tutorials, video guides, and webinars. Pro plan customers also receive priority support with 24-hour response times."
         },
         {
           question: "Can I integrate LinkedInPulse with other tools?",
