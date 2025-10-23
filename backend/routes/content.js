@@ -603,17 +603,29 @@ router.post(
   }
 );
 
-// LinkedIn Profile Analysis endpoint
+// LinkedIn Profile Analysis endpoint - IMPROVED with real scraping
 router.post(
   "/analyze-linkedin-profile",
   authenticateToken,
   [
     body("profileUrl")
       .isURL()
-      .withMessage("Valid LinkedIn profile URL is required"),
+      .withMessage("Valid LinkedIn profile URL is required")
+      .matches(/linkedin\.com/)
+      .withMessage("Must be a valid LinkedIn URL"),
   ],
   async (req, res) => {
     try {
+      // Validate request
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: errors.array(),
+        });
+      }
+
       const { profileUrl } = req.body;
       const userId = req.user.userId;
 
@@ -628,41 +640,88 @@ router.post(
       if (!canUse.allowed) {
         return res.status(429).json({
           success: false,
-          message: canUse.reason || "Not allowed",
+          message:
+            canUse.reason || "Upgrade to access LinkedIn Profile Analyzer",
           code: "SUBSCRIPTION_LIMIT_EXCEEDED",
         });
       }
 
-      // Extract profile data
-      const profileResult = await linkedinProfileService.extractProfileData(
+      // Use the REAL LinkedIn scraper (Puppeteer + AI)
+      const realLinkedInScraper = (
+        await import("../services/realLinkedInScraper.js")
+      ).default;
+
+      console.log("🤖 Using REAL LinkedIn scraper with Puppeteer + AI...");
+      const profileResult = await realLinkedInScraper.extractProfileData(
         profileUrl
       );
 
-      if (!profileResult.success) {
+      if (!profileResult.success || !profileResult.data) {
+        console.error("❌ LinkedIn scraping failed:", profileResult.error);
         return res.status(400).json({
           success: false,
           message: "Failed to analyze LinkedIn profile",
-          error: profileResult.error,
+          error:
+            profileResult.error ||
+            "Could not extract profile data. The profile might be private or require authentication.",
+          hint: "Try a public LinkedIn profile URL or ensure the profile is publicly accessible.",
         });
       }
+
+      console.log(
+        "✅ Profile data extracted successfully using:",
+        profileResult.method
+      );
+      console.log("Profile data:", {
+        hasName: !!profileResult.data.fullName,
+        hasHeadline: !!profileResult.data.headline,
+        hasAbout: !!profileResult.data.about,
+        skillsCount: profileResult.data.skills?.length || 0,
+        experienceCount: profileResult.data.experience?.length || 0,
+      });
 
       // Record usage
       await subscriptionService.recordUsage(userId, "analyze_linkedin");
 
-      // Store profile insights in user's data (optional)
-      // You could save this to a user profile collection
+      // Enhance the data with additional insights
+      const enhancedData = {
+        ...profileResult.data,
+        scrapingMethod: profileResult.method,
+        analyzedAt: new Date().toISOString(),
+        contentStrategy: {
+          postingFrequency: "2-3 times per week",
+          bestPostingTimes: ["8-10 AM", "12-2 PM", "5-7 PM"],
+          contentMix: {
+            educational: "40%",
+            personal: "30%",
+            promotional: "20%",
+            curated: "10%",
+          },
+        },
+        growthTips: [
+          "Complete your profile to 100% (LinkedIn favors complete profiles)",
+          "Post consistently 2-3x per week for maximum reach",
+          "Engage with others' content before posting (warm up the algorithm)",
+          "Use industry-specific hashtags to increase discoverability",
+          "Add rich media (images, videos, PDFs) to boost engagement by 3x",
+        ],
+      };
 
       res.json({
         success: true,
-        message: "LinkedIn profile analyzed successfully",
-        data: profileResult.data,
+        message:
+          "LinkedIn profile analyzed successfully using " +
+          profileResult.method,
+        data: enhancedData,
       });
     } catch (error) {
-      console.error("LinkedIn profile analysis error:", error);
+      console.error("❌ LinkedIn profile analysis error:", error);
       res.status(500).json({
         success: false,
         message: "Failed to analyze LinkedIn profile",
         error: error.message,
+        details:
+          "An unexpected error occurred. Please try again or contact support.",
       });
     }
   }

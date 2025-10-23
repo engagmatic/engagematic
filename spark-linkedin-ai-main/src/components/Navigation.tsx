@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Activity, User, LogOut, Home, MessageSquare, FileText, BarChart3, Settings, Target } from "lucide-react";
+import { Activity, User, LogOut, Home, MessageSquare, FileText, BarChart3, Settings, Target, Crown, Lock } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const Navigation = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -21,7 +22,7 @@ export const Navigation = () => {
     { path: '/dashboard', label: 'Dashboard', icon: Home },
     { path: '/post-generator', label: 'Post Generator', icon: FileText },
     { path: '/comment-generator', label: 'Comment Generator', icon: MessageSquare },
-    { path: '/profile-analyzer', label: 'Profile Analyzer', icon: Target },
+    { path: '/profile-analyzer', label: 'Profile Analyzer', icon: Target, premium: true, disabled: true },
     { path: '/templates', label: 'Templates', icon: FileText },
   ];
 
@@ -44,6 +45,32 @@ export const Navigation = () => {
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
+              
+              // If item is disabled (premium), show disabled button with tooltip
+              if (item.disabled) {
+                return (
+                  <Tooltip key={item.path}>
+                    <TooltipTrigger asChild>
+                      <div
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium cursor-not-allowed opacity-50 ${
+                          'text-muted-foreground'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {item.label}
+                        {item.premium && <Crown className="h-3 w-3 text-amber-500" />}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="flex items-center gap-1">
+                        <Crown className="h-3 w-3 text-amber-500" />
+                        Premium Feature - Coming Soon!
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+              
               return (
                 <Link
                   key={item.path}

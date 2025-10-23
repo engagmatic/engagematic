@@ -125,17 +125,39 @@ class ProfileInsightsService {
    */
   inferExpertiseLevel(analysis) {
     const headline = (analysis.profileData.headline || "").toLowerCase();
-    const experience = (analysis.profileData.experience || "").toLowerCase();
+    
+    // Handle experience as array (new format) or string (legacy)
+    let experienceText = "";
+    if (Array.isArray(analysis.profileData.experience)) {
+      // Convert array of experience objects to searchable text
+      experienceText = analysis.profileData.experience
+        .map(exp => `${exp.title || ""} ${exp.company || ""} ${exp.description || ""}`)
+        .join(" ")
+        .toLowerCase();
+    } else {
+      // Legacy string format
+      experienceText = (analysis.profileData.experience || "").toLowerCase();
+    }
 
+    // Count experience entries for senior level detection
+    const experienceCount = Array.isArray(analysis.profileData.experience) 
+      ? analysis.profileData.experience.length 
+      : 0;
+
+    // Senior level indicators
     if (
-      headline.match(/\b(ceo|cto|founder|vp|director|head of)\b/i) ||
-      experience.match(/\b(10\+|15\+|20\+) years\b/i)
+      headline.match(/\b(ceo|cto|founder|vp|director|head of|chief)\b/i) ||
+      experienceText.match(/\b(10\+|15\+|20\+) years\b/i) ||
+      experienceCount >= 5 // 5+ jobs typically indicates senior level
     ) {
       return "senior";
     }
+    
+    // Mid-level indicators
     if (
       headline.match(/\b(manager|lead|senior)\b/i) ||
-      experience.match(/\b(5|6|7|8|9) years\b/i)
+      experienceText.match(/\b(5|6|7|8|9) years\b/i) ||
+      experienceCount >= 3 // 3-4 jobs typically indicates mid-level
     ) {
       return "mid-level";
     }

@@ -268,17 +268,33 @@ class PuppeteerLinkedInScraper {
       // Validate extracted data
       if (!profileData.fullName && !profileData.headline) {
         console.warn("⚠️ Limited data extracted - might be a private profile");
+
+        // Return partial data with warning instead of failing completely
         return {
-          success: false,
-          error:
-            "Could not extract profile data. Profile might be private or require login.",
-          method: "puppeteer",
+          success: true, // Still return success but with limited data
+          data: {
+            ...profileData,
+            isLimited: true,
+            limitedReason:
+              "Profile might be private or require LinkedIn login for full access",
+            suggestions: [
+              "Make sure the profile is set to public visibility",
+              "Try logging into LinkedIn first to access more data",
+              "Some profiles limit data access to non-authenticated viewers",
+            ],
+          },
+          method: "puppeteer-limited",
+          warning:
+            "Limited data extracted - profile might require authentication",
         };
       }
 
       return {
         success: true,
-        data: profileData,
+        data: {
+          ...profileData,
+          isLimited: false,
+        },
         method: "puppeteer",
       };
     } catch (error) {
@@ -297,12 +313,12 @@ class PuppeteerLinkedInScraper {
   }
 
   /**
-   * Validate LinkedIn URL
+   * Validate LinkedIn URL - IMPROVED to handle more URL formats
    */
   isValidLinkedInUrl(url) {
     if (!url) return false;
     const linkedinPattern =
-      /^https?:\/\/(www\.)?linkedin\.com\/(in|pub)\/[a-zA-Z0-9_-]+\/?$/;
+      /^https?:\/\/(www\.)?linkedin\.com\/(in|pub)\/[a-zA-Z0-9_-]+/;
     return linkedinPattern.test(url.trim());
   }
 }

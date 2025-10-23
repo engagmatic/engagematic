@@ -19,7 +19,22 @@ const profileAnalysisSchema = new mongoose.Schema(
       about: String,
       location: String,
       industry: String,
-      experience: String,
+      fullName: String,
+      experience: [
+        {
+          title: String,
+          company: String,
+          description: String,
+          duration: String,
+        },
+      ],
+      education: [
+        {
+          school: String,
+          degree: String,
+          field: String,
+        },
+      ],
       skills: [String],
     },
 

@@ -3,10 +3,19 @@ import { body, param, query, validationResult } from "express-validator";
 export const validateRequest = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.error(
+      "❌ Validation failed:",
+      JSON.stringify(errors.array(), null, 2)
+    );
+    console.error("Request body:", JSON.stringify(req.body, null, 2));
     return res.status(400).json({
       success: false,
       message: "Validation failed",
       errors: errors.array(),
+      details: errors
+        .array()
+        .map((err) => `${err.path}: ${err.msg}`)
+        .join(", "),
     });
   }
   next();
@@ -41,11 +50,24 @@ export const validateUserLogin = [
 export const validatePostGeneration = [
   body("topic")
     .trim()
-    .isLength({ min: 10, max: 200 })
-    .withMessage("Topic must be between 10 and 200 characters"),
-  body("hookId").isMongoId().withMessage("Invalid hook ID"),
+    .notEmpty()
+    .withMessage("Topic is required")
+    .isLength({ min: 10, max: 500 })
+    .withMessage("Topic must be between 10 and 500 characters"),
+  body("hookId")
+    .notEmpty()
+    .withMessage("Hook ID is required")
+    .isMongoId()
+    .withMessage("Invalid hook ID format"),
   // personaId is now optional (can send persona data directly)
-  body("personaId").optional().isMongoId().withMessage("Invalid persona ID"),
+  body("personaId")
+    .optional({ checkFalsy: true })
+    .isMongoId()
+    .withMessage("Invalid persona ID"),
+  body("persona")
+    .optional()
+    .isObject()
+    .withMessage("Persona data must be an object"),
   validateRequest,
 ];
 

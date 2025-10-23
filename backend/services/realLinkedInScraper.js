@@ -35,10 +35,16 @@ class RealLinkedInScraper {
       // Method 1: Try Puppeteer Browser Automation (FREE & RELIABLE!)
       if (this.usePuppeteer && !profileData) {
         console.log("🤖 Attempting Puppeteer browser scraping (FREE)...");
-        const puppeteerResult = await puppeteerScraper.scrapeProfile(profileUrl);
+        const puppeteerResult = await puppeteerScraper.scrapeProfile(
+          profileUrl
+        );
         if (puppeteerResult.success && puppeteerResult.data) {
           console.log("✅ Successfully scraped with Puppeteer!");
-          return { success: true, data: puppeteerResult.data, method: "puppeteer" };
+          return {
+            success: true,
+            data: puppeteerResult.data,
+            method: "puppeteer",
+          };
         } else {
           console.log("⚠️ Puppeteer scraping failed:", puppeteerResult.error);
         }
@@ -230,28 +236,36 @@ class RealLinkedInScraper {
     try {
       const username = this.extractUsernameFromUrl(profileUrl);
 
-      const prompt = `As a LinkedIn profile analysis expert, I need to create a professional profile analysis framework for: ${profileUrl}
+      console.log("🤖 Generating AI-powered profile inference for:", username);
 
+      const prompt = `You are analyzing a LinkedIn profile URL: ${profileUrl}
 Username: ${username}
 
-Based on professional LinkedIn patterns and best practices, create a realistic profile analysis that would be typical for a professional with this username.
+Generate a helpful LinkedIn profile analysis based on best practices and the username pattern.
 
-Generate a JSON object with:
+Return ONLY a valid JSON object (no markdown, no explanation):
 {
-  "headline": "A professional headline suggestion based on username pattern",
-  "about": "A well-structured about section suggestion (200-250 words)",
-  "industry": "Most likely industry based on username",
-  "location": "Professional location (can be generic like 'United States')",
-  "skills": ["skill1", "skill2", ... 10 relevant skills],
-  "experience": "Typical experience level and background",
+  "fullName": "Inferred name from username",
+  "headline": "Professional headline suggestion (80-100 chars)",
+  "about": "Professional about section template (200-250 words with clear structure)",
+  "industry": "Most likely industry",
+  "location": "Generic location",
+  "experienceLevel": "Junior/Mid-level/Senior/Executive",
+  "skills": ["skill1", "skill2", "skill3", "skill4", "skill5", "skill6", "skill7", "skill8", "skill9", "skill10"],
+  "experience": [
+    {"title": "Typical role", "company": "Company type"}
+  ],
+  "contentStrategy": {
+    "focus": "What to post about",
+    "tone": "Recommended tone",
+    "frequency": "Posting frequency"
+  },
   "recommendations": {
-    "headlineImprovement": "How to improve headline",
-    "aboutImprovement": "How to improve about section",
-    "skillsToAdd": ["skill1", "skill2", "skill3"]
+    "headline": "How to improve",
+    "about": "How to improve",
+    "profile": "General profile tips"
   }
-}
-
-Return ONLY valid JSON.`;
+}`;
 
       const response = await googleAI.generatePost(
         "LinkedIn profile inference",
@@ -264,22 +278,30 @@ Return ONLY valid JSON.`;
       );
 
       const textContent = response.content || JSON.stringify(response);
-      const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+
+      // Try to extract JSON
+      let jsonMatch = textContent.match(/\{[\s\S]*\}/);
 
       if (jsonMatch) {
-        const inferredData = JSON.parse(jsonMatch[0]);
-        return {
-          ...inferredData,
-          username,
-          profileUrl,
-          isInferred: true,
-        };
+        try {
+          const inferredData = JSON.parse(jsonMatch[0]);
+          console.log("✅ AI inference generated successfully");
+          return {
+            ...inferredData,
+            username,
+            profileUrl,
+            isInferred: true,
+            note: "This analysis is based on AI inference. For accurate data, ensure the profile is publicly accessible.",
+          };
+        } catch (parseError) {
+          console.log("⚠️ JSON parsing failed, using fallback");
+        }
       }
 
       // Final fallback
       return this.getBasicFallbackData(username, profileUrl);
     } catch (error) {
-      console.log("⚠️ AI inference failed, using basic fallback");
+      console.log("⚠️ AI inference failed:", error.message);
       return this.getBasicFallbackData(
         this.extractUsernameFromUrl(profileUrl),
         profileUrl
@@ -353,14 +375,32 @@ Return JSON:
   }
 
   /**
-   * Basic fallback data
+   * Enhanced basic fallback data with helpful guidance
    */
   getBasicFallbackData(username, profileUrl) {
     return {
       username,
       profileUrl,
-      headline: "LinkedIn Professional",
-      about: "Experienced professional with a proven track record of success.",
+      fullName: username
+        ? username
+            .split("-")
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(" ")
+        : "LinkedIn Professional",
+      headline: "LinkedIn Professional | Building My Professional Brand",
+      about: `I'm a professional focused on continuous growth and making meaningful connections on LinkedIn.
+
+🎯 My Goals:
+• Building a strong professional network
+• Sharing valuable industry insights
+• Learning from industry leaders
+• Contributing to meaningful discussions
+
+💼 Professional Focus:
+I believe in the power of authentic networking and continuous learning. I'm committed to adding value to my professional community and staying current with industry trends.
+
+🤝 Let's Connect:
+I'm always open to connecting with fellow professionals, sharing insights, and exploring opportunities for collaboration.`,
       industry: "Professional Services",
       location: "United States",
       experienceLevel: "Mid-level",
@@ -368,17 +408,36 @@ Return JSON:
         "Leadership",
         "Communication",
         "Project Management",
-        "Strategy",
-        "Team Building",
+        "Strategic Thinking",
+        "Team Collaboration",
         "Problem Solving",
         "Business Development",
-        "Analytical Skills",
-        "Collaboration",
+        "Data Analysis",
         "Innovation",
+        "Continuous Learning",
       ],
-      experience: [],
+      experience: [
+        {
+          title: "Professional",
+          company: "Various Organizations",
+          description: "Contributing to various projects and initiatives",
+        },
+      ],
       education: [],
+      contentStrategy: {
+        postingFrequency: "2-3 times per week",
+        focus: "Industry insights, professional development, networking",
+        bestTimes: ["Tuesday 9 AM", "Wednesday 2 PM", "Thursday 10 AM"],
+      },
       isFallback: true,
+      isInferred: true,
+      note: "⚠️ This is template data. To get real profile insights, please ensure:\n1. The LinkedIn profile is set to public\n2. You have a complete LinkedIn profile\n3. The profile URL is correct (format: linkedin.com/in/username)",
+      suggestions: [
+        "Make your LinkedIn profile public for better analysis",
+        "Complete all sections of your profile (headline, about, experience, skills)",
+        "Ensure the profile URL is in the correct format",
+        "Try the LinkedIn Profile Analyzer tool in your dashboard for deeper insights",
+      ],
     };
   }
 

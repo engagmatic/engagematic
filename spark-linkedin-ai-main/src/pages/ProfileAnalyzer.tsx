@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,12 @@ import { useToast } from "@/hooks/use-toast";
 import apiClient from "../services/api";
 
 const ProfileAnalyzer = () => {
+  const navigate = useNavigate();
+  
+  // Redirect to home - this feature is disabled for now
+  useEffect(() => {
+    navigate('/dashboard', { replace: true });
+  }, [navigate]);
   const [profileUrl, setProfileUrl] = useState("");
   const [analysis, setAnalysis] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -245,7 +252,7 @@ const ProfileAnalyzer = () => {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 {Object.entries(analysis.scores)
                   .filter(([key]) => key !== "overall")
-                  .map(([key, value]) => (
+                  .map(([key, value]: [string, number]) => (
                     <div key={key} className="text-center p-4 bg-muted/50 rounded-lg">
                       <div className="text-3xl font-bold text-primary mb-1">{value}</div>
                       <div className="text-sm text-muted-foreground capitalize">{key}</div>

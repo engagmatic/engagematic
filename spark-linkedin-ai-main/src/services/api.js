@@ -49,15 +49,34 @@ class ApiClient {
       const data = await response.json();
 
       if (!response.ok) {
+        // Log detailed error for debugging
+        console.error("❌ API Error Response:", {
+          status: response.status,
+          endpoint,
+          message: data.message,
+          errors: data.errors,
+          details: data.details,
+        });
+
         // Provide more specific error messages
-        if (response.status === 401) {
+        if (response.status === 400) {
+          // Validation errors - show detailed message
+          const errorMsg =
+            data.details || data.message || "Invalid request data";
+          const validationErrors = data.errors
+            ?.map((e) => e.msg || e.message)
+            .join(", ");
+          throw new Error(validationErrors || errorMsg);
+        } else if (response.status === 401) {
           throw new Error("Authentication required. Please log in again.");
         } else if (response.status === 403) {
           throw new Error(data.message || "Access denied");
         } else if (response.status === 404) {
           throw new Error(data.message || "Resource not found");
         } else if (response.status === 500) {
-          throw new Error("Server error. Please try again later.");
+          throw new Error(
+            data.message || "Server error. Please try again later."
+          );
         }
 
         throw new Error(
