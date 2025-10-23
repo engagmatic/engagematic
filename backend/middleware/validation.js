@@ -60,10 +60,17 @@ export const validatePostGeneration = [
     .isMongoId()
     .withMessage("Invalid hook ID format"),
   // personaId is now optional (can send persona data directly)
+  // Skip validation entirely if personaId is not provided
   body("personaId")
-    .optional({ checkFalsy: true })
-    .isMongoId()
-    .withMessage("Invalid persona ID"),
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      // Only validate if value exists and is not empty
+      if (value && value !== "") {
+        return /^[0-9a-fA-F]{24}$/.test(value);
+      }
+      return true;
+    })
+    .withMessage("Invalid persona ID format"),
   body("persona")
     .optional()
     .isObject()
