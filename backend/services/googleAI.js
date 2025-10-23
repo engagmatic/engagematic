@@ -209,17 +209,17 @@ Generate only the post content, no additional explanations.`;
     // Define comment type specific instructions
     const typeInstructions = {
       personal_story:
-        "Share a brief personal story or experience (20-40 words) that directly relates to the post. Make it authentic and relatable.",
+        "Share a brief personal story or experience (15-20 words max) that directly relates to the post. Make it authentic and relatable.",
       value_add:
-        "Provide a quick actionable tip, insight, or framework (20-40 words) that adds value to the discussion. Be specific and practical.",
+        "Provide a quick actionable tip, insight, or framework (15-20 words max) that adds value to the discussion. Be specific and practical.",
       question:
-        "Ask a thoughtful, engaging question (20-40 words) that encourages discussion and shows genuine interest. Reference specific points from the post.",
+        "Ask a thoughtful, engaging question (15-20 words max) that encourages discussion and shows genuine interest. Reference specific points from the post.",
       insight:
-        "Offer a sharp, unique perspective or observation (20-40 words) that makes people think. Be direct and insightful.",
+        "Offer a sharp, unique perspective or observation (15-20 words max) that makes people think. Be direct and insightful.",
       experience_share:
-        "Share how you've experienced or applied this concept (20-40 words) in your professional journey. Be specific and concise.",
+        "Share how you've experienced or applied this concept (15-20 words max) in your professional journey. Be specific and concise.",
       enthusiastic_support:
-        "Show strong agreement with specific reasoning (20-40 words). Explain WHY you agree, citing specific aspects from the post.",
+        "Show strong agreement with specific reasoning (15-20 words max). Explain WHY you agree, citing specific aspects from the post.",
     };
 
     const typeExamples = {
@@ -248,48 +248,49 @@ POST:
 ${typeInstructions[commentType] || typeInstructions.value_add}
 
 CRITICAL COMMENT REQUIREMENTS:
-1. **SUPER SHORT**: 20-40 words maximum (like real human LinkedIn comments!)
+1. **ULTRA SHORT**: STRICT 15-20 words MAXIMUM (count every word - this is critical!)
 2. **DIRECTLY ADDRESS THE POST**: Reference specific points from the post content
 3. **BE RELATABLE**: Share a quick personal insight or experience that connects
 4. **NATURAL & CONVERSATIONAL**: Write like you're texting a colleague, not writing an essay
-5. **ADD VALUE**: Give a quick tip, insight, or perspective - but keep it BRIEF
+5. **ADD VALUE**: Give a quick tip, insight, or perspective - but keep it SUPER BRIEF
 6. **AUTHENTIC TONE**: Use ${
       persona.tone
     } tone naturally - no corporate buzzwords
-7. **NO FLUFF**: Cut all unnecessary words - get straight to the point
+7. **NO FLUFF**: Cut ALL unnecessary words - get straight to the point
 8. **HUMAN-LIKE**: Use contractions, casual language, real emotions
-9. **ENGAGING**: Ask a short question OR share a micro-story OR give a sharp insight
-10. **COMPLETE**: Full sentences, but SHORT ones
+9. **EMOJIS**: Use 1 emoji MAX, and ONLY if it adds emphasis or emotion (🎯💯🔥👏). Don't force it!
+10. **WORD LIMIT**: If over 20 words, CUT IT DOWN. Brevity is critical for LinkedIn comments!
 
-BAD EXAMPLE (too long, too formal):
-"Absolutely spot on! The greatest killer of sustained growth is a leader or team clinging too tightly to the initial perfect vision. Your emphasis on 'evolving without ego' hits the nail right on the head. For us, this translates directly to leadership effectiveness..."
+BAD EXAMPLE (too long):
+"Absolutely spot on! The greatest killer of sustained growth is a leader or team clinging too tightly to the initial perfect vision. Your emphasis on 'evolving without ego' hits the nail..."
 
-GOOD EXAMPLE for "${commentType}" style:
+GOOD EXAMPLE for "${commentType}" style (15-20 words):
 "${typeExamples[commentType] || typeExamples.value_add}"
 
-MORE GOOD EXAMPLES (short, crisp, valuable):
-- "This! We lost 6 months because we couldn't let go of the original vision. Ego is expensive. 💯"
-- "The 'evolving without ego' part hit hard. Been there. How do you handle pushback from stakeholders?"
-- "Love this framework. We call it 'Strategic Refinement' - same concept, same results. 🎯"
-- "Spot on. Momentum needs process, not just passion. Learned this the hard way!"
-- "This is gold. The daily grind > initial hype. Every. Single. Time."
+MORE PERFECT EXAMPLES (15-20 words each, super short, emojis optional!):
+- "This! Lost 6 months clinging to our vision. Ego is expensive. 💯" (11 words, 1 emoji)
+- "The 'evolving without ego' part hit hard. How do you handle stakeholder pushback?" (13 words, no emoji)
+- "Love this framework. We call it 'Strategic Refinement' - same results. 🎯" (11 words, 1 emoji)
+- "Spot on. Momentum needs process, not passion. Learned this the hard way!" (12 words, no emoji)
+- "This is gold. Daily grind beats initial hype. Every. Single. Time." (11 words, no emoji)
+- "Been there! The pivot moment is terrifying but necessary. 🔥" (10 words, 1 emoji)
 
-Generate 3 SHORT, crisp "${commentType}" style comments (20-40 words each):
+Generate 3 ULTRA SHORT, crisp "${commentType}" style comments (15-20 words each - COUNT THE WORDS!):
 
-Return ONLY JSON:
+Return ONLY JSON (each comment MUST be 15-20 words):
 [
   {
-    "text": "Your 20-40 word ${commentType} comment here - directly referencing the post",
+    "text": "Your 15-20 word ${commentType} comment - count words, keep it super short!",
     "engagementScore": 8.5,
     "type": "${commentType}"
   },
   {
-    "text": "Another short ${commentType} comment with specific value",
+    "text": "Another ultra-short ${commentType} comment - max 20 words, direct and valuable",
     "engagementScore": 9.0,
     "type": "${commentType}"
   },
   {
-    "text": "Third crisp ${commentType} comment - keep it valuable and brief",
+    "text": "Third brief ${commentType} comment - remember 15-20 word limit strictly!",
     "engagementScore": 8.8,
     "type": "${commentType}"
   }
@@ -327,24 +328,40 @@ JSON ONLY.`;
       // Validate and format comments with engagement scores
       const formattedComments = comments
         .map((comment) => {
+          let commentText = "";
+          let commentData = {};
+
           if (typeof comment === "string") {
-            // Handle old format (just text)
-            return {
-              text: comment.trim(),
+            commentText = comment.trim();
+            commentData = {
               engagementScore: this.calculateEngagementScore(comment),
               type: "general",
             };
           } else if (comment.text) {
-            // Handle new format (with engagement score)
-            return {
-              text: comment.text.trim(),
+            commentText = comment.text.trim();
+            commentData = {
               engagementScore:
                 comment.engagementScore ||
                 this.calculateEngagementScore(comment.text),
               type: comment.type || "general",
             };
+          } else {
+            return null;
           }
-          return null;
+
+          // Enforce 15-20 word limit
+          const wordCount = commentText.split(/\s+/).length;
+          if (wordCount > 20) {
+            // Truncate to 20 words
+            const words = commentText.split(/\s+/);
+            commentText = words.slice(0, 20).join(" ") + "...";
+            console.log(`⚠️ Comment truncated from ${wordCount} to 20 words`);
+          }
+
+          return {
+            text: commentText,
+            ...commentData,
+          };
         })
         .filter((comment) => comment && comment.text.length > 0);
 
