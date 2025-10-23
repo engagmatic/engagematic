@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Persona from "../models/Persona.js";
 import { authenticateToken } from "../middleware/auth.js";
 import {
   validateUserRegistration,
@@ -73,6 +74,31 @@ router.post("/register", validateUserRegistration, async (req, res) => {
     );
     console.log("✅ Trial subscription created for new user:", user._id);
 
+    // Create Persona document if persona data was provided
+    let createdPersona = null;
+    if (persona) {
+      try {
+        createdPersona = await Persona.create({
+          userId: user._id,
+          name: persona.name || `${name}'s Persona`,
+          description: persona.expertise || `Professional persona for ${name}`,
+          tone: persona.tone || "professional",
+          industry: profile?.industry || "Professional Services",
+          experience: profile?.experience || "mid",
+          writingStyle: persona.writingStyle || "Clear and professional",
+          isDefault: true,
+          isActive: true,
+        });
+        console.log("✅ Persona document created for new user:", user._id);
+      } catch (personaError) {
+        console.error(
+          "⚠️ Failed to create persona document:",
+          personaError.message
+        );
+        // Don't fail registration if persona creation fails
+      }
+    }
+
     // Generate JWT token
     const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, {
       expiresIn: config.JWT_EXPIRE,
@@ -94,6 +120,13 @@ router.post("/register", validateUserRegistration, async (req, res) => {
           trialEndDate: subscription.trialEndDate,
           limits: subscription.limits,
         },
+        persona: createdPersona
+          ? {
+              id: createdPersona._id,
+              name: createdPersona.name,
+              tone: createdPersona.tone,
+            }
+          : null,
       },
     });
   } catch (error) {

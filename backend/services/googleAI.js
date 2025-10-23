@@ -172,12 +172,13 @@ CRITICAL REQUIREMENTS - Must complete ALL of these:
 4. Include specific examples, numbers, or personal experiences where relevant
 5. Use short paragraphs (2-3 sentences max) and bullet points for readability
 6. Structure: Hook → Context/Story → Main Insights (3-5 points) → Call-to-Action
-7. Keep it between 200-350 words for optimal LinkedIn engagement
+7. **LENGTH LIMIT**: Keep between 250-400 words (max 2800 characters). This is CRITICAL!
 8. End with a strong call-to-action or thought-provoking question
 9. Sound 100% human and authentic - avoid corporate jargon and AI-sounding phrases
 10. Use emojis sparingly (1-2 max) and only if they add value
 
-COMPLETE THE ENTIRE POST - do not cut off mid-sentence. Generate the full, polished post.`;
+COMPLETE THE ENTIRE POST - do not cut off mid-sentence. Generate the full, polished post.
+DO NOT exceed 2800 characters total (including spaces and line breaks).`;
 
     if (linkedinInsights?.contentStrategy?.contentTypes) {
       basePrompt += `

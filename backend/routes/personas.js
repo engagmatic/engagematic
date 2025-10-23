@@ -12,6 +12,8 @@ const router = express.Router();
 router.get("/", authenticateToken, async (req, res) => {
   try {
     const userId = req.user._id;
+
+    // Sample personas for users without custom personas
     const samplePersonas = [
       {
         name: "Tech Professional",
@@ -22,6 +24,7 @@ router.get("/", authenticateToken, async (req, res) => {
         experience: "senior",
         writingStyle:
           "Clear, technical, and solution-oriented. Uses data and examples to support points.",
+        isSample: true,
       },
       {
         name: "Marketing Expert",
@@ -32,6 +35,7 @@ router.get("/", authenticateToken, async (req, res) => {
         experience: "mid",
         writingStyle:
           "Engaging, story-driven, and results-focused. Uses personal experiences and case studies.",
+        isSample: true,
       },
       {
         name: "Entrepreneur",
@@ -42,6 +46,7 @@ router.get("/", authenticateToken, async (req, res) => {
         experience: "executive",
         writingStyle:
           "Conversational, honest, and inspiring. Shares failures and successes openly.",
+        isSample: true,
       },
       {
         name: "Sales Leader",
@@ -52,12 +57,22 @@ router.get("/", authenticateToken, async (req, res) => {
         experience: "senior",
         writingStyle:
           "Direct, persuasive, and value-focused. Uses frameworks and actionable advice.",
+        isSample: true,
       },
     ];
-    const personas =
-      (await Persona.find({ userId, isActive: true }).sort({
-        createdAt: -1,
-      })) ?? samplePersonas;
+
+    // Get user's custom personas
+    const userPersonas = await Persona.find({ userId, isActive: true }).sort({
+      createdAt: -1,
+    });
+
+    // Always return both user personas and sample personas
+    const personas = [...userPersonas, ...samplePersonas];
+
+    console.log(
+      `✅ Returning ${personas.length} personas for user ${userId} (${userPersonas.length} custom, ${samplePersonas.length} samples)`
+    );
+
     res.json({
       success: true,
       data: { personas },
@@ -84,6 +99,7 @@ router.get("/samples", async (req, res) => {
         experience: "senior",
         writingStyle:
           "Clear, technical, and solution-oriented. Uses data and examples to support points.",
+        isSample: true,
       },
       {
         name: "Marketing Expert",
@@ -94,6 +110,7 @@ router.get("/samples", async (req, res) => {
         experience: "mid",
         writingStyle:
           "Engaging, story-driven, and results-focused. Uses personal experiences and case studies.",
+        isSample: true,
       },
       {
         name: "Entrepreneur",
@@ -104,6 +121,7 @@ router.get("/samples", async (req, res) => {
         experience: "executive",
         writingStyle:
           "Conversational, honest, and inspiring. Shares failures and successes openly.",
+        isSample: true,
       },
       {
         name: "Sales Leader",
@@ -114,6 +132,7 @@ router.get("/samples", async (req, res) => {
         experience: "senior",
         writingStyle:
           "Direct, persuasive, and value-focused. Uses frameworks and actionable advice.",
+        isSample: true,
       },
     ];
 
