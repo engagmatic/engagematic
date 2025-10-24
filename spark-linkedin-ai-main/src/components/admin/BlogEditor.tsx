@@ -8,6 +8,8 @@ import { X, Save, Send, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAdmin } from "@/contexts/AdminContext";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 interface BlogEditorProps {
   blog?: any;
   onClose: () => void;
@@ -97,8 +99,8 @@ export function BlogEditor({ blog, onClose, onSave }: BlogEditorProps) {
       };
 
       const url = blog
-        ? `http://localhost:5000/api/blog/admin/${blog._id}`
-        : "http://localhost:5000/api/blog/admin/create";
+        ? `${API_URL}/api/blog/admin/${blog._id}`
+        : `${API_URL}/api/blog/admin/create`;
 
       const method = blog ? "PUT" : "POST";
 

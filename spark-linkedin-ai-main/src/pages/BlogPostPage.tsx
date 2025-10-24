@@ -5,6 +5,8 @@ import { Calendar, User, Clock, ArrowLeft, Share2, Bookmark, Eye } from "lucide-
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 interface BlogPost {
   _id: string;
   slug: string;
@@ -47,7 +49,7 @@ const BlogPostPage = () => {
   const fetchBlogPost = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:5000/api/blog/public/${slug}`);
+      const response = await fetch(`${API_URL}/api/blog/public/${slug}`);
       
       if (response.ok) {
         const result = await response.json();
@@ -68,7 +70,7 @@ const BlogPostPage = () => {
 
   const fetchRelatedPosts = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/blog/public?limit=3');
+      const response = await fetch(`${API_URL}/api/blog/public?limit=3`);
       
       if (response.ok) {
         const result = await response.json();

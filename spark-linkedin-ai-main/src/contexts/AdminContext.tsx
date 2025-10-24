@@ -22,6 +22,7 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = `${API_URL}/api`;
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [admin, setAdmin] = useState<Admin | null>(null);
@@ -40,7 +41,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const response = await fetch(`${API_URL}/admin/auth/verify`, {
+        const response = await fetch(`${API_BASE}/admin/auth/verify`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -73,7 +74,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/admin/auth/login`, {
+      const response = await fetch(`${API_BASE}/admin/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

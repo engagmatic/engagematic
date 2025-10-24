@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { Card } from '@/components/ui/card';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 import { 
   Users, 
   FileText, 
@@ -67,7 +69,7 @@ export default function AdminDashboard() {
   const fetchDashboardStats = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('http://localhost:5000/api/admin/stats', {
+      const response = await fetch(`${API_URL}/api/admin/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -87,7 +89,7 @@ export default function AdminDashboard() {
   const fetchRecentUsers = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('http://localhost:5000/api/admin/recent-users?limit=5', {
+      const response = await fetch(`${API_URL}/api/admin/recent-users?limit=5`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -105,7 +107,7 @@ export default function AdminDashboard() {
   const fetchRecentActivity = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('http://localhost:5000/api/admin/recent-activity?limit=5', {
+      const response = await fetch(`${API_URL}/api/admin/recent-activity?limit=5`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

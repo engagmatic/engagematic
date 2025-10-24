@@ -30,7 +30,7 @@ export function useTestimonial() {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:5000/api/testimonials/check-eligibility', {
+      const response = await fetch(`${API_URL}/api/testimonials/check-eligibility`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

@@ -64,7 +64,7 @@ export function TestimonialPopup({ isOpen, onClose, triggeredBy }: TestimonialPo
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/testimonials/submit', {
+      const response = await fetch(`${API_URL}/api/testimonials/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
