@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const API_BASE = `${API_URL}/api`;
-
+const API_BASE = `${API_URL}`;
 interface TestimonialState {
   showPopup: boolean;
   triggeredBy: 'first_post' | 'first_comment' | 'profile_analysis' | null;

@@ -2,8 +2,7 @@
 import { useState, useEffect } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const API_BASE = `${API_URL}/api`;
-import { AdminLayout } from '../../components/admin/AdminLayout';
+const API_BASE = `${API_URL}`;import { AdminLayout } from '../../components/admin/AdminLayout';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
