@@ -74,7 +74,7 @@ export default function TestimonialsManagement() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`${API_URL}/api/testimonials/admin/stats`, {
+      const response = await fetch(`${API_BASE}/testimonials/admin/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -94,8 +94,8 @@ export default function TestimonialsManagement() {
       setIsLoading(true);
       const token = localStorage.getItem('adminToken');
       const url = filterStatus === 'all'
-        ? `${API_URL}/api/testimonials/admin/all`
-        : `${API_URL}/api/testimonials/admin/all?status=${filterStatus}`;
+        ? `${API_BASE}/testimonials/admin/all`
+        : `${API_BASE}/testimonials/admin/all?status=${filterStatus}`;
       
       const response = await fetch(url, {
         headers: {
@@ -127,7 +127,7 @@ export default function TestimonialsManagement() {
       const endpoint = actionType === 'approve' ? 'approve' : 'reject';
       
       const response = await fetch(
-        `${API_URL}/api/testimonials/admin/${selectedTestimonial._id}/${endpoint}`,
+        `${API_BASE}/testimonials/admin/${selectedTestimonial._id}/${endpoint}`,
         {
           method: 'PATCH',
           headers: {
@@ -164,7 +164,7 @@ export default function TestimonialsManagement() {
     try {
       const token = localStorage.getItem('adminToken');
       const response = await fetch(
-        `${API_URL}/api/testimonials/admin/${testimonial._id}/toggle-featured`,
+        `${API_BASE}/testimonials/admin/${testimonial._id}/toggle-featured`,
         {
           method: 'PATCH',
           headers: {

@@ -66,7 +66,7 @@ const Analytics = () => {
       setIsLoading(true);
       
       // Fetch overview stats
-      const response = await fetch(`${API_URL}/api/admin/stats`, {
+      const response = await fetch(`${API_BASE}/admin/stats`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

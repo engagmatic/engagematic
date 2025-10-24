@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = `${API_URL}/api`;
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -62,7 +63,7 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`${API_URL}/api/admin/users`, {
+      const response = await fetch(`${API_BASE}/admin/users`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

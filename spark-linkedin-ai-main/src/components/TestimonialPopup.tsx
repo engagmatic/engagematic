@@ -14,6 +14,9 @@ import { Label } from '@/components/ui/label';
 import { Star, Sparkles, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = `${API_URL}/api`;
+
 interface TestimonialPopupProps {
   isOpen: boolean;
   onClose: () => void;
@@ -64,7 +67,7 @@ export function TestimonialPopup({ isOpen, onClose, triggeredBy }: TestimonialPo
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/testimonials/submit`, {
+      const response = await fetch(`${API_BASE}/testimonials/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

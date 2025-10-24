@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = `${API_URL}/api`;
 
 interface BlogPost {
   _id: string;
@@ -78,7 +79,7 @@ const BlogsPage = () => {
   const fetchBlogs = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/api/blog/public`);
+      const response = await fetch(`${API_BASE}/blog/public`);
       
       if (response.ok) {
         const result = await response.json();

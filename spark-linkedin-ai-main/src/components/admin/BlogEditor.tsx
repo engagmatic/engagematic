@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useAdmin } from "@/contexts/AdminContext";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = `${API_URL}`;
 
 interface BlogEditorProps {
   blog?: any;
@@ -99,8 +100,8 @@ export function BlogEditor({ blog, onClose, onSave }: BlogEditorProps) {
       };
 
       const url = blog
-        ? `${API_URL}/api/blog/admin/${blog._id}`
-        : `${API_URL}/api/blog/admin/create`;
+        ? `${API_BASE}/blog/admin/${blog._id}`
+        : `${API_BASE}/blog/admin/create`;
 
       const method = blog ? "PUT" : "POST";
 

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Star } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = `${API_URL}/api`;
 
 interface Testimonial {
   displayName: string;
@@ -53,7 +54,7 @@ export const Testimonials = () => {
 
   const fetchTestimonials = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/testimonials/public?limit=4`);
+      const response = await fetch(`${API_BASE}/testimonials/public?limit=4`);
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.data.length > 0) {

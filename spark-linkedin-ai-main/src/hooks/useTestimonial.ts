@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = `${API_URL}/api`;
+
 interface TestimonialState {
   showPopup: boolean;
   triggeredBy: 'first_post' | 'first_comment' | 'profile_analysis' | null;
@@ -30,7 +33,7 @@ export function useTestimonial() {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`${API_URL}/api/testimonials/check-eligibility`, {
+      const response = await fetch(`${API_BASE}/testimonials/check-eligibility`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

@@ -20,6 +20,7 @@ import { BlogEditor } from "@/components/admin/BlogEditor";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = `${API_URL}`;
 
 interface Blog {
   _id: string;
@@ -75,8 +76,8 @@ const BlogManagement = () => {
     try {
       setIsLoading(true);
       const url = statusFilter === "all"
-        ? `${API_URL}/api/blog/admin/all`
-        : `${API_URL}/api/blog/admin/all?status=${statusFilter}`;
+        ? `${API_BASE}/blog/admin/all`
+        : `${API_BASE}/blog/admin/all?status=${statusFilter}`;
 
       const response = await fetch(url, {
         headers: {
@@ -100,7 +101,7 @@ const BlogManagement = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/blog/admin/stats/overview`, {
+      const response = await fetch(`${API_BASE}/blog/admin/stats/overview`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -139,7 +140,7 @@ const BlogManagement = () => {
 
   const handlePublish = async (blogId: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/blog/admin/${blogId}/publish`, {
+      const response = await fetch(`${API_BASE}/blog/admin/${blogId}/publish`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -161,7 +162,7 @@ const BlogManagement = () => {
 
   const handleUnpublish = async (blogId: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/blog/admin/${blogId}/unpublish`, {
+      const response = await fetch(`${API_BASE}/blog/admin/${blogId}/unpublish`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -183,7 +184,7 @@ const BlogManagement = () => {
 
   const handleToggleFeatured = async (blogId: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/blog/admin/${blogId}/toggle-featured`, {
+      const response = await fetch(`${API_BASE}/blog/admin/${blogId}/toggle-featured`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -209,7 +210,7 @@ const BlogManagement = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/blog/admin/${blogId}`, {
+      const response = await fetch(`${API_BASE}/blog/admin/${blogId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

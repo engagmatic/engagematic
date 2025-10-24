@@ -6,6 +6,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = `${API_URL}/api`;
 
 interface BlogPost {
   _id: string;
@@ -49,7 +50,7 @@ const BlogPostPage = () => {
   const fetchBlogPost = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/api/blog/public/${slug}`);
+      const response = await fetch(`${API_BASE}/blog/public/${slug}`);
       
       if (response.ok) {
         const result = await response.json();
@@ -70,7 +71,7 @@ const BlogPostPage = () => {
 
   const fetchRelatedPosts = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/blog/public?limit=3`);
+      const response = await fetch(`${API_BASE}/blog/public?limit=3`);
       
       if (response.ok) {
         const result = await response.json();
