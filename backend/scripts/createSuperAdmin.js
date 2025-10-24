@@ -24,7 +24,9 @@ async function createSuperAdmin() {
     const mongoUri =
       process.env.MONGODB_URI || "mongodb://localhost:27017/linkedinpulse";
     console.log("\n🔌 Connecting to MongoDB...");
-    await mongoose.connect(mongoUri);
+    await mongoose.connect(config.MONGODB_URI, {
+      dbName: config.DB_NAME,
+    });
     console.log("✅ Connected to MongoDB\n");
 
     console.log("═══════════════════════════════════════");

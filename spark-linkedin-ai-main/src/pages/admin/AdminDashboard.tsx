@@ -18,11 +18,29 @@ interface DashboardStats {
   totalUsers: number;
   activeUsers: number;
   newUsersToday: number;
-  totalPosts: number;
-  totalComments: number;
+  postsGenerated: number;
+  commentsGenerated: number;
   totalRevenue: number;
   conversionRate: number;
   growthRate: number;
+}
+
+interface RecentUser {
+  _id: string;
+  email: string;
+  name: string;
+  plan: string;
+  joinedDate: string;
+}
+
+interface RecentActivity {
+  _id: string;
+  user: {
+    email: string;
+    name: string;
+  };
+  action: string;
+  timestamp: string;
 }
 
 export default function AdminDashboard() {
@@ -30,16 +48,20 @@ export default function AdminDashboard() {
     totalUsers: 0,
     activeUsers: 0,
     newUsersToday: 0,
-    totalPosts: 0,
-    totalComments: 0,
+    postsGenerated: 0,
+    commentsGenerated: 0,
     totalRevenue: 0,
     conversionRate: 0,
     growthRate: 0
   });
+  const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchDashboardStats();
+    fetchRecentUsers();
+    fetchRecentActivity();
   }, []);
 
   const fetchDashboardStats = async () => {
@@ -60,6 +82,63 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchRecentUsers = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch('http://localhost:5000/api/admin/recent-users?limit=5', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setRecentUsers(result.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch recent users:', error);
+    }
+  };
+
+  const fetchRecentActivity = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch('http://localhost:5000/api/admin/recent-activity?limit=5', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setRecentActivity(result.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch recent activity:', error);
+    }
+  };
+
+  const getTimeAgo = (date: Date): string => {
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + ' years ago';
+    
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + ' months ago';
+    
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + ' days ago';
+    
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + ' hours ago';
+    
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + ' min ago';
+    
+    return Math.floor(seconds) + ' sec ago';
   };
 
   const statCards = [
@@ -89,7 +168,7 @@ export default function AdminDashboard() {
     },
     {
       title: 'Posts Generated',
-      value: stats.totalPosts,
+      value: stats.postsGenerated,
       icon: FileText,
       change: '+156',
       positive: true,
@@ -97,7 +176,7 @@ export default function AdminDashboard() {
     },
     {
       title: 'Comments Generated',
-      value: stats.totalComments,
+      value: stats.commentsGenerated,
       icon: MessageSquare,
       change: '+89',
       positive: true,
@@ -184,22 +263,37 @@ export default function AdminDashboard() {
               Recent Users
             </h3>
             <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
-                    U{i}
+              {recentUsers.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">No recent users</p>
+              ) : (
+                recentUsers.map((user) => (
+                  <div key={user._id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {user.name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(user.joinedDate).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                    <span className={`px-2 py-1 text-xs rounded-full capitalize ${
+                      user.plan === 'trial' ? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300' :
+                      user.plan === 'starter' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' :
+                      'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
+                    }`}>
+                      {user.plan}
+                    </span>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      User {i}
-                    </p>
-                    <p className="text-xs text-gray-500">Joined 2 hours ago</p>
-                  </div>
-                  <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
-                    Active
-                  </span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </Card>
 
@@ -209,30 +303,30 @@ export default function AdminDashboard() {
               Recent Activity
             </h3>
             <div className="space-y-3">
-              {[
-                { action: 'Post generated', user: 'John Doe', time: '5 min ago', icon: FileText },
-                { action: 'Comment created', user: 'Jane Smith', time: '12 min ago', icon: MessageSquare },
-                { action: 'New signup', user: 'Mike Johnson', time: '23 min ago', icon: UserPlus },
-                { action: 'Profile analyzed', user: 'Sarah Wilson', time: '34 min ago', icon: Activity },
-                { action: 'Post generated', user: 'Tom Brown', time: '45 min ago', icon: FileText }
-              ].map((activity, i) => {
-                const Icon = activity.icon;
-                return (
-                  <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                      <Icon className="h-5 w-5 text-white" />
+              {recentActivity.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">No recent activity</p>
+              ) : (
+                recentActivity.map((activity) => {
+                  const Icon = activity.action.includes('post') ? FileText : MessageSquare;
+                  const timeAgo = getTimeAgo(new Date(activity.timestamp));
+                  
+                  return (
+                    <div key={activity._id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        <Icon className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+                          {activity.action}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {activity.user.name} • {timeAgo}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {activity.action}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {activity.user} • {activity.time}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </Card>
         </div>

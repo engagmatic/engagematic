@@ -7,7 +7,9 @@ import { config } from "../config/index.js";
 async function createAdminUser() {
   try {
     // Connect to MongoDB
-    await mongoose.connect(config.MONGODB_URI);
+    await mongoose.connect(config.MONGODB_URI, {
+      dbName: config.DB_NAME,
+    });
     console.log("✅ Connected to MongoDB");
 
     console.log("\n🔐 Creating Admin User...\n");

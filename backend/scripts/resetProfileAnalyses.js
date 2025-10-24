@@ -15,7 +15,9 @@ dotenv.config({ path: path.join(__dirname, "../.env") });
 async function resetProfileAnalyses() {
   try {
     console.log("🔄 Connecting to MongoDB...");
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(config.MONGODB_URI, {
+      dbName: config.DB_NAME,
+    });
     console.log("✅ Connected to MongoDB");
 
     // Option 1: Reset profile analyses count to 0 (keeps trial plan)

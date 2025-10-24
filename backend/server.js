@@ -17,6 +17,8 @@ import profileAnalyzerRoutes from "./routes/profileAnalyzer.js";
 import profileInsightsRoutes from "./routes/profileInsights.js";
 import adminRoutes from "./routes/admin.js";
 import adminAuthRoutes from "./routes/adminAuth.js";
+import testimonialRoutes from "./routes/testimonials.js";
+import blogRoutes from "./routes/blog.js";
 
 const app = express();
 
@@ -95,6 +97,8 @@ app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/waitlist", waitlistRoutes);
 app.use("/api/profile-analyzer", profileAnalyzerRoutes);
 app.use("/api/profile-analyzer", profileInsightsRoutes); // Merged route for insights
+app.use("/api/testimonials", testimonialRoutes); // Testimonial routes
+app.use("/api/blog", blogRoutes); // Blog routes
 
 // Admin routes
 app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication

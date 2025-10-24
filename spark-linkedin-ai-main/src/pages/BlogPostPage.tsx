@@ -1,172 +1,113 @@
 import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, User, Clock, ArrowLeft, Share2, Bookmark } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Calendar, User, Clock, ArrowLeft, Share2, Bookmark, Eye } from "lucide-react";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
-// Blog data (same as in BlogsPage)
-const blogPosts = [
-  {
-    id: 1,
-    slug: "ultimate-linkedin-content-strategy-2025",
-    title: "The Ultimate LinkedIn Content Strategy for 2025",
-    summary: "Discover the proven framework that helped 10,000+ professionals 6x their LinkedIn engagement and build authentic professional relationships.",
-    content: `# The Ultimate LinkedIn Content Strategy for 2025
-
-LinkedIn has evolved beyond just a professional networking platform. It's now a powerful content ecosystem where thought leaders, entrepreneurs, and professionals build their personal brands and drive business growth.
-
-After analyzing over 10,000 successful LinkedIn profiles and working with hundreds of content creators, I've identified the key patterns that separate high-performing accounts from the rest.
-
-## The 3-Pillar Framework
-
-### 1. Authenticity Over Perfection
-
-The biggest mistake most professionals make is trying to sound "corporate" or overly polished. LinkedIn's algorithm and users favor authentic, human content.
-
-**What works:**
-- Personal stories and experiences
-- Behind-the-scenes insights
-- Honest failures and lessons learned
-- Real opinions on industry topics
-
-**What doesn't work:**
-- Generic motivational quotes
-- Overly promotional content
-- Perfect, corporate-speak posts
-- Content that sounds AI-generated
-
-### 2. The Hook-Value-CTA Structure
-
-Every successful LinkedIn post follows this proven structure:
-
-**Hook (First Line):** Grab attention with a compelling statement
-**Value (Middle):** Provide actionable insights or interesting information
-**CTA (End):** Encourage engagement with a question or call-to-action
-
-### 3. Consistency Beats Perfection
-
-Posting consistently 3-5 times per week outperforms sporadic, perfect posts. The algorithm rewards regular engagement.
-
-## Content Pillars That Work
-
-### Personal Brand Stories
-Share your journey, challenges, and victories. People connect with stories, not statistics.
-
-### Industry Insights
-Position yourself as a thought leader by sharing unique perspectives on industry trends.
-
-### Behind-the-Scenes Content
-Show the human side of your work. This builds trust and relatability.
-
-### Educational Content
-Provide value by teaching something useful to your audience.
-
-## Engagement Optimization
-
-### Timing
-Post when your audience is most active:
-- Tuesday-Thursday: 8-10 AM or 5-6 PM
-- Avoid weekends and Mondays
-
-### Visuals
-Posts with images get 2.3x more engagement. Use:
-- Professional headshots
-- Behind-the-scenes photos
-- Infographics and charts
-- Screenshots of your work
-
-### Hashtags
-Use 3-5 relevant hashtags. Mix popular and niche tags for maximum reach.
-
-## Building Your Community
-
-### Respond to Comments
-Engage with every comment within the first hour of posting. This signals to the algorithm that your content is engaging.
-
-### Comment on Others' Posts
-Spend 15-20 minutes daily commenting thoughtfully on others' content. This builds relationships and increases your visibility.
-
-### Collaborate
-Partner with other professionals in your industry for cross-promotion and content collaboration.
-
-## Measuring Success
-
-Track these key metrics:
-- **Engagement Rate:** Comments + reactions / impressions
-- **Click-through Rate:** Link clicks / impressions
-- **Follower Growth:** New followers per week
-- **Lead Generation:** Inquiries and business opportunities
-
-## Common Mistakes to Avoid
-
-1. **Posting and Ghosting:** Don't post and disappear. Engage with your audience.
-2. **Over-promotion:** Keep promotional content to 20% or less of your posts.
-3. **Ignoring Analytics:** Use LinkedIn's analytics to understand what works.
-4. **Inconsistent Branding:** Maintain a consistent voice and visual style.
-
-## Getting Started
-
-1. **Audit Your Current Content:** Review your last 10 posts and identify what performed best.
-2. **Define Your Brand Voice:** How do you want to be perceived by your audience?
-3. **Create a Content Calendar:** Plan your posts for the next month.
-4. **Set Engagement Goals:** Aim for specific metrics improvement.
-
-Remember, building a strong LinkedIn presence takes time and consistency. Focus on providing value, being authentic, and engaging genuinely with your community.
-
-The professionals who succeed on LinkedIn aren't necessarily the most talented or experienced—they're the ones who show up consistently and provide value to their audience.
-
-Start implementing these strategies today, and watch your LinkedIn presence transform from invisible to influential.`,
-    author: "Sarah Chen",
-    authorBio: "LinkedIn Growth Strategist with 5+ years helping professionals build authentic personal brands. Featured in Forbes and Entrepreneur.",
-    publishDate: "2025-01-15",
-    readTime: "8 min read",
-    category: "Strategy",
-    tags: ["LinkedIn", "Content Strategy", "Personal Branding", "Social Media"],
-    imageUrl: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=400&fit=crop",
-    featured: true
-  }
-];
+interface BlogPost {
+  _id: string;
+  slug: string;
+  title: string;
+  content: string;
+  excerpt: string;
+  category: string;
+  readTime: number;
+  views: number;
+  createdAt: string;
+  publishedAt?: string;
+  bannerImage?: string;
+  author: {
+    name: string;
+    email?: string;
+    avatar?: string;
+  };
+  isFeatured: boolean;
+  seo?: {
+    metaTitle?: string;
+    metaDescription?: string;
+    keywords?: string[];
+  };
+}
 
 const BlogPostPage = () => {
   const { slug } = useParams();
-  const [post, setPost] = useState(null);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const navigate = useNavigate();
+  const [blogPost, setBlogPost] = useState<BlogPost | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
-    const foundPost = blogPosts.find(p => p.slug === slug);
-    if (foundPost) {
-      setPost(foundPost);
+    if (slug) {
+      fetchBlogPost();
+      fetchRelatedPosts();
     }
   }, [slug]);
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: post.title,
-          text: post.summary,
-          url: window.location.href,
-        });
-      } catch (error) {
-        console.log('Error sharing:', error);
+  const fetchBlogPost = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`http://localhost:5000/api/blog/public/${slug}`);
+      
+      if (response.ok) {
+        const result = await response.json();
+        setBlogPost(result.data);
+      } else if (response.status === 404) {
+        toast.error("Blog post not found");
+        navigate('/blogs');
+      } else {
+        toast.error("Failed to load blog post");
       }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
+    } catch (error) {
+      console.error("Error fetching blog post:", error);
+      toast.error("Failed to load blog post");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
+  const fetchRelatedPosts = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/blog/public?limit=3');
+      
+      if (response.ok) {
+        const result = await response.json();
+        setRelatedPosts(result.data.filter((post: BlogPost) => post.slug !== slug));
+      }
+    } catch (error) {
+      console.error("Error fetching related posts:", error);
+    }
   };
 
-  if (!post) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  if (isLoading) {
     return (
       <div className="min-h-screen gradient-hero flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Post Not Found</h1>
+          <p className="text-muted-foreground">Loading blog post...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!blogPost) {
+    return (
+      <div className="min-h-screen gradient-hero flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Blog post not found</h2>
           <Link to="/blogs">
-            <Button>Back to Blog</Button>
+            <Button>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Blogs
+            </Button>
           </Link>
         </div>
       </div>
@@ -177,114 +118,169 @@ const BlogPostPage = () => {
     <div className="min-h-screen gradient-hero">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Back Button */}
-        <div className="mb-6">
-          <Link to="/blogs">
-            <Button variant="ghost" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Blog
-            </Button>
-          </Link>
-        </div>
+        <Link to="/blogs">
+          <Button variant="ghost" className="mb-6 gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to All Blogs
+          </Button>
+        </Link>
 
         {/* Article Header */}
-        <div className="mb-8">
-          <div className="bg-primary text-white px-3 py-1 rounded text-sm font-medium inline-block mb-4">
-            {post.category}
+        <Card className="p-8 mb-8 shadow-card">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="bg-primary text-white px-3 py-1 rounded text-sm font-medium">
+              {blogPost.category}
+            </div>
+            {blogPost.isFeatured && (
+              <div className="bg-yellow-500 text-white px-3 py-1 rounded text-sm font-medium">
+                Featured
+              </div>
+            )}
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-            {post.title}
-          </h1>
-          <p className="text-xl text-muted-foreground mb-8">
-            {post.summary}
-          </p>
 
-          {/* Article Meta */}
-          <div className="flex flex-wrap items-center gap-6 mb-8 text-sm text-muted-foreground">
+          <h1 className="text-4xl font-bold mb-4">{blogPost.title}</h1>
+
+          <p className="text-xl text-muted-foreground mb-6">{blogPost.excerpt}</p>
+
+          <div className="flex flex-wrap items-center gap-6 mb-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              <span>{post.author}</span>
+              <span className="font-medium">{blogPost.author.name}</span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              <span>{new Date(post.publishDate).toLocaleDateString()}</span>
+              <span>{formatDate(blogPost.publishedAt || blogPost.createdAt)}</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
-              <span>{post.readTime}</span>
+              <span>{blogPost.readTime} min read</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              <span>{blogPost.views} views</span>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-4 mb-8">
-            <Button onClick={handleShare} variant="outline" className="gap-2">
+          {/* Banner Image */}
+          {blogPost.bannerImage && (
+            <div className="rounded-lg overflow-hidden mb-8">
+              <img
+                src={blogPost.bannerImage}
+                alt={blogPost.title}
+                className="w-full h-auto object-cover"
+              />
+            </div>
+          )}
+
+          {/* Share Buttons */}
+          <div className="flex items-center gap-3 pt-4 border-t">
+            <Button variant="outline" size="sm" className="gap-2">
               <Share2 className="h-4 w-4" />
               Share
             </Button>
-            <Button onClick={handleBookmark} variant="outline" className="gap-2">
-              <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
-              {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+            <Button variant="outline" size="sm" className="gap-2">
+              <Bookmark className="h-4 w-4" />
+              Save
             </Button>
           </div>
-
-          {/* Featured Image */}
-          <div className="mb-8">
-            <img
-              src={post.imageUrl}
-              alt={post.title}
-              className="w-full h-64 lg:h-96 object-cover rounded-lg shadow-lg"
-            />
-          </div>
-        </div>
+        </Card>
 
         {/* Article Content */}
-        <Card className="p-8 gradient-card shadow-card mb-8">
-          <div className="prose prose-lg max-w-none">
-            {post.content.split('\n').map((paragraph, index) => {
-              if (paragraph.startsWith('# ')) {
-                return <h1 key={index} className="text-3xl font-bold mb-6 mt-8 first:mt-0">{paragraph.slice(2)}</h1>;
-              } else if (paragraph.startsWith('## ')) {
-                return <h2 key={index} className="text-2xl font-bold mb-4 mt-6">{paragraph.slice(3)}</h2>;
-              } else if (paragraph.startsWith('### ')) {
-                return <h3 key={index} className="text-xl font-semibold mb-3 mt-4">{paragraph.slice(4)}</h3>;
-              } else if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
-                return <p key={index} className="font-semibold mb-4">{paragraph.slice(2, -2)}</p>;
-              } else if (paragraph.startsWith('- ')) {
-                return <li key={index} className="mb-2">{paragraph.slice(2)}</li>;
-              } else if (paragraph.trim() === '') {
-                return <br key={index} />;
-              } else if (paragraph.trim()) {
-                return <p key={index} className="mb-4 leading-relaxed">{paragraph}</p>;
-              }
-              return null;
-            })}
-          </div>
+        <Card className="p-8 mb-8 shadow-card">
+          <div 
+            className="prose prose-lg max-w-none
+              prose-headings:font-bold prose-headings:text-foreground
+              prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
+              prose-p:text-muted-foreground prose-p:leading-relaxed
+              prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+              prose-strong:text-foreground prose-strong:font-semibold
+              prose-ul:my-6 prose-ol:my-6
+              prose-li:text-muted-foreground prose-li:my-2
+              prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded
+              prose-pre:bg-muted prose-pre:p-4 prose-pre:rounded-lg"
+            dangerouslySetInnerHTML={{ __html: formatContent(blogPost.content) }}
+          />
         </Card>
 
-        {/* Author Bio */}
-        <Card className="p-6 gradient-card shadow-card mb-8">
-          <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <User className="h-8 w-8 text-primary" />
+        {/* Author Info */}
+        <Card className="p-6 mb-8 shadow-card">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center text-white text-2xl font-bold">
+              {blogPost.author.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h3 className="text-xl font-bold mb-2">{post.author}</h3>
-              <p className="text-muted-foreground">{post.authorBio}</p>
+              <h3 className="font-semibold text-lg">{blogPost.author.name}</h3>
+              <p className="text-sm text-muted-foreground">Content Creator at LinkedInPulse</p>
             </div>
           </div>
         </Card>
 
-        {/* Back to Blog */}
-        <div className="text-center">
-          <Link to="/blogs">
-            <Button size="lg" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to All Articles
-            </Button>
-          </Link>
-        </div>
+        {/* Related Posts */}
+        {relatedPosts.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold mb-6">Related Articles</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {relatedPosts.map((post) => (
+                <Card key={post._id} className="overflow-hidden hover-lift group">
+                  <Link to={`/blogs/${post.slug}`}>
+                    <div className="relative">
+                      <img
+                        src={post.bannerImage || "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=200&fit=crop"}
+                        alt={post.title}
+                        className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute top-2 left-2 bg-primary text-white px-2 py-1 rounded text-xs font-medium">
+                        {post.category}
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                        {post.title}
+                      </h3>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        {post.readTime} min
+                      </div>
+                    </div>
+                  </Link>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
+};
+
+// Helper function to format content (convert markdown-like syntax to HTML)
+const formatContent = (content: string): string => {
+  let formatted = content;
+
+  // Convert markdown headers to HTML
+  formatted = formatted.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  formatted = formatted.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  formatted = formatted.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // Convert **bold** to <strong>
+  formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+  // Convert *italic* to <em>
+  formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Convert line breaks to paragraphs
+  formatted = formatted.split('\n\n').map(para => {
+    if (para.trim() && !para.startsWith('<h') && !para.startsWith('<ul') && !para.startsWith('<ol')) {
+      return `<p>${para}</p>`;
+    }
+    return para;
+  }).join('\n');
+
+  // Convert - lists to <ul>
+  formatted = formatted.replace(/^- (.+)$/gm, '<li>$1</li>');
+  formatted = formatted.replace(/(<li>.*<\/li>\n?)+/g, (match) => `<ul>${match}</ul>`);
+
+  return formatted;
 };
 
 export default BlogPostPage;

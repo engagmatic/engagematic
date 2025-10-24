@@ -27,6 +27,9 @@ import ProfileAnalyzer from "./pages/ProfileAnalyzer";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
+import TestimonialsManagement from "./pages/admin/TestimonialsManagement";
+import BlogManagement from "./pages/admin/BlogManagement";
+import Analytics from "./pages/admin/Analytics";
 import { ProtectedAdminRoute } from "./components/admin/ProtectedAdminRoute";
 // Roadmap and Changelog removed
 import NotFound from "./pages/NotFound";
@@ -62,6 +65,30 @@ const App = () => (
                   element={
                     <ProtectedAdminRoute>
                       <UserManagement />
+                    </ProtectedAdminRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/testimonials" 
+                  element={
+                    <ProtectedAdminRoute>
+                      <TestimonialsManagement />
+                    </ProtectedAdminRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/blog" 
+                  element={
+                    <ProtectedAdminRoute>
+                      <BlogManagement />
+                    </ProtectedAdminRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/analytics" 
+                  element={
+                    <ProtectedAdminRoute>
+                      <Analytics />
                     </ProtectedAdminRoute>
                   } 
                 />

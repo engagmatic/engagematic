@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { Card } from '@/components/ui/card';
@@ -43,7 +44,7 @@ interface User {
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [filterPlan, setFilterPlan] = useState<string>('all');
@@ -66,9 +67,10 @@ export default function UserManagement() {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setUsers(data);
-        setFilteredUsers(data);
+        const result = await response.json();
+        const userData = result.users || [];
+        setUsers(userData);
+        setFilteredUsers(userData);
       }
     } catch (error) {
       console.error('Failed to fetch users:', error);
@@ -218,7 +220,7 @@ export default function UserManagement() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredUsers.map((user) => (
+                filteredUsers?.map((user) => (
                   <TableRow key={user._id}>
                     <TableCell>
                       <div>

@@ -40,7 +40,7 @@ const loginRateLimiter = (req, res, next) => {
 };
 
 // Admin Login
-router.post("/login", loginRateLimiter, async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -53,8 +53,11 @@ router.post("/login", loginRateLimiter, async (req, res) => {
     }
 
     // Find admin
+    console.log("username", username);
     const admin = await Admin.findOne({ username: username.toLowerCase() });
-
+    const admins = await Admin.find();
+    console.log("totalAdmins", admins);
+    console.log("admin", admin);
     if (!admin) {
       console.log(`❌ Admin login failed: Username "${username}" not found`);
       return res.status(401).json({

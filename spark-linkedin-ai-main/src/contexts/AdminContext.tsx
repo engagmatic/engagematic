@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -39,7 +40,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const response = await fetch(`${API_URL}/api/admin/auth/verify`, {
+        const response = await fetch(`${API_URL}/admin/auth/verify`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -72,7 +73,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/admin/auth/login`, {
+      const response = await fetch(`${API_URL}/admin/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

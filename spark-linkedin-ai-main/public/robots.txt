@@ -1,32 +1,40 @@
 # robots.txt for LinkedInPulse (www.linkedinpulse.com)
-# Generated: 2025-01-23
+# Generated: 2025-01-24
 
 # Allow all crawlers
 User-agent: *
 
-# Allow all main content
+# Allow public pages
 Allow: /
 Allow: /pricing
-Allow: /post-generator
-Allow: /comment-generator
-Allow: /profile-analyzer
-Allow: /templates
 Allow: /waitlist
+Allow: /templates
 Allow: /faq
-Allow: /blog
-Allow: /auth/register
-Allow: /auth/login
+Allow: /about
+Allow: /contact
+Allow: /resources
+Allow: /privacy
+Allow: /terms
+Allow: /blogs
+Allow: /blogs/*
 
-# Block private/admin areas
-Disallow: /admin
-Disallow: /admin/*
-Disallow: /api/
+# Block authentication pages (not useful for SEO)
+Disallow: /auth/
+Disallow: /auth/*
+
+# Block private/user areas (require login)
 Disallow: /dashboard
 Disallow: /dashboard/*
+Disallow: /post-generator
+Disallow: /comment-generator
+Disallow: /profile-analyzer
 
-# Block authentication session pages (after login)
-Disallow: /auth/reset-password
-Disallow: /auth/verify
+# Block admin areas
+Disallow: /admin
+Disallow: /admin/*
+
+# Block API endpoints
+Disallow: /api/
 
 # Allow CSS, JS, images for proper rendering
 Allow: /*.css$
@@ -41,9 +49,6 @@ Allow: /*.webp$
 # Sitemap location
 Sitemap: https://www.linkedinpulse.com/sitemap.xml
 Sitemap: https://linkedinpulse.com/sitemap.xml
-
-# Crawl-delay for good practice (not required for major bots)
-# Crawl-delay: 1
 
 # Host declaration (preferred domain)
 Host: https://www.linkedinpulse.com

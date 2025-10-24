@@ -2,49 +2,55 @@ import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calendar, User, Clock, Search, ArrowRight, Tag } from "lucide-react";
+import { Calendar, User, Clock, Search, ArrowRight, Tag, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
-// Blog data structure
-const blogPosts = [
-  {
-    id: 1,
-    slug: "ultimate-linkedin-content-strategy-2025",
-    title: "The Ultimate LinkedIn Content Strategy for 2025",
-    summary: "Discover the proven framework that helped 10,000+ professionals 6x their LinkedIn engagement and build authentic professional relationships.",
-    author: "Sarah Chen",
-    publishDate: "2025-01-15",
-    readTime: "8 min read",
-    category: "Strategy",
-    tags: ["LinkedIn", "Content Strategy", "Personal Branding", "Social Media"],
-    imageUrl: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=400&fit=crop",
-    featured: true
-  },
-  {
-    id: 2,
-    slug: "ai-content-creation-dos-donts",
-    title: "AI Content Creation: The Do's and Don'ts for LinkedIn",
-    summary: "Learn how to use AI tools effectively while maintaining authenticity and avoiding the pitfalls that make content sound robotic.",
-    author: "Marcus Rodriguez",
-    publishDate: "2025-01-12",
-    readTime: "6 min read",
-    category: "AI & Technology",
-    tags: ["AI", "Content Creation", "LinkedIn", "Authenticity"],
-    imageUrl: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop",
-    featured: false
-  }
-];
+interface BlogPost {
+  _id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  readTime: number;
+  views: number;
+  createdAt: string;
+  publishedAt?: string;
+  bannerImage?: string;
+  author: {
+    name: string;
+  };
+  isFeatured: boolean;
+}
 
-const categories = [
-  { name: "All", count: blogPosts.length },
-  { name: "Strategy", count: blogPosts.filter(post => post.category === "Strategy").length },
-  { name: "AI & Technology", count: blogPosts.filter(post => post.category === "AI & Technology").length }
-];
+const fallbackImage = "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=400&fit=crop";
 
 const BlogsPage = () => {
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredPosts, setFilteredPosts] = useState(blogPosts);
+  const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [categories, setCategories] = useState([{ name: "All", count: 0 }]);
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
+  useEffect(() => {
+    // Update categories when blogPosts change
+    if (blogPosts.length > 0) {
+      const uniqueCategories = Array.from(new Set(blogPosts.map(post => post.category)));
+      const categoryCounts = [
+        { name: "All", count: blogPosts.length },
+        ...uniqueCategories.map(cat => ({
+          name: cat,
+          count: blogPosts.filter(post => post.category === cat).length
+        }))
+      ];
+      setCategories(categoryCounts);
+    }
+  }, [blogPosts]);
 
   useEffect(() => {
     let filtered = blogPosts;
@@ -56,15 +62,36 @@ const BlogsPage = () => {
 
     // Filter by search query
     if (searchQuery) {
+      const query = searchQuery.toLowerCase();
       filtered = filtered.filter(post => 
-        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+        post.title.toLowerCase().includes(query) ||
+        post.excerpt?.toLowerCase().includes(query) ||
+        post.category.toLowerCase().includes(query)
       );
     }
 
     setFilteredPosts(filtered);
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, blogPosts]);
+
+  const fetchBlogs = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:5000/api/blog/public');
+      
+      if (response.ok) {
+        const result = await response.json();
+        setBlogPosts(result.data);
+        setFilteredPosts(result.data);
+      } else {
+        toast.error("Failed to load blog posts");
+      }
+    } catch (error) {
+      console.error("Error fetching blogs:", error);
+      toast.error("Failed to load blog posts");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen gradient-hero">
@@ -113,67 +140,92 @@ const BlogsPage = () => {
           </div>
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading blog posts...</p>
+          </div>
+        )}
+
         {/* Blog Posts Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPosts.map((post) => (
-            <Card key={post.id} className="overflow-hidden gradient-card shadow-card hover-lift group">
-              <div className="relative">
-                <img
-                  src={post.imageUrl}
-                  alt={post.title}
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-4 left-4 bg-primary text-white px-2 py-1 rounded text-xs font-medium">
-                  {post.category}
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
-                  {post.title}
-                </h3>
-                <p className="text-muted-foreground mb-4 line-clamp-3">
-                  {post.summary}
-                </p>
-                <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    {post.author}
+        {!isLoading && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPosts.map((post) => (
+              <Card key={post._id} className="overflow-hidden gradient-card shadow-card hover-lift group">
+                <div className="relative">
+                  <img
+                    src={post.bannerImage || fallbackImage}
+                    alt={post.title}
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute top-4 left-4 bg-primary text-white px-2 py-1 rounded text-xs font-medium">
+                    {post.category}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {new Date(post.publishDate).toLocaleDateString()}
+                  {post.isFeatured && (
+                    <div className="absolute top-4 right-4 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-medium">
+                      Featured
+                    </div>
+                  )}
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                    {post.title}
+                  </h3>
+                  <p className="text-muted-foreground mb-4 line-clamp-3">
+                    {post.excerpt}
+                  </p>
+                  <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      {post.author.name}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      {new Date(post.publishedAt || post.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        {post.readTime} min
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Eye className="h-4 w-4" />
+                        {post.views}
+                      </div>
+                    </div>
+                    <Link to={`/blogs/${post.slug}`}>
+                      <Button variant="ghost" size="sm" className="gap-2">
+                        Read More
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">{post.readTime}</span>
-                  </div>
-                  <Link to={`/blogs/${post.slug}`}>
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      Read More
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {/* No Results */}
-        {filteredPosts.length === 0 && (
+        {!isLoading && filteredPosts.length === 0 && (
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold mb-2">No articles found</h3>
             <p className="text-muted-foreground mb-4">
-              Try adjusting your search or filter criteria
+              {blogPosts.length === 0 
+                ? "No blog posts have been published yet. Check back soon!"
+                : "Try adjusting your search or filter criteria"
+              }
             </p>
-            <Button onClick={() => {
-              setSearchQuery("");
-              setSelectedCategory("All");
-            }}>
-              Clear Filters
-            </Button>
+            {blogPosts.length > 0 && (
+              <Button onClick={() => {
+                setSearchQuery("");
+                setSelectedCategory("All");
+              }}>
+                Clear Filters
+              </Button>
+            )}
           </div>
         )}
       </div>

@@ -66,8 +66,8 @@ router.get("/stats", adminAuth, async (req, res) => {
       totalUsers,
       activeUsers,
       newUsersToday,
-      totalPosts,
-      totalComments,
+      postsGenerated: totalPosts,
+      commentsGenerated: totalComments,
       totalRevenue,
       conversionRate: parseFloat(conversionRate),
       growthRate: parseFloat(growthRate),
@@ -75,6 +75,72 @@ router.get("/stats", adminAuth, async (req, res) => {
   } catch (error) {
     console.error("Error fetching admin stats:", error);
     res.status(500).json({ message: "Failed to fetch statistics" });
+  }
+});
+
+// Get recent users
+router.get("/recent-users", adminAuth, async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5;
+
+    const recentUsers = await User.find()
+      .select("email name createdAt")
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    const usersWithPlan = await Promise.all(
+      recentUsers.map(async (user) => {
+        const subscription = await UserSubscription.findOne({
+          userId: user._id,
+        });
+        return {
+          _id: user._id,
+          email: user.email,
+          name: user.name || user.email.split("@")[0],
+          plan: subscription?.plan || "trial",
+          joinedDate: user.createdAt,
+        };
+      })
+    );
+
+    res.json({ success: true, data: usersWithPlan });
+  } catch (error) {
+    console.error("Error fetching recent users:", error);
+    res.status(500).json({ message: "Failed to fetch recent users" });
+  }
+});
+
+// Get recent activity
+router.get("/recent-activity", adminAuth, async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+
+    const recentContent = await Content.find()
+      .select("userId type createdAt")
+      .populate("userId", "email name")
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    const activities = recentContent.map((content) => ({
+      _id: content._id,
+      user: {
+        email: content.userId?.email || "Unknown",
+        name:
+          content.userId?.name ||
+          content.userId?.email?.split("@")[0] ||
+          "Unknown",
+      },
+      action:
+        content.type === "post" ? "generated a post" : "generated a comment",
+      timestamp: content.createdAt,
+    }));
+
+    res.json({ success: true, data: activities });
+  } catch (error) {
+    console.error("Error fetching recent activity:", error);
+    res.status(500).json({ message: "Failed to fetch recent activity" });
   }
 });
 
@@ -87,14 +153,18 @@ router.get("/users", adminAuth, async (req, res) => {
 
     const users = await User.find()
       .select("email name persona createdAt lastLogin")
-      .populate("subscription")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    // Enhance user data with activity metrics
+    // Enhance user data with activity metrics and subscription
     const enhancedUsers = await Promise.all(
       users.map(async (user) => {
+        // Fetch subscription separately
+        const subscription = await UserSubscription.findOne({
+          userId: user._id,
+        });
+
         const postsGenerated = await Content.countDocuments({
           userId: user._id,
           type: "post",
@@ -109,7 +179,7 @@ router.get("/users", adminAuth, async (req, res) => {
           _id: user._id,
           email: user.email,
           name: user.name || user.email.split("@")[0],
-          plan: user.subscription?.plan || "trial",
+          plan: subscription?.plan || "trial",
           status:
             user.lastLogin &&
             Date.now() - new Date(user.lastLogin).getTime() <
@@ -144,13 +214,14 @@ router.get("/users", adminAuth, async (req, res) => {
 // Get user details by ID
 router.get("/users/:userId", adminAuth, async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId).populate(
-      "subscription"
-    );
+    const user = await User.findById(req.params.userId);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
+    // Fetch subscription separately
+    const subscription = await UserSubscription.findOne({ userId: user._id });
 
     // Get user's content
     const posts = await Content.find({ userId: user._id, type: "post" })
@@ -170,7 +241,7 @@ router.get("/users/:userId", adminAuth, async (req, res) => {
         email: user.email,
         name: user.name,
         persona: user.persona,
-        subscription: user.subscription,
+        subscription: subscription,
         createdAt: user.createdAt,
         lastLogin: user.lastLogin,
         profile: user.profile,

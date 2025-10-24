@@ -50,7 +50,7 @@ export function useContentGeneration() {
         setIsGenerating(false);
       }
     },
-    [toast, navigate]
+    [toast]
   );
 
   const generateComment = useCallback(
