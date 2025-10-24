@@ -1,14 +1,12 @@
 import { useState, useCallback } from "react";
 import apiClient from "../services/api.js";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 
 export function useContentGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState(null);
   const [quotaInfo, setQuotaInfo] = useState(null);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const generatePost = useCallback(
     async (postData) => {
@@ -35,12 +33,9 @@ export function useContentGeneration() {
         ) {
           toast({
             title: "⚠️ Monthly Limit Reached",
-            description: "Upgrade now to keep creating amazing content!",
+            description:
+              "Upgrade now to keep creating amazing content! Visit /pricing to view plans.",
             variant: "destructive",
-            action: {
-              label: "View Plans",
-              onClick: () => navigate("/pricing"),
-            },
           });
         } else {
           toast({
@@ -83,12 +78,9 @@ export function useContentGeneration() {
         ) {
           toast({
             title: "⚠️ Monthly Limit Reached",
-            description: "Upgrade now to keep creating amazing content!",
+            description:
+              "Upgrade now to keep creating amazing content! Visit /pricing to view plans.",
             variant: "destructive",
-            action: {
-              label: "View Plans",
-              onClick: () => navigate("/pricing"),
-            },
           });
         } else {
           toast({
@@ -103,7 +95,7 @@ export function useContentGeneration() {
         setIsGenerating(false);
       }
     },
-    [toast, navigate]
+    [toast]
   );
 
   const saveContent = useCallback(

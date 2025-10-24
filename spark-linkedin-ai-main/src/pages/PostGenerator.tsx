@@ -14,7 +14,7 @@ import apiClient from "../services/api.js";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
-import { pageSEO } from "@/constants/seo";
+import { PAGE_SEO } from "@/constants/seo";
 import { EXPANDED_PERSONAS, PERSONA_CATEGORIES } from "@/constants/expandedPersonas";
 import { formatForLinkedIn } from "@/utils/linkedinFormatting";
 
@@ -255,7 +255,7 @@ const PostGenerator = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO {...pageSEO.postGenerator} />
+      <SEO {...PAGE_SEO.postGenerator} />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="mb-8">

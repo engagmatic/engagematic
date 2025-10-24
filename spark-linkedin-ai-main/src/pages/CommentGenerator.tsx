@@ -13,7 +13,7 @@ import { useContentGeneration } from "@/hooks/useContentGeneration";
 import { useNavigate } from "react-router-dom";
 import apiClient from "@/services/api";
 import { SEO } from "@/components/SEO";
-import { pageSEO } from "@/constants/seo";
+import { PAGE_SEO } from "@/constants/seo";
 import { COMMENT_TYPES, DEFAULT_COMMENT_TYPE } from "@/constants/commentTypes";
 import { EXPANDED_PERSONAS, PERSONA_CATEGORIES } from "@/constants/expandedPersonas";
 
@@ -193,7 +193,7 @@ const CommentGenerator = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO {...pageSEO.commentGenerator} />
+      <SEO {...PAGE_SEO.commentGenerator} />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="mb-8">

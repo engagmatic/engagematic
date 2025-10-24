@@ -4,12 +4,12 @@ import { Testimonials } from "@/components/landing/Testimonials";
 import { Pricing } from "@/components/landing/Pricing";
 import { FAQ } from "@/components/landing/FAQ";
 import { SEO } from "@/components/SEO";
-import { pageSEO } from "@/constants/seo";
+import { PAGE_SEO } from "@/constants/seo"; 
 
 const Index = () => {
   return (
     <div className="min-h-screen">
-      <SEO {...pageSEO.home} />
+      <SEO {...PAGE_SEO.home} />
       <Hero />
       <Features />
       <Testimonials />

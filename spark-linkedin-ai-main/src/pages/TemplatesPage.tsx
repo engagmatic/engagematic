@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
-import { pageSEO } from "@/constants/seo";
+import { PAGE_SEO } from "@/constants/seo";
 
 const TemplatesPage = () => {
   const { toast } = useToast();
@@ -229,7 +229,7 @@ const TemplatesPage = () => {
 
   return (
     <div className="min-h-screen gradient-hero">
-      <SEO {...pageSEO.templates} />
+      <SEO {...PAGE_SEO.templates} />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
