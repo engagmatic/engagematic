@@ -405,4 +405,78 @@ router.get("/admin/stats", adminAuth, async (req, res) => {
   }
 });
 
+// Create testimonial manually by admin
+router.post("/admin/create", adminAuth, async (req, res) => {
+  try {
+    const {
+      displayName,
+      userEmail,
+      jobTitle,
+      company,
+      rating,
+      comment,
+      autoApprove,
+      isFeatured,
+    } = req.body;
+
+    // Validation
+    if (!displayName || !comment) {
+      return res.status(400).json({
+        success: false,
+        message: "Display name and comment are required",
+      });
+    }
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: "Rating must be between 1 and 5",
+      });
+    }
+
+    if (comment.length < 10 || comment.length > 1000) {
+      return res.status(400).json({
+        success: false,
+        message: "Comment must be between 10 and 1000 characters",
+      });
+    }
+
+    // Create testimonial
+    const testimonial = new Testimonial({
+      userName: displayName.trim(),
+      userEmail:
+        userEmail?.trim() || `admin-created-${Date.now()}@system.local`,
+      displayName: displayName.trim(),
+      jobTitle: jobTitle?.trim() || "",
+      company: company?.trim() || "",
+      rating: parseInt(rating),
+      comment: comment.trim(),
+      status: autoApprove ? "approved" : "pending",
+      isFeatured: autoApprove && isFeatured ? true : false,
+      triggeredBy: "admin_created",
+      actionCount: 0,
+      reviewedBy: autoApprove ? req.admin._id : null,
+      reviewedAt: autoApprove ? new Date() : null,
+    });
+
+    await testimonial.save();
+
+    console.log(
+      `✅ Testimonial manually created by admin ${req.admin.username} (Rating: ${rating}/5, Status: ${testimonial.status}, Featured: ${testimonial.isFeatured})`
+    );
+
+    res.json({
+      success: true,
+      message: "Testimonial created successfully",
+      data: testimonial,
+    });
+  } catch (error) {
+    console.error("Error creating testimonial:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create testimonial",
+    });
+  }
+});
+
 export default router;

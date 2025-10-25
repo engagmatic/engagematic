@@ -295,9 +295,9 @@ const PostGenerator = () => {
           <p className="text-sm sm:text-base text-muted-foreground">Create viral-worthy LinkedIn posts in seconds with AI-powered content generation</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-11 gap-6">
           {/* Left Column - Input */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-6 space-y-6">
             {/* Topic Input */}
             <Card className="shadow-lg">
               <div className="p-6">
@@ -525,7 +525,15 @@ const PostGenerator = () => {
                   }}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a persona" />
+                    <SelectValue placeholder="Select a persona">
+                      {selectedPersona && (
+                        <span>
+                          {selectedPersona.name}
+                          {selectedPersona.industry && ` - ${selectedPersona.industry}`}
+                          {selectedPersona.source === 'onboarding' && ' ✨'}
+                        </span>
+                      )}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="max-h-[400px]">
                     {/* Show user personas first (including onboarding persona) */}
@@ -616,7 +624,7 @@ const PostGenerator = () => {
           </div>
 
           {/* Right Column - Generated Content */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-5 space-y-6">
             <Card className="shadow-lg">
               <div className="p-6">
                 <h3 className="text-lg font-semibold mb-4">Generated Post</h3>

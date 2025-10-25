@@ -228,9 +228,9 @@ const IdeaGenerator = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-11 gap-6">
           {/* Left Column - Input */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-6 space-y-6">
             {/* Topic Input */}
             <Card className="shadow-lg">
               <div className="p-6">
@@ -323,7 +323,12 @@ const IdeaGenerator = () => {
                     </label>
                     <Select value={tone} onValueChange={setTone}>
                       <SelectTrigger className="border-2">
-                        <SelectValue />
+                        <SelectValue>
+                          <span className="flex items-center gap-2">
+                            <span>{TONES.find(t => t.value === tone)?.emoji}</span>
+                            <span>{TONES.find(t => t.value === tone)?.label}</span>
+                          </span>
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {TONES.map((t) => (
@@ -346,7 +351,12 @@ const IdeaGenerator = () => {
                     </label>
                     <Select value={targetAudience} onValueChange={setTargetAudience}>
                       <SelectTrigger className="border-2">
-                        <SelectValue />
+                        <SelectValue>
+                          <span className="flex items-center gap-2">
+                            <span>{AUDIENCES.find(a => a.value === targetAudience)?.icon}</span>
+                            <span>{AUDIENCES.find(a => a.value === targetAudience)?.label}</span>
+                          </span>
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {AUDIENCES.map((a) => (
@@ -386,7 +396,7 @@ const IdeaGenerator = () => {
           </div>
 
           {/* Right Column - Generated Ideas */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-5">
             <Card className="shadow-lg sticky top-6">
               <div className="p-6">
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">

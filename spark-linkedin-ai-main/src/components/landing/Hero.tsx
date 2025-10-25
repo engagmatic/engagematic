@@ -4,9 +4,29 @@ import { Card } from "@/components/ui/card";
 import { ArrowRight, Play, Sparkles, Star } from "lucide-react";
 import heroImage from "@/assets/hero-pulse.jpg";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+
+// Animated words for hero headline
+const ROTATING_WORDS = ["Content", "Ideas", "Posts", "Comments", "Engagement", "Growth"];
 
 export const Hero = () => {
   const navigate = useNavigate();
+  
+  // Animated word rotation
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsAnimating(true);
+      setTimeout(() => {
+        setCurrentWordIndex((prev) => (prev + 1) % ROTATING_WORDS.length);
+        setIsAnimating(false);
+      }, 500);
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <section className="relative min-h-[90vh] flex items-center gradient-hero overflow-hidden">
@@ -38,8 +58,13 @@ export const Hero = () => {
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold leading-tight tracking-tight px-4">
               Never Run Out of{" "}
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Content
+              <span 
+                className={`inline-block bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent transition-all duration-500 ${
+                  isAnimating ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+                }`}
+                style={{ minWidth: '280px', display: 'inline-block' }}
+              >
+                {ROTATING_WORDS[currentWordIndex]}
               </span>{" "}
               Again.
             </h1>
@@ -155,15 +180,25 @@ export const Hero = () => {
               </div>
             </div>
             
-            {/* Trust bar */}
+            {/* Trust bar - Professional Roles */}
             <div className="pt-6 px-4">
-              <div className="text-xs text-muted-foreground mb-3">Trusted by creators and operators at</div>
-              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 opacity-80">
-                <div className="h-5 w-16 sm:h-6 sm:w-20 rounded-md bg-muted" />
-                <div className="h-5 w-14 sm:h-6 sm:w-16 rounded-md bg-muted" />
-                <div className="h-5 w-20 sm:h-6 sm:w-24 rounded-md bg-muted" />
-                <div className="h-5 w-14 sm:h-6 sm:w-16 rounded-md bg-muted" />
-                <div className="h-5 w-16 sm:h-6 sm:w-20 rounded-md bg-muted" />
+              <div className="text-xs text-muted-foreground mb-4">Trusted by professionals worldwide</div>
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                <Badge variant="secondary" className="px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50 hover:border-blue-300 transition-colors">
+                  Startup Founders
+                </Badge>
+                <Badge variant="secondary" className="px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200/50 hover:border-purple-300 transition-colors">
+                  Marketing Teams
+                </Badge>
+                <Badge variant="secondary" className="px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/50 hover:border-green-300 transition-colors">
+                  Sales Leaders
+                </Badge>
+                <Badge variant="secondary" className="px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200/50 hover:border-orange-300 transition-colors">
+                  Content Creators
+                </Badge>
+                <Badge variant="secondary" className="px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200/50 hover:border-cyan-300 transition-colors">
+                  Coaches & Consultants
+                </Badge>
               </div>
             </div>
             

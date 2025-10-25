@@ -11,7 +11,9 @@ import {
   TrendingUp,
   AlertTriangle,
   CheckCircle,
-  XCircle
+  XCircle,
+  Lightbulb,
+  Sparkles
 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Link } from "react-router-dom";
@@ -72,143 +74,183 @@ export const SubscriptionStatus = () => {
   const config = planConfig[subscription.plan] || planConfig.trial;
   const Icon = config.icon;
 
+  // Calculate usage percentages
+  const postsUsed = subscription.usage?.postsGenerated || 0;
+  const postsLimit = subscription.limits?.postsPerMonth || 10;
+  const postsPercentage = (postsUsed / postsLimit) * 100;
+
+  const commentsUsed = subscription.usage?.commentsGenerated || 0;
+  const commentsLimit = subscription.limits?.commentsPerMonth || 25;
+  const commentsPercentage = (commentsUsed / commentsLimit) * 100;
+
+  const ideasUsed = subscription.usage?.ideasGenerated || 0;
+  const ideasLimit = subscription.limits?.ideasPerMonth || 25;
+  const ideasPercentage = (ideasUsed / ideasLimit) * 100;
+
+  const getUsageColor = (percentage: number) => {
+    if (percentage >= 90) return 'text-red-600';
+    if (percentage >= 75) return 'text-orange-600';
+    return 'text-emerald-600';
+  };
+
+  const getProgressColor = (percentage: number) => {
+    if (percentage >= 90) return 'bg-red-500';
+    if (percentage >= 75) return 'bg-orange-500';
+    return 'bg-gradient-to-r from-blue-500 to-purple-500';
+  };
+
   return (
-    <Card className={`p-6 ${config.bgColor} ${config.borderColor} border-2`}>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-lg ${config.bgColor} flex items-center justify-center`}>
-            <Icon className={`w-5 h-5 ${config.color}`} />
+    <Card className="p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-blue-900/10 dark:to-purple-900/10 border-2 border-slate-200 dark:border-slate-800 shadow-xl">
+      {/* Header Section */}
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+            <Icon className="w-7 h-7 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-lg">{config.name} Plan</h3>
-            <p className="text-sm text-muted-foreground">
-              {isTrialActive && `Trial expires in ${getTrialDaysRemaining()} days`}
-              {isSubscriptionActive && "Active subscription"}
-              {isTrialExpired && "Trial expired"}
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-bold text-xl text-slate-900 dark:text-white">
+                {config.name}
+              </h3>
+              {isTrialActive && (
+                <Badge className="bg-blue-500 text-white hover:bg-blue-600 shadow-sm">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Trial
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+              {isTrialActive && `${getTrialDaysRemaining()} days remaining to explore`}
+              {isSubscriptionActive && "Premium features unlocked"}
+              {isTrialExpired && "Trial period has ended"}
             </p>
           </div>
         </div>
-        
-        <div className="flex items-center gap-2">
-          {isTrialActive && (
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-              <Clock className="w-3 h-3 mr-1" />
-              Trial
-            </Badge>
-          )}
-          {isSubscriptionActive && (
-            <Badge variant="secondary" className="bg-green-100 text-green-700">
-              <CheckCircle className="w-3 h-3 mr-1" />
-              Active
-            </Badge>
-          )}
-          {isTrialExpired && (
-            <Badge variant="destructive" className="bg-red-100 text-red-700">
-              <XCircle className="w-3 h-3 mr-1" />
-              Expired
-            </Badge>
-          )}
+      </div>
+
+      {/* Enterprise-Grade Usage Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* Posts Card */}
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-xl blur-xl group-hover:blur-2xl transition-all" />
+          <div className="relative p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 transition-all shadow-sm hover:shadow-md">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
+                  Posts
+                </span>
+              </div>
+              <span className={`text-lg font-bold ${getUsageColor(postsPercentage)}`}>
+                {postsUsed}/{postsLimit}
+              </span>
+            </div>
+            <Progress 
+              value={postsPercentage} 
+              className="h-2 bg-slate-100 dark:bg-slate-800"
+            />
+            <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
+              {postsLimit - postsUsed} remaining this month
+            </p>
+          </div>
+        </div>
+
+        {/* Comments Card */}
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-xl blur-xl group-hover:blur-2xl transition-all" />
+          <div className="relative p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all shadow-sm hover:shadow-md">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                  <MessageSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
+                  Comments
+                </span>
+              </div>
+              <span className={`text-lg font-bold ${getUsageColor(commentsPercentage)}`}>
+                {commentsUsed}/{commentsLimit}
+              </span>
+            </div>
+            <Progress 
+              value={commentsPercentage} 
+              className="h-2 bg-slate-100 dark:bg-slate-800"
+            />
+            <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
+              {commentsLimit - commentsUsed} remaining this month
+            </p>
+          </div>
+        </div>
+
+        {/* Ideas Card */}
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl blur-xl group-hover:blur-2xl transition-all" />
+          <div className="relative p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-amber-300 dark:hover:border-amber-700 transition-all shadow-sm hover:shadow-md">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                  <Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                </div>
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
+                  Ideas
+                </span>
+              </div>
+              <span className={`text-lg font-bold ${getUsageColor(ideasPercentage)}`}>
+                {ideasUsed}/{ideasLimit}
+              </span>
+            </div>
+            <Progress 
+              value={ideasPercentage} 
+              className="h-2 bg-slate-100 dark:bg-slate-800"
+            />
+            <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
+              {ideasLimit - ideasUsed} remaining this month
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Usage Statistics */}
-      <div className="space-y-4">
-        {/* Tokens */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-yellow-500" />
-              <span className="text-sm font-medium">Tokens Available</span>
+      {/* Trial Messaging */}
+      {isTrialActive && (
+        <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 border-2 border-blue-200 dark:border-blue-800 rounded-xl">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+              <Clock className="w-5 h-5 text-white" />
             </div>
-            <span className="text-sm font-semibold text-foreground">
-              {getTokensRemaining()}/{getTokensTotal()}
-            </span>
-          </div>
-          <Progress 
-            value={(getTokensRemaining() / getTokensTotal()) * 100} 
-            className="h-2 bg-gray-200"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            {getTokensUsed()} tokens used
-          </p>
-        </div>
-
-        {/* Posts */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-blue-500" />
-              <span className="text-sm font-medium">Posts Generated</span>
+            <div className="flex-1">
+              <h4 className="font-semibold text-slate-900 dark:text-white mb-1">
+                Experience the platform risk-free
+              </h4>
+              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                You have <strong>{getTrialDaysRemaining()} days</strong> to explore all features. Generate up to <strong>10 posts</strong>, <strong>25 comments</strong>, and <strong>25 content ideas</strong> to discover how LinkedInPulse transforms your content strategy.
+              </p>
             </div>
-            <span className="text-sm text-muted-foreground">
-              {subscription.usage?.postsGenerated || 0}/{subscription.limits?.postsPerMonth || 0}
-            </span>
-          </div>
-          <Progress 
-            value={getUsagePercentage("postsGenerated")} 
-            className="h-2"
-          />
-        </div>
-
-        {/* Comments */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-green-500" />
-              <span className="text-sm font-medium">Comments Generated</span>
-            </div>
-            <span className="text-sm text-muted-foreground">
-              {subscription.usage?.commentsGenerated || 0}/{subscription.limits?.commentsPerMonth || 0}
-            </span>
-          </div>
-          <Progress 
-            value={getUsagePercentage("commentsGenerated")} 
-            className="h-2"
-          />
-        </div>
-      </div>
-
-      {/* Trial Expiry Warning */}
-      {isTrialActive && getTrialDaysRemaining() <= 3 && (
-        <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-orange-500" />
-            <span className="text-sm text-orange-700">
-              Your trial expires in {getTrialDaysRemaining()} days. Upgrade to continue using LinkedInPulse.
-            </span>
           </div>
         </div>
       )}
 
-      {/* Trial Expired Warning */}
-      {isTrialExpired && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <div className="flex items-center gap-2">
-            <XCircle className="w-4 h-4 text-red-500" />
-            <span className="text-sm text-red-700">
-              Your trial has expired. Upgrade to continue using LinkedInPulse.
-            </span>
-          </div>
-        </div>
+      {/* Upgrade CTA */}
+      {(isTrialActive || isTrialExpired) && (
+        <Button 
+          asChild 
+          className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all"
+        >
+          <Link to="/waitlist" className="flex items-center justify-center gap-2">
+            <Sparkles className="w-5 h-5" />
+            {isTrialExpired ? "Unlock Full Access" : "Join Waitlist for Premium"}
+            <TrendingUp className="w-5 h-5" />
+          </Link>
+        </Button>
       )}
 
-      {/* Action Buttons */}
-      <div className="mt-6 flex gap-2">
-        {(isTrialActive || isTrialExpired) && (
-          <Button asChild className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-            <Link to="/waitlist">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Join Waitlist for Paid Plans
-            </Link>
-          </Button>
-        )}
-        
-        {isSubscriptionActive && (
-          <Button variant="outline" className="flex-1">
-            Manage Subscription
-          </Button>
-        )}
-      </div>
+      {isSubscriptionActive && (
+        <Button variant="outline" className="w-full h-12 font-semibold">
+          <Crown className="w-4 h-4 mr-2" />
+          Manage Subscription
+        </Button>
+      )}
     </Card>
   );
 };

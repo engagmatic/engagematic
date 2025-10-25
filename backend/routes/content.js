@@ -768,10 +768,10 @@ router.post(
       } = req.body;
       const userId = req.user._id;
 
-      // Check subscription and quota
+      // Check subscription and quota for ideas
       const canGenerate = await subscriptionService.canPerformAction(
         userId,
-        "generate_post"
+        "generate_idea"
       );
       if (!canGenerate.allowed) {
         return res.status(429).json({
@@ -827,10 +827,10 @@ router.post(
       // Parse the response into structured ideas
       const ideas = parseIdeasFromResponse(response.text, angle);
 
-      // Track usage
+      // Track ideas usage separately
       await usageService.incrementUsage(
         userId,
-        "posts",
+        "ideas",
         response.tokensUsed || 150
       );
 

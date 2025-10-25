@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Star,
   Check,
@@ -11,7 +13,8 @@ import {
   Sparkles,
   MessageSquare,
   Filter,
-  Download
+  Download,
+  Plus
 } from 'lucide-react';
 import {
   Table,
@@ -30,6 +33,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = `${API_URL}`;
 
 interface Testimonial {
   _id: string;
@@ -64,6 +70,21 @@ export default function TestimonialsManagement() {
   const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
+  
+  // Add Testimonial State
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [newTestimonial, setNewTestimonial] = useState({
+    displayName: '',
+    userEmail: '',
+    jobTitle: '',
+    company: '',
+    rating: 5,
+    comment: '',
+    autoApprove: true,
+    isFeatured: false
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const { toast } = useToast();
 
   useEffect(() => {
@@ -186,6 +207,73 @@ export default function TestimonialsManagement() {
     }
   };
 
+  const handleAddTestimonial = async () => {
+    // Validation
+    if (!newTestimonial.displayName.trim() || !newTestimonial.comment.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Display name and comment are required.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const token = localStorage.getItem('adminToken');
+      
+      const response = await fetch(`${API_BASE}/testimonials/admin/create`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newTestimonial)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Testimonial Added!',
+          description: 'The testimonial has been successfully created.',
+        });
+        
+        // Reset form
+        setNewTestimonial({
+          displayName: '',
+          userEmail: '',
+          jobTitle: '',
+          company: '',
+          rating: 5,
+          comment: '',
+          autoApprove: true,
+          isFeatured: false
+        });
+        setShowAddDialog(false);
+        
+        // Refresh lists
+        fetchTestimonials();
+        fetchStats();
+      } else {
+        toast({
+          title: 'Error',
+          description: result.message || 'Failed to add testimonial',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Failed to add testimonial:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add testimonial. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const getRatingStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -222,6 +310,13 @@ export default function TestimonialsManagement() {
               Manage user feedback and reviews
             </p>
           </div>
+          <Button
+            onClick={() => setShowAddDialog(true)}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add Testimonial
+          </Button>
         </div>
 
         {/* Stats Cards */}
@@ -427,6 +522,167 @@ export default function TestimonialsManagement() {
               className={actionType === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
             >
               {actionType === 'approve' ? 'Approve' : 'Reject'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Testimonial Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Testimonial</DialogTitle>
+            <DialogDescription>
+              Create a testimonial manually. It will automatically appear on the homepage if approved and featured.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {/* Display Name */}
+            <div className="space-y-2">
+              <Label htmlFor="displayName">
+                Display Name <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="displayName"
+                placeholder="e.g., Priya S."
+                value={newTestimonial.displayName}
+                onChange={(e) => setNewTestimonial({...newTestimonial, displayName: e.target.value})}
+              />
+            </div>
+
+            {/* Email (Optional) */}
+            <div className="space-y-2">
+              <Label htmlFor="userEmail">Email (Optional)</Label>
+              <Input
+                id="userEmail"
+                type="email"
+                placeholder="user@example.com"
+                value={newTestimonial.userEmail}
+                onChange={(e) => setNewTestimonial({...newTestimonial, userEmail: e.target.value})}
+              />
+            </div>
+
+            {/* Job Title */}
+            <div className="space-y-2">
+              <Label htmlFor="jobTitle">Job Title</Label>
+              <Input
+                id="jobTitle"
+                placeholder="e.g., Content Creator"
+                value={newTestimonial.jobTitle}
+                onChange={(e) => setNewTestimonial({...newTestimonial, jobTitle: e.target.value})}
+              />
+            </div>
+
+            {/* Company */}
+            <div className="space-y-2">
+              <Label htmlFor="company">Company (Optional)</Label>
+              <Input
+                id="company"
+                placeholder="e.g., Tech Corp"
+                value={newTestimonial.company}
+                onChange={(e) => setNewTestimonial({...newTestimonial, company: e.target.value})}
+              />
+            </div>
+
+            {/* Rating */}
+            <div className="space-y-2">
+              <Label>Rating</Label>
+              <div className="flex items-center gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setNewTestimonial({...newTestimonial, rating: star})}
+                    className="focus:outline-none"
+                  >
+                    <Star
+                      className={`h-8 w-8 cursor-pointer transition-colors ${
+                        star <= newTestimonial.rating
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-gray-300 hover:text-yellow-200'
+                      }`}
+                    />
+                  </button>
+                ))}
+                <span className="ml-2 text-sm text-gray-600">
+                  {newTestimonial.rating} star{newTestimonial.rating !== 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>
+
+            {/* Comment */}
+            <div className="space-y-2">
+              <Label htmlFor="comment">
+                Testimonial Comment <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="comment"
+                placeholder="Write the testimonial content here..."
+                value={newTestimonial.comment}
+                onChange={(e) => setNewTestimonial({...newTestimonial, comment: e.target.value})}
+                rows={5}
+              />
+              <p className="text-xs text-gray-500">
+                {newTestimonial.comment.length} characters
+              </p>
+            </div>
+
+            {/* Auto-approve checkbox */}
+            <div className="flex items-center space-x-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+              <input
+                type="checkbox"
+                id="autoApprove"
+                checked={newTestimonial.autoApprove}
+                onChange={(e) => setNewTestimonial({...newTestimonial, autoApprove: e.target.checked})}
+                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              />
+              <Label htmlFor="autoApprove" className="text-sm font-medium text-green-900 dark:text-green-100 cursor-pointer">
+                Auto-approve this testimonial
+              </Label>
+            </div>
+
+            {/* Featured checkbox */}
+            <div className="flex items-center space-x-2 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+              <input
+                type="checkbox"
+                id="isFeatured"
+                checked={newTestimonial.isFeatured}
+                onChange={(e) => setNewTestimonial({...newTestimonial, isFeatured: e.target.checked})}
+                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+              />
+              <Label htmlFor="isFeatured" className="text-sm font-medium text-purple-900 dark:text-purple-100 cursor-pointer flex items-center gap-1">
+                <Sparkles className="h-4 w-4" />
+                Feature on homepage
+              </Label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAddDialog(false);
+                setNewTestimonial({
+                  displayName: '',
+                  userEmail: '',
+                  jobTitle: '',
+                  company: '',
+                  rating: 5,
+                  comment: '',
+                  autoApprove: true,
+                  isFeatured: false
+                });
+              }}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddTestimonial}
+              disabled={isSubmitting || !newTestimonial.displayName.trim() || !newTestimonial.comment.trim()}
+            >
+              {isSubmitting ? 'Adding...' : 'Add Testimonial'}
             </Button>
           </DialogFooter>
         </DialogContent>

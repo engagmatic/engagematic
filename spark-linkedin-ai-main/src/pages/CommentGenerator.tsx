@@ -206,9 +206,9 @@ const CommentGenerator = () => {
           <p className="text-sm sm:text-base text-muted-foreground">Create genuine, AI-powered comments that build real relationships</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-11 gap-6">
           {/* Left Column - Input */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-6 space-y-6">
             {/* Input Method Selection */}
             <Card className="shadow-lg border-2">
               <div className="p-6">
@@ -266,29 +266,6 @@ const CommentGenerator = () => {
                 </div>
               </div>
             </Card>
-
-            {/* LinkedIn Post Context Display */}
-            {postContent && (
-              <Card className="shadow-lg border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <MessageCircle className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-lg font-semibold text-blue-800">Post Context</h3>
-                    <Badge variant="secondary" className="ml-auto">Ready for AI</Badge>
-                  </div>
-                  
-                  <div className="p-4 bg-white border-2 border-blue-100 rounded-lg max-h-[300px] overflow-y-auto">
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {postContent}
-                    </p>
-                  </div>
-                  
-                  <div className="mt-3 p-3 bg-blue-100 border border-blue-200 rounded-md text-xs text-blue-700">
-                    <strong>📋 Using this context:</strong> The AI will analyze this post and generate relevant, engaging comments tailored to your selected persona and comment type.
-                  </div>
-                </div>
-              </Card>
-            )}
 
             {/* Persona Selection */}
             <Card className="shadow-lg">
@@ -426,7 +403,7 @@ const CommentGenerator = () => {
           </div>
 
           {/* Right Column - Generated Comments */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-5">
             <Card className="shadow-lg sticky top-4">
               <div className="p-6">
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">

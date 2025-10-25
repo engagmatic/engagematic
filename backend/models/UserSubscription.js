@@ -78,11 +78,15 @@ const userSubscriptionSchema = new mongoose.Schema(
     limits: {
       postsPerMonth: {
         type: Number,
-        default: 25, // Trial limit (reduced to encourage upgrade)
+        default: 10, // Trial: Just enough to understand value
       },
       commentsPerMonth: {
         type: Number,
-        default: 25, // Trial limit (reduced to encourage upgrade)
+        default: 25, // Trial: Sufficient for testing engagement
+      },
+      ideasPerMonth: {
+        type: Number,
+        default: 25, // Trial: Ideas to spark creativity
       },
       templatesAccess: {
         type: Boolean,
@@ -137,6 +141,10 @@ const userSubscriptionSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
+      ideasGenerated: {
+        type: Number,
+        default: 0,
+      },
       templatesUsed: {
         type: Number,
         default: 0,
@@ -172,8 +180,9 @@ userSubscriptionSchema.pre("save", function (next) {
   if (this.isModified("plan")) {
     switch (this.plan) {
       case "trial":
-        this.limits.postsPerMonth = 25; // Reduced to 50% to encourage upgrade
-        this.limits.commentsPerMonth = 25; // Reduced to 50% to encourage upgrade
+        this.limits.postsPerMonth = 10; // Just enough to understand value
+        this.limits.commentsPerMonth = 25; // Sufficient for testing engagement
+        this.limits.ideasPerMonth = 25; // Ideas to spark creativity
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = 1; // Only 1 analysis for trial
@@ -184,6 +193,7 @@ userSubscriptionSchema.pre("save", function (next) {
       case "starter":
         this.limits.postsPerMonth = 75; // ~2.5 posts per day
         this.limits.commentsPerMonth = 100; // ~3-4 comments per day
+        this.limits.ideasPerMonth = 100; // Plenty of inspiration
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = 3; // 3 per month for starter
@@ -194,6 +204,7 @@ userSubscriptionSchema.pre("save", function (next) {
       case "pro":
         this.limits.postsPerMonth = 200; // ~6-7 posts per day
         this.limits.commentsPerMonth = 400; // ~13-14 comments per day
+        this.limits.ideasPerMonth = 300; // Unlimited creativity
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = 10; // 10 per month for pro
@@ -234,6 +245,12 @@ userSubscriptionSchema.methods.canPerformAction = function (action) {
     case "generate_comment":
       if (this.usage.commentsGenerated >= this.limits.commentsPerMonth) {
         return { allowed: false, reason: "Monthly comment limit reached" };
+      }
+      break;
+
+    case "generate_idea":
+      if (this.usage.ideasGenerated >= this.limits.ideasPerMonth) {
+        return { allowed: false, reason: "Monthly idea limit reached" };
       }
       break;
 
@@ -297,6 +314,11 @@ userSubscriptionSchema.methods.recordUsage = function (action) {
       this.tokens.used += 3; // 3 tokens per comment (increased from 1)
       break;
 
+    case "generate_idea":
+      this.usage.ideasGenerated += 1;
+      this.tokens.used += 4; // 4 tokens per idea generation
+      break;
+
     case "analyze_profile":
       this.usage.profileAnalyses += 1;
       this.tokens.used += 10; // 10 tokens per profile analysis
@@ -326,6 +348,7 @@ userSubscriptionSchema.methods.resetMonthlyUsage = function () {
   if (now >= this.tokens.resetDate) {
     this.usage.postsGenerated = 0;
     this.usage.commentsGenerated = 0;
+    this.usage.ideasGenerated = 0;
     this.usage.templatesUsed = 0;
     this.usage.linkedinAnalyses = 0;
     this.usage.profileAnalyses = 0; // Reset profile analyses count
