@@ -999,25 +999,22 @@ ${angleInstruction}
 
 **For EACH idea, provide:**
 
-### Idea #{number}: {Compelling 5-8 word title}
+### Idea #{number}: {Short punchy title - MAX 35 CHARS}
 
-**Hook**: "{The EXACT first 1-2 lines that will appear in the post}"
+**Hook**: "{Opening line - MAX 50 CHARS}"
 
 **Angle**: {Story/Question/List/How-To/Observation/Humor}
 
 **Content Framework**:
-- {Main point 1 with specific detail}
-- {Main point 2 with specific detail}
-- {Main point 3 with specific detail}
-- {Closing insight or question}
+- {Point 1 - MAX 25 CHARS}
+- {Point 2 - MAX 25 CHARS}
+- {Point 3 - MAX 25 CHARS}
 
-**Why This Works**: {1 sentence explaining the psychological engagement trigger}
-
-**Development Notes**: {1-2 sentences on what's needed to write the full post}
+**Why This Works**: {Brief reason - MAX 40 CHARS}
 
 **Engagement Potential**: {Low/Medium/High/Very High}
 
-**Best For**: {Type of poster this suits}
+**Best For**: {Audience - MAX 20 CHARS}
 
 ---
 
@@ -1028,6 +1025,18 @@ ${angleInstruction}
 4. Each idea must have a clear engagement trigger
 5. Use specific numbers, details, and concrete examples
 6. Make hooks that create curiosity, controversy, emotion, or utility
+
+**STRICT CHARACTER LIMITS (ENTIRE IDEA MUST BE UNDER 200 CHARS TOTAL):**
+- Title: MAX 35 characters
+- Hook: MAX 50 characters
+- Framework Point 1: MAX 25 characters
+- Framework Point 2: MAX 25 characters
+- Framework Point 3: MAX 25 characters
+- Why This Works: MAX 40 characters
+- Best For: MAX 20 characters
+TOTAL: Maximum 200 characters for the entire idea
+
+ULTRA CONCISE. Use abbreviations if needed. No filler words. Maximum impact, minimum words.
 
 Generate ${angle === "all" ? "7-8" : "5-6"} ideas now:`;
 

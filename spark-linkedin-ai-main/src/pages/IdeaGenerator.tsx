@@ -438,8 +438,8 @@ const IdeaGenerator = () => {
                             {idea.angle}
                           </Badge>
                         </div>
-                        <h4 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">
-                          {idea.title}
+                        <h4 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                          {idea.title.length > 35 ? `${idea.title.substring(0, 35)}...` : idea.title}
                         </h4>
                       </div>
                     </div>
@@ -447,7 +447,9 @@ const IdeaGenerator = () => {
                     {/* Hook */}
                     <div className="mb-4 p-3 bg-muted rounded-lg">
                       <div className="text-xs font-semibold text-muted-foreground mb-1">OPENING HOOK:</div>
-                      <p className="text-sm font-medium italic">{idea.hook}</p>
+                      <p className="text-sm font-medium italic line-clamp-2">
+                        {idea.hook.length > 50 ? `${idea.hook.substring(0, 50)}...` : idea.hook}
+                      </p>
                     </div>
 
                     {/* Framework */}
@@ -457,7 +459,9 @@ const IdeaGenerator = () => {
                         {idea.framework.slice(0, 3).map((point, idx) => (
                           <li key={idx} className="text-xs flex items-start gap-2">
                             <span className="text-primary mt-0.5">•</span>
-                            <span className="flex-1 line-clamp-1">{point}</span>
+                            <span className="flex-1 line-clamp-1">
+                              {point.length > 25 ? `${point.substring(0, 25)}...` : point}
+                            </span>
                           </li>
                         ))}
                         {idea.framework.length > 3 && (
@@ -471,7 +475,9 @@ const IdeaGenerator = () => {
                     {/* Why It Works */}
                     <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       <div className="text-xs font-semibold text-blue-900 mb-1">💡 WHY THIS WORKS:</div>
-                      <p className="text-xs text-blue-700 line-clamp-2">{idea.whyItWorks}</p>
+                      <p className="text-xs text-blue-700 line-clamp-2">
+                        {idea.whyItWorks.length > 40 ? `${idea.whyItWorks.substring(0, 40)}...` : idea.whyItWorks}
+                      </p>
                     </div>
 
                     {/* Footer */}
@@ -489,7 +495,7 @@ const IdeaGenerator = () => {
                     {/* Best For */}
                     <div className="mt-3 pt-3 border-t">
                       <div className="text-xs text-muted-foreground">
-                        <span className="font-semibold">Best for:</span> {idea.bestFor}
+                        <span className="font-semibold">Best for:</span> {idea.bestFor.length > 20 ? `${idea.bestFor.substring(0, 20)}...` : idea.bestFor}
                       </div>
                     </div>
                   </div>
