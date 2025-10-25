@@ -828,13 +828,11 @@ router.post(
       const ideas = parseIdeasFromResponse(response.text, angle);
 
       // Track usage
-      await usageService.trackUsage(userId, "generate_post", {
-        topic,
-        angle,
-        tone,
-        targetAudience,
-        ideasGenerated: ideas.length,
-      });
+      await usageService.incrementUsage(
+        userId,
+        "posts",
+        response.tokensUsed || 150
+      );
 
       console.log(`✅ Generated ${ideas.length} ideas successfully`);
 
