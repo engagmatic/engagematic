@@ -196,18 +196,19 @@ export default function UserManagement() {
         </Card>
 
         {/* Users Table */}
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead>Activity</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[200px]">User</TableHead>
+                  <TableHead className="min-w-[100px]">Plan</TableHead>
+                  <TableHead className="min-w-[100px]">Status</TableHead>
+                  <TableHead className="min-w-[120px]">Joined</TableHead>
+                  <TableHead className="min-w-[180px]">Activity</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
@@ -274,7 +275,8 @@ export default function UserManagement() {
                 ))
               )}
             </TableBody>
-          </Table>
+            </Table>
+          </div>
         </Card>
       </div>
     </AdminLayout>

@@ -12,11 +12,12 @@ import { usePersonas } from "../hooks/usePersonas";
 import { useLinkedInProfile } from "../hooks/useLinkedInProfile";
 import apiClient from "../services/api.js";
 import { useSubscription } from "@/hooks/useSubscription";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { PAGE_SEO } from "@/constants/seo";
 import { EXPANDED_PERSONAS, PERSONA_CATEGORIES } from "@/constants/expandedPersonas";
 import { formatForLinkedIn } from "@/utils/linkedinFormatting";
+import { PremiumWaitlistModal } from "@/components/PremiumWaitlistModal";
 
 const hookIcons = {
   story: Heart,
@@ -41,11 +42,14 @@ const DEFAULT_HOOKS = [
 ];
 
 const PostGenerator = () => {
+  const location = useLocation();
   const [topic, setTopic] = useState("");
   const [selectedHook, setSelectedHook] = useState(null);
   const [hooks, setHooks] = useState(DEFAULT_HOOKS);
   const [isLoadingHooks, setIsLoadingHooks] = useState(false);
   const [creativeSuggestions, setCreativeSuggestions] = useState([]);
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+  const [waitlistSource, setWaitlistSource] = useState("post-generator");
   
   // SIMPLIFIED: Just use sample personas directly, no complex creation logic
   const { personas, samplePersonas, isLoading: personasLoading } = usePersonas();
@@ -57,6 +61,29 @@ const PostGenerator = () => {
   const { isGenerating, generatedContent, generatePost, copyToClipboard, saveContent } = useContentGeneration();
   const { profileData, analyzeProfile, isAnalyzing } = useLinkedInProfile();
   const { subscription } = useSubscription();
+
+  const handleUpgradeClick = (source: string) => {
+    setWaitlistSource(source);
+    setShowWaitlistModal(true);
+  };
+
+  // Handle pre-filled content from Idea Generator
+  useEffect(() => {
+    if (location.state?.prefilledTopic) {
+      setTopic(location.state.prefilledTopic);
+      
+      // Show toast about selected idea
+      if (location.state?.ideaContext) {
+        toast({
+          title: "Idea loaded! 💡",
+          description: `Ready to generate: ${location.state.ideaContext.title}`,
+        });
+      }
+      
+      // Clear the state to prevent re-triggering
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, location.pathname, navigate, toast]);
 
   // Use user's personas first, fall back to expanded personas
   useEffect(() => {
@@ -258,14 +285,14 @@ const PostGenerator = () => {
       <SEO {...PAGE_SEO.postGenerator} />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">
             Post{" "}
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               Generator
             </span>
           </h1>
-          <p className="text-muted-foreground">Create viral-worthy LinkedIn posts in seconds with AI-powered content generation</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Create viral-worthy LinkedIn posts in seconds with AI-powered content generation</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -304,11 +331,7 @@ const PostGenerator = () => {
                       type="button"
                       onClick={async () => {
                         if (subscription?.plan === 'trial') {
-                          toast({
-                            title: 'Premium feature',
-                            description: 'Upgrade to generate fresh, trending hooks with AI',
-                          });
-                          navigate('/pricing');
+                          handleUpgradeClick('trending-hooks');
                           return;
                         }
                         try {
@@ -484,13 +507,7 @@ const PostGenerator = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        toast({
-                          title: 'Premium Feature',
-                          description: 'Upgrade to Premium to create and edit custom personas',
-                        });
-                        navigate('/pricing');
-                      }}
+                      onClick={() => handleUpgradeClick('custom-personas')}
                       className="gap-2 text-xs"
                     >
                       <Crown className="h-3 w-3" />
@@ -793,6 +810,14 @@ const PostGenerator = () => {
           </div>
         </div>
       </div>
+
+      {/* Premium Waitlist Modal */}
+      <PremiumWaitlistModal
+        isOpen={showWaitlistModal}
+        onClose={() => setShowWaitlistModal(false)}
+        source={waitlistSource}
+        planInterest="Pro Plan"
+      />
     </div>
   );
 };

@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import AppLayout from "./components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import PostGenerator from "./pages/PostGenerator";
+import IdeaGenerator from "./pages/IdeaGenerator";
 import CommentGenerator from "./pages/CommentGenerator";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -99,6 +100,7 @@ const App = () => (
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<Index />} />
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/idea-generator" element={<IdeaGenerator />} />
                   <Route path="/post-generator" element={<PostGenerator />} />
                   <Route path="/comment-generator" element={<CommentGenerator />} />
                   {/* Blog Routes */}

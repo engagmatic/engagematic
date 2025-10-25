@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Menu, Home, FileText, MessageSquare, Target, LayoutGrid, Crown } from "lucide-react";
+import { User, LogOut, Menu, Home, FileText, MessageSquare, Target, Crown, Lightbulb } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useState } from "react";
@@ -41,10 +41,10 @@ export const Header = () => {
   // Navigation items for authenticated users
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
+    { path: '/idea-generator', label: 'Ideas', icon: Lightbulb },
     { path: '/post-generator', label: 'Posts', icon: FileText },
     { path: '/comment-generator', label: 'Comments', icon: MessageSquare },
     { path: '/profile-analyzer', label: 'Analyzer', icon: Target, premium: true, disabled: true },
-    { path: '/templates', label: 'Templates', icon: LayoutGrid },
   ];
 
   return (

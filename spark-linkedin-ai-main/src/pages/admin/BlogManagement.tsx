@@ -371,9 +371,9 @@ const BlogManagement = () => {
       </Card>
 
       {/* Blogs Table */}
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full">
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <table className="w-full min-w-[800px]">
             <thead className="border-b">
               <tr className="bg-muted/50">
                 <th className="text-left p-4 font-semibold">Title</th>

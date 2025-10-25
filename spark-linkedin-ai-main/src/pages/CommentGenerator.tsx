@@ -196,14 +196,14 @@ const CommentGenerator = () => {
       <SEO {...PAGE_SEO.commentGenerator} />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">
             Comment{" "}
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               Generator
             </span>
           </h1>
-          <p className="text-muted-foreground">Create genuine, AI-powered comments that build real relationships</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Create genuine, AI-powered comments that build real relationships</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -212,18 +212,18 @@ const CommentGenerator = () => {
             {/* Input Method Selection */}
             <Card className="shadow-lg border-2">
               <div className="p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <MessageCircle className="h-5 w-5" />
+                <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                   Choose Input Method
                 </h3>
                 
                 {/* Method 1: LinkedIn URL */}
-                <div className="mb-6 p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
+                <div className="mb-6 p-3 sm:p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
                   <div className="flex items-center gap-2 mb-3">
-                    <ExternalLink className="h-5 w-5 text-blue-600" />
-                    <h4 className="font-semibold text-blue-800">Method 1: LinkedIn URL</h4>
+                    <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                    <h4 className="text-sm sm:text-base font-semibold text-blue-800">Method 1: LinkedIn URL</h4>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Input
                       placeholder="https://linkedin.com/posts/..."
                       value={linkedinUrl}

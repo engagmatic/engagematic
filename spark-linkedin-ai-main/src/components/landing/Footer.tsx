@@ -7,7 +7,7 @@ export const Footer = () => {
   return (
     <>
       {/* Sticky CTA Banner */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 gradient-pulse p-3 sm:p-4 shadow-elevated">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-3 sm:p-4 shadow-2xl border-t border-white/20">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-white text-center sm:text-left">
             <div className="font-bold text-sm sm:text-base">Ready to boost your LinkedIn pulse?</div>
@@ -17,7 +17,7 @@ export const Footer = () => {
             size="sm" 
             variant="secondary" 
             onClick={() => navigate('/auth/register')}
-            className="shadow-elevated w-full sm:w-auto whitespace-nowrap"
+            className="shadow-lg hover:shadow-xl bg-white text-primary hover:bg-white/90 w-full sm:w-auto whitespace-nowrap font-bold transition-all"
           >
             Get The Pulse!
           </Button>

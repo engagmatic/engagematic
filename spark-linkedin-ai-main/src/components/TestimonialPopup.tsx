@@ -97,10 +97,11 @@ export function TestimonialPopup({ isOpen, onClose, triggeredBy }: TestimonialPo
       } else {
         throw new Error(result.message);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit testimonial';
       toast({
         title: 'Submission failed',
-        description: error.message || 'Failed to submit testimonial',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

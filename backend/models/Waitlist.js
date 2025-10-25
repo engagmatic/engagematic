@@ -19,6 +19,38 @@ const waitlistSchema = new mongoose.Schema(
       maxlength: [100, "Name cannot exceed 100 characters"],
       default: null,
     },
+    phone: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    company: {
+      type: String,
+      trim: true,
+      maxlength: [200, "Company name cannot exceed 200 characters"],
+      default: null,
+    },
+    role: {
+      type: String,
+      trim: true,
+      maxlength: [100, "Role cannot exceed 100 characters"],
+      default: null,
+    },
+    useCase: {
+      type: String,
+      trim: true,
+      maxlength: [1000, "Use case cannot exceed 1000 characters"],
+      default: null,
+    },
+    preferredPlan: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    interestedFeatures: {
+      type: [String],
+      default: [],
+    },
     linkedinUrl: {
       type: String,
       trim: true,

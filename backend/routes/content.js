@@ -683,38 +683,13 @@ router.post(
         });
       }
 
-      // Use the REAL LinkedIn scraper (Puppeteer + AI)
-      const realLinkedInScraper = (
-        await import("../services/realLinkedInScraper.js")
-      ).default;
-
-      console.log("🤖 Using REAL LinkedIn scraper with Puppeteer + AI...");
-      const profileResult = await realLinkedInScraper.extractProfileData(
-        profileUrl
-      );
-
-      if (!profileResult.success || !profileResult.data) {
-        console.error("❌ LinkedIn scraping failed:", profileResult.error);
-        return res.status(400).json({
-          success: false,
-          message: "Failed to analyze LinkedIn profile",
-          error:
-            profileResult.error ||
-            "Could not extract profile data. The profile might be private or require authentication.",
-          hint: "Try a public LinkedIn profile URL or ensure the profile is publicly accessible.",
-        });
-      }
-
-      console.log(
-        "✅ Profile data extracted successfully using:",
-        profileResult.method
-      );
-      console.log("Profile data:", {
-        hasName: !!profileResult.data.fullName,
-        hasHeadline: !!profileResult.data.headline,
-        hasAbout: !!profileResult.data.about,
-        skillsCount: profileResult.data.skills?.length || 0,
-        experienceCount: profileResult.data.experience?.length || 0,
+      // TODO: LinkedIn Profile Analyzer temporarily disabled
+      // Puppeteer-based scraper removed for compliance reasons
+      // Consider integrating RapidAPI, ProxyCurl, or LinkedIn Official API
+      return res.status(503).json({
+        success: false,
+        message: "LinkedIn Profile Analyzer is temporarily unavailable",
+        hint: "This feature is being upgraded to use a more reliable data source. Please check back soon.",
       });
 
       // Record usage
@@ -763,5 +738,419 @@ router.post(
     }
   }
 );
+
+// Generate LinkedIn Post Ideas
+router.post(
+  "/generate-ideas",
+  authenticateToken,
+  checkTrialStatus,
+  [
+    body("topic")
+      .isString()
+      .trim()
+      .isLength({ min: 10 })
+      .withMessage("Topic must be at least 10 characters"),
+    body("angle")
+      .isString()
+      .isIn([
+        "all",
+        "storytelling",
+        "question",
+        "listicle",
+        "how-to",
+        "observation",
+        "humor",
+      ])
+      .withMessage("Invalid content angle"),
+  ],
+  async (req, res) => {
+    try {
+      const {
+        topic,
+        angle,
+        tone = "professional",
+        targetAudience = "general",
+      } = req.body;
+      const userId = req.user._id;
+
+      // Check subscription and quota
+      const canGenerate = await subscriptionService.canPerformAction(
+        userId,
+        "generate_post"
+      );
+      if (!canGenerate.allowed) {
+        return res.status(429).json({
+          success: false,
+          message: canGenerate.reason,
+          code: "SUBSCRIPTION_LIMIT_EXCEEDED",
+        });
+      }
+
+      console.log(`💡 Generating ideas for user ${userId}:`, {
+        topic,
+        angle,
+        tone,
+        targetAudience,
+      });
+
+      // Build the comprehensive prompt based on user's specifications
+      const ideaPrompt = buildIdeaGenerationPrompt(
+        topic,
+        angle,
+        tone,
+        targetAudience
+      );
+
+      // Generate ideas using Google AI
+      const response = await googleAIService.generateText(ideaPrompt);
+
+      // Parse the response into structured ideas
+      const ideas = parseIdeasFromResponse(response, angle);
+
+      // Track usage
+      await usageService.trackUsage(userId, "generate_post", {
+        topic,
+        angle,
+        tone,
+        targetAudience,
+        ideasGenerated: ideas.length,
+      });
+
+      console.log(`✅ Generated ${ideas.length} ideas successfully`);
+
+      res.json({
+        success: true,
+        message: `Generated ${ideas.length} post ideas`,
+        data: { ideas },
+      });
+    } catch (error) {
+      console.error("Idea generation error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to generate ideas",
+        error: error.message,
+      });
+    }
+  }
+);
+
+// Helper function to build idea generation prompt
+function buildIdeaGenerationPrompt(topic, angle, tone, targetAudience) {
+  const angleInstructions = {
+    storytelling: `Generate 5-6 story-driven post ideas about "${topic}". Each idea must:
+- Include a SPECIFIC moment/scenario with details (numbers, names, exact moments)
+- Follow a clear story arc: Setup → Challenge → Resolution → Lesson
+- Make it vulnerable, surprising, or highly specific
+- Include the EXACT opening hook (first 1-2 lines)
+
+Story types to use:
+1. Failure → Lesson → Success
+2. Before I Knew → After I Learned (transformation)
+3. Conversation That Changed Everything
+4. The Day Everything Shifted
+5. Mistake → Pivot → Breakthrough`,
+
+    question: `Generate 5-6 thought-provoking question-based post ideas about "${topic}". Each must:
+- Lead with a question that challenges common assumptions
+- Create cognitive dissonance (makes people pause)
+- Have multiple valid perspectives (no obvious answer)
+- Include 2-3 follow-up questions to deepen discussion
+- Include the EXACT opening question as the hook
+
+Question types to use:
+1. Paradox Questions (highlight contradictions)
+2. Future Projection (force thinking ahead)
+3. Devil's Advocate (challenge popular beliefs)
+4. Trade-off Questions (no perfect answer)
+5. Honest Reflection (invite vulnerability)`,
+
+    listicle: `Generate 5-6 actionable list-based post ideas about "${topic}". Each must:
+- Use specific numbers (3, 5, 7 for short; 10, 12 for longer)
+- Each point must be actionable or insightful (no filler)
+- Include one unexpected/contrarian item
+- Use benefit-driven titles showing clear outcome
+- Include the EXACT opening hook
+
+List types to use:
+1. Mistakes/Lessons: "X things I wish I knew before..."
+2. Tactics/Hacks: "X ways to [achieve outcome]"
+3. Signs/Red Flags: "X signs you're [situation]"
+4. Frameworks: "X principles for [goal]"
+5. Contrarian Takes: "X popular [practices] you should ignore"`,
+
+    "how-to": `Generate 5-6 educational how-to post ideas about "${topic}". Each must:
+- Break complex process into clear, sequential steps
+- Include specific tools, frameworks, or templates
+- Add time estimates when relevant
+- Explain WHY each step matters, not just WHAT to do
+- Make it actionable enough to implement immediately
+- Include the EXACT opening hook
+
+How-to types to use:
+1. Process Breakdown: "How to [achieve outcome] in [number] steps"
+2. Reverse Engineering: "I studied [X], here's what worked"
+3. Framework Share: "The [Name] framework I use for [outcome]"
+4. Template Walkthrough: "Copy this exact [thing] for [result]"
+5. Before/After Transform: "How I went from [before] to [after]"`,
+
+    observation: `Generate 5-6 insight-driven observation post ideas about "${topic}". Each must:
+- Point out something obvious-in-hindsight but not noticed
+- Use specific examples or data points
+- Connect disparate concepts in non-obvious ways
+- Make reader think "I never thought of it that way"
+- Include the EXACT opening hook
+
+Observation types:
+1. Pattern Recognition: "I've noticed [X] always leads to [Y]"
+2. Contradiction Spotting: "We say [X] but do [opposite]"
+3. Trend Analysis: "Everyone's focused on [A], but [B] is the real shift"
+4. Before/After Comparison: "Remember when [past]? Now [present]."
+5. Cross-Domain Connection: "[Industry A] does [X]. Why doesn't [Industry B]?"`,
+
+    humor: `Generate 5-6 relatable, professional humor post ideas about "${topic}". Each must:
+- Use observational comedy about work/professional life
+- Be self-deprecating but not undermining credibility
+- Create "we've all been there" moments
+- Balance: 70% relatable humor, 30% actionable insight
+- Keep it professional (no offensive content)
+- Include the EXACT opening hook
+
+Humor types:
+1. Expectation vs Reality
+2. Industry Quirks
+3. Relatable Struggles
+4. Corporate Speak Translation
+5. Self-Deprecating Wins`,
+
+    all: `Generate 7-8 diverse post ideas about "${topic}" using MULTIPLE angles:
+- 2 Story-based ideas (different story types)
+- 2 Question-based ideas (different question types)
+- 2 List-based ideas (different list types)
+- 1 How-to idea
+- 1 Observation or Humor idea
+
+Ensure maximum variety and include the EXACT opening hook for each.`,
+  };
+
+  const basePrompt = `You are a LinkedIn Content Strategist AI specialized in generating high-performing post ideas.
+
+**Topic**: ${topic}
+**Content Angle**: ${angle}
+**Tone**: ${tone}
+**Target Audience**: ${targetAudience}
+
+${angleInstructions[angle] || angleInstructions.all}
+
+**For EACH idea, provide:**
+
+### Idea #{number}: {Compelling 5-8 word title}
+
+**Hook**: "{The EXACT first 1-2 lines that will appear in the post}"
+
+**Angle**: {Story/Question/List/How-To/Observation/Humor}
+
+**Content Framework**:
+- {Main point 1 with specific detail}
+- {Main point 2 with specific detail}
+- {Main point 3 with specific detail}
+- {Closing insight or question}
+
+**Why This Works**: {1 sentence explaining the psychological engagement trigger}
+
+**Development Notes**: {1-2 sentences on what's needed to write the full post}
+
+**Engagement Potential**: {Low/Medium/High/Very High}
+
+**Best For**: {Type of poster this suits}
+
+---
+
+**CRITICAL RULES:**
+1. Hook must be SPECIFIC, not generic
+2. No basic advice like "work hard" or "be consistent"
+3. Ideas must be specific to the topic, not generic
+4. Each idea must have a clear engagement trigger
+5. Use specific numbers, details, and concrete examples
+6. Make hooks that create curiosity, controversy, emotion, or utility
+
+Generate ${angle === "all" ? "7-8" : "5-6"} ideas now:`;
+
+  return basePrompt;
+}
+
+// Helper function to parse AI response into structured ideas
+function parseIdeasFromResponse(response, angle) {
+  const ideas = [];
+
+  // Split response by "### Idea #" markers
+  const ideaSections = response
+    .split(/###\s*Idea\s*#\d+:/i)
+    .filter((s) => s.trim());
+
+  ideaSections.forEach((section, index) => {
+    try {
+      const lines = section
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l);
+
+      // Extract title (first line)
+      const title =
+        lines[0]?.replace(/^[*_#]+\s*/, "").trim() || `Idea ${index + 1}`;
+
+      // Extract hook (find line with "Hook:" or quoted text)
+      const hookMatch =
+        section.match(/\*\*Hook\*\*[:\s]*["""]([^"""]+)["""]/i) ||
+        section.match(/Hook[:\s]*["""]([^"""]+)["""]/i) ||
+        section.match(/Hook[:\s]*(.+?)(?:\n\*\*|$)/i);
+      const hook = hookMatch ? hookMatch[1].trim() : title;
+
+      // Extract angle
+      const angleMatch =
+        section.match(/\*\*Angle\*\*[:\s]*(.+?)(?:\n|$)/i) ||
+        section.match(/Angle[:\s]*(.+?)(?:\n|$)/i);
+      const ideaAngle = angleMatch ? angleMatch[1].trim() : angle;
+
+      // Extract framework points
+      const frameworkMatch =
+        section.match(
+          /\*\*Content Framework\*\*[:\s]*([\s\S]+?)(?:\n\*\*|$)/i
+        ) || section.match(/Framework[:\s]*([\s\S]+?)(?:\n\*\*|$)/i);
+      const frameworkText = frameworkMatch ? frameworkMatch[1] : "";
+      const framework = frameworkText
+        .split("\n")
+        .map((l) => l.replace(/^[-*•]\s*/, "").trim())
+        .filter((l) => l && l.length > 5)
+        .slice(0, 5); // Limit to 5 points
+
+      // Extract "Why This Works"
+      const whyMatch =
+        section.match(/\*\*Why This Works\*\*[:\s]*(.+?)(?:\n\*\*|$)/is) ||
+        section.match(/Why This Works[:\s]*(.+?)(?:\n\*\*|$)/is);
+      const whyItWorks = whyMatch
+        ? whyMatch[1].trim()
+        : "Creates engagement through relevance and actionability";
+
+      // Extract Development Notes
+      const notesMatch =
+        section.match(/\*\*Development Notes\*\*[:\s]*(.+?)(?:\n\*\*|$)/is) ||
+        section.match(/Development Notes[:\s]*(.+?)(?:\n\*\*|$)/is);
+      const developmentNotes = notesMatch
+        ? notesMatch[1].trim()
+        : "Add personal examples and data to strengthen the post";
+
+      // Extract Engagement Potential
+      const engagementMatch =
+        section.match(
+          /\*\*Engagement Potential\*\*[:\s]*(Very High|High|Medium|Low)/i
+        ) ||
+        section.match(/Engagement Potential[:\s]*(Very High|High|Medium|Low)/i);
+      const engagementPotential = engagementMatch
+        ? engagementMatch[1].trim()
+        : "High";
+
+      // Extract Best For
+      const bestForMatch =
+        section.match(/\*\*Best For\*\*[:\s]*(.+?)(?:\n|$)/i) ||
+        section.match(/Best For[:\s]*(.+?)(?:\n|$)/i);
+      const bestFor = bestForMatch
+        ? bestForMatch[1].trim()
+        : "LinkedIn professionals";
+
+      ideas.push({
+        id: `idea-${Date.now()}-${index}`,
+        title,
+        hook,
+        angle: ideaAngle,
+        framework:
+          framework.length > 0
+            ? framework
+            : [
+                "Opening context and setup",
+                "Main insight or lesson",
+                "Supporting examples or data",
+                "Actionable takeaway",
+                "Closing question or call-to-action",
+              ],
+        whyItWorks,
+        developmentNotes,
+        engagementPotential,
+        bestFor,
+      });
+    } catch (error) {
+      console.error(`Error parsing idea ${index}:`, error);
+    }
+  });
+
+  // Fallback if parsing failed
+  if (ideas.length === 0) {
+    console.warn("⚠️ Failed to parse ideas from response, generating fallback");
+    return generateFallbackIdeas(angle);
+  }
+
+  return ideas;
+}
+
+// Fallback ideas if AI parsing fails
+function generateFallbackIdeas(angle) {
+  return [
+    {
+      id: `fallback-${Date.now()}-1`,
+      title: "Share Your Personal Journey",
+      hook: "3 years ago, I was struggling with [challenge]. Today, everything changed.",
+      angle: "Story",
+      framework: [
+        "The specific challenge you faced",
+        "What you tried that didn't work",
+        "The turning point or realization",
+        "How you implemented the change",
+        "The results and lessons learned",
+      ],
+      whyItWorks:
+        "Personal transformation stories create emotional connection and relatability",
+      developmentNotes:
+        "Use specific numbers, dates, and details to make it authentic",
+      engagementPotential: "High",
+      bestFor: "Anyone with a transformation story to share",
+    },
+    {
+      id: `fallback-${Date.now()}-2`,
+      title: "Ask a Thought-Provoking Question",
+      hook: "What if the conventional wisdom about [topic] is actually wrong?",
+      angle: "Question",
+      framework: [
+        "Present the conventional belief",
+        "Introduce your contrarian perspective",
+        "Provide evidence or reasoning",
+        "Invite others to share their views",
+        "Ask follow-up questions",
+      ],
+      whyItWorks:
+        "Questions that challenge assumptions spark debate and comments",
+      developmentNotes:
+        "Choose a topic where there are legitimate different perspectives",
+      engagementPotential: "Very High",
+      bestFor: "Thought leaders and industry experts",
+    },
+    {
+      id: `fallback-${Date.now()}-3`,
+      title: "Share Your Best Lessons",
+      hook: "After [X years/experiences], here are the only [number] things that matter:",
+      angle: "Listicle",
+      framework: [
+        "Brief context about your experience",
+        "Lesson 1 with specific example",
+        "Lesson 2 with specific example",
+        "Lesson 3 with specific example",
+        "Summary and call-to-action",
+      ],
+      whyItWorks: "Lists promise quick, actionable value and are easy to scan",
+      developmentNotes:
+        "Use odd numbers (3, 5, 7) and make each point actionable",
+      engagementPotential: "High",
+      bestFor: "Professionals with experience to share",
+    },
+  ];
+}
 
 export default router;

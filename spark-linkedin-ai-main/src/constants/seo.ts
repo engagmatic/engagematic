@@ -42,7 +42,7 @@ export const DEFAULT_SEO = {
   description: 'Create viral-worthy LinkedIn posts, comments, and carousels with AI that sounds authentically like you. Join 1000+ creators boosting their LinkedIn presence with LinkedInPulse.',
   keywords: PRIMARY_KEYWORDS.join(', '),
   author: 'LinkedInPulse Team',
-  image: `${SITE_URL}/og-image.png`,
+  image: `${SITE_URL}/og-default.png`, // Default OG image for all pages
   imageAlt: 'LinkedInPulse - AI LinkedIn Content Generator',
   twitterHandle: '@linkedinpulse',
   locale: 'en_US',
@@ -55,7 +55,8 @@ export const PAGE_SEO = {
     title: 'LinkedInPulse - AI LinkedIn Post Generator | Create Viral Content in Seconds',
     description: 'Transform your LinkedIn presence with AI-powered content generation. Create engaging posts, viral comments, and professional carousels that sound authentically like you. Free trial available.',
     keywords: 'LinkedIn post generator, AI LinkedIn tool, viral LinkedIn content, LinkedIn automation, content marketing AI',
-    canonical: SITE_URL
+    canonical: SITE_URL,
+    image: `${SITE_URL}/og-home.png` // Special home page OG image
   },
   
   pricing: {

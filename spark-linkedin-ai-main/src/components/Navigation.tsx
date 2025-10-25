@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Home, MessageSquare, FileText, BarChart3, Settings, Target, Crown, Lock } from "lucide-react";
+import { User, LogOut, Home, MessageSquare, FileText, BarChart3, Settings, Target, Crown, Lock, Lightbulb } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
@@ -20,10 +20,10 @@ export const Navigation = () => {
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
-    { path: '/post-generator', label: 'Post Generator', icon: FileText },
-    { path: '/comment-generator', label: 'Comment Generator', icon: MessageSquare },
-    { path: '/profile-analyzer', label: 'Profile Analyzer', icon: Target, premium: true, disabled: true },
-    { path: '/templates', label: 'Templates', icon: FileText },
+    { path: '/idea-generator', label: 'Ideas', icon: Lightbulb },
+    { path: '/post-generator', label: 'Posts', icon: FileText },
+    { path: '/comment-generator', label: 'Comments', icon: MessageSquare },
+    { path: '/profile-analyzer', label: 'Analyzer', icon: Target, premium: true, disabled: true },
   ];
 
   if (!isAuthenticated) {
