@@ -1,42 +1,40 @@
-import realLinkedInScraper from "./realLinkedInScraper.js";
 import googleAI from "./googleAI.js";
 import ProfileAnalysis from "../models/ProfileAnalysis.js";
 
 class ProfileAnalyzer {
   /**
    * Analyze a LinkedIn profile and generate recommendations
+   * NOTE: Profile scraping temporarily disabled - using manual input
    */
   async analyzeProfile(profileUrl, userId) {
     try {
       console.log(
-        "🔍 Analyzing LinkedIn profile with REAL scraping:",
+        "🔍 Profile Analysis requested (manual input mode):",
         profileUrl
       );
 
-      // Extract profile data using REAL scraper
-      const profileResult = await realLinkedInScraper.extractProfileData(
-        profileUrl
-      );
+      // Profile scraping is disabled - return guidance for manual input
+      return {
+        success: false,
+        message:
+          "Profile analysis is temporarily unavailable. Please use manual profile data entry.",
+        method: "manual",
+      };
 
-      if (!profileResult.success) {
-        throw new Error("Failed to extract profile data");
-      }
-
-      const profileData = profileResult.data;
-      const scrapingMethod = profileResult.method;
-
-      console.log(`✅ Profile data extracted using method: ${scrapingMethod}`);
-
+      // OLD CODE (disabled):
+      // const profileResult = await realLinkedInScraper.extractProfileData(profileUrl);
+      // if (!profileResult.success) {
+      //   throw new Error("Failed to extract profile data");
+      // }
+      // const profileData = profileResult.data;
+      // const scrapingMethod = profileResult.method;
+      // console.log(`✅ Profile data extracted using method: ${scrapingMethod}`);
       // Calculate scores
-      const scores = this.calculateScores(profileData);
-
+      // const scores = this.calculateScores(profileData);
       // Generate AI recommendations
-      const recommendations = await this.generateRecommendations(
-        profileData,
-        scores
-      );
-
+      // const recommendations = await this.generateRecommendations(profileData, scores);
       // Save analysis
+      /* OLD ANALYSIS CODE (disabled)
       const analysis = await ProfileAnalysis.create({
         userId,
         profileUrl,
@@ -70,9 +68,14 @@ class ProfileAnalyzer {
           analyzedAt: analysis.analyzedAt,
         },
       };
+      */
     } catch (error) {
       console.error("❌ Profile analysis error:", error);
-      throw error;
+      return {
+        success: false,
+        message: "Profile analysis is currently unavailable",
+        error: error.message,
+      };
     }
   }
 

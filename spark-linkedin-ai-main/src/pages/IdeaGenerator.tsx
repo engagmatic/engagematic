@@ -23,22 +23,35 @@ const CONTENT_ANGLES = [
   { value: "how-to", label: "How-To", icon: TrendingUp, description: "Educational step-by-step frameworks" },
   { value: "observation", label: "Observation", icon: Eye, description: "Insights from patterns others miss" },
   { value: "humor", label: "Humor", icon: Laugh, description: "Relatable, professional humor with value" },
+  { value: "custom", label: "Custom Angle", icon: Sparkles, description: "Define your own unique content approach" },
 ];
 
 const TONES = [
-  { value: "professional", label: "Professional" },
-  { value: "casual", label: "Casual" },
-  { value: "witty", label: "Witty" },
-  { value: "inspirational", label: "Inspirational" },
+  { value: "professional", label: "Professional", emoji: "👔" },
+  { value: "casual", label: "Casual & Friendly", emoji: "😊" },
+  { value: "witty", label: "Witty & Clever", emoji: "🎭" },
+  { value: "inspirational", label: "Inspirational", emoji: "✨" },
+  { value: "authoritative", label: "Authoritative & Expert", emoji: "🎓" },
+  { value: "conversational", label: "Conversational", emoji: "💬" },
+  { value: "bold", label: "Bold & Direct", emoji: "🔥" },
+  { value: "empathetic", label: "Empathetic & Caring", emoji: "❤️" },
+  { value: "humorous", label: "Humorous & Fun", emoji: "😄" },
+  { value: "thought_provoking", label: "Thought-Provoking", emoji: "🤔" },
 ];
 
 const AUDIENCES = [
-  { value: "general", label: "General Audience" },
-  { value: "founders", label: "Founders & Entrepreneurs" },
-  { value: "hr", label: "HR Professionals" },
-  { value: "developers", label: "Developers & Engineers" },
-  { value: "marketers", label: "Marketers" },
-  { value: "job_seekers", label: "Job Seekers" },
+  { value: "general", label: "General Audience", icon: "👥" },
+  { value: "founders", label: "Founders & Entrepreneurs", icon: "🚀" },
+  { value: "hr", label: "HR Professionals", icon: "👔" },
+  { value: "developers", label: "Developers & Engineers", icon: "💻" },
+  { value: "marketers", label: "Marketers & Growth", icon: "📈" },
+  { value: "job_seekers", label: "Job Seekers", icon: "🎯" },
+  { value: "sales", label: "Sales Professionals", icon: "💼" },
+  { value: "executives", label: "C-Suite & Executives", icon: "👑" },
+  { value: "consultants", label: "Consultants & Advisors", icon: "🎓" },
+  { value: "freelancers", label: "Freelancers & Creators", icon: "✍️" },
+  { value: "students", label: "Students & Graduates", icon: "🎓" },
+  { value: "investors", label: "Investors & VCs", icon: "💰" },
 ];
 
 interface PostIdea {
@@ -56,6 +69,7 @@ interface PostIdea {
 const IdeaGenerator = () => {
   const [topic, setTopic] = useState("");
   const [selectedAngle, setSelectedAngle] = useState("all");
+  const [customAngle, setCustomAngle] = useState("");
   const [tone, setTone] = useState("professional");
   const [targetAudience, setTargetAudience] = useState("general");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -94,6 +108,25 @@ const IdeaGenerator = () => {
       return;
     }
 
+    // Validate custom angle if selected
+    if (selectedAngle === "custom" && !customAngle.trim()) {
+      toast({
+        title: "Custom angle required",
+        description: "Please describe your custom content angle.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedAngle === "custom" && customAngle.trim().length < 5) {
+      toast({
+        title: "Custom angle too short",
+        description: "Please provide at least 5 characters for your custom angle.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     setIdeas([]);
     setSelectedIdea(null);
@@ -108,7 +141,8 @@ const IdeaGenerator = () => {
         },
         body: JSON.stringify({
           topic: topic.trim(),
-          angle: selectedAngle,
+          angle: selectedAngle === "custom" ? customAngle.trim() : selectedAngle,
+          customAngle: selectedAngle === "custom" ? customAngle.trim() : undefined,
           tone,
           targetAudience,
         }),
@@ -227,7 +261,12 @@ const IdeaGenerator = () => {
                     return (
                       <button
                         key={angle.value}
-                        onClick={() => setSelectedAngle(angle.value)}
+                        onClick={() => {
+                          setSelectedAngle(angle.value);
+                          if (angle.value !== "custom") {
+                            setCustomAngle(""); // Clear custom angle when switching
+                          }
+                        }}
                         className={`p-4 rounded-lg border-2 text-left transition-all ${
                           selectedAngle === angle.value
                             ? "border-primary bg-primary/10 shadow-md"
@@ -244,23 +283,55 @@ const IdeaGenerator = () => {
               </div>
             </Card>
 
+            {/* Custom Angle Input (shown when Custom is selected) */}
+            {selectedAngle === "custom" && (
+              <Card className="shadow-lg border-2 border-primary">
+                <div className="p-6">
+                  <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    Describe Your Custom Content Angle *
+                  </label>
+                  <Textarea
+                    placeholder="e.g., Behind-the-scenes of my daily routine, Controversial takes on industry trends, Data-driven insights with statistics, Personal failures and lessons learned..."
+                    value={customAngle}
+                    onChange={(e) => setCustomAngle(e.target.value)}
+                    rows={4}
+                    maxLength={500}
+                    className="resize-none border-2"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {customAngle.length}/500 characters • Be specific about the approach, tone, and format you want
+                  </p>
+                  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs text-blue-900">
+                      <span className="font-semibold">💡 Examples:</span> "Myth-busting common misconceptions", "Day in the life series", "Before/after transformations", "Interview-style Q&A format", "Case study breakdowns"
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {/* Tone & Audience */}
             <Card className="shadow-lg">
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Tone */}
                   <div>
-                    <label className="block text-sm font-semibold mb-2">
-                      Tone
+                    <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                      <span>Tone</span>
+                      <span className="text-xs text-muted-foreground font-normal">(Pick your vibe)</span>
                     </label>
                     <Select value={tone} onValueChange={setTone}>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-2">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {TONES.map((t) => (
                           <SelectItem key={t.value} value={t.value}>
-                            {t.label}
+                            <span className="flex items-center gap-2">
+                              <span>{t.emoji}</span>
+                              <span>{t.label}</span>
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -269,17 +340,21 @@ const IdeaGenerator = () => {
 
                   {/* Target Audience */}
                   <div>
-                    <label className="block text-sm font-semibold mb-2">
-                      Target Audience
+                    <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                      <span>Target Audience</span>
+                      <span className="text-xs text-muted-foreground font-normal">(Who are you speaking to?)</span>
                     </label>
                     <Select value={targetAudience} onValueChange={setTargetAudience}>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-2">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {AUDIENCES.map((a) => (
                           <SelectItem key={a.value} value={a.value}>
-                            {a.label}
+                            <span className="flex items-center gap-2">
+                              <span>{a.icon}</span>
+                              <span>{a.label}</span>
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>

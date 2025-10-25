@@ -153,8 +153,17 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
+      // Clear all auth-related data from localStorage
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      // Clear token from apiClient
       apiClient.setToken(null);
+
+      // Dispatch logout action
       dispatch({ type: "LOGOUT" });
+
+      console.log("✅ Logged out successfully");
     }
   };
 

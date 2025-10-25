@@ -752,22 +752,17 @@ router.post(
       .withMessage("Topic must be at least 10 characters"),
     body("angle")
       .isString()
-      .isIn([
-        "all",
-        "storytelling",
-        "question",
-        "listicle",
-        "how-to",
-        "observation",
-        "humor",
-      ])
-      .withMessage("Invalid content angle"),
+      .trim()
+      .notEmpty()
+      .withMessage("Content angle is required"),
+    body("customAngle").optional().isString().trim(),
   ],
   async (req, res) => {
     try {
       const {
         topic,
         angle,
+        customAngle,
         tone = "professional",
         targetAudience = "general",
       } = req.body;
@@ -786,9 +781,30 @@ router.post(
         });
       }
 
+      // Validate known angles or custom angle
+      const validAngles = [
+        "all",
+        "storytelling",
+        "question",
+        "listicle",
+        "how-to",
+        "observation",
+        "humor",
+      ];
+      const isCustomAngle = !validAngles.includes(angle);
+
+      if (isCustomAngle && !customAngle) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Custom angle description is required when using custom angle",
+        });
+      }
+
       console.log(`💡 Generating ideas for user ${userId}:`, {
         topic,
-        angle,
+        angle: isCustomAngle ? "custom" : angle,
+        customAngle: customAngle || "N/A",
         tone,
         targetAudience,
       });
@@ -798,14 +814,18 @@ router.post(
         topic,
         angle,
         tone,
-        targetAudience
+        targetAudience,
+        customAngle
       );
 
       // Generate ideas using Google AI
-      const response = await googleAIService.generateText(ideaPrompt);
+      const response = await googleAIService.generateText(ideaPrompt, {
+        temperature: 0.9,
+        maxOutputTokens: 3000,
+      });
 
       // Parse the response into structured ideas
-      const ideas = parseIdeasFromResponse(response, angle);
+      const ideas = parseIdeasFromResponse(response.text, angle);
 
       // Track usage
       await usageService.trackUsage(userId, "generate_post", {
@@ -835,7 +855,25 @@ router.post(
 );
 
 // Helper function to build idea generation prompt
-function buildIdeaGenerationPrompt(topic, angle, tone, targetAudience) {
+function buildIdeaGenerationPrompt(
+  topic,
+  angle,
+  tone,
+  targetAudience,
+  customAngle = null
+) {
+  // Check if this is a custom angle
+  const validAngles = [
+    "all",
+    "storytelling",
+    "question",
+    "listicle",
+    "how-to",
+    "observation",
+    "humor",
+  ];
+  const isCustomAngle = !validAngles.includes(angle);
+
   const angleInstructions = {
     storytelling: `Generate 5-6 story-driven post ideas about "${topic}". Each idea must:
 - Include a SPECIFIC moment/scenario with details (numbers, names, exact moments)
@@ -932,14 +970,34 @@ Humor types:
 Ensure maximum variety and include the EXACT opening hook for each.`,
   };
 
+  // If custom angle provided, create custom instructions
+  let angleInstruction;
+  if (isCustomAngle && customAngle) {
+    angleInstruction = `Generate 5-6 post ideas about "${topic}" using the following CUSTOM CONTENT ANGLE:
+
+**Custom Angle**: "${customAngle}"
+
+For each idea:
+- Interpret and apply the custom angle creatively
+- Include a SPECIFIC, compelling hook that fits this angle
+- Provide a clear content framework (3-5 points)
+- Ensure ideas are unique and aligned with the custom approach
+- Make the content engaging and authentic to the angle
+
+Each idea should demonstrate a different way to apply this custom angle to the topic.`;
+  } else {
+    angleInstruction = angleInstructions[angle] || angleInstructions.all;
+  }
+
   const basePrompt = `You are a LinkedIn Content Strategist AI specialized in generating high-performing post ideas.
 
 **Topic**: ${topic}
-**Content Angle**: ${angle}
+**Content Angle**: ${isCustomAngle ? "Custom" : angle}
+${isCustomAngle ? `**Custom Angle Description**: ${customAngle}` : ""}
 **Tone**: ${tone}
 **Target Audience**: ${targetAudience}
 
-${angleInstructions[angle] || angleInstructions.all}
+${angleInstruction}
 
 **For EACH idea, provide:**
 

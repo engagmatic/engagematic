@@ -77,6 +77,44 @@ class GoogleAIService {
     }
   }
 
+  async generateText(prompt, options = {}) {
+    try {
+      const {
+        temperature = 0.8,
+        maxOutputTokens = 2048,
+        topK = 40,
+        topP = 0.95,
+      } = options;
+
+      console.log("🤖 Generating text with Google AI...");
+
+      const result = await this.model.generateContent({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature,
+          topK,
+          topP,
+          maxOutputTokens,
+        },
+      });
+
+      console.log("✅ Google AI response received");
+      const response = await result.response;
+      const generatedText = response.text();
+
+      return {
+        text: generatedText,
+        tokensUsed: response.usageMetadata?.totalTokenCount || 150,
+      };
+    } catch (error) {
+      console.error("❌ Google AI Text Generation Error:", {
+        message: error.message,
+        apiKey: this.apiKey ? "Set" : "Missing",
+      });
+      throw new Error(`Google AI Error: ${error.message}`);
+    }
+  }
+
   async generateComment(
     postContent,
     persona,
@@ -109,7 +147,7 @@ class GoogleAIService {
       const response = await result.response;
       const generatedText = response.text();
 
-      console.log("✅ AI comment response received");
+      console.log("AI comment response received");
       console.log("Generated text length:", generatedText.length);
 
       // Parse multiple comments from the response
