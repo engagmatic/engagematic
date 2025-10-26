@@ -23,6 +23,7 @@ import blogRoutes from "./routes/blog.js";
 import emailRoutes from "./routes/email.js";
 import paymentRoutes from "./routes/payment.js";
 import pricingRoutes from "./routes/pricing.js";
+import profileRoutes from "./routes/profile.js";
 import trialRoutes from "./routes/trial.js";
 import referralRoutes from "./routes/referrals.js";
 
