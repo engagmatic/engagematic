@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Menu, Home, FileText, MessageSquare, Target, Crown, Lightbulb } from "lucide-react";
+import { User, LogOut, Menu, Home, FileText, MessageSquare, Lightbulb, BarChart3 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useState } from "react";
@@ -8,7 +8,6 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -44,7 +43,7 @@ export const Header = () => {
     { path: '/idea-generator', label: 'Ideas', icon: Lightbulb },
     { path: '/post-generator', label: 'Posts', icon: FileText },
     { path: '/comment-generator', label: 'Comments', icon: MessageSquare },
-    { path: '/profile-analyzer', label: 'Analyzer', icon: Target, premium: true, disabled: true },
+    { path: '/linkedin-scraper', label: 'Profile Analyzer', icon: BarChart3 },
   ];
 
   return (
@@ -66,29 +65,6 @@ export const Header = () => {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
-                
-                // If item is disabled (premium), show disabled button with tooltip
-                if (item.disabled) {
-                  return (
-                    <Tooltip key={item.path}>
-                      <TooltipTrigger asChild>
-                        <div
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium cursor-not-allowed opacity-50 text-muted-foreground"
-                        >
-                          <Icon className="h-4 w-4" />
-                          <span className="hidden lg:inline">{item.label}</span>
-                          {item.premium && <Crown className="h-3 w-3 text-amber-500" />}
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="flex items-center gap-1">
-                          <Crown className="h-3 w-3 text-amber-500" />
-                          Premium Feature - Coming Soon!
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                }
                 
                 return (
                   <Link
@@ -206,20 +182,6 @@ export const Header = () => {
                       {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname === item.path;
-                        
-                        // If item is disabled (premium), show disabled button
-                        if (item.disabled) {
-                          return (
-                            <div
-                              key={item.path}
-                              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed opacity-50 text-muted-foreground"
-                            >
-                              <Icon className="h-4 w-4" />
-                              {item.label}
-                              {item.premium && <Crown className="h-4 w-4 text-amber-500 ml-auto" />}
-                            </div>
-                          );
-                        }
                         
                         return (
                           <Link

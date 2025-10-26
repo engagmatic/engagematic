@@ -25,7 +25,6 @@ const FAQPage = lazy(() => import("./pages/FAQPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
 const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
 const TemplatesPage = lazy(() => import("./pages/TemplatesPage"));
-const ProfileAnalyzer = lazy(() => import("./pages/ProfileAnalyzer"));
 const Referrals = lazy(() => import("./pages/Referrals"));
 const TestimonialCollection = lazy(() => import("./pages/TestimonialCollection"));
 const PlanManagement = lazy(() => import("./pages/PlanManagement").then(module => ({ default: module.default })));
@@ -134,7 +133,6 @@ const App = () => (
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/resources" element={<HelpCenterPage />} />
                   <Route path="/templates" element={<TemplatesPage />} />
-                  <Route path="/profile-analyzer" element={<ProfileAnalyzer />} />
                   <Route path="/plan-management" element={<PlanManagement />} />
                   <Route path="/profile-setup" element={<ProfileCompletion />} />
                   <Route path="/referral" element={<Referrals />} />

@@ -26,6 +26,7 @@ import pricingRoutes from "./routes/pricing.js";
 import profileRoutes from "./routes/profile.js";
 import trialRoutes from "./routes/trial.js";
 import referralRoutes from "./routes/referrals.js";
+import linkedinScraperRoutes from "./routes/linkedinScraper.js";
 
 // Import services
 import emailScheduler from "./services/emailScheduler.js";
@@ -79,7 +80,7 @@ const corsOptions = {
     callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
@@ -128,6 +129,7 @@ app.use("/api/pricing", pricingRoutes); // Pricing and credit management
 app.use("/api/profile", profileRoutes); // Profile completion management
 app.use("/api/trial", trialRoutes); // Trial management
 app.use("/api/referrals", referralRoutes); // Referral system
+app.use("/api/linkedin-scraper", linkedinScraperRoutes); // LinkedIn Profile Scraper
 
 // Admin routes
 app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication

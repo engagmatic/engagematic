@@ -33,6 +33,7 @@
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.10",
     "pdfkit": "^0.17.2",
+    "puppeteer": "^24.26.1",
     "razorpay": "^2.9.2",
     "uuid": "^9.0.1"
   },

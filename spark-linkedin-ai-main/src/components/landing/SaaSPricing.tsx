@@ -239,11 +239,17 @@ export const SaaSPricing = () => {
         return;
       }
 
+      // Check if Razorpay is properly configured
+      if (!isLoaded) {
+        toast.error('Payment system is currently unavailable. Please contact support.');
+        return;
+      }
+
       // Process payment with Razorpay
       await processCreditPayment(credits, currency, 'monthly');
     } catch (error) {
       console.error('Subscription error:', error);
-      toast.error('Failed to process subscription. Please try again.');
+      toast.error('Payment is currently unavailable. Please contact support or try again later.');
     }
   };
 
@@ -255,7 +261,8 @@ export const SaaSPricing = () => {
     }
 
     if (!isLoaded) {
-      toast.error('Payment system not ready. Please try again.');
+      toast.error('Payment system is not configured. Please contact support or check back later.');
+      console.log('Payment system not loaded - Razorpay not configured');
       return;
     }
 
@@ -272,6 +279,12 @@ export const SaaSPricing = () => {
       const validation = await api.validateCredits(customCredits);
       if (!validation.success || !validation.data.isValid) {
         toast.error('Invalid credit selection. Please check your inputs.');
+        return;
+      }
+
+      // Check if Razorpay is properly configured
+      if (!isLoaded) {
+        toast.error('Payment system is currently unavailable. Please contact support.');
         return;
       }
 
