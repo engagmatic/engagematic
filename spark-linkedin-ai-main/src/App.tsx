@@ -33,6 +33,7 @@ const TestimonialCollection = lazy(() => import("./pages/TestimonialCollection")
 const PlanManagement = lazy(() => import("./pages/PlanManagement").then(module => ({ default: module.default })));
 const BlogListingPage = lazy(() => import("./pages/BlogListingPage"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
+const ProfileCompletion = lazy(() => import("./pages/ProfileCompletion"));
 // Admin Pages
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
