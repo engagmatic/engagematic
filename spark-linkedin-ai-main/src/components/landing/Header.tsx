@@ -120,6 +120,12 @@ export const Header = () => {
               >
                 Pricing
               </button>
+              <Link 
+                to="/blogs"
+                className="text-foreground/80 hover:text-foreground transition-smooth"
+              >
+                Blog
+              </Link>
               <button 
                 onClick={() => scrollToSection('faq')}
                 className="text-foreground/80 hover:text-foreground transition-smooth"
@@ -261,6 +267,13 @@ export const Header = () => {
                       >
                         Pricing
                       </button>
+                      <Link 
+                        to="/blogs"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
+                      >
+                        Blog
+                      </Link>
                       <button 
                         onClick={() => scrollToSection('faq')}
                         className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"

@@ -31,7 +31,8 @@ const ProfileAnalyzer = lazy(() => import("./pages/ProfileAnalyzer"));
 const Referrals = lazy(() => import("./pages/Referrals"));
 const TestimonialCollection = lazy(() => import("./pages/TestimonialCollection"));
 const PlanManagement = lazy(() => import("./pages/PlanManagement").then(module => ({ default: module.default })));
-const ProfileCompletion = lazy(() => import("./pages/ProfileCompletion"));
+const BlogListingPage = lazy(() => import("./pages/BlogListingPage"));
+const BlogPage = lazy(() => import("./pages/BlogPage"));
 // Admin Pages
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -139,6 +140,8 @@ const App = () => (
                   <Route path="/profile-analyzer" element={<ProfileAnalyzer />} />
                   <Route path="/plan-management" element={<PlanManagement />} />
                   <Route path="/profile-setup" element={<ProfileCompletion />} />
+                  <Route path="/blogs" element={<BlogListingPage />} />
+                  <Route path="/blogs/:slug" element={<BlogPage />} />
                 </Route>
 
                 {/* Catch-all */}
