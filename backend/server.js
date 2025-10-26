@@ -23,7 +23,7 @@ import blogRoutes from "./routes/blog.js";
 import emailRoutes from "./routes/email.js";
 import paymentRoutes from "./routes/payment.js";
 import pricingRoutes from "./routes/pricing.js";
-import profileRoutes from "./routes/profile.js";
+import trialRoutes from "./routes/trial.js";
 
 // Import services
 import emailScheduler from "./services/emailScheduler.js";
@@ -124,6 +124,7 @@ app.use("/api/email", emailRoutes); // Email preferences and unsubscribe
 app.use("/api/payment", paymentRoutes); // Payment processing
 app.use("/api/pricing", pricingRoutes); // Pricing and credit management
 app.use("/api/profile", profileRoutes); // Profile completion management
+app.use("/api/trial", trialRoutes); // Trial management
 
 // Admin routes
 app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication

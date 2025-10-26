@@ -78,15 +78,15 @@ const userSubscriptionSchema = new mongoose.Schema(
     limits: {
       postsPerMonth: {
         type: Number,
-        default: 10, // Trial: Just enough to understand value
+        default: 7, // Trial: 1 post per day for 7 days
       },
       commentsPerMonth: {
         type: Number,
-        default: 25, // Trial: Sufficient for testing engagement
+        default: 14, // Trial: 2 comments per day for 7 days
       },
       ideasPerMonth: {
         type: Number,
-        default: 25, // Trial: Ideas to spark creativity
+        default: 14, // Trial: 2 ideas per day for 7 days
       },
       templatesAccess: {
         type: Boolean,
@@ -180,9 +180,9 @@ userSubscriptionSchema.pre("save", function (next) {
   if (this.isModified("plan")) {
     switch (this.plan) {
       case "trial":
-        this.limits.postsPerMonth = 10; // Just enough to understand value
-        this.limits.commentsPerMonth = 25; // Sufficient for testing engagement
-        this.limits.ideasPerMonth = 25; // Ideas to spark creativity
+        this.limits.postsPerMonth = 7; // 1 post per day for 7 days
+        this.limits.commentsPerMonth = 14; // 2 comments per day for 7 days
+        this.limits.ideasPerMonth = 14; // 2 ideas per day for 7 days
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = -1; // UNLIMITED profile analyses

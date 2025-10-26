@@ -253,6 +253,19 @@ class ApiClient {
     );
   }
 
+  // Trial management methods
+  async getTrialStatus() {
+    return this.request("/trial/status");
+  }
+
+  async checkTrialAction(action) {
+    return this.request("/trial/check-action", "POST", { action });
+  }
+
+  async getTrialLimits() {
+    return this.request("/trial/limits");
+  }
+
   async getDynamicHooks(params = {}) {
     const queryString = new URLSearchParams(params).toString();
     return this.request(
