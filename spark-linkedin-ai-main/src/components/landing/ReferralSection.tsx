@@ -11,7 +11,7 @@ export default function ReferralSection() {
     if (isAuthenticated) {
       navigate("/referrals");
     } else {
-      navigate("/signup");
+      navigate("/auth/register");
     }
   };
 

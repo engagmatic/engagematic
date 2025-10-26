@@ -22,14 +22,6 @@ class ReferralService {
       user.referralCode = code;
       await user.save();
 
-      // Create initial referral tracking entry
-      await Referral.create({
-        referrerId: user._id,
-        referrerEmail: user.email,
-        referralCode: code,
-        status: "pending",
-      });
-
       console.log(`✅ Generated referral code ${code} for user ${user.email}`);
       return code;
     } catch (error) {
@@ -246,7 +238,7 @@ class ReferralService {
 
       // Calculate total clicks
       const totalClicks = await Referral.aggregate([
-        { $match: { referrerId: mongoose.Types.ObjectId(userId) } },
+        { $match: { referrerId: new mongoose.Types.ObjectId(userId) } },
         { $group: { _id: null, total: { $sum: "$clickCount" } } },
       ]);
 

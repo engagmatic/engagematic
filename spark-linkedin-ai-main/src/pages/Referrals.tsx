@@ -37,7 +37,7 @@ export default function Referrals() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate("/login");
+      navigate("/auth/login");
       return;
     }
 

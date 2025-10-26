@@ -122,7 +122,7 @@ const ProfileCompletion: React.FC = () => {
       navigate("/pricing");
     } else if (requirements?.nextStep?.includes("persona")) {
       // Need to create persona
-      navigate("/personas");
+      navigate("/dashboard");
     } else {
       // Need to complete basic profile
       toast.info("Please complete your profile information first");
