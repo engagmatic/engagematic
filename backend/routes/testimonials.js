@@ -330,7 +330,7 @@ router.patch("/admin/:id/approve", adminAuth, async (req, res) => {
       });
     }
 
-    await testimonial.approve(req.admin._id, notes);
+    await testimonial.approve(req.admin.adminId, notes);
 
     console.log(
       `✅ Testimonial ${testimonial._id} approved by admin ${req.admin.username}`
@@ -364,7 +364,7 @@ router.patch("/admin/:id/reject", adminAuth, async (req, res) => {
       });
     }
 
-    await testimonial.reject(req.admin._id, notes);
+    await testimonial.reject(req.admin.adminId, notes);
 
     console.log(
       `❌ Testimonial ${testimonial._id} rejected by admin ${req.admin.username}`
@@ -542,7 +542,7 @@ router.post("/admin/create", adminAuth, async (req, res) => {
       isFeatured: autoApprove && isFeatured ? true : false,
       triggeredBy: "admin_created",
       actionCount: 0,
-      reviewedBy: autoApprove ? req.admin._id : null,
+      reviewedBy: autoApprove ? req.admin.adminId : null,
       reviewedAt: autoApprove ? new Date() : null,
     });
 
