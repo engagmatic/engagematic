@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useContentGeneration } from "../hooks/useContentGeneration";
 import { usePersonas } from "../hooks/usePersonas";
-import { useLinkedInProfile } from "../hooks/useLinkedInProfile";
 import apiClient from "../services/api.js";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -60,7 +59,6 @@ const PostGenerator = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { isGenerating, generatedContent, generatePost, copyToClipboard, saveContent } = useContentGeneration();
-  const { profileData, analyzeProfile, isAnalyzing } = useLinkedInProfile();
   const { subscription } = useSubscription();
 
   const handleUpgradeClick = (source: string) => {
@@ -230,15 +228,7 @@ const PostGenerator = () => {
     const result = await generatePost({
       topic,
       hookId: selectedHook._id,
-      ...personaData,
-      // Add LinkedIn profile insights if available
-      linkedinInsights: profileData ? {
-        industry: profileData.industry,
-        experienceLevel: profileData.experienceLevel,
-        contentStrategy: profileData.contentStrategy,
-        hashtagSuggestions: profileData.hashtagSuggestions,
-        optimalPostingTimes: profileData.optimalPostingTimes
-      } : null
+      ...personaData
     });
 
     if (result.success) {
@@ -391,112 +381,6 @@ const PostGenerator = () => {
               </div>
             </Card>
 
-            {/* LinkedIn Profile Analysis */}
-            {!profileData && (
-              <Card className="shadow-lg border-blue-200 bg-blue-50">
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-blue-600" />
-                    Enhance Your Content with LinkedIn Insights
-                  </h3>
-                  <p className="text-sm text-blue-700 mb-4">
-                    Connect your LinkedIn profile to get personalized content recommendations, optimal posting times, and industry-specific hashtags.
-                  </p>
-                  <div className="flex gap-2">
-                    <input
-                      type="url"
-                      placeholder="https://linkedin.com/in/yourprofile"
-                      className="flex-1 px-3 py-2 border border-blue-300 rounded-md text-sm"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          const url = (e.target as HTMLInputElement).value;
-                          if (url.trim()) analyzeProfile(url);
-                        }
-                      }}
-                    />
-                    <Button
-                      onClick={() => {
-                        const input = document.querySelector('input[type="url"]') as HTMLInputElement;
-                        if (input?.value.trim()) {
-                          analyzeProfile(input.value);
-                        }
-                      }}
-                      disabled={isAnalyzing}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      {isAnalyzing ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Sparkles className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    💡 We'll analyze your profile to auto-fill your persona details
-                  </p>
-                  {subscription?.plan === 'trial' && (
-                    <div className="mt-3 text-xs text-blue-900 bg-blue-100 border border-blue-200 rounded-md p-2 flex items-center gap-2">
-                      <Lock className="h-3 w-3" /> Premium feature — upgrade to unlock unlimited insights
-                </div>
-              )}
-            </div>
-              </Card>
-            )}
-
-            {/* LinkedIn Insights Display */}
-            {profileData && (
-              <Card className="shadow-lg border-green-200 bg-green-50">
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-600" />
-                    LinkedIn Profile Connected
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <strong>Industry:</strong> {profileData.industry}
-                    </div>
-                    <div>
-                      <strong>Experience Level:</strong> {profileData.experienceLevel}
-                    </div>
-                    <div>
-                      <strong>Content Focus:</strong> {profileData.contentStrategy?.focus}
-                    </div>
-                    <div>
-                      <strong>Optimal Times:</strong> {profileData.optimalPostingTimes?.bestTimes?.join(', ')}
-                    </div>
-                  </div>
-                  <p className="text-xs text-green-600 mt-2">
-                    ✨ Your content will be optimized based on these insights
-                  </p>
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                    <div className="rounded-md border bg-white p-3">
-                      <div className="font-semibold mb-1">How we use it</div>
-                      <ul className="list-disc ml-4 space-y-1 text-muted-foreground">
-                        <li>Adjust tone and vocabulary to your experience level</li>
-                        <li>Prioritize topics aligned with your content focus</li>
-                        <li>Insert industry-specific hashtags</li>
-                      </ul>
-                    </div>
-                    <div className="rounded-md border bg-white p-3">
-                      <div className="font-semibold mb-1">Expected impact</div>
-                      <ul className="list-disc ml-4 space-y-1 text-muted-foreground">
-                        <li>Higher relevance and authenticity</li>
-                        <li>Better engagement at optimal times</li>
-                        <li>Improved hashtag discovery</li>
-                      </ul>
-                    </div>
-                    <div className="rounded-md border bg-white p-3">
-                      <div className="font-semibold mb-1">You can edit</div>
-                      <ul className="list-disc ml-4 space-y-1 text-muted-foreground">
-                        <li>Focus area and tone preferences</li>
-                        <li>Hashtag set before posting</li>
-                        <li>Call-to-action style</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            )}
 
             {/* Persona Selection - Enhanced with onboarding persona */}
             <Card className="shadow-lg border-2">
