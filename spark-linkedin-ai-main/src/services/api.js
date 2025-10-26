@@ -316,6 +316,39 @@ class ApiClient {
   async getWaitlistStats() {
     return this.request("/waitlist/stats");
   }
+
+  // Referral methods
+  async generateReferralCode() {
+    return this.request("/referrals/generate", {
+      method: "POST",
+    });
+  }
+
+  async getReferralStats() {
+    return this.request("/referrals/stats");
+  }
+
+  async getMyReferrals() {
+    return this.request("/referrals/my-referrals");
+  }
+
+  async validateReferralCode(code) {
+    return this.request(`/referrals/validate/${code}`);
+  }
+
+  async trackReferralClick(code) {
+    return this.request("/referrals/track", {
+      method: "POST",
+      body: JSON.stringify({ referralCode: code }),
+    });
+  }
+
+  async sendReferralInvites(emailData) {
+    return this.request("/referrals/invite", {
+      method: "POST",
+      body: JSON.stringify(emailData),
+    });
+  }
 }
 
 export default new ApiClient();

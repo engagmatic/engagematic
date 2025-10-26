@@ -1,7 +1,20 @@
 import { motion } from "framer-motion";
 import { Gift, Sparkles, ArrowRight } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function ReferralSection() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (isAuthenticated) {
+      navigate("/referrals");
+    } else {
+      navigate("/signup");
+    }
+  };
+
   // Profile photos using diverse professional avatars
   const profiles = [
     "https://i.pravatar.cc/150?img=1",
@@ -67,15 +80,15 @@ export default function ReferralSection() {
             </div>
 
             {/* CTA Button */}
-            <motion.a
-              href="/signup"
+            <motion.button
+              onClick={handleClick}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all"
             >
-              Start Earning Free Months
+              {isAuthenticated ? "View Referral Dashboard" : "Start Earning Free Months"}
               <ArrowRight className="w-5 h-5" />
-            </motion.a>
+            </motion.button>
 
             {/* Social Proof - Profile photos */}
             <div className="mt-6 flex items-center justify-center lg:justify-start gap-3">

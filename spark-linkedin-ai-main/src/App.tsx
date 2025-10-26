@@ -24,6 +24,7 @@ import ContactPage from "./pages/ContactPage";
 import HelpCenterPage from "./pages/HelpCenterPage";
 import TemplatesPage from "./pages/TemplatesPage";
 import ProfileAnalyzer from "./pages/ProfileAnalyzer";
+import Referrals from "./pages/Referrals";
 // Admin Pages
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -50,6 +51,8 @@ const App = () => (
                 {/* Public auth pages without layout */}
                 <Route path="/auth/login" element={<Login />} />
                 <Route path="/auth/register" element={<Register />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Register />} />
                 
                 {/* Admin Routes - No AppLayout */}
                 <Route path="/admin/login" element={<AdminLogin />} />
@@ -115,6 +118,7 @@ const App = () => (
                   <Route path="/resources" element={<HelpCenterPage />} />
                   <Route path="/templates" element={<TemplatesPage />} />
                   <Route path="/profile-analyzer" element={<ProfileAnalyzer />} />
+                  <Route path="/referrals" element={<Referrals />} />
                 </Route>
 
                 {/* Catch-all */}
