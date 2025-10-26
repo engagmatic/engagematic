@@ -64,7 +64,7 @@ const TestimonialCollection = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await apiClient.post('/testimonials/collect', formData);
+      const response = await apiClient.submitTestimonial(formData);
       
       if (response.success) {
         setIsSubmitted(true);

@@ -6,7 +6,7 @@ const testimonialSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: false, // Optional for public testimonials
       index: true,
     },
     userName: {
@@ -55,7 +55,14 @@ const testimonialSchema = new mongoose.Schema(
     // Trigger information
     triggeredBy: {
       type: String,
-      enum: ["first_post", "first_comment", "profile_analysis", "manual"],
+      enum: [
+        "first_post",
+        "first_comment",
+        "profile_analysis",
+        "manual",
+        "public_link",
+        "admin_created",
+      ],
       required: true,
     },
     actionCount: {
