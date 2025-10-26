@@ -61,6 +61,41 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Referral System
+    referralCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      uppercase: true,
+    },
+    referredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    referredByCode: {
+      type: String,
+      uppercase: true,
+      default: null,
+    },
+    referralCount: {
+      type: Number,
+      default: 0,
+    },
+    referralRewards: {
+      freeMonthsEarned: {
+        type: Number,
+        default: 0,
+      },
+      freeMonthsUsed: {
+        type: Number,
+        default: 0,
+      },
+      extendedTrial: {
+        type: Boolean,
+        default: false,
+      },
+    },
     // Professional Profile Information
     profile: {
       jobTitle: {

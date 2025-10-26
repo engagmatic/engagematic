@@ -20,9 +20,11 @@ import adminAuthRoutes from "./routes/adminAuth.js";
 import testimonialRoutes from "./routes/testimonials.js";
 import blogRoutes from "./routes/blog.js";
 import emailRoutes from "./routes/email.js";
+import referralRoutes from "./routes/referrals.js";
 
 // Import services
 import emailScheduler from "./services/emailScheduler.js";
+import googleAnalyticsService from "./services/googleAnalyticsService.js";
 
 const app = express();
 
@@ -104,6 +106,7 @@ app.use("/api/profile-analyzer", profileInsightsRoutes); // Merged route for ins
 app.use("/api/testimonials", testimonialRoutes); // Testimonial routes
 app.use("/api/blog", blogRoutes); // Blog routes
 app.use("/api/email", emailRoutes); // Email preferences and unsubscribe
+app.use("/api/referrals", referralRoutes); // Referral system
 
 // Admin routes
 app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication
@@ -181,6 +184,9 @@ const startServer = async () => {
 
     // Start email scheduler
     await emailScheduler.start();
+
+    // Initialize Google Analytics service
+    await googleAnalyticsService.initialize();
 
     app.listen(config.PORT, () => {
       console.log(`🚀 LinkedInPulse API server running on port ${config.PORT}`);

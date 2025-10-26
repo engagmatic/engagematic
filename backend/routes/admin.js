@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import Content from "../models/Content.js";
 import Usage from "../models/Usage.js";
 import UserSubscription from "../models/UserSubscription.js";
+import googleAnalyticsService from "../services/googleAnalyticsService.js";
 
 const router = express.Router();
 
@@ -292,6 +293,99 @@ router.patch("/users/:userId/status", adminAuth, async (req, res) => {
   } catch (error) {
     console.error("Error updating user status:", error);
     res.status(500).json({ message: "Failed to update user status" });
+  }
+});
+
+// Google Analytics endpoints
+router.get("/analytics/dashboard", adminAuth, async (req, res) => {
+  try {
+    const result = await googleAnalyticsService.getDashboardSummary();
+
+    if (!result.success) {
+      return res.status(503).json({
+        message: "Google Analytics not configured",
+        error: result.message,
+      });
+    }
+
+    res.json(result.data);
+  } catch (error) {
+    console.error("Error fetching GA dashboard:", error);
+    res.status(500).json({ message: "Failed to fetch analytics data" });
+  }
+});
+
+router.get("/analytics/metrics", adminAuth, async (req, res) => {
+  try {
+    const { period = "7daysAgo" } = req.query;
+    const result = await googleAnalyticsService.getMetrics(period, "today");
+
+    if (!result.success) {
+      return res.status(503).json({
+        message: "Google Analytics not configured",
+        error: result.message,
+      });
+    }
+
+    res.json(result.data);
+  } catch (error) {
+    console.error("Error fetching GA metrics:", error);
+    res.status(500).json({ message: "Failed to fetch analytics metrics" });
+  }
+});
+
+router.get("/analytics/realtime", adminAuth, async (req, res) => {
+  try {
+    const result = await googleAnalyticsService.getRealtimeMetrics();
+
+    if (!result.success) {
+      return res.status(503).json({
+        message: "Google Analytics not configured",
+        error: result.message,
+      });
+    }
+
+    res.json(result.data);
+  } catch (error) {
+    console.error("Error fetching realtime analytics:", error);
+    res.status(500).json({ message: "Failed to fetch realtime data" });
+  }
+});
+
+router.get("/analytics/pages", adminAuth, async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+    const result = await googleAnalyticsService.getTopPages(parseInt(limit));
+
+    if (!result.success) {
+      return res.status(503).json({
+        message: "Google Analytics not configured",
+        error: result.message,
+      });
+    }
+
+    res.json(result.data);
+  } catch (error) {
+    console.error("Error fetching top pages:", error);
+    res.status(500).json({ message: "Failed to fetch top pages" });
+  }
+});
+
+router.get("/analytics/sources", adminAuth, async (req, res) => {
+  try {
+    const result = await googleAnalyticsService.getTrafficSources();
+
+    if (!result.success) {
+      return res.status(503).json({
+        message: "Google Analytics not configured",
+        error: result.message,
+      });
+    }
+
+    res.json(result.data);
+  } catch (error) {
+    console.error("Error fetching traffic sources:", error);
+    res.status(500).json({ message: "Failed to fetch traffic sources" });
   }
 });
 

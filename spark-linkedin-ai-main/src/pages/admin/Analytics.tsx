@@ -10,9 +10,16 @@ import {
   FileText,
   MessageSquare,
   Download,
+  Eye,
+  MousePointerClick,
+  Clock,
+  Globe,
+  BarChart3,
 } from "lucide-react";
 import { useAdmin } from "@/contexts/AdminContext";
 import { toast } from "sonner";
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 interface AnalyticsData {
   overview: {
@@ -49,15 +56,42 @@ interface AnalyticsData {
   }>;
 }
 
+interface GoogleAnalyticsData {
+  last7Days: {
+    activeUsers: number;
+    sessions: number;
+    pageViews: number;
+    bounceRate: string;
+    avgSessionDuration: string;
+    newUsers: number;
+  } | null;
+  last30Days: {
+    activeUsers: number;
+    sessions: number;
+    pageViews: number;
+    bounceRate: string;
+    avgSessionDuration: string;
+    newUsers: number;
+  } | null;
+  realtime: {
+    activeUsers: number;
+    timestamp: string;
+  } | null;
+}
+
 const Analytics = () => {
   const { token } = useAdmin();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [gaData, setGaData] = useState<GoogleAnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingGA, setIsLoadingGA] = useState(true);
+  const [gaEnabled, setGaEnabled] = useState(false);
   const [timeRange, setTimeRange] = useState("30days");
 
   useEffect(() => {
     if (token) {
       fetchAnalytics();
+      fetchGoogleAnalytics();
     }
   }, [token, timeRange]);
 
@@ -115,6 +149,32 @@ const Analytics = () => {
       toast.error("Failed to load analytics");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchGoogleAnalytics = async () => {
+    try {
+      setIsLoadingGA(true);
+      
+      const response = await fetch(`${API_BASE}/admin/analytics/dashboard`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setGaData(data);
+        setGaEnabled(true);
+      } else if (response.status === 503) {
+        // GA not configured
+        setGaEnabled(false);
+      }
+    } catch (error) {
+      console.error("Error fetching Google Analytics:", error);
+      setGaEnabled(false);
+    } finally {
+      setIsLoadingGA(false);
     }
   };
 
@@ -195,6 +255,180 @@ const Analytics = () => {
           </Button>
         </div>
       </div>
+
+      {/* Google Analytics Section */}
+      {gaEnabled && gaData && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <BarChart3 className="w-6 h-6 text-blue-600" />
+            <div>
+              <h2 className="text-2xl font-bold">Google Analytics</h2>
+              <p className="text-sm text-muted-foreground">Real-time website analytics from Google</p>
+            </div>
+          </div>
+
+          {/* Realtime Users */}
+          {gaData.realtime && (
+            <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+                    <p className="text-sm font-medium text-muted-foreground">Active Users Right Now</p>
+                  </div>
+                  <p className="text-5xl font-bold mt-3 text-blue-700 dark:text-blue-300">
+                    {gaData.realtime.activeUsers}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Last updated: {new Date(gaData.realtime.timestamp).toLocaleTimeString()}
+                  </p>
+                </div>
+                <Globe className="w-16 h-16 text-blue-600 opacity-20" />
+              </div>
+            </Card>
+          )}
+
+          {/* GA Metrics Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Last 7 Days */}
+            {gaData.last7Days && (
+              <>
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-5 h-5 text-blue-600" />
+                      <p className="text-sm font-medium">Active Users</p>
+                    </div>
+                    <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                      7 Days
+                    </span>
+                  </div>
+                  <p className="text-3xl font-bold">{gaData.last7Days.activeUsers.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {gaData.last7Days.newUsers} new users
+                  </p>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <MousePointerClick className="w-5 h-5 text-purple-600" />
+                      <p className="text-sm font-medium">Sessions</p>
+                    </div>
+                    <span className="text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-1 rounded">
+                      7 Days
+                    </span>
+                  </div>
+                  <p className="text-3xl font-bold">{gaData.last7Days.sessions.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {gaData.last7Days.pageViews.toLocaleString()} page views
+                  </p>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Eye className="w-5 h-5 text-green-600" />
+                      <p className="text-sm font-medium">Page Views</p>
+                    </div>
+                    <span className="text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                      7 Days
+                    </span>
+                  </div>
+                  <p className="text-3xl font-bold">{gaData.last7Days.pageViews.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {gaData.last7Days.bounceRate}% bounce rate
+                  </p>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-orange-600" />
+                      <p className="text-sm font-medium">Avg Session Duration</p>
+                    </div>
+                    <span className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-2 py-1 rounded">
+                      7 Days
+                    </span>
+                  </div>
+                  <p className="text-3xl font-bold">{Math.round(parseFloat(gaData.last7Days.avgSessionDuration))}s</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Time spent per session
+                  </p>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Target className="w-5 h-5 text-pink-600" />
+                      <p className="text-sm font-medium">Bounce Rate</p>
+                    </div>
+                    <span className="text-xs bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-300 px-2 py-1 rounded">
+                      7 Days
+                    </span>
+                  </div>
+                  <p className="text-3xl font-bold">{gaData.last7Days.bounceRate}%</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Single-page sessions
+                  </p>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-5 h-5 text-cyan-600" />
+                      <p className="text-sm font-medium">New Users</p>
+                    </div>
+                    <span className="text-xs bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300 px-2 py-1 rounded">
+                      7 Days
+                    </span>
+                  </div>
+                  <p className="text-3xl font-bold">{gaData.last7Days.newUsers.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    First-time visitors
+                  </p>
+                </Card>
+              </>
+            )}
+          </div>
+
+          {/* 30-Day Comparison */}
+          {gaData.last30Days && (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4">30-Day Overview</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div>
+                  <p className="text-sm text-muted-foreground">Active Users</p>
+                  <p className="text-2xl font-bold mt-1">{gaData.last30Days.activeUsers.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Sessions</p>
+                  <p className="text-2xl font-bold mt-1">{gaData.last30Days.sessions.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Page Views</p>
+                  <p className="text-2xl font-bold mt-1">{gaData.last30Days.pageViews.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">New Users</p>
+                  <p className="text-2xl font-bold mt-1">{gaData.last30Days.newUsers.toLocaleString()}</p>
+                </div>
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {!gaEnabled && !isLoadingGA && (
+        <Card className="p-8 text-center border-dashed">
+          <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+          <h3 className="text-lg font-semibold mb-2">Google Analytics Not Configured</h3>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            To view Google Analytics metrics, please configure your GA service account credentials.
+            Check the setup documentation for instructions.
+          </p>
+        </Card>
+      )}
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

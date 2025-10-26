@@ -11,13 +11,14 @@ import {
 import { config } from "../config/index.js";
 import subscriptionService from "../services/subscriptionService.js";
 import emailService from "../services/emailService.js";
+import referralService from "../services/referralService.js";
 
 const router = express.Router();
 
 // Register new user
 router.post("/register", validateUserRegistration, async (req, res) => {
   try {
-    const { name, email, password, persona, profile } = req.body;
+    const { name, email, password, persona, profile, referralCode } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -69,6 +70,28 @@ router.post("/register", validateUserRegistration, async (req, res) => {
     const user = new User(userData);
     await user.save();
 
+    // Process referral if referral code was provided
+    let referralResult = null;
+    if (referralCode) {
+      referralResult = await referralService.processReferralSignup(
+        user,
+        referralCode
+      );
+      if (referralResult.success) {
+        console.log(
+          `✅ Referral processed for ${user.email} via ${referralCode}`
+        );
+      }
+    }
+
+    // Generate referral code for new user
+    try {
+      await referralService.generateReferralCode(user);
+    } catch (error) {
+      console.error("Error generating referral code:", error);
+      // Non-blocking - continue registration
+    }
+
     // Create trial subscription for new user
     const subscription = await subscriptionService.createTrialSubscription(
       user._id
@@ -112,7 +135,10 @@ router.post("/register", validateUserRegistration, async (req, res) => {
         console.log(`✅ Welcome email sent to ${user.email}`);
       })
       .catch((error) => {
-        console.error(`⚠️ Failed to send welcome email to ${user.email}:`, error.message);
+        console.error(
+          `⚠️ Failed to send welcome email to ${user.email}:`,
+          error.message
+        );
         // Don't fail registration if email fails
       });
 
@@ -137,6 +163,13 @@ router.post("/register", validateUserRegistration, async (req, res) => {
               id: createdPersona._id,
               name: createdPersona.name,
               tone: createdPersona.tone,
+            }
+          : null,
+        referral: referralResult?.success
+          ? {
+              extendedTrial: true,
+              trialDays: 14,
+              referredBy: referralResult.referrer?.name,
             }
           : null,
       },

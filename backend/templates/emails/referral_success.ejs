@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Referral Success!</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 48px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .content h2 {
+            color: #333333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            color: #666666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+
+        .reward-box {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .reward-number {
+            font-size: 64px;
+            font-weight: bold;
+            color: #d84315;
+            margin: 0;
+        }
+
+        .stats-box {
+            background-color: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #999999;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉</h1>
+            <h2 style="color: white; margin-top: 10px;">Referral Success!</h2>
+        </div>
+
+        <div class="content">
+            <h2>Awesome news, <%= name %>!</h2>
+
+            <p><strong>
+                    <%= referredUserName %>
+                </strong> just joined LinkedInPulse using your referral link! 🎊</p>
+
+            <div class="reward-box">
+                <p class="reward-number">
+                    <%= rewardMonths %>
+                </p>
+                <p style="font-size: 24px; font-weight: 600; color: #d84315; margin: 10px 0 0 0;">Free Month Added!</p>
+            </div>
+
+            <p>Your reward has been automatically added to your account. You now have:</p>
+
+            <div class="stats-box">
+                <p style="margin: 0; color: #333; font-size: 18px;">
+                    <strong style="color: #667eea; font-size: 32px;">
+                        <%= totalReferrals %>
+                    </strong>
+                    successful referral<%= totalReferrals===1 ? '' : 's' %>
+                </p>
+                <p style="margin: 10px 0 0 0; color: #666;">
+                    Keep sharing to earn more free months!
+                </p>
+            </div>
+
+            <p><strong>How it works:</strong></p>
+            <ul style="color: #666666; line-height: 1.8;">
+                <li>✅ 1 free month added for each successful referral</li>
+                <li>✅ Rewards never expire</li>
+                <li>✅ Automatically applied to your subscription</li>
+                <li>✅ Unlimited referrals allowed</li>
+            </ul>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="<%= process.env.FRONTEND_URL || 'http://localhost:3000' %>/dashboard/referrals"
+                    class="cta-button">
+                    View Referral Dashboard →
+                </a>
+            </div>
+
+            <div
+                style="background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 20px; border-radius: 8px; margin: 30px 0;">
+                <strong style="color: #2e7d32;">💡 Pro Tip:</strong>
+                <p style="margin: 10px 0 0 0; color: #2e7d32;">Share your referral link on LinkedIn, Twitter, or via
+                    email to reach more people. The more you share, the more free months you earn!</p>
+            </div>
+
+            <p><strong>Want to earn more?</strong></p>
+            <p>Share your unique referral link with colleagues, friends, or on social media:</p>
+
+            <div
+                style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                <p style="margin: 0; font-family: monospace; color: #667eea; font-size: 14px; word-break: break-all;">
+                    <%= process.env.FRONTEND_URL || 'http://localhost:3000' %>/signup?ref=YOUR_CODE
+                </p>
+            </div>
+
+            <p style="margin-top: 30px;">Thanks for spreading the word!<br><strong>The LinkedInPulse Team</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; <%= currentYear %> LinkedInPulse. All rights reserved.</p>
+            <p>
+                <a href="<%= preferencesUrl %>">Email Preferences</a> |
+                <a href="<%= unsubscribeUrl %>">Unsubscribe</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>
