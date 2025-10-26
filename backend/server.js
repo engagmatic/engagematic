@@ -199,11 +199,19 @@ const startServer = async () => {
     await connectDB();
     await initializeDefaultHooks();
 
-    // Start email scheduler
-    await emailScheduler.start();
+    // Start email scheduler (graceful failure)
+    try {
+      await emailScheduler.start();
+    } catch (error) {
+      console.warn("⚠️  Email scheduler failed to start:", error.message);
+    }
 
-    // Initialize Google Analytics service
-    await googleAnalyticsService.initialize();
+    // Initialize Google Analytics service (graceful failure)
+    try {
+      await googleAnalyticsService.initialize();
+    } catch (error) {
+      console.warn("⚠️  Google Analytics failed to initialize:", error.message);
+    }
 
     app.listen(config.PORT, () => {
       console.log(`🚀 LinkedInPulse API server running on port ${config.PORT}`);

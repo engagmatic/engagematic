@@ -113,6 +113,9 @@ export const Footer = () => {
           
           <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
             <p>© 2025 LinkedInPulse. All rights reserved. Built with 💙 for LinkedIn creators.</p>
+            <p className="text-xs text-muted-foreground/80 mt-2">
+              LinkedInPulse© is not affiliated, associated, authorized, endorsed by, or in any way officially connected with LinkedIn Corporation.
+            </p>
           </div>
         </div>
       </footer>

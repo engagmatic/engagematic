@@ -26,7 +26,7 @@ class EmailService {
         return false;
       }
 
-      // Resend uses SMTP (or their API - using SMTP for simplicity)
+      // Resend uses SMTP with timeout and retry settings
       this.transporter = nodemailer.createTransport({
         host: "smtp.resend.com",
         port: 465,
@@ -35,10 +35,23 @@ class EmailService {
           user: "resend",
           pass: process.env.RESEND_API_KEY,
         },
+        // Add timeout and connection settings
+        connectionTimeout: 10000, // 10 seconds
+        greetingTimeout: 5000, // 5 seconds
+        socketTimeout: 10000, // 10 seconds
+        pool: true, // Use connection pooling
+        maxConnections: 5, // Max connections in pool
+        maxMessages: 100, // Max messages per connection
+        rateLimit: 10, // Max messages per second
       });
 
-      // Verify connection
-      await this.transporter.verify();
+      // Verify connection with timeout
+      const verifyPromise = this.transporter.verify();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Connection timeout")), 10000)
+      );
+
+      await Promise.race([verifyPromise, timeoutPromise]);
       this.initialized = true;
       console.log("✅ Email service initialized with Resend");
       return true;
@@ -157,7 +170,9 @@ class EmailService {
       // Check if recently sent
       const recentlySent = await this.wasRecentlySent(userId, emailType);
       if (recentlySent) {
-        console.log(`Email ${emailType} already sent to user ${userId} recently`);
+        console.log(
+          `Email ${emailType} already sent to user ${userId} recently`
+        );
         return { success: false, reason: "recently_sent" };
       }
 
@@ -171,8 +186,12 @@ class EmailService {
       }
 
       // Add unsubscribe link to template data
-      const unsubscribeUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/unsubscribe?token=${preference.unsubscribeToken}`;
-      const preferencesUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/email-preferences?token=${preference.unsubscribeToken}`;
+      const unsubscribeUrl = `${
+        process.env.FRONTEND_URL || "http://localhost:3000"
+      }/unsubscribe?token=${preference.unsubscribeToken}`;
+      const preferencesUrl = `${
+        process.env.FRONTEND_URL || "http://localhost:3000"
+      }/email-preferences?token=${preference.unsubscribeToken}`;
 
       // Render email template
       const html = await this.renderTemplate(templateName, {
@@ -208,7 +227,11 @@ class EmailService {
       });
 
       console.log(`✅ Email sent: ${emailType} to ${to}`);
-      return { success: true, messageId: info.messageId, emailLogId: emailLog._id };
+      return {
+        success: true,
+        messageId: info.messageId,
+        emailLogId: emailLog._id,
+      };
     } catch (error) {
       console.error(`❌ Error sending email ${emailType} to ${to}:`, error);
 
@@ -442,4 +465,3 @@ class EmailService {
 // Export singleton instance
 const emailService = new EmailService();
 export default emailService;
-

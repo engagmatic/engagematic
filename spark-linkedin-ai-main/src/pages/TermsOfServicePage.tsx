@@ -371,7 +371,7 @@ const TermsOfServicePage = () => {
         </Card>
 
         {/* Contact Information */}
-        <Card className="p-8 shadow-card">
+        <Card className="p-8 shadow-card mb-8">
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Contact Information</h2>
             <p className="text-muted-foreground mb-6">
@@ -398,6 +398,15 @@ const TermsOfServicePage = () => {
                 </Button>
               </Link>
             </div>
+          </div>
+        </Card>
+
+        {/* LinkedIn Disclaimer */}
+        <Card className="p-6 shadow-card">
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              LinkedInPulse© is not affiliated, associated, authorized, endorsed by, or in any way officially connected with LinkedIn Corporation. LinkedIn is a registered trademark of LinkedIn Corporation in the U.S. and other countries.
+            </p>
           </div>
         </Card>
       </div>
