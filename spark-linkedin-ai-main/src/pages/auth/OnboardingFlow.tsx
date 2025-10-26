@@ -8,7 +8,7 @@ import {
   Activity, Loader2, Sparkles, ArrowRight, Check, 
   Zap, Target, User2, Briefcase, Wand2, ChevronRight
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -62,6 +62,7 @@ const OnboardingFlow = () => {
   const { register } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const progress = ((step + 1) / 4) * 100;
 
@@ -112,7 +113,10 @@ const OnboardingFlow = () => {
         title: "🎉 Welcome to LinkedInPulse!",
         description: "Your AI-powered content assistant is ready",
       });
-      navigate('/dashboard');
+      
+      // Redirect to return URL or dashboard
+      const returnTo = location.state?.returnTo || '/dashboard';
+      navigate(returnTo);
     } else {
       toast({
         title: "Registration failed",

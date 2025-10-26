@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Activity, Loader2, Eye, EyeOff, ArrowRight, ArrowLeft, Check, User, Briefcase, Target, Sparkles } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useLinkedInProfile } from "../../hooks/useLinkedInProfile";
@@ -45,6 +45,7 @@ const Register = () => {
   const { register, error, clearError } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { analyzeProfile, isAnalyzing, profileData } = useLinkedInProfile();
 
   const steps = [
@@ -196,7 +197,10 @@ const Register = () => {
         title: "Welcome to LinkedInPulse! 🎉",
         description: "Your account and AI persona have been created successfully",
       });
-      navigate('/dashboard');
+      
+      // Redirect to return URL or dashboard
+      const returnTo = location.state?.returnTo || '/dashboard';
+      navigate(returnTo);
     } else {
       toast({
         title: "Registration failed",

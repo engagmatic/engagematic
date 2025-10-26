@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
+import { LinkedInOptimizer } from "@/components/LinkedInOptimizer";
 import { PremiumWaitlistModal } from "@/components/PremiumWaitlistModal";
 import { useSubscription } from "@/hooks/useSubscription";
 
@@ -228,9 +229,9 @@ const IdeaGenerator = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-11 gap-6">
-          {/* Left Column - Input */}
-          <div className="lg:col-span-6 space-y-6">
+        <div className="max-w-4xl mx-auto">
+          {/* Input Section */}
+          <div className="space-y-6">
             {/* Topic Input */}
             <Card className="shadow-lg">
               <div className="p-6">
@@ -394,43 +395,33 @@ const IdeaGenerator = () => {
               )}
             </Button>
           </div>
-
-          {/* Right Column - Generated Ideas */}
-          <div className="lg:col-span-5">
-            <Card className="shadow-lg sticky top-6">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  Generated Ideas
-                </h3>
-                {ideas.length === 0 && !isGenerating && (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Lightbulb className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p className="text-sm">Your post ideas will appear here</p>
-                    <p className="text-xs mt-2">Fill in the topic and click Generate</p>
-                  </div>
-                )}
-
-                {isGenerating && (
-                  <div className="text-center py-12">
-                    <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-primary" />
-                    <p className="text-sm text-muted-foreground">Generating creative ideas...</p>
-                  </div>
-                )}
-
-                {ideas.length > 0 && (
-                  <div className="text-sm text-muted-foreground mb-4">
-                    {ideas.length} ideas generated • Select one to develop into a full post
-                  </div>
-                )}
-              </div>
-            </Card>
-          </div>
         </div>
 
         {/* Ideas Grid - Full Width Below */}
         {ideas.length > 0 && (
           <div className="mt-8">
+            {/* Regenerate Button */}
+            <div className="flex justify-center mb-6">
+              <Button 
+                variant="outline" 
+                onClick={handleGenerateIdeas}
+                disabled={isGenerating}
+                className="gap-2"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Regenerating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    Regenerate Ideas
+                  </>
+                )}
+              </Button>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {ideas.map((idea, index) => (
                 <Card 
@@ -500,6 +491,16 @@ const IdeaGenerator = () => {
                         Select
                         <ArrowRight className="h-4 w-4" />
                       </Button>
+                    </div>
+
+                    {/* LinkedIn Optimizer */}
+                    <div className="mt-3">
+                      <LinkedInOptimizer 
+                        content={`${idea.title}\n\n${idea.hook}`}
+                        topic={topic}
+                        audience={targetAudience}
+                        compact={true}
+                      />
                     </div>
 
                     {/* Best For */}

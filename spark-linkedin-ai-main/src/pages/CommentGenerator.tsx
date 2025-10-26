@@ -410,6 +410,32 @@ const CommentGenerator = () => {
                   <MessageCircle className="h-5 w-5" />
                   Generated Comments
                 </h3>
+                
+                {/* Regenerate Button */}
+                {generatedComments.length > 0 && (
+                  <div className="mb-4">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={handleGenerateComments}
+                      disabled={isGenerating}
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Regenerating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          Regenerate Comments
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+                
                 {generatedComments.length > 0 ? (
                   <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">
                     {generatedComments.map((comment, index) => (

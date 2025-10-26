@@ -309,14 +309,30 @@ export default function TestimonialsManagement() {
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               Manage user feedback and reviews
             </p>
+            <div className="mt-2">
+              <Badge variant="outline" className="gap-1">
+                <MessageSquare className="h-3 w-3" />
+                Collection Link: <code className="text-xs">/testimonial</code>
+              </Badge>
+            </div>
           </div>
-          <Button
-            onClick={() => setShowAddDialog(true)}
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add Testimonial
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => window.open('/testimonial', '_blank')}
+              className="gap-2"
+            >
+              <MessageSquare className="h-4 w-4" />
+              View Collection Page
+            </Button>
+            <Button
+              onClick={() => setShowAddDialog(true)}
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Add Testimonial
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}

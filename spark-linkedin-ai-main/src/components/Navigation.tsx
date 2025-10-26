@@ -23,7 +23,7 @@ export const Navigation = () => {
     { path: '/idea-generator', label: 'Ideas', icon: Lightbulb },
     { path: '/post-generator', label: 'Posts', icon: FileText },
     { path: '/comment-generator', label: 'Comments', icon: MessageSquare },
-    { path: '/profile-analyzer', label: 'Analyzer', icon: Target, premium: true, disabled: true },
+    { path: '/profile-analyzer', label: 'Analyzer', icon: Target },
   ];
 
   if (!isAuthenticated) {

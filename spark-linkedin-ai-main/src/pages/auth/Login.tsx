@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Activity, Loader2, Eye, EyeOff } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,6 +19,7 @@ const Login = () => {
   const { login, error, clearError } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,7 +41,10 @@ const Login = () => {
         title: "Welcome back! 🚀",
         description: "You're successfully logged in",
       });
-      navigate('/dashboard');
+      
+      // Redirect to return URL or dashboard
+      const returnTo = location.state?.returnTo || '/dashboard';
+      navigate(returnTo);
     } else {
       toast({
         title: "Login failed",

@@ -98,7 +98,7 @@ const userSubscriptionSchema = new mongoose.Schema(
       },
       profileAnalyses: {
         type: Number,
-        default: 3, // Trial: 3 analyses
+        default: -1, // UNLIMITED profile analyses
       },
       prioritySupport: {
         type: Boolean,
@@ -185,7 +185,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.ideasPerMonth = 25; // Ideas to spark creativity
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
-        this.limits.profileAnalyses = 1; // Only 1 analysis for trial
+        this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
         this.limits.prioritySupport = false;
         this.billing.amount = 0;
         break;
@@ -196,7 +196,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.ideasPerMonth = 100; // Plenty of inspiration
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
-        this.limits.profileAnalyses = 3; // 3 per month for starter
+        this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
         this.limits.prioritySupport = false;
         this.billing.amount = 12; // $12/month
         break;
@@ -207,7 +207,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.ideasPerMonth = 300; // Unlimited creativity
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
-        this.limits.profileAnalyses = 10; // 10 per month for pro
+        this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
         this.limits.prioritySupport = true;
         this.billing.amount = 24; // $24/month (2x starter)
         break;

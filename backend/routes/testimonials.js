@@ -11,6 +11,93 @@ const router = express.Router();
 // PUBLIC ROUTES (No authentication required)
 // ==========================================
 
+// Submit testimonial via public link (no authentication required)
+router.post("/collect", async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      rating,
+      comment,
+      jobTitle,
+      company,
+      displayName,
+      source = "public_link",
+    } = req.body;
+
+    // Validation
+    if (!name || !email || !rating || !comment) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email, rating, and comment are required",
+      });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: "Rating must be between 1 and 5",
+      });
+    }
+
+    if (comment.length < 10 || comment.length > 1000) {
+      return res.status(400).json({
+        success: false,
+        message: "Comment must be between 10 and 1000 characters",
+      });
+    }
+
+    // Check if email already submitted a testimonial
+    const existingTestimonial = await Testimonial.findOne({
+      userEmail: email.toLowerCase(),
+    });
+
+    if (existingTestimonial) {
+      return res.status(400).json({
+        success: false,
+        message: "A testimonial from this email already exists. Thank you!",
+      });
+    }
+
+    // Create testimonial
+    const testimonial = new Testimonial({
+      userName: name.trim(),
+      userEmail: email.toLowerCase().trim(),
+      rating: parseInt(rating),
+      comment: comment.trim(),
+      displayName: displayName?.trim() || name.trim(),
+      jobTitle: jobTitle?.trim() || "",
+      company: company?.trim() || "",
+      triggeredBy: source,
+      actionCount: 0,
+      status: "pending",
+    });
+
+    await testimonial.save();
+
+    console.log(
+      `✅ Public testimonial collected from ${email} (Rating: ${rating}/5)`
+    );
+
+    res.json({
+      success: true,
+      message:
+        "Thank you for your testimonial! We'll review it and may feature it on our website.",
+      data: {
+        id: testimonial._id,
+        rating: testimonial.rating,
+        status: testimonial.status,
+      },
+    });
+  } catch (error) {
+    console.error("Error collecting public testimonial:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to submit testimonial. Please try again.",
+    });
+  }
+});
+
 // Get approved testimonials for public display
 router.get("/public", async (req, res) => {
   try {

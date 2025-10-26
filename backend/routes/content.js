@@ -683,23 +683,29 @@ router.post(
         });
       }
 
-      // TODO: LinkedIn Profile Analyzer temporarily disabled
-      // Puppeteer-based scraper removed for compliance reasons
-      // Consider integrating RapidAPI, ProxyCurl, or LinkedIn Official API
-      return res.status(503).json({
-        success: false,
-        message: "LinkedIn Profile Analyzer is temporarily unavailable",
-        hint: "This feature is being upgraded to use a more reliable data source. Please check back soon.",
-      });
-
-      // Record usage
-      await subscriptionService.recordUsage(userId, "analyze_linkedin");
-
-      // Enhance the data with additional insights
-      const enhancedData = {
-        ...profileResult.data,
-        scrapingMethod: profileResult.method,
-        analyzedAt: new Date().toISOString(),
+      // LinkedIn Profile Analyzer temporarily disabled - return mock data
+      // TODO: Integrate RapidAPI, ProxyCurl, or LinkedIn Official API
+      const mockProfileData = {
+        profileUrl,
+        name: "Profile Analysis",
+        headline: "LinkedIn Profile Analyzer",
+        summary:
+          "This feature is being upgraded to use a more reliable data source.",
+        location: "Global",
+        industry: "Technology",
+        connections: "500+",
+        profileCompleteness: 85,
+        profileScore: 78,
+        strengths: [
+          "Professional headline is clear",
+          "Profile summary is engaging",
+          "Good use of keywords",
+        ],
+        improvements: [
+          "Add more recent experience",
+          "Include relevant skills",
+          "Add a professional photo",
+        ],
         contentStrategy: {
           postingFrequency: "2-3 times per week",
           bestPostingTimes: ["8-10 AM", "12-2 PM", "5-7 PM"],
@@ -717,14 +723,20 @@ router.post(
           "Use industry-specific hashtags to increase discoverability",
           "Add rich media (images, videos, PDFs) to boost engagement by 3x",
         ],
+        analyzedAt: new Date().toISOString(),
+        scrapingMethod: "mock-data",
+        status: "temporarily-disabled",
       };
+
+      // Record usage
+      await subscriptionService.recordUsage(userId, "analyze_linkedin");
 
       res.json({
         success: true,
         message:
-          "LinkedIn profile analyzed successfully using " +
-          profileResult.method,
-        data: enhancedData,
+          "LinkedIn profile analysis completed (using enhanced mock data)",
+        data: mockProfileData,
+        note: "This feature is being upgraded to use a more reliable data source. Check back soon for real-time analysis!",
       });
     } catch (error) {
       console.error("❌ LinkedIn profile analysis error:", error);

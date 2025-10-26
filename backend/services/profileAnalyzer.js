@@ -3,22 +3,69 @@ import ProfileAnalysis from "../models/ProfileAnalysis.js";
 
 class ProfileAnalyzer {
   /**
-   * Analyze a LinkedIn profile and generate recommendations
-   * NOTE: Profile scraping temporarily disabled - using manual input
+   * Analyze a LinkedIn profile using RapidAPI LinkedIn Data API
    */
   async analyzeProfile(profileUrl, userId) {
     try {
-      console.log(
-        "🔍 Profile Analysis requested (manual input mode):",
-        profileUrl
+      console.log("🔍 Profile Analysis requested:", profileUrl);
+
+      // Extract username from LinkedIn URL
+      const username = this.extractUsernameFromUrl(profileUrl);
+      if (!username) {
+        throw new Error("Invalid LinkedIn profile URL");
+      }
+
+      // Fetch profile data from RapidAPI
+      const profileData = await this.fetchProfileFromRapidAPI(username);
+
+      if (!profileData.success) {
+        throw new Error(profileData.message || "Failed to fetch profile data");
+      }
+
+      console.log(`✅ Profile data extracted for: ${profileData.data.name}`);
+
+      // Calculate scores
+      const scores = this.calculateScores(profileData.data);
+
+      // Generate AI recommendations
+      const recommendations = await this.generateRecommendations(
+        profileData.data,
+        scores
       );
 
-      // Profile scraping is disabled - return guidance for manual input
+      // Save analysis
+      const analysis = await ProfileAnalysis.create({
+        userId,
+        profileUrl,
+        profileData: {
+          fullName: profileData.data.name || "",
+          headline: profileData.data.headline || "",
+          about: profileData.data.summary || "",
+          location: profileData.data.location || "",
+          industry: profileData.data.industry || "",
+          experience: profileData.data.experience || [],
+          education: profileData.data.education || [],
+          skills: profileData.data.skills || [],
+        },
+        scores,
+        recommendations,
+        analyzedAt: new Date(),
+      });
+
+      console.log("✅ Profile analysis complete:", {
+        userId,
+        overallScore: scores.overall,
+      });
+
       return {
-        success: false,
-        message:
-          "Profile analysis is temporarily unavailable. Please use manual profile data entry.",
-        method: "manual",
+        success: true,
+        data: {
+          id: analysis._id,
+          scores,
+          recommendations,
+          profileData: analysis.profileData,
+          analyzedAt: analysis.analyzedAt,
+        },
       };
 
       // OLD CODE (disabled):
@@ -75,6 +122,87 @@ class ProfileAnalyzer {
         success: false,
         message: "Profile analysis is currently unavailable",
         error: error.message,
+      };
+    }
+  }
+
+  /**
+   * Extract username from LinkedIn profile URL
+   */
+  extractUsernameFromUrl(profileUrl) {
+    try {
+      const url = new URL(profileUrl);
+      if (!url.hostname.includes("linkedin.com")) {
+        return null;
+      }
+
+      // Extract username from path like /in/username or /company/companyname
+      const pathParts = url.pathname.split("/").filter((part) => part);
+
+      if (pathParts[0] === "in" && pathParts[1]) {
+        return pathParts[1];
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error extracting username:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Fetch profile data from RapidAPI LinkedIn Data API
+   */
+  async fetchProfileFromRapidAPI(username) {
+    try {
+      const rapidApiKey = process.env.RAPIDAPI_KEY;
+      if (!rapidApiKey) {
+        throw new Error("RAPIDAPI_KEY not configured");
+      }
+      console.log("🔍 RapidAPI key:", username);
+      const response = await fetch(
+        `https://linkedin-data-api.p.rapidapi.com/?username=${username}`,
+        {
+          method: "GET",
+          headers: {
+            "x-rapidapi-host": "linkedin-data-api.p.rapidapi.com",
+            "x-rapidapi-key": rapidApiKey,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `RapidAPI request failed: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("🔍 RapidAPI response:", data);
+      // Transform RapidAPI response to our expected format
+      const profileData = {
+        name: data.name || data.fullName || "",
+        headline: data.headline || data.title || "",
+        summary: data.summary || data.about || "",
+        location: data.location || "",
+        industry: data.industry || "",
+        experience: data.experience || [],
+        education: data.education || [],
+        skills: data.skills || [],
+        connections: data.connections || 0,
+        profilePicture: data.profilePicture || "",
+        bannerImage: data.bannerImage || "",
+      };
+
+      return {
+        success: true,
+        data: profileData,
+      };
+    } catch (error) {
+      console.error("❌ RapidAPI fetch error:", error);
+      return {
+        success: false,
+        message: error.message,
       };
     }
   }

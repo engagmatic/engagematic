@@ -239,4 +239,119 @@ router.get("/popular", async (req, res) => {
   }
 });
 
+// Get trending hooks (AI-generated based on current trends) - PAID USERS ONLY
+router.get(
+  "/trending",
+  authenticateToken,
+  checkPlanAccess("starter"),
+  async (req, res) => {
+    try {
+      const { topic, industry } = req.query;
+
+      // Generate trending hooks using AI
+      const prompt = `Generate 10 trending LinkedIn post hooks for ${
+        topic || "general professional content"
+      } in ${industry || "various industries"}. 
+    
+    Requirements:
+    - Each hook should be 10-80 characters
+    - Mix of categories: story, question, statement, challenge, insight
+    - Based on current trends and viral content patterns
+    - Professional but engaging
+    - Include trending topics, buzzwords, and current events
+    
+    Return as JSON array with format:
+    [
+      {
+        "text": "hook text here",
+        "category": "story|question|statement|challenge|insight",
+        "trending": true
+      }
+    ]`;
+
+      const aiResponse = await googleAIService.generateContent(prompt);
+
+      if (!aiResponse || !aiResponse.trim()) {
+        throw new Error("AI response is empty");
+      }
+
+      // Parse AI response
+      let trendingHooks;
+      try {
+        // Clean the response and extract JSON
+        const cleanedResponse = aiResponse
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "")
+          .trim();
+        trendingHooks = JSON.parse(cleanedResponse);
+      } catch (parseError) {
+        console.error("Failed to parse AI response:", parseError);
+        // Fallback: create hooks from response text
+        const lines = aiResponse
+          .split("\n")
+          .filter((line) => line.trim().length > 10 && line.trim().length < 80);
+        trendingHooks = lines.slice(0, 10).map((line, index) => ({
+          text: line
+            .trim()
+            .replace(/^\d+\.\s*/, "")
+            .replace(/^[-*]\s*/, ""),
+          category: ["story", "question", "statement", "challenge", "insight"][
+            index % 5
+          ],
+          trending: true,
+        }));
+      }
+
+      // Ensure we have valid hooks
+      if (!Array.isArray(trendingHooks) || trendingHooks.length === 0) {
+        throw new Error("No valid hooks generated");
+      }
+
+      // Add metadata
+      const hooksWithMetadata = trendingHooks.map((hook, index) => ({
+        _id: `trending_${Date.now()}_${index}`,
+        text: hook.text,
+        category: hook.category,
+        trending: true,
+        generatedAt: new Date(),
+        usageCount: 0,
+        isDefault: false,
+        isActive: true,
+      }));
+
+      res.json({
+        success: true,
+        data: {
+          hooks: hooksWithMetadata,
+          generatedAt: new Date(),
+          source: "ai-generated",
+        },
+      });
+    } catch (error) {
+      console.error("Generate trending hooks error:", error);
+
+      // Fallback to popular hooks if AI fails
+      try {
+        const fallbackHooks = await Hook.find({ isActive: true })
+          .sort({ usageCount: -1, createdAt: -1 })
+          .limit(10);
+
+        res.json({
+          success: true,
+          data: {
+            hooks: fallbackHooks,
+            generatedAt: new Date(),
+            source: "fallback-popular",
+          },
+        });
+      } catch (fallbackError) {
+        res.status(500).json({
+          success: false,
+          message: "Failed to generate trending hooks",
+        });
+      }
+    }
+  }
+);
+
 export default router;

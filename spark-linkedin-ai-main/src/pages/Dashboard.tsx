@@ -6,6 +6,7 @@ import { useDashboard } from "../hooks/useAnalytics";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { SubscriptionStatus } from "../components/SubscriptionStatus";
+import { CreditTrackingStatus } from "../components/CreditTrackingStatus";
 
 const Dashboard = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -83,7 +84,7 @@ const Dashboard = () => {
 
         {/* Subscription Status */}
         <div className="mb-8">
-          <SubscriptionStatus />
+          <CreditTrackingStatus />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">

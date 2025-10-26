@@ -246,6 +246,13 @@ class ApiClient {
     return this.request("/hooks/popular");
   }
 
+  async getTrendingHooks(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(
+      `/hooks/trending${queryString ? `?${queryString}` : ""}`
+    );
+  }
+
   async getDynamicHooks(params = {}) {
     const queryString = new URLSearchParams(params).toString();
     return this.request(
@@ -347,6 +354,115 @@ class ApiClient {
     return this.request("/referrals/invite", {
       method: "POST",
       body: JSON.stringify(emailData),
+    });
+  }
+
+  // Testimonial methods
+  async collectTestimonial(testimonialData) {
+    return this.request("/testimonials/collect", {
+      method: "POST",
+      body: JSON.stringify(testimonialData),
+    });
+  }
+
+  async getPublicTestimonials(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(
+      `/testimonials/public${queryString ? `?${queryString}` : ""}`
+    );
+  }
+
+  async submitTestimonial(testimonialData) {
+    return this.request("/testimonials/submit", {
+      method: "POST",
+      body: JSON.stringify(testimonialData),
+    });
+  }
+
+  // Pricing methods
+  async getPricingConfig() {
+    return this.request("/pricing/config");
+  }
+
+  async calculatePrice(credits, currency) {
+    return this.request("/pricing/calculate", {
+      method: "POST",
+      body: JSON.stringify({ credits, currency }),
+    });
+  }
+
+  async detectRegion() {
+    return this.request("/pricing/detect-region");
+  }
+
+  async createCreditSubscription(subscriptionData) {
+    return this.request("/pricing/create-subscription", {
+      method: "POST",
+      body: JSON.stringify(subscriptionData),
+    });
+  }
+
+  async updateSubscriptionCredits(credits, currency) {
+    return this.request("/pricing/update-credits", {
+      method: "PUT",
+      body: JSON.stringify({ credits, currency }),
+    });
+  }
+
+  async getCurrentSubscriptionWithPricing() {
+    return this.request("/pricing/current-subscription");
+  }
+
+  async validateCredits(credits) {
+    return this.request("/pricing/validate-credits", {
+      method: "POST",
+      body: JSON.stringify({ credits }),
+    });
+  }
+
+  // Payment methods
+  async createCreditOrder(orderData) {
+    return this.request("/payment/create-credit-order", {
+      method: "POST",
+      body: JSON.stringify(orderData),
+    });
+  }
+
+  async verifyPayment(paymentData) {
+    return this.request("/payment/verify-payment", {
+      method: "POST",
+      body: JSON.stringify(paymentData),
+    });
+  }
+
+  async createPlanOrder(orderData) {
+    return this.request("/payment/create-plan-order", {
+      method: "POST",
+      body: JSON.stringify(orderData),
+    });
+  }
+
+  async getRazorpayKey() {
+    return this.request("/payment/key");
+  }
+
+  // Profile completion methods
+  async getProfileStatus() {
+    return this.request("/profile/status", {
+      method: "GET",
+    });
+  }
+
+  async getProfileRequirements() {
+    return this.request("/profile/requirements", {
+      method: "GET",
+    });
+  }
+
+  async completeBasicProfile(profileData) {
+    return this.request("/profile/complete-basic", {
+      method: "POST",
+      body: JSON.stringify(profileData),
     });
   }
 }

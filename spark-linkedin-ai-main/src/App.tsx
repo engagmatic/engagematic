@@ -6,25 +6,32 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AdminProvider } from "./contexts/AdminContext";
+import { Suspense, lazy } from "react";
+import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
 import AppLayout from "./components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
-import PostGenerator from "./pages/PostGenerator";
-import IdeaGenerator from "./pages/IdeaGenerator";
-import CommentGenerator from "./pages/CommentGenerator";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
-import BlogsPage from "./pages/BlogsPage";
-import BlogPostPage from "./pages/BlogPostPage";
-import AboutPage from "./pages/AboutPage";
-import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
-import TermsOfServicePage from "./pages/TermsOfServicePage";
-import FAQPage from "./pages/FAQPage";
-import ContactPage from "./pages/ContactPage";
-import HelpCenterPage from "./pages/HelpCenterPage";
-import TemplatesPage from "./pages/TemplatesPage";
-import ProfileAnalyzer from "./pages/ProfileAnalyzer";
-import Referrals from "./pages/Referrals";
+
+// Lazy load heavy components for better performance
+const PostGenerator = lazy(() => import("./pages/PostGenerator"));
+const IdeaGenerator = lazy(() => import("./pages/IdeaGenerator"));
+const CommentGenerator = lazy(() => import("./pages/CommentGenerator"));
+const BlogsPage = lazy(() => import("./pages/BlogsPage"));
+const BlogPostPage = lazy(() => import("./pages/BlogPostPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
+const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
+const FAQPage = lazy(() => import("./pages/FAQPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
+const TemplatesPage = lazy(() => import("./pages/TemplatesPage"));
+const ProfileAnalyzer = lazy(() => import("./pages/ProfileAnalyzer"));
+const Referrals = lazy(() => import("./pages/Referrals"));
+const TestimonialCollection = lazy(() => import("./pages/TestimonialCollection"));
+const PlanManagement = lazy(() => import("./pages/PlanManagement").then(module => ({ default: module.default })));
+const ProfileCompletion = lazy(() => import("./pages/ProfileCompletion"));
 // Admin Pages
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -38,6 +45,16 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Loading component for lazy loaded routes
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="flex items-center gap-2">
+      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      <span>Loading...</span>
+    </div>
+  </div>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>
@@ -47,12 +64,14 @@ const App = () => (
             <TooltipProvider>
               <Toaster />
               <Sonner />
-              <Routes>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
                 {/* Public auth pages without layout */}
                 <Route path="/auth/login" element={<Login />} />
                 <Route path="/auth/register" element={<Register />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Register />} />
+                <Route path="/testimonial" element={<TestimonialCollection />} />
                 
                 {/* Admin Routes - No AppLayout */}
                 <Route path="/admin/login" element={<AdminLogin />} />
@@ -118,12 +137,14 @@ const App = () => (
                   <Route path="/resources" element={<HelpCenterPage />} />
                   <Route path="/templates" element={<TemplatesPage />} />
                   <Route path="/profile-analyzer" element={<ProfileAnalyzer />} />
-                  <Route path="/referrals" element={<Referrals />} />
+                  <Route path="/plan-management" element={<PlanManagement />} />
+                  <Route path="/profile-setup" element={<ProfileCompletion />} />
                 </Route>
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </Suspense>
             </TooltipProvider>
           </AdminProvider>
         </AuthProvider>

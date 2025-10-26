@@ -17,6 +17,7 @@ import { SEO } from "@/components/SEO";
 import { PAGE_SEO } from "@/constants/seo";
 import { EXPANDED_PERSONAS, PERSONA_CATEGORIES } from "@/constants/expandedPersonas";
 import { formatForLinkedIn } from "@/utils/linkedinFormatting";
+import { LinkedInOptimizer } from "@/components/LinkedInOptimizer";
 import { PremiumWaitlistModal } from "@/components/PremiumWaitlistModal";
 
 const hookIcons = {
@@ -336,19 +337,23 @@ const PostGenerator = () => {
                         }
                         try {
                           setIsLoadingHooks(true);
-                          const res = await apiClient.getHooks();
+                          const res = await apiClient.getTrendingHooks({ 
+                            topic: topic || 'professional content',
+                            industry: selectedPersona?.name || 'general'
+                          });
                           if (res.success && res.data.hooks.length > 0) {
-                            // Take a different slice to simulate “trending”
-                            const shuffled = [...res.data.hooks].sort(() => 0.5 - Math.random());
-                            setHooks(shuffled.slice(0, 10));
-                            setSelectedHook(shuffled[0]);
-                            toast({ title: 'Trending hooks loaded ✨' });
+                            setHooks(res.data.hooks);
+                            setSelectedHook(res.data.hooks[0]);
+                            toast({ 
+                              title: 'Trending hooks generated! ✨', 
+                              description: `Generated ${res.data.hooks.length} fresh hooks using AI`
+                            });
                           } else {
-                            toast({ title: 'No hooks available', description: 'Please try again later', variant: 'destructive' });
+                            toast({ title: 'No trending hooks available', description: 'Please try again later', variant: 'destructive' });
                           }
                         } catch (e) {
                           console.error(e);
-                          toast({ title: 'Failed to load hooks', variant: 'destructive' });
+                          toast({ title: 'Failed to generate trending hooks', variant: 'destructive' });
                         } finally {
                           setIsLoadingHooks(false);
                         }
@@ -641,7 +646,36 @@ const PostGenerator = () => {
                       </div>
                     )}
 
+                    {/* LinkedIn Optimizer */}
+                    <LinkedInOptimizer 
+                      content={generatedContent.content}
+                      topic={topic}
+                      audience={selectedPersona?.name}
+                      compact={true}
+                    />
+
                     <div className="space-y-2">
+                      {/* Regenerate Button */}
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={handleGeneratePost}
+                        disabled={isGenerating}
+                      >
+                        {isGenerating ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Regenerating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Regenerate Post
+                          </>
+                        )}
+                      </Button>
+                      
                       <div className="flex gap-2">
                         <Button 
                           variant="outline" 

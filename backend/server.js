@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import helmet from "helmet";
+import compression from "compression";
 import rateLimit from "express-rate-limit";
 import { config } from "./config/index.js";
 
@@ -20,7 +21,9 @@ import adminAuthRoutes from "./routes/adminAuth.js";
 import testimonialRoutes from "./routes/testimonials.js";
 import blogRoutes from "./routes/blog.js";
 import emailRoutes from "./routes/email.js";
-import referralRoutes from "./routes/referrals.js";
+import paymentRoutes from "./routes/payment.js";
+import pricingRoutes from "./routes/pricing.js";
+import profileRoutes from "./routes/profile.js";
 
 // Import services
 import emailScheduler from "./services/emailScheduler.js";
@@ -29,7 +32,19 @@ import googleAnalyticsService from "./services/googleAnalyticsService.js";
 const app = express();
 
 // Security middleware
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Disable CSP for development
+  })
+);
+
+// Compression middleware for better performance
+app.use(
+  compression({
+    level: 6, // Balanced compression level
+    threshold: 1024, // Only compress files > 1KB
+  })
+);
 
 // CORS configuration
 const allowedOrigins = [
@@ -79,9 +94,9 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Body parsing middleware
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+// Body parsing middleware (optimized for performance)
+app.use(express.json({ limit: "5mb" })); // Reduced from 10mb
+app.use(express.urlencoded({ extended: true, limit: "5mb" })); // Reduced from 10mb
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -106,7 +121,9 @@ app.use("/api/profile-analyzer", profileInsightsRoutes); // Merged route for ins
 app.use("/api/testimonials", testimonialRoutes); // Testimonial routes
 app.use("/api/blog", blogRoutes); // Blog routes
 app.use("/api/email", emailRoutes); // Email preferences and unsubscribe
-app.use("/api/referrals", referralRoutes); // Referral system
+app.use("/api/payment", paymentRoutes); // Payment processing
+app.use("/api/pricing", pricingRoutes); // Pricing and credit management
+app.use("/api/profile", profileRoutes); // Profile completion management
 
 // Admin routes
 app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication
