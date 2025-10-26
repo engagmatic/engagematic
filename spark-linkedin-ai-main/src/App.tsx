@@ -141,6 +141,7 @@ const App = () => (
                   <Route path="/profile-analyzer" element={<ProfileAnalyzer />} />
                   <Route path="/plan-management" element={<PlanManagement />} />
                   <Route path="/profile-setup" element={<ProfileCompletion />} />
+                  <Route path="/referral" element={<Referrals />} />
                   <Route path="/blogs" element={<BlogListingPage />} />
                   <Route path="/blogs/:slug" element={<BlogPage />} />
                 </Route>

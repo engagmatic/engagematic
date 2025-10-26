@@ -15,32 +15,33 @@ export const Footer = () => {
     <>
       {/* Referral Offer Banner */}
       {isBannerVisible && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 p-3 sm:p-4 shadow-2xl border-t border-white/20">
-          <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-4 shadow-2xl border-t border-white/10 backdrop-blur-sm">
+          <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-white text-center sm:text-left flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <Gift className="h-4 w-4 text-yellow-300" />
-                <span className="font-bold text-sm sm:text-base">Referral Bonus Active!</span>
+              <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                  <Star className="h-4 w-4 text-white" />
+                </div>
+                <span className="font-bold text-base sm:text-lg">Referral Program</span>
               </div>
-              <div className="text-xs sm:text-sm opacity-90">
-                Invite friends & get <span className="font-semibold text-yellow-300">₹500 credits</span> for each successful referral
+              <div className="text-sm sm:text-base opacity-95">
+                Refer friends and get <span className="font-bold text-yellow-300">1 month FREE</span> for every friend who becomes a paying customer
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Button 
                 size="sm" 
-                variant="secondary" 
                 onClick={() => navigate('/referral')}
-                className="shadow-lg hover:shadow-xl bg-white text-green-600 hover:bg-white/90 w-full sm:w-auto whitespace-nowrap font-bold transition-all"
+                className="bg-white text-blue-600 hover:bg-gray-50 shadow-lg hover:shadow-xl font-semibold px-6 py-2 rounded-lg transition-all duration-200 hover:scale-105"
               >
-                <Users className="h-4 w-4 mr-1" />
+                <Users className="h-4 w-4 mr-2" />
                 Invite Friends
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={handleCloseBanner}
-                className="text-white hover:bg-white/20 p-1 h-8 w-8"
+                className="text-white hover:bg-white/20 p-2 h-8 w-8 rounded-full transition-all"
               >
                 <X className="h-4 w-4" />
               </Button>

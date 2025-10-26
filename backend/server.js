@@ -24,6 +24,7 @@ import emailRoutes from "./routes/email.js";
 import paymentRoutes from "./routes/payment.js";
 import pricingRoutes from "./routes/pricing.js";
 import trialRoutes from "./routes/trial.js";
+import referralRoutes from "./routes/referrals.js";
 
 // Import services
 import emailScheduler from "./services/emailScheduler.js";
@@ -125,6 +126,7 @@ app.use("/api/payment", paymentRoutes); // Payment processing
 app.use("/api/pricing", pricingRoutes); // Pricing and credit management
 app.use("/api/profile", profileRoutes); // Profile completion management
 app.use("/api/trial", trialRoutes); // Trial management
+app.use("/api/referrals", referralRoutes); // Referral system
 
 // Admin routes
 app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication
