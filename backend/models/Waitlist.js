@@ -119,7 +119,7 @@ const waitlistSchema = new mongoose.Schema(
 );
 
 // Indexes for better query performance
-waitlistSchema.index({ email: 1 });
+// Note: email index is already created by unique: true
 waitlistSchema.index({ plan: 1, status: 1 });
 waitlistSchema.index({ createdAt: -1 });
 

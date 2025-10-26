@@ -19,6 +19,10 @@ import adminRoutes from "./routes/admin.js";
 import adminAuthRoutes from "./routes/adminAuth.js";
 import testimonialRoutes from "./routes/testimonials.js";
 import blogRoutes from "./routes/blog.js";
+import emailRoutes from "./routes/email.js";
+
+// Import services
+import emailScheduler from "./services/emailScheduler.js";
 
 const app = express();
 
@@ -99,6 +103,7 @@ app.use("/api/profile-analyzer", profileAnalyzerRoutes);
 app.use("/api/profile-analyzer", profileInsightsRoutes); // Merged route for insights
 app.use("/api/testimonials", testimonialRoutes); // Testimonial routes
 app.use("/api/blog", blogRoutes); // Blog routes
+app.use("/api/email", emailRoutes); // Email preferences and unsubscribe
 
 // Admin routes
 app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication
@@ -174,6 +179,9 @@ const startServer = async () => {
     await connectDB();
     await initializeDefaultHooks();
 
+    // Start email scheduler
+    await emailScheduler.start();
+
     app.listen(config.PORT, () => {
       console.log(`🚀 LinkedInPulse API server running on port ${config.PORT}`);
       console.log(`📊 Environment: ${config.NODE_ENV}`);
@@ -188,12 +196,14 @@ const startServer = async () => {
 // Handle graceful shutdown
 process.on("SIGTERM", async () => {
   console.log("SIGTERM received, shutting down gracefully");
+  emailScheduler.stop();
   await mongoose.connection.close();
   process.exit(0);
 });
 
 process.on("SIGINT", async () => {
   console.log("SIGINT received, shutting down gracefully");
+  emailScheduler.stop();
   await mongoose.connection.close();
   process.exit(0);
 });

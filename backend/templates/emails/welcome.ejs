@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to LinkedInPulse</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .content h2 {
+            color: #333333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            color: #666666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+
+        .feature-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .feature-box h3 {
+            color: #667eea;
+            margin-top: 0;
+            font-size: 18px;
+        }
+
+        .trial-badge {
+            background-color: #ffeaa7;
+            color: #d63031;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #999999;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Welcome to LinkedInPulse!</h1>
+        </div>
+
+        <div class="content">
+            <h2>Hey <%= name %>,</h2>
+
+            <p>Welcome aboard! We're thrilled to have you join thousands of professionals who are transforming their
+                LinkedIn presence with AI-powered content.</p>
+
+            <div class="trial-badge">
+                ⏰ Your <%= trialDays %>-Day Free Trial Starts Now!
+            </div>
+
+            <p>During your trial, you'll have full access to:</p>
+
+            <div class="feature-box">
+                <h3>🚀 AI-Powered Content Generation</h3>
+                <p>Create engaging LinkedIn posts in seconds with our advanced AI</p>
+            </div>
+
+            <div class="feature-box">
+                <h3>🎯 Custom AI Personas</h3>
+                <p>Train AI to write in your unique voice and style</p>
+            </div>
+
+            <div class="feature-box">
+                <h3>💡 Viral Hook Generator</h3>
+                <p>Start every post with attention-grabbing hooks</p>
+            </div>
+
+            <div class="feature-box">
+                <h3>📊 Performance Analytics</h3>
+                <p>Track your content performance and optimize strategy</p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="<%= process.env.FRONTEND_URL || 'http://localhost:3000' %>/dashboard" class="cta-button">
+                    Start Creating Content Now →
+                </a>
+            </div>
+
+            <p><strong>Quick Start Tips:</strong></p>
+            <ul style="color: #666666; line-height: 1.8;">
+                <li>Complete your profile setup for personalized content</li>
+                <li>Create your first AI persona to match your brand voice</li>
+                <li>Generate your first post and see the magic happen</li>
+                <li>Schedule your content strategy for the week</li>
+            </ul>
+
+            <p style="margin-top: 30px;">Need help getting started? Reply to this email - we're here to help!</p>
+
+            <p style="margin-top: 30px;">To your LinkedIn success,<br><strong>The LinkedInPulse Team</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; <%= currentYear %> LinkedInPulse. All rights reserved.</p>
+            <p>
+                <a href="<%= preferencesUrl %>">Email Preferences</a> |
+                <a href="<%= unsubscribeUrl %>">Unsubscribe</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

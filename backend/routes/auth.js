@@ -10,6 +10,7 @@ import {
 } from "../middleware/validation.js";
 import { config } from "../config/index.js";
 import subscriptionService from "../services/subscriptionService.js";
+import emailService from "../services/emailService.js";
 
 const router = express.Router();
 
@@ -103,6 +104,17 @@ router.post("/register", validateUserRegistration, async (req, res) => {
     const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, {
       expiresIn: config.JWT_EXPIRE,
     });
+
+    // Send welcome email (non-blocking)
+    emailService
+      .sendWelcomeEmail(user)
+      .then(() => {
+        console.log(`✅ Welcome email sent to ${user.email}`);
+      })
+      .catch((error) => {
+        console.error(`⚠️ Failed to send welcome email to ${user.email}:`, error.message);
+        // Don't fail registration if email fails
+      });
 
     // Remove password from response
     const userResponse = user.toObject();

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unlock Your Full Potential</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 40px 20px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 28px; }
+        .content { padding: 40px 30px; }
+        .content h2 { color: #333333; font-size: 24px; margin-bottom: 20px; }
+        .content p { color: #666666; line-height: 1.6; margin-bottom: 15px; font-size: 16px; }
+        .cta-button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .comparison { display: flex; gap: 20px; margin: 30px 0; }
+        .plan { flex: 1; padding: 20px; border-radius: 8px; text-align: center; }
+        .current-plan { background-color: #f8f9fa; border: 2px solid #e0e0e0; }
+        .pro-plan { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: 2px solid #667eea; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #999999; font-size: 14px; }
+        .footer a { color: #667eea; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Ready to Level Up?</h1>
+        </div>
+        
+        <div class="content">
+            <h2>Hey <%= name %>,</h2>
+            
+            <p>You're doing great with <%= currentPlan === 'starter' ? 'your Starter plan' : 'LinkedInPulse' %>! But imagine what you could achieve with unlimited access to our premium features.</p>
+            
+            <p><strong>What you'll unlock with Pro:</strong></p>
+            
+            <div style="background-color: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                <ul style="color: #333; line-height: 2; list-style: none; padding: 0;">
+                    <li>✅ <strong>Unlimited</strong> post generation (vs. 20/month)</li>
+                    <li>✅ <strong>10 custom personas</strong> (vs. 2)</li>
+                    <li>✅ <strong>Priority AI processing</strong> - 3x faster</li>
+                    <li>✅ <strong>Advanced analytics</strong> & insights</li>
+                    <li>✅ <strong>Profile analyzer</strong> - unlimited scans</li>
+                    <li>✅ <strong>Comment generator</strong> - engage 10x faster</li>
+                    <li>✅ <strong>Priority support</strong> - respond in 2 hours</li>
+                    <li>✅ <strong>Early access</strong> to new features</li>
+                </ul>
+            </div>
+            
+            <div style="background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 20px; border-radius: 8px; margin: 30px 0;">
+                <strong style="color: #1565c0;">💰 ROI Calculator:</strong>
+                <p style="margin: 10px 0 0 0; color: #1565c0;">Save 15+ hours/week on content creation. At even ₹500/hour, that's ₹7,500 in saved time monthly - a 15x return on your investment!</p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="<%= process.env.FRONTEND_URL || 'http://localhost:3000' %>/pricing" class="cta-button">
+                    Upgrade to Pro →
+                </a>
+            </div>
+            
+            <p style="text-align: center; color: #999; font-size: 14px;">✨ 30-day money-back guarantee • Cancel anytime • No hidden fees</p>
+            
+            <div style="background-color: #fff3e0; border-left: 4px solid #ff9800; padding: 20px; border-radius: 8px; margin: 30px 0;">
+                <strong style="color: #e65100;">🎁 Limited Time Offer:</strong>
+                <p style="margin: 10px 0 0 0; color: #e65100;">Upgrade now and get your first month at 25% off! Use code: LEVELUP25</p>
+            </div>
+            
+            <p><strong>Still not sure?</strong> Reply to this email with your questions. We're here to help you choose the right plan!</p>
+            
+            <p style="margin-top: 30px;">Let's unlock your full potential,<br><strong>The LinkedInPulse Team</strong></p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; <%= currentYear %> LinkedInPulse. All rights reserved.</p>
+            <p>
+                <a href="<%= preferencesUrl %>">Email Preferences</a> | 
+                <a href="<%= unsubscribeUrl %>">Unsubscribe</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+

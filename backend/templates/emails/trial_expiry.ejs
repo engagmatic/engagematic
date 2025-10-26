@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trial Expiry Reminder</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%); padding: 40px 20px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 28px; }
+        .content { padding: 40px 30px; }
+        .content h2 { color: #333333; font-size: 24px; margin-bottom: 20px; }
+        .content p { color: #666666; line-height: 1.6; margin-bottom: 15px; font-size: 16px; }
+        .cta-button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .countdown { background-color: #fff3e0; border: 3px solid #ff9800; padding: 30px; margin: 30px 0; border-radius: 12px; text-align: center; }
+        .countdown-number { font-size: 72px; font-weight: bold; color: #e65100; margin: 0; }
+        .price-box { background-color: #f8f9fa; border: 2px solid #667eea; padding: 25px; margin: 30px 0; border-radius: 8px; text-align: center; }
+        .price { font-size: 48px; font-weight: bold; color: #667eea; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #999999; font-size: 14px; }
+        .footer a { color: #667eea; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏰ Your Trial is Ending Soon!</h1>
+        </div>
+        
+        <div class="content">
+            <h2>Hey <%= name %>,</h2>
+            
+            <div class="countdown">
+                <p class="countdown-number"><%= daysLeft %></p>
+                <p style="font-size: 24px; font-weight: 600; color: #e65100; margin: 10px 0 0 0;">Day<%= daysLeft === 1 ? '' : 's' %> Left</p>
+            </div>
+            
+            <p>Your free trial is ending in <%= daysLeft %> day<%= daysLeft === 1 ? '' : 's' %>. Don't lose access to the tools that are transforming your LinkedIn presence!</p>
+            
+            <p><strong>What you'll keep with a paid plan:</strong></p>
+            <ul style="color: #666666; line-height: 1.8;">
+                <li>✅ Unlimited AI-powered post generation</li>
+                <li>✅ Custom AI personas in your voice</li>
+                <li>✅ Viral hook generator</li>
+                <li>✅ Advanced analytics & insights</li>
+                <li>✅ Comment generator for engagement</li>
+                <li>✅ Profile analyzer tool</li>
+                <li>✅ Priority support</li>
+            </ul>
+            
+            <div class="price-box">
+                <p style="color: #666; margin: 0;">Starting at just</p>
+                <p class="price">₹499<span style="font-size: 24px;">/month</span></p>
+                <p style="color: #666; margin: 10px 0 0 0;">Less than the cost of one coffee per week</p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="<%= process.env.FRONTEND_URL || 'http://localhost:3000' %>/pricing" class="cta-button">
+                    Continue My Success →
+                </a>
+            </div>
+            
+            <div style="background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 20px; border-radius: 8px; margin: 30px 0;">
+                <strong style="color: #1565c0;">💡 Did You Know?</strong>
+                <p style="margin: 10px 0 0 0; color: #1565c0;">Our users save an average of 10+ hours per week on content creation while increasing their engagement by 300%. That's the power of AI-driven content!</p>
+            </div>
+            
+            <p><strong>Questions?</strong> Reply to this email and we'll help you choose the perfect plan!</p>
+            
+            <p style="margin-top: 30px;">Don't let your momentum stop!<br><strong>The LinkedInPulse Team</strong></p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; <%= currentYear %> LinkedInPulse. All rights reserved.</p>
+            <p>
+                <a href="<%= preferencesUrl %>">Email Preferences</a> | 
+                <a href="<%= unsubscribeUrl %>">Unsubscribe</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+
