@@ -1,23 +1,57 @@
 import { Card } from "@/components/ui/card";
-import { Activity, FileText, MessageSquare, TrendingUp, Loader2, Lightbulb } from "lucide-react";
+import { Activity, FileText, MessageSquare, TrendingUp, Loader2, Lightbulb, Users, Gift, Copy, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useDashboard } from "../hooks/useAnalytics";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SubscriptionStatus } from "../components/SubscriptionStatus";
 import { CreditTrackingStatus } from "../components/CreditTrackingStatus";
+import api from "../services/api";
+import { useToast } from "../hooks/use-toast";
 
 const Dashboard = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { dashboardData, isLoading: dashboardLoading } = useDashboard();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [referralData, setReferralData] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate('/auth/login');
     }
   }, [isAuthenticated, authLoading, navigate]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchReferralData();
+    }
+  }, [isAuthenticated]);
+
+  const fetchReferralData = async () => {
+    try {
+      const response = await api.getReferralStats();
+      if (response.success) {
+        setReferralData(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching referral data:", error);
+    }
+  };
+
+  const handleCopyReferralLink = () => {
+    if (referralData?.referralLink) {
+      navigator.clipboard.writeText(referralData.referralLink);
+      setCopied(true);
+      toast({
+        title: "Copied!",
+        description: "Referral link copied to clipboard",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   if (authLoading || dashboardLoading) {
     return (
@@ -104,6 +138,39 @@ const Dashboard = () => {
             );
           })}
         </div>
+
+        {/* Referral Section */}
+        {referralData && (
+          <Card className="mb-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                  <Gift className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Earn Free Months</h3>
+                  <p className="text-sm text-gray-600">
+                    {referralData.totalReferrals || 0} referrals • {referralData.freeMonthsEarned || 0} free months earned
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={handleCopyReferralLink}
+                  className="px-3 py-2 bg-white text-purple-600 border border-purple-200 rounded-lg hover:bg-purple-50 transition-all text-sm font-medium"
+                >
+                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                </button>
+                <Link to="/referral">
+                  <button className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium">
+                    <Users className="h-4 w-4 inline mr-2" />
+                    Invite Friends
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Idea Generator Card */}

@@ -225,6 +225,11 @@ class ReferralService {
         return { success: false, message: "User not found" };
       }
 
+      // Generate referral code if user doesn't have one
+      if (!user.referralCode) {
+        await this.generateReferralCode(user);
+      }
+
       // Get all referrals by this user
       const referrals = await Referral.find({
         referrerId: userId,

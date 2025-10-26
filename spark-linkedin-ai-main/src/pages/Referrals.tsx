@@ -48,17 +48,27 @@ export default function Referrals() {
     try {
       setIsLoading(true);
 
-      // Get referral code
-      const codeResponse = await api.generateReferralCode();
-      setReferralData(codeResponse.data);
-
-      // Get stats
+      // Get referral stats (this includes the referral code and link)
       const statsResponse = await api.getReferralStats();
-      setStats(statsResponse.data);
+      if (statsResponse.success) {
+        setStats(statsResponse.data);
+        setReferralData({
+          referralCode: statsResponse.data.referralCode,
+          referralLink: statsResponse.data.referralLink
+        });
+      } else {
+        // If no stats, generate referral code
+        const codeResponse = await api.generateReferralCode();
+        if (codeResponse.success) {
+          setReferralData(codeResponse.data);
+        }
+      }
 
       // Get referrals list
       const referralsResponse = await api.getMyReferrals();
-      setReferrals(referralsResponse.data || []);
+      if (referralsResponse.success) {
+        setReferrals(referralsResponse.data || []);
+      }
     } catch (error) {
       console.error("Error fetching referral data:", error);
       toast({
@@ -172,9 +182,9 @@ export default function Referrals() {
                 <span className="text-sm text-gray-500">Total</span>
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-1">
-                {stats?.totalReferrals || 0}
+                {stats?.totalClicks || 0}
               </div>
-              <div className="text-sm text-gray-600">Referrals Sent</div>
+              <div className="text-sm text-gray-600">Link Clicks</div>
             </Card>
           </motion.div>
 
@@ -185,7 +195,7 @@ export default function Referrals() {
                 <span className="text-sm text-gray-500">Active</span>
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-1">
-                {stats?.successfulReferrals || 0}
+                {stats?.totalReferrals || 0}
               </div>
               <div className="text-sm text-gray-600">Successful Referrals</div>
             </Card>
@@ -198,9 +208,9 @@ export default function Referrals() {
                 <span className="text-sm text-gray-500">Earned</span>
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-1">
-                {stats?.totalRewards || 0}
+                {stats?.freeMonthsEarned || 0}
               </div>
-              <div className="text-sm text-gray-600">Free Months</div>
+              <div className="text-sm text-gray-600">Free Months Earned</div>
             </Card>
           </motion.div>
         </div>

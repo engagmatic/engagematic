@@ -18,8 +18,6 @@ import Register from "./pages/auth/Register";
 const PostGenerator = lazy(() => import("./pages/PostGenerator"));
 const IdeaGenerator = lazy(() => import("./pages/IdeaGenerator"));
 const CommentGenerator = lazy(() => import("./pages/CommentGenerator"));
-const BlogsPage = lazy(() => import("./pages/BlogsPage"));
-const BlogPostPage = lazy(() => import("./pages/BlogPostPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
 const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
@@ -128,8 +126,6 @@ const App = () => (
                   <Route path="/post-generator" element={<PostGenerator />} />
                   <Route path="/comment-generator" element={<CommentGenerator />} />
                   {/* Blog Routes */}
-                  <Route path="/blogs" element={<BlogsPage />} />
-                  <Route path="/blogs/:slug" element={<BlogPostPage />} />
                   {/* Static Pages */}
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/privacy" element={<PrivacyPolicyPage />} />
