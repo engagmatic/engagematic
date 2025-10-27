@@ -4,7 +4,11 @@ import { authenticateToken } from "../middleware/auth.js";
 import { checkProfileCompletion } from "../middleware/profileCompletion.js";
 import User from "../models/User.js";
 import Persona from "../models/Persona.js";
+import Payment from "../models/Payment.js";
+import UserSubscription from "../models/UserSubscription.js";
 import { validationResult } from "express-validator";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 const router = express.Router();
 
@@ -156,5 +160,215 @@ router.get(
     }
   }
 );
+
+// Update user profile information
+router.put("/update", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const updates = req.body;
+
+    // Allowed fields
+    const allowedFields = ["name", "profile"];
+    const filteredUpdates = {};
+
+    Object.keys(updates).forEach((key) => {
+      if (allowedFields.includes(key) || key.startsWith("profile.")) {
+        filteredUpdates[key] = updates[key];
+      }
+    });
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: filteredUpdates },
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update profile",
+      error: error.message,
+    });
+  }
+});
+
+// Change password
+router.post(
+  "/change-password",
+  authenticateToken,
+  [
+    body("currentPassword")
+      .notEmpty()
+      .withMessage("Current password is required"),
+    body("newPassword")
+      .isLength({ min: 6 })
+      .withMessage("New password must be at least 6 characters"),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: errors.array(),
+        });
+      }
+
+      const userId = req.user.userId;
+      const { currentPassword, newPassword } = req.body;
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      // Verify current password
+      const isPasswordValid = await bcrypt.compare(
+        currentPassword,
+        user.password
+      );
+      if (!isPasswordValid) {
+        return res.status(400).json({
+          success: false,
+          message: "Current password is incorrect",
+        });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 12);
+      user.password = hashedPassword;
+      await user.save();
+
+      res.json({
+        success: true,
+        message: "Password changed successfully",
+      });
+    } catch (error) {
+      console.error("Password change error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to change password",
+        error: error.message,
+      });
+    }
+  }
+);
+
+// Update email preferences
+router.put("/email-preferences", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { productEmails, marketingEmails, updatesEmails } = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        emailPreferences: {
+          product: productEmails !== undefined ? productEmails : true,
+          marketing: marketingEmails !== undefined ? marketingEmails : true,
+          updates: updatesEmails !== undefined ? updatesEmails : true,
+        },
+      },
+      { new: true }
+    ).select("-password");
+
+    res.json({
+      success: true,
+      message: "Email preferences updated",
+      data: updatedUser.emailPreferences,
+    });
+  } catch (error) {
+    console.error("Email preferences error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update email preferences",
+      error: error.message,
+    });
+  }
+});
+
+// Get user data export
+router.get("/export-data", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // Collect all user data
+    const [user, personas, payments, subscription, content] = await Promise.all(
+      [
+        User.findById(userId).select("-password"),
+        Persona.find({ userId }),
+        Payment.find({ userId }),
+        UserSubscription.findOne({ userId }),
+        // Add Content collection if needed
+      ]
+    );
+
+    const exportData = {
+      profile: user,
+      personas,
+      payments,
+      subscription,
+      exportedAt: new Date().toISOString(),
+    };
+
+    res.json({
+      success: true,
+      data: exportData,
+    });
+  } catch (error) {
+    console.error("Data export error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to export data",
+      error: error.message,
+    });
+  }
+});
+
+// Delete account
+router.delete("/delete-account", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { confirmation } = req.body;
+
+    if (confirmation !== "DELETE") {
+      return res.status(400).json({
+        success: false,
+        message: "Please confirm account deletion by typing DELETE",
+      });
+    }
+
+    // Delete user and related data
+    await Promise.all([
+      User.findByIdAndDelete(userId),
+      Persona.deleteMany({ userId }),
+      Payment.deleteMany({ userId }),
+      UserSubscription.findOneAndDelete({ userId }),
+      // Add other related data cleanup
+    ]);
+
+    res.json({
+      success: true,
+      message: "Account deleted successfully",
+    });
+  } catch (error) {
+    console.error("Account deletion error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete account",
+      error: error.message,
+    });
+  }
+});
 
 export default router;

@@ -13,12 +13,18 @@ import {
   CheckCircle,
   XCircle,
   Lightbulb,
-  Sparkles
+  Sparkles,
+  Loader2
 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export const SubscriptionStatus = () => {
+  const navigate = useNavigate();
+  const [isNavigating, setIsNavigating] = useState(false);
+  
   const { 
     subscription, 
     loading, 
@@ -29,8 +35,23 @@ export const SubscriptionStatus = () => {
     getUsagePercentage,
     getTokensRemaining,
     getTokensUsed,
-    getTokensTotal
+    getTokensTotal,
+    upgradePlan
   } = useSubscription();
+  
+  const handleUpgrade = async () => {
+    setIsNavigating(true);
+    
+    try {
+      // Navigate to pricing section
+      window.location.href = "/#pricing";
+    } catch (error) {
+      console.error('Navigation error:', error);
+      toast.error('Please try again');
+    } finally {
+      setIsNavigating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -234,21 +255,37 @@ export const SubscriptionStatus = () => {
       {/* Upgrade CTA */}
       {(isTrialActive || isTrialExpired) && (
         <Button 
-          asChild 
-          className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all"
+          onClick={handleUpgrade}
+          disabled={isNavigating}
+          className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all disabled:opacity-70"
         >
-          <Link to="/waitlist" className="flex items-center justify-center gap-2">
-            <Sparkles className="w-5 h-5" />
-            {isTrialExpired ? "Unlock Full Access" : "Join Waitlist for Premium"}
-            <TrendingUp className="w-5 h-5" />
-          </Link>
+          <div className="flex items-center justify-center gap-2">
+            {isNavigating ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5" />
+                {isTrialExpired ? "Unlock Full Access" : "Upgrade to Premium"}
+                <TrendingUp className="w-5 h-5" />
+              </>
+            )}
+          </div>
         </Button>
       )}
 
       {isSubscriptionActive && (
-        <Button variant="outline" className="w-full h-12 font-semibold">
-          <Crown className="w-4 h-4 mr-2" />
-          Manage Subscription
+        <Button 
+          asChild
+          variant="outline" 
+          className="w-full h-12 font-semibold"
+        >
+          <Link to="/plan-management">
+            <Crown className="w-4 h-4 mr-2" />
+            Manage Subscription
+          </Link>
         </Button>
       )}
     </Card>

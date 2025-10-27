@@ -4,6 +4,19 @@ import { config } from "../config/index.js";
 
 class RazorpayService {
   constructor() {
+    console.log(
+      "🔑 Razorpay Key ID:",
+      config.RAZORPAY_KEY_ID?.substring(0, 12) + "..."
+    );
+    console.log(
+      "🔑 Razorpay Secret:",
+      config.RAZORPAY_KEY_SECRET?.substring(0, 12) + "..."
+    );
+
+    if (!config.RAZORPAY_KEY_ID || !config.RAZORPAY_KEY_SECRET) {
+      console.error("❌ Razorpay credentials missing!");
+    }
+
     this.razorpay = new Razorpay({
       key_id: config.RAZORPAY_KEY_ID,
       key_secret: config.RAZORPAY_KEY_SECRET,
@@ -20,7 +33,8 @@ class RazorpayService {
     try {
       // Import pricing service to get correct pricing
       const pricingService = (await import("./pricingService.js")).default;
-      const pricing = pricingService.getPricingConfig(currency);
+      const pricingConfigs = pricingService.getPricingConfigs();
+      const pricing = pricingConfigs[currency] || pricingConfigs["USD"];
 
       // Check if this matches preset plans
       const presets = {
@@ -51,7 +65,7 @@ class RazorpayService {
         planType = "pro";
       } else {
         // Calculate custom price using pricing service
-        amount = pricingService.calculateCustomPrice(credits, currency);
+        amount = pricingService.calculatePrice(credits, currency);
         if (billingPeriod === "yearly") {
           amount = amount * 10; // 10 months for yearly
         }
@@ -62,11 +76,13 @@ class RazorpayService {
         currency === "INR"
           ? Math.round(amount * 100)
           : Math.round(amount * 100);
+      const shortId = userId.toString().slice(0, 10);
+      const receiptId = `sub_${shortId}_${Date.now().toString().slice(-6)}`;
 
       const order = await this.razorpay.orders.create({
         amount: amountInSmallestUnit,
         currency: currency,
-        receipt: `credit_sub_${userId}_${Date.now()}`,
+        receipt: receiptId,
         payment_capture: 1,
         notes: {
           userId: userId.toString(),

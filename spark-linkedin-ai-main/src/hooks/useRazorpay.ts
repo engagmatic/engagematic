@@ -111,7 +111,7 @@ export const useCreditPayment = () => {
       }
 
       const orderData = orderResponse.data;
-
+console.log("orderData",  orderData);
       // Open Razorpay payment
       openRazorpay({
         amount: Math.round(orderData.amount * 100), // Convert to paise/cents

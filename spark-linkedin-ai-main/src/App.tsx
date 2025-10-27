@@ -30,7 +30,7 @@ const TestimonialCollection = lazy(() => import("./pages/TestimonialCollection")
 const PlanManagement = lazy(() => import("./pages/PlanManagement").then(module => ({ default: module.default })));
 const BlogListingPage = lazy(() => import("./pages/BlogListingPage"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
-const ProfileCompletion = lazy(() => import("./pages/ProfileCompletion"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
 // Admin Pages
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -134,7 +134,7 @@ const App = () => (
                   <Route path="/resources" element={<HelpCenterPage />} />
                   <Route path="/templates" element={<TemplatesPage />} />
                   <Route path="/plan-management" element={<PlanManagement />} />
-                  <Route path="/profile-setup" element={<ProfileCompletion />} />
+                  <Route path="/profile" element={<UserProfile />} />
                   <Route path="/referral" element={<Referrals />} />
                   <Route path="/blogs" element={<BlogListingPage />} />
                   <Route path="/blogs/:slug" element={<BlogPage />} />

@@ -205,7 +205,7 @@ export const SaaSPricing = () => {
 
     if (!isAuthenticated) {
       toast.error('Please log in to start your free trial');
-      navigate('/auth/login', { state: { returnTo: '/pricing' } });
+      navigate('/auth/register');
       return;
     }
 
@@ -215,29 +215,14 @@ export const SaaSPricing = () => {
     }
 
     try {
-      // Check profile completion first
-      const profileStatus = await api.getProfileStatus();
-      if (!profileStatus.success || !profileStatus.data.isComplete) {
-        toast.error('Please complete your profile setup first');
-        navigate('/profile-setup');
-        return;
-      }
-
       const plan = plans.find(p => p.id === planId);
       if (!plan) return;
 
       const credits = {
-        posts: plan.limits.posts,
-        comments: plan.limits.comments,
-        ideas: plan.limits.ideas
+        posts: billingInterval === 'yearly' ? plan.yearlyLimits.posts : plan.limits.posts,
+        comments: billingInterval === 'yearly' ? plan.yearlyLimits.comments : plan.limits.comments,
+        ideas: billingInterval === 'yearly' ? plan.yearlyLimits.ideas : plan.limits.ideas
       };
-
-      // Validate credits first
-      const validation = await api.validateCredits(credits);
-      if (!validation.success || !validation.data.isValid) {
-        toast.error('Invalid credit selection. Please check your inputs.');
-        return;
-      }
 
       // Check if Razorpay is properly configured
       if (!isLoaded) {
@@ -246,7 +231,7 @@ export const SaaSPricing = () => {
       }
 
       // Process payment with Razorpay
-      await processCreditPayment(credits, currency, 'monthly');
+      await processCreditPayment(credits, currency, billingInterval);
     } catch (error) {
       console.error('Subscription error:', error);
       toast.error('Payment is currently unavailable. Please contact support or try again later.');
@@ -256,7 +241,7 @@ export const SaaSPricing = () => {
   const handleCustomSubscription = async () => {
     if (!isAuthenticated) {
       toast.error('Please log in to start your free trial');
-      navigate('/auth/login', { state: { returnTo: '/pricing' } });
+      navigate('/auth/register');
       return;
     }
 
@@ -267,21 +252,6 @@ export const SaaSPricing = () => {
     }
 
     try {
-      // Check profile completion first
-      const profileStatus = await api.getProfileStatus();
-      if (!profileStatus.success || !profileStatus.data.isComplete) {
-        toast.error('Please complete your profile setup first');
-        navigate('/profile-setup');
-        return;
-      }
-
-      // Validate credits first
-      const validation = await api.validateCredits(customCredits);
-      if (!validation.success || !validation.data.isValid) {
-        toast.error('Invalid credit selection. Please check your inputs.');
-        return;
-      }
-
       // Check if Razorpay is properly configured
       if (!isLoaded) {
         toast.error('Payment system is currently unavailable. Please contact support.');
@@ -289,7 +259,7 @@ export const SaaSPricing = () => {
       }
 
       // Process payment with Razorpay
-      await processCreditPayment(customCredits, currency, 'monthly');
+      await processCreditPayment(customCredits, currency, billingInterval);
     } catch (error) {
       console.error('Custom subscription error:', error);
       toast.error('Failed to process subscription. Please try again.');
@@ -297,7 +267,7 @@ export const SaaSPricing = () => {
   };
 
   return (
-    <section id="pricing" className="py-12 sm:py-16 md:py-24 gradient-hero">
+    <section id="pricing" className="py-12 sm:py-16 md:py-24 gradient-hero scroll-mt-24">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12 space-y-3">
@@ -464,15 +434,18 @@ export const SaaSPricing = () => {
                   <div className="pt-3">
                     <Button 
                       onClick={() => handlePlanSelect(plan.id)}
-                      disabled={isProcessing || !isLoaded}
+                      disabled={isProcessing || (isAuthenticated && !isLoaded)}
                       className={`w-full h-10 text-sm font-medium ${
                         plan.popular 
                           ? 'bg-primary hover:bg-primary/90 text-white' 
                           : 'bg-primary hover:bg-primary/90 text-white'
                       }`}
                     >
-                      {isProcessing ? 'Processing...' : !isLoaded ? 'Loading...' : 
-                       plan.id === 'custom' ? 'Customize Usage' : 'Start Free Trial'}
+                      {isProcessing ? 'Processing...' : 
+                       (isAuthenticated && !isLoaded) ? 'Loading...' : 
+                       plan.id === 'custom' ? 'Customize Usage' : 
+                       !isAuthenticated ? 'Start Free Trial' : 
+                       `Upgrade to ${plan.name}`}
                       <ArrowRight className="ml-2 h-3 w-3" />
                     </Button>
                   </div>

@@ -27,6 +27,7 @@ import profileRoutes from "./routes/profile.js";
 import trialRoutes from "./routes/trial.js";
 import referralRoutes from "./routes/referrals.js";
 import linkedinScraperRoutes from "./routes/linkedinScraper.js";
+import offerRoutes from "./routes/offers.js";
 
 // Import services
 import emailScheduler from "./services/emailScheduler.js";
@@ -130,6 +131,7 @@ app.use("/api/profile", profileRoutes); // Profile completion management
 app.use("/api/trial", trialRoutes); // Trial management
 app.use("/api/referrals", referralRoutes); // Referral system
 app.use("/api/linkedin-scraper", linkedinScraperRoutes); // LinkedIn Profile Scraper
+app.use("/api/offers", offerRoutes); // Coupons and Offers
 
 // Admin routes
 app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication

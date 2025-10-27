@@ -28,12 +28,12 @@ export const config = {
   GOOGLE_AI_API_KEY:
     process.env.GOOGLE_AI_API_KEY || "AIzaSyB_x5suyfwTsNkJcRy0qmEoEp9viuawxec",
 
-  // Razorpay
-  RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || "your-razorpay-key-id",
+  // Razorpay - Live Keys
+  RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || "rzp_live_RYVCzLOdKhLCpg",
   RAZORPAY_KEY_SECRET:
-    process.env.RAZORPAY_KEY_SECRET || "your-razorpay-key-secret",
+    process.env.RAZORPAY_KEY_SECRET || "LKg9BAH17FipJ1fNK174zMEa",
   RAZORPAY_WEBHOOK_SECRET:
-    process.env.RAZORPAY_WEBHOOK_SECRET || "your-razorpay-webhook-secret",
+    process.env.RAZORPAY_WEBHOOK_SECRET || "fPq4bgTqmALFUe@",
 
   // Frontend URL
   FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:8080",

@@ -22,7 +22,7 @@ export const requireProfileCompletion = async (req, res, next) => {
     }
 
     // Check if user has completed basic profile
-    const hasBasicProfile = user.name && user.email && user.linkedinUrl;
+    const hasBasicProfile = user.name && user.email;
 
     if (!hasBasicProfile) {
       return res.status(400).json({

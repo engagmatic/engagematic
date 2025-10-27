@@ -1,0 +1,788 @@
+import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  User,
+  Mail,
+  Building,
+  Lock,
+  Bell,
+  CreditCard,
+  Crown,
+  Download,
+  Trash2,
+  Save,
+  Loader2,
+  CheckCircle,
+  AlertTriangle,
+  Calendar,
+  Globe,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import api from "../services/api";
+import { format } from "date-fns";
+import { Progress } from "@/components/ui/progress";
+
+interface Payment {
+  _id: string;
+  orderId: string;
+  razorpayOrderId: string;
+  razorpayPaymentId?: string;
+  plan: string;
+  billingPeriod: string;
+  amount: number;
+  currency: string;
+  status: string;
+  paymentMethod?: string;
+  captured: boolean;
+  capturedAt?: string;
+  metadata?: {
+    credits?: any;
+    planType?: string;
+  };
+  createdAt: string;
+}
+
+export const UserProfile = () => {
+  const { user, setUser } = useAuth();
+  const { toast } = useToast();
+  
+  // State management
+  const [activeTab, setActiveTab] = useState("profile");
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  
+  // Profile form state
+  const [profileData, setProfileData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    jobTitle: user?.profile?.jobTitle || "",
+    company: user?.profile?.company || "",
+    bio: user?.profile?.bio || "",
+    linkedinUrl: user?.linkedinUrl || "",
+  });
+  
+  // Password form state
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  
+  // Email preferences state
+  const [emailPrefs, setEmailPrefs] = useState({
+    product: true,
+    marketing: true,
+    updates: true,
+  });
+
+  useEffect(() => {
+    fetchPaymentHistory();
+  }, []);
+
+  const fetchPaymentHistory = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.request("/payment/history", { method: "GET" });
+      if (response.success) {
+        setPayments(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching payment history:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleProfileUpdate = async () => {
+    setIsSaving(true);
+    try {
+      const response = await api.request("/profile/update", {
+        method: "PUT",
+        body: JSON.stringify({
+          name: profileData.name,
+          profile: {
+            jobTitle: profileData.jobTitle,
+            company: profileData.company,
+            bio: profileData.bio,
+          },
+          linkedinUrl: profileData.linkedinUrl,
+        }),
+      });
+
+      if (response.success) {
+        toast({
+          title: "Profile updated! ✅",
+          description: "Your profile has been updated successfully",
+        });
+        setUser(response.data);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Update failed",
+        description: error.message || "Failed to update profile",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure both passwords match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const response = await api.request("/profile/change-password", {
+        method: "POST",
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        }),
+      });
+
+      if (response.success) {
+        toast({
+          title: "Password changed! ✅",
+          description: "Your password has been updated successfully",
+        });
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Password change failed",
+        description: error.message || "Failed to change password",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleEmailPrefsUpdate = async () => {
+    setIsSaving(true);
+    try {
+      const response = await api.request("/profile/email-preferences", {
+        method: "PUT",
+        body: JSON.stringify(emailPrefs),
+      });
+
+      if (response.success) {
+        toast({
+          title: "Preferences saved! ✅",
+          description: "Your email preferences have been updated",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Update failed",
+        description: "Failed to update email preferences",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleExportData = async () => {
+    try {
+      const response = await api.request("/profile/export-data", {
+        method: "GET",
+      });
+
+      if (response.success) {
+        const dataStr = JSON.stringify(response.data, null, 2);
+        const dataBlob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `linkedinpulse-data-${Date.now()}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+
+        toast({
+          title: "Data exported! ✅",
+          description: "Your data has been downloaded",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Export failed",
+        description: "Failed to export data",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmation !== "DELETE") {
+      toast({
+        title: "Invalid confirmation",
+        description: 'Please type "DELETE" to confirm',
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await api.request("/profile/delete-account", {
+        method: "DELETE",
+        body: JSON.stringify({ confirmation: deleteConfirmation }),
+      });
+
+      if (response.success) {
+        toast({
+          title: "Account deleted",
+          description: "Your account has been permanently deleted",
+        });
+        window.location.href = "/";
+      }
+    } catch (error: any) {
+      toast({
+        title: "Deletion failed",
+        description: error.message || "Failed to delete account",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setDeleteConfirmation("");
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "captured":
+        return <Badge className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" /> Paid</Badge>;
+      case "authorized":
+        return <Badge className="bg-yellow-500"><AlertTriangle className="h-3 w-3 mr-1" /> Pending</Badge>;
+      case "failed":
+        return <Badge variant="destructive"><AlertTriangle className="h-3 w-3 mr-1" /> Failed</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  const formatCurrency = (amount: number, currency: string = "INR") => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: currency,
+    }).format(amount);
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2">
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Account Settings
+            </span>
+          </h1>
+          <p className="text-muted-foreground">
+            Manage your profile, preferences, and account
+          </p>
+        </div>
+
+        {/* Profile Overview Card */}
+        <Card className="p-6 mb-6 shadow-lg">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-20 w-20 border-4 border-primary/20">
+              <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white text-2xl font-bold">
+                {getInitials(user?.name || "User")}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold">{user?.name}</h2>
+              <p className="text-muted-foreground">{user?.email}</p>
+              <div className="flex items-center gap-2 mt-2">
+                {user?.profile?.jobTitle && (
+                  <Badge variant="outline">
+                    <Building className="h-3先进3 mr-1" />
+                    {user.profile.jobTitle}
+                  </Badge>
+                )}
+                {user?.profile?.company && (
+                  <Badge variant="outline">
+                    {user.profile.company}
+                  </Badge>
+                )}
+              </div>
+            </div>
+            <Badge className="bg-primary text-white px-4 py-2">
+              <Crown className="h-4 w-4 mr-2" />
+              Trial User
+            </Badge>
+          </div>
+        </Card>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="profile">
+              <User className="h-4 w-4 mr-2" />
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="security">
+              <Lock className="h-4 w-4 mr-2" />
+              Security
+            </TabsTrigger>
+            <TabsTrigger value="notifications">
+              <Bell className="h-4 w-4 mr-2" />
+              Notifications
+            </TabsTrigger>
+            <TabsTrigger value="billing">
+              <CreditCard className="h-4 w-4 mr-2" />
+              Billing
+            </TabsTrigger>
+            <TabsTrigger value="referrals">
+              <Globe className="h-4 w-4 mr-2" />
+              Referrals
+            </TabsTrigger>
+            <TabsTrigger value="danger">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Danger
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Profile Tab */}
+          <TabsContent value="profile" className="space-y-6">
+            <Card className="p-6 shadow-lg">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Profile Information
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Full Name *</Label>
+                  <Input
+                    id="name"
+                    value={profileData.name}
+                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                    placeholder="Your full name"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={profileData.email}
+                    disabled
+                    className="bg-muted"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Email cannot be changed. Contact support if needed.
+                  </p>
+                </div>
+                
+                <div>
+                  <Label htmlFor="jobTitle">Job Title</Label>
+                  <Input
+                    id="jobTitle"
+                    value={profileData.jobTitle}
+                    onChange={(e) => setProfileData({ ...profileData, jobTitle: e.target.value })}
+                    placeholder="e.g. Marketing Manager"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="company">Company</Label>
+                  <Input
+                    id="company"
+                    value={profileData.company}
+                    onChange={(e) => setProfileData({ ...profileData, company: e.target.value })}
+                    placeholder="Your company name"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="linkedinUrl">LinkedIn Profile URL</Label>
+                  <Input
+                    id="linkedinUrl"
+                    value={profileData.linkedinUrl}
+                    onChange={(e) => setProfileData({ ...profileData, linkedinUrl: e.target.value })}
+                    placeholder="https://linkedin.com/in/yourname"
+                  />
+                </div>
+                
+                <div>
+  <Label htmlFor="bio">Bio</Label>
+                  <Textarea
+                    id="bio"
+                    value={profileData.bio}
+                    onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                    placeholder="Tell us about yourself..."
+                    rows={4}
+                  />
+                </div>
+              </div>
+              
+              <Button onClick={handleProfileUpdate} disabled={isSaving} className="mt-6">
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </Card>
+          </TabsContent>
+
+          {/* Security Tab */}
+          <TabsContent value="security" className="space-y-6">
+            <Card className="p-6 shadow-lg">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <Lock className="h-5 w-5" />
+                Change Password
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="currentPassword">Current Password *</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                    placeholder="Enter current password"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="newPassword">New Password *</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                    placeholder="Enter new password (min 6 characters)"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="confirmPassword">Confirm New Password *</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                    placeholder="Confirm new password"
+                  />
+                </div>
+              </div>
+              
+              <Button onClick={handlePasswordChange} disabled={isSaving} className="mt-6">
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Changing...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="mr-2 h-4 w-4" />
+                    Change Password
+                  </>
+                )}
+              </Button>
+            </Card>
+          </TabsContent>
+
+          {/* Notifications Tab */}
+          <TabsContent value="notifications" className="space-y-6">
+            <Card className="p-6 shadow-lg">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Email Preferences
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Product Updates</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Updates about LinkedInPulse features and improvements
+                    </p>
+                  </div>
+                  <Switch
+                    checked={emailPrefs.product}
+                    onCheckedChange={(checked) => setEmailPrefs({ ...emailPrefs, product: checked })}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Marketing Emails</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Tips, best practices, and promotional content
+                    </p>
+                  </div>
+                  <Switch
+                    checked={emailPrefs.marketing}
+                    onCheckedChange={(checked) => setEmailPrefs({ ...emailPrefs, marketing: checked })}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Company Updates</Label>
+                    <p className="text-sm text-muted-foreground">
+                      News and announcements from LinkedInPulse
+                    </p>
+                  </div>
+                  <Switch
+                    checked={emailPrefs.updates}
+                    onCheckedChange={(checked) => setEmailPrefs({ ...emailPrefs, updates: checked })}
+                  />
+                </div>
+              </div>
+              
+              <Button onClick={handleEmailPrefsUpdate} disabled={isSaving} className="mt-6">
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Preferences
+                  </>
+                )}
+              </Button>
+            </Card>
+          </TabsContent>
+
+          {/* Billing Tab */}
+          <TabsContent value="billing" className="space-y-6">
+            <Card className="p-6 shadow-lg">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Payment History
+              </h3>
+              
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : payments.length === 0 ? (
+                <div className="text-center py-12">
+                  <CreditCard className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-lg font-semibold mb-2">No payments yet</p>
+                  <p className="text-muted-foreground mb-4">
+                    Your payment history will appear here
+                  </p>
+                  <Button onClick={() => window.location.href = "/#pricing"}>
+                    Upgrade Now
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {payments.map((payment) => (
+                    <div
+                      key={payment._id}
+                      className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-semibold capitalize">{payment.plan} Plan</h3>
+                            {getStatusBadge(payment.status)}
+                            <Badge variant="outline" className="capitalize">
+                              {payment.billingPeriod}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar className="h-3 w-3" />
+                            <span>
+                              {format(new Date(payment.createdAt), "MMM dd, yyyy 'at' hh:mm a")}
+                            </span>
+                            {payment.capturedAt && (
+                              <>
+                                <span>•</span>
+                                <CheckCircle className="h-3 w-3" />
+                                <span>
+                                  Captured {format(new Date(payment.capturedAt), "MMM dd, yyyy")}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Order ID: {payment.orderId}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-primary">
+                            {formatCurrency(payment.amount, payment.currency)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+
+          {/* Referrals Tab */}
+          <TabsContent value="referrals" className="space-y-6">
+            <Card className="p-6 shadow-lg">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Referral Program
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm font-semibold text-blue-900 mb-2">
+                    Your Referral Link
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={`${window.location.origin}/auth/register?ref=${user?._id}`}
+                      readOnly
+                      className="bg-white"
+                    />
+                    <Button
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          `${window.location.origin}/auth/register?ref=${user?._id}`
+                        );
+                        toast({
+                          title: "Copied!",
+                          description: "Referral link copied to clipboard",
+                        });
+                      }}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-2xl font-bold text-primary">0</div>
+                    <div className="text-sm text-muted-foreground">Total Referrals</div>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-2xl font-bold text-primary">0</div>
+                    <div className="text-sm text-muted-foreground">Rewards Earned</div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* Danger Zone Tab */}
+          <TabsContent value="danger" className="space-y-6">
+            <Card className="p-6 shadow-lg border-red-200">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-red-600">
+                <AlertTriangle className="h-5 w-5" />
+                Danger Zone
+              </h3>
+              
+              <div className="space-y-6">
+                <div>
+                  <h4 className="font-semibold mb-2">Download Your Data</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Export all your data including profile, personas, payments, and content.
+                  </p>
+                  <Button variant="outline" onClick={handleExportData}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Export Data
+                  </Button>
+                </div>
+                
+                <div className="border-t pt-6">
+                  <h4 className="font-semibold text-red-600 mb-2">Delete Account</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Permanently delete your account and all associated data. This action cannot be undone.
+                  </p>
+                  <Button
+                    variant="destructive"
+                    onClick={() => setDeleteDialogOpen(true)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Account
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Delete Account Dialog */}
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Account</DialogTitle>
+              <DialogDescription>
+                This will permanently delete your account and all data. This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <Input
+                placeholder='Type "DELETE" to confirm'
+                value={deleteConfirmation}
+                onChange={(e) => setDeleteConfirmation(e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmation !== "DELETE"}
+              >
+                Delete Account
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  );
+};
+
+export default UserProfile;

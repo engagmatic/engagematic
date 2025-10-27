@@ -6,6 +6,7 @@ import razorpayService from "../services/razorpay.js";
 import pricingService from "../services/pricingService.js";
 import UserSubscription from "../models/UserSubscription.js";
 import { validationResult } from "express-validator";
+import Payment from "../models/Payment.js";
 
 const router = express.Router();
 
@@ -13,7 +14,6 @@ const router = express.Router();
 router.post(
   "/create-credit-order",
   authenticateToken,
-  requireProfileCompletion,
   [
     body("credits.posts")
       .isInt({ min: 10, max: 100 })
@@ -97,7 +97,6 @@ router.post(
 router.post(
   "/verify-payment",
   authenticateToken,
-  requireProfileCompletion,
   [
     body("orderId").notEmpty().withMessage("Order ID is required"),
     body("paymentId").notEmpty().withMessage("Payment ID is required"),
@@ -137,13 +136,33 @@ router.post(
       const currency = orderDetails.currency;
       const billingInterval = orderDetails.notes.billingPeriod;
 
-      // Create subscription in our system
+      // Create or update subscription in our system
       const subscription = await pricingService.createCreditSubscription(
         userId,
         credits,
         currency,
         billingInterval
       );
+
+      // Save payment record to database
+      await Payment.create({
+        userId,
+        orderId,
+        razorpayOrderId: orderId,
+        razorpayPaymentId: paymentId,
+        plan:
+          subscription.planName.toLowerCase().replace(" plan", "") || "custom",
+        billingPeriod: billingInterval,
+        amount: orderDetails.amount / 100, // Convert paise to rupees
+        currency: currency,
+        status: "captured",
+        captured: true,
+        capturedAt: new Date(),
+        metadata: {
+          credits: credits,
+          planType: subscription.planName,
+        },
+      });
 
       res.json({
         success: true,
@@ -171,7 +190,6 @@ router.post(
 router.post(
   "/create-plan-order",
   authenticateToken,
-  requireProfileCompletion,
   [
     body("plan").isIn(["starter", "pro"]).withMessage("Valid plan is required"),
     body("currency")
@@ -242,6 +260,30 @@ router.get("/key", (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch Razorpay key",
+      error: error.message,
+    });
+  }
+});
+
+// Get user payment history
+router.get("/history", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const payments = await Payment.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .select("-__v");
+
+    res.json({
+      success: true,
+      data: payments,
+    });
+  } catch (error) {
+    console.error("Payment history error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch payment history",
       error: error.message,
     });
   }

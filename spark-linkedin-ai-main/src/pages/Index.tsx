@@ -16,14 +16,15 @@ const Index = () => {
     // Handle hash navigation when landing on the page
     if (location.hash) {
       const hash = location.hash.substring(1); // Remove the #
+      // Longer delay to ensure all components are rendered
       setTimeout(() => {
         const element = document.getElementById(hash);
         if (element) {
           element.scrollIntoView({ behavior: "smooth", block: "start" });
         }
-      }, 100); // Small delay to ensure page is rendered
+      }, 500); // Increased delay for reliability
     }
-  }, [location.hash]);
+  }, [location]);
 
   return (
     <div className="min-h-screen">

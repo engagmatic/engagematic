@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Menu, Home, FileText, MessageSquare, Lightbulb, BarChart3 } from "lucide-react";
+import { Menu, Home, FileText, MessageSquare, Lightbulb, User, LogOut } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useState } from "react";
@@ -8,6 +8,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { UserDropdownMenu } from "../UserDropdownMenu";
 
 export const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -37,11 +38,7 @@ export const Header = () => {
   };
 
   const handleStartFree = () => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    } else {
-      navigate('/auth/register');
-    }
+    navigate('/auth/register');
   };
 
   // Navigation items for authenticated users
@@ -50,7 +47,6 @@ export const Header = () => {
     { path: '/idea-generator', label: 'Ideas', icon: Lightbulb },
     { path: '/post-generator', label: 'Posts', icon: FileText },
     { path: '/comment-generator', label: 'Comments', icon: MessageSquare },
-    { path: '/linkedin-scraper', label: 'Profile Analyzer', icon: BarChart3 },
   ];
 
   return (
@@ -121,27 +117,7 @@ export const Header = () => {
           {/* Desktop Actions */}
           <div className="hidden sm:flex items-center gap-3">
             {isAuthenticated ? (
-              <>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                    <User className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="hidden lg:block">
-                    <p className="text-xs font-medium leading-none">{user?.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{user?.email}</p>
-                  </div>
-                </div>
-                <Button 
-                  variant="outline" 
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                  className="gap-2"
-                  size="sm"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span className="hidden md:inline">{isLoggingOut ? 'Signing out...' : 'Logout'}</span>
-                </Button>
-              </>
+              <UserDropdownMenu />
             ) : (
               <>
                 <Button 

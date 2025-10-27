@@ -1,21 +1,11 @@
-import { Button } from "@/components/ui/button";
-import { User, LogOut, Home, MessageSquare, FileText, BarChart3, Lightbulb } from "lucide-react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Home, MessageSquare, FileText, Lightbulb } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { useState } from "react";
+import { UserDropdownMenu } from "./UserDropdownMenu";
 
 export const Navigation = () => {
-  const { isAuthenticated, user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    await logout();
-    navigate('/');
-    setIsLoggingOut(false);
-  };
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
@@ -63,27 +53,8 @@ export const Navigation = () => {
             })}
           </nav>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="h-4 w-4 text-primary" />
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-sm font-medium">{user?.name || 'User'}</p>
-                <p className="text-xs text-muted-foreground">{user?.email}</p>
-              </div>
-            </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              {isLoggingOut ? 'Logging out...' : 'Logout'}
-            </Button>
+          <div className="flex items-center gap-3">
+            <UserDropdownMenu />
           </div>
         </div>
       </div>

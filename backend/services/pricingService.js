@@ -160,14 +160,23 @@ class PricingService {
       const price = this.getDisplayPrice(credits, currency);
       const planName = this.getPlanName(credits);
 
+      // Determine plan type based on credits
+      const planType = this.isStarterPlan(credits)
+        ? "starter"
+        : this.isProPlan(credits)
+        ? "pro"
+        : "custom";
+
       // Create or update user subscription
       let subscription = await UserSubscription.findOne({ userId });
 
       if (!subscription) {
         subscription = new UserSubscription({
           userId,
-          plan: "custom", // We'll handle custom plans differently
-          status: "trial",
+          plan: planType,
+          status: "active", // Change from trial to active after payment
+          subscriptionStartDate: new Date(),
+          subscriptionEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
           limits: {
             postsPerMonth: credits.posts,
             commentsPerMonth: credits.comments,
@@ -175,33 +184,50 @@ class PricingService {
             templatesAccess: true,
             linkedinAnalysis: true,
             profileAnalyses: -1, // Unlimited
-            prioritySupport: false,
+            prioritySupport: planType === "pro",
           },
           billing: {
             amount: price,
             currency: currency,
             interval: billingInterval,
-            nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+            nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           },
           tokens: {
-            total: credits.posts * 5 + credits.comments * 3 + credits.ideas * 4, // Token calculation
+            total: credits.posts * 5 + credits.comments * 3 + credits.ideas * 4,
             used: 0,
             remaining:
               credits.posts * 5 + credits.comments * 3 + credits.ideas * 4,
           },
         });
       } else {
-        // Update existing subscription
+        // Update existing subscription - upgrade from trial to paid
+        subscription.plan = planType;
+        subscription.status = "active"; // Activate subscription
+        subscription.subscriptionStartDate = new Date();
+        subscription.subscriptionEndDate = new Date(
+          Date.now() + 30 * 24 * 60 * 60 * 1000
+        );
+
+        // Update limits
         subscription.limits.postsPerMonth = credits.posts;
         subscription.limits.commentsPerMonth = credits.comments;
         subscription.limits.ideasPerMonth = credits.ideas;
+        subscription.limits.prioritySupport = planType === "pro";
+
+        // Update billing
         subscription.billing.amount = price;
         subscription.billing.currency = currency;
         subscription.billing.interval = billingInterval;
-        subscription.tokens.total =
+        subscription.billing.nextBillingDate = new Date(
+          Date.now() + 30 * 24 * 60 * 60 * 1000
+        );
+
+        // Reset and update tokens
+        const newTokenTotal =
           credits.posts * 5 + credits.comments * 3 + credits.ideas * 4;
-        subscription.tokens.remaining =
-          subscription.tokens.total - subscription.tokens.used;
+        subscription.tokens.total = newTokenTotal;
+        subscription.tokens.used = 0; // Reset usage on new subscription
+        subscription.tokens.remaining = newTokenTotal;
       }
 
       await subscription.save();
