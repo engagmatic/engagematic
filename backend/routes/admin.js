@@ -11,50 +11,42 @@ const router = express.Router();
 // Get dashboard statistics
 router.get("/stats", adminAuth, async (req, res) => {
   try {
-    // Get total users
-    const totalUsers = await User.countDocuments();
-
-    // Get active users (logged in within last 30 days)
+    // Prepare date ranges
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const activeUsers = await User.countDocuments({
-      lastLogin: { $gte: thirtyDaysAgo },
-    });
-
-    // Get new users today
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
-    const newUsersToday = await User.countDocuments({
-      createdAt: { $gte: startOfDay },
-    });
-
-    // Get content statistics
-    const totalPosts = await Content.countDocuments({ type: "post" });
-    const totalComments = await Content.countDocuments({ type: "comment" });
-
-    // Get revenue statistics (placeholder)
-    const paidUsers = await UserSubscription.countDocuments({
-      plan: { $in: ["starter", "pro"] },
-      "status.isActive": true,
-    });
-
-    const totalRevenue = paidUsers * 15; // Approximate average
-
-    // Calculate conversion rate
-    const conversionRate =
-      totalUsers > 0 ? ((paidUsers / totalUsers) * 100).toFixed(1) : 0;
-
-    // Calculate growth rate (placeholder - last 7 days vs previous 7 days)
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
 
-    const lastWeekUsers = await User.countDocuments({
-      createdAt: { $gte: sevenDaysAgo },
-    });
+    // Run all queries in parallel for better performance
+    const [
+      totalUsers,
+      activeUsers,
+      newUsersToday,
+      totalPosts,
+      totalComments,
+      paidUsers,
+      lastWeekUsers,
+      previousWeekUsers,
+    ] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ lastLogin: { $gte: thirtyDaysAgo } }),
+      User.countDocuments({ createdAt: { $gte: startOfDay } }),
+      Content.countDocuments({ type: "post" }),
+      Content.countDocuments({ type: "comment" }),
+      UserSubscription.countDocuments({
+        plan: { $in: ["starter", "pro"] },
+        "status.isActive": true,
+      }),
+      User.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
+      User.countDocuments({
+        createdAt: { $gte: fourteenDaysAgo, $lt: sevenDaysAgo },
+      }),
+    ]);
 
-    const previousWeekUsers = await User.countDocuments({
-      createdAt: { $gte: fourteenDaysAgo, $lt: sevenDaysAgo },
-    });
-
+    const totalRevenue = paidUsers * 15; // Approximate average
+    const conversionRate =
+      totalUsers > 0 ? ((paidUsers / totalUsers) * 100).toFixed(1) : 0;
     const growthRate =
       previousWeekUsers > 0
         ? (
@@ -90,20 +82,28 @@ router.get("/recent-users", adminAuth, async (req, res) => {
       .limit(limit)
       .lean();
 
-    const usersWithPlan = await Promise.all(
-      recentUsers.map(async (user) => {
-        const subscription = await UserSubscription.findOne({
-          userId: user._id,
-        });
-        return {
-          _id: user._id,
-          email: user.email,
-          name: user.name || user.email.split("@")[0],
-          plan: subscription?.plan || "trial",
-          joinedDate: user.createdAt,
-        };
-      })
+    // Get all subscriptions in one query
+    const userIds = recentUsers.map((user) => user._id);
+    const subscriptions = await UserSubscription.find({
+      userId: { $in: userIds },
+    }).lean();
+
+    // Create a map for quick lookup
+    const subscriptionMap = new Map(
+      subscriptions.map((sub) => [sub.userId.toString(), sub])
     );
+
+    // Map users with their plans
+    const usersWithPlan = recentUsers.map((user) => {
+      const subscription = subscriptionMap.get(user._id.toString());
+      return {
+        _id: user._id,
+        email: user.email,
+        name: user.name || user.email.split("@")[0],
+        plan: subscription?.plan || "trial",
+        joinedDate: user.createdAt,
+      };
+    });
 
     res.json({ success: true, data: usersWithPlan });
   } catch (error) {
