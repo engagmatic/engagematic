@@ -1104,12 +1104,12 @@ const BlogPage = () => {
                 Join thousands of professionals using LinkedInPulse to create engaging content that drives results.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/pricing">
+                <Link to="/auth/register">
                   <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
                     Start Free Trial
                   </Button>
                 </Link>
-                <Link to="/features">
+                <Link to="/#features">
                   <Button size="lg" variant="outline">
                     Explore Features
                   </Button>

@@ -297,12 +297,12 @@ const BlogListingPage = () => {
             Join thousands of professionals using LinkedInPulse to create engaging content that drives results.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/pricing">
+            <Link to="/auth/register">
               <Button size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100">
                 Start Free Trial
               </Button>
             </Link>
-            <Link to="/features">
+            <Link to="/#features">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
                 Explore Features
               </Button>

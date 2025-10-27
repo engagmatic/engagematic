@@ -17,9 +17,16 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    element?.scrollIntoView({ behavior: "smooth" });
-    setMobileMenuOpen(false);
+    // If we're on the home page, scroll to section
+    if (location.pathname === '/') {
+      const element = document.getElementById(id);
+      element?.scrollIntoView({ behavior: "smooth" });
+      setMobileMenuOpen(false);
+    } else {
+      // Otherwise, navigate to home page with hash
+      navigate(`/#${id}`);
+      setMobileMenuOpen(false);
+    }
   };
 
   const handleLogout = async () => {

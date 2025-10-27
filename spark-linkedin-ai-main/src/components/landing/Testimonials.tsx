@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight, Sparkles, Play, Pause } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const API_BASE = `${API_URL}`;
@@ -86,46 +86,78 @@ const premiumReviews = [
 ];
 
 export const Testimonials = () => {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>(fallbackTestimonials);
+  const [allTestimonials, setAllTestimonials] = useState<Testimonial[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const itemsPerPage = 4;
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const itemsToShow = 4;
+  const intervalRef = useRef(null);
+  const testimonialContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchTestimonials();
   }, []);
 
+  useEffect(() => {
+    if (isAutoPlaying && allTestimonials.length > itemsToShow) {
+      intervalRef.current = setInterval(() => {
+        setCurrentIndex((prev) => (prev + itemsToShow) % allTestimonials.length);
+      }, 4000); // Auto slide every 4 seconds
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isAutoPlaying, allTestimonials.length]);
+
   const fetchTestimonials = async () => {
     try {
-      const response = await fetch(`${API_BASE}/testimonials/public?limit=12`);
+      const response = await fetch(`${API_BASE}/testimonials/public?limit=1`);
       if (response.ok) {
         const result = await response.json();
+        // Combine: 4 fallback testimonials + 1 recent from API
+        const combined = [...fallbackTestimonials];
         if (result.success && result.data.length > 0) {
-          setTestimonials(result.data);
+          combined.push(result.data[0]);
         }
+        setAllTestimonials(combined);
+      } else {
+        setAllTestimonials(fallbackTestimonials);
       }
     } catch (error) {
       console.error('Error fetching testimonials:', error);
-      // Keep fallback testimonials
+      setAllTestimonials(fallbackTestimonials);
     } finally {
       setIsLoading(false);
     }
   };
 
   const nextTestimonials = () => {
-    setCurrentIndex((prev) => 
-      prev + itemsPerPage >= testimonials.length ? 0 : prev + itemsPerPage
-    );
+    setCurrentIndex((prev) => (prev + itemsToShow) % allTestimonials.length);
   };
 
   const prevTestimonials = () => {
-    setCurrentIndex((prev) => 
-      prev - itemsPerPage < 0 ? Math.max(0, testimonials.length - itemsPerPage) : prev - itemsPerPage
-    );
+    setCurrentIndex((prev) => (prev - itemsToShow + allTestimonials.length) % allTestimonials.length);
   };
 
-  const displayedTestimonials = testimonials.slice(currentIndex, currentIndex + itemsPerPage);
-  const hasMultiplePages = testimonials.length > itemsPerPage;
+  const toggleAutoPlay = () => {
+    setIsAutoPlaying(!isAutoPlaying);
+  };
+
+  // Get testimonials to display (handle wrap-around for seamless loop)
+  const displayedTestimonials: Testimonial[] = [];
+  if (allTestimonials.length > 0) {
+    for (let i = 0; i < itemsToShow; i++) {
+      const index = (currentIndex + i) % allTestimonials.length;
+      if (allTestimonials[index]) {
+        displayedTestimonials.push(allTestimonials[index]);
+      }
+    }
+  }
+  
+  const hasMultiplePages = allTestimonials.length > itemsToShow;
 
   const getInitials = (name: string) => {
     return name
@@ -160,12 +192,12 @@ export const Testimonials = () => {
           </p>
         </div>
         
-        <div className="relative">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="relative" ref={testimonialContainerRef}>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 transition-all duration-700 ease-in-out">
             {displayedTestimonials.map((testimonial, index) => (
               <Card 
                 key={`${currentIndex}-${index}`}
-                className="p-6 hover-lift bg-card/50 backdrop-blur-sm border-border/50 space-y-4"
+                className="p-6 hover-lift bg-card/50 backdrop-blur-sm border-border/50 space-y-4 animate-in fade-in slide-in-from-right duration-500"
               >
                 <div className="flex items-center gap-1 mb-2">
                   {getRatingStars(testimonial.rating)}
@@ -203,18 +235,20 @@ export const Testimonials = () => {
                 variant="outline"
                 size="sm"
                 onClick={prevTestimonials}
-                className="rounded-full"
+                className="rounded-full hover:scale-110 transition-transform"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <div className="text-sm text-muted-foreground">
-                {Math.floor(currentIndex / itemsPerPage) + 1} / {Math.ceil(testimonials.length / itemsPerPage)}
+              <div className="flex items-center gap-3">
+                <div className="text-sm text-muted-foreground font-medium">
+                  {Math.ceil(currentIndex / itemsToShow) + 1} / {Math.ceil(allTestimonials.length / itemsToShow)}
+                </div>
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={nextTestimonials}
-                className="rounded-full"
+                className="rounded-full hover:scale-110 transition-transform"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
