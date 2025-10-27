@@ -4,14 +4,71 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Activity, Loader2, Eye, EyeOff, ArrowRight, ArrowLeft, Check, User, Briefcase, Target, Sparkles } from "lucide-react";
+import { 
+  Activity, 
+  Loader2, 
+  Eye, 
+  EyeOff, 
+  ArrowRight, 
+  ArrowLeft, 
+  Check, 
+  User, 
+  Briefcase, 
+  Target, 
+  Sparkles,
+  Upload,
+  TrendingUp,
+  Building2,
+  Rocket,
+  Crown,
+  Heart,
+  Music,
+  Film,
+  Code,
+  Palette,
+  Gamepad2,
+  Dumbbell,
+  Globe,
+  Zap,
+  Lightbulb,
+  Bookmark,
+  MessageSquare,
+  Calendar,
+  X
+} from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useLinkedInProfile } from "../../hooks/useLinkedInProfile";
-import { WRITING_STYLES, TONE_OPTIONS, INDUSTRIES, EXPERIENCE_LEVELS, CONTENT_TYPES } from "@/constants/personaOptions";
+import { WRITING_STYLES, TONE_OPTIONS, INDUSTRIES, EXPERIENCE_LEVELS } from "@/constants/personaOptions";
+
+const GOALS = [
+  { id: 'sales', label: 'Sales & Lead Generation', icon: TrendingUp, color: 'bg-blue-100 text-blue-700' },
+  { id: 'marketing', label: 'Marketing & Growth', icon: Rocket, color: 'bg-purple-100 text-purple-700' },
+  { id: 'personal', label: 'Personal Branding', icon: Crown, color: 'bg-yellow-100 text-yellow-700' },
+  { id: 'company', label: 'Company Account', icon: Building2, color: 'bg-green-100 text-green-700' },
+  { id: 'founder', label: 'Founder/CEO', icon: Rocket, color: 'bg-pink-100 text-pink-700' },
+  { id: 'startup', label: 'Startup Team', icon: Sparkles, color: 'bg-indigo-100 text-indigo-700' },
+  { id: 'agency', label: 'Agency/Client Work', icon: Briefcase, color: 'bg-orange-100 text-orange-700' },
+];
+
+const TOPICS = [
+  { id: 'business', label: 'Business', icon: Briefcase },
+  { id: 'tech', label: 'Technology', icon: Code },
+  { id: 'marketing', label: 'Marketing', icon: Target },
+  { id: 'design', label: 'Design', icon: Palette },
+  { id: 'startup', label: 'Startups', icon: Rocket },
+  { id: 'leadership', label: 'Leadership', icon: Crown },
+  { id: 'health', label: 'Health & Wellness', icon: Heart },
+  { id: 'fitness', label: 'Fitness', icon: Dumbbell },
+  { id: 'travel', label: 'Travel', icon: Globe },
+  { id: 'food', label: 'Food & Cooking', icon: Heart },
+  { id: 'music', label: 'Music', icon: Music },
+  { id: 'sports', label: 'Sports', icon: Gamepad2 },
+  { id: 'entertainment', label: 'Entertainment', icon: Film },
+  { id: 'education', label: 'Education', icon: Bookmark },
+];
 
 const Register = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -21,53 +78,61 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    avatar: "",
     // Step 2: Professional Info
+    primaryGoal: "",
     jobTitle: "",
     company: "",
     industry: "",
     experience: "",
-    // Step 3: Persona Creation
+    // Step 3: Persona
     personaName: "",
     writingStyle: "",
     tone: "",
     expertise: "",
     targetAudience: "",
-    goals: "",
     // Step 4: Preferences
-    contentTypes: [],
+    topics: [] as string[],
+    contentTypes: [] as string[],
     postingFrequency: "",
     linkedinUrl: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<any>({});
 
-  const { register, error, clearError } = useAuth();
+  const { register, clearError } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const { analyzeProfile, isAnalyzing, profileData } = useLinkedInProfile();
 
   const steps = [
-    { id: 1, title: "Account Setup", description: "Create your account" },
-    { id: 2, title: "Professional Info", description: "Tell us about your role" },
-    { id: 3, title: "AI Persona", description: "Build your content persona" },
-    { id: 4, title: "Preferences", description: "Customize your experience" }
+    { id: 1, title: "Account Setup", icon: User },
+    { id: 2, title: "Your Goals", icon: Target },
+    { id: 3, title: "AI Persona", icon: Sparkles },
+    { id: 4, title: "Preferences", icon: Heart },
+    { id: 5, title: "All Set!", icon: Check }
   ];
 
-  const postingFrequencies = [
-    "Daily", "3-4 times per week", "2-3 times per week", "Weekly", "Bi-weekly"
-  ];
-
-  const handleChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev: any) => ({ ...prev, [field]: null }));
+    }
     if (error) clearError();
   };
 
-  const handleContentTypeToggle = (type) => {
+  const handleTopicToggle = (topicId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      topics: prev.topics.includes(topicId)
+        ? prev.topics.filter(t => t !== topicId)
+        : [...prev.topics, topicId]
+    }));
+  };
+
+  const handleContentTypeToggle = (type: string) => {
     setFormData(prev => ({
       ...prev,
       contentTypes: prev.contentTypes.includes(type)
@@ -76,85 +141,52 @@ const Register = () => {
     }));
   };
 
-  const handleLinkedInAnalysis = async () => {
-    if (!formData.linkedinUrl.trim()) {
-      toast({
-        title: "LinkedIn URL required",
-        description: "Please enter your LinkedIn profile URL first",
-        variant: "destructive",
-      });
-      return;
-    }
+  const validateStep = (step: number): boolean => {
+    const newErrors: any = {};
 
-    // Skip LinkedIn analysis during registration - it requires authentication
-    // This is optional and can be done after account creation
-    toast({
-      title: "LinkedIn URL saved! ✓",
-      description: "We'll analyze your profile after you create your account. Complete registration to continue.",
-    });
-    
-    // Just save the URL for now
-    // The analysis can be done after login from the dashboard or profile settings
-  };
-
-  const validateStep = (step) => {
     switch (step) {
       case 1:
-        if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-          toast({
-            title: "Missing information",
-            description: "Please fill in all required fields",
-            variant: "destructive",
-          });
-          return false;
+        if (!formData.name.trim()) newErrors.name = "Name is required";
+        if (!formData.email.trim()) {
+          newErrors.email = "Email is required";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+          newErrors.email = "Please enter a valid email";
+        }
+        if (!formData.password) {
+          newErrors.password = "Password is required";
+        } else if (formData.password.length < 6) {
+          newErrors.password = "Password must be at least 6 characters";
         }
         if (formData.password !== formData.confirmPassword) {
-          toast({
-            title: "Password mismatch",
-            description: "Passwords do not match",
-            variant: "destructive",
-          });
-          return false;
+          newErrors.confirmPassword = "Passwords do not match";
         }
-        if (formData.password.length < 6) {
-          toast({
-            title: "Password too short",
-            description: "Password must be at least 6 characters",
-            variant: "destructive",
-          });
-          return false;
-        }
-        return true;
+        break;
       case 2:
-        if (!formData.jobTitle || !formData.company || !formData.industry || !formData.experience) {
-          toast({
-            title: "Missing information",
-            description: "Please fill in all professional details",
-            variant: "destructive",
-          });
-          return false;
-        }
-        return true;
+        if (!formData.primaryGoal) newErrors.primaryGoal = "Please select your primary goal";
+        if (!formData.jobTitle) newErrors.jobTitle = "Job title is required";
+        if (!formData.company) newErrors.company = "Company is required";
+        if (!formData.industry) newErrors.industry = "Industry is required";
+        if (!formData.experience) newErrors.experience = "Experience level is required";
+        break;
       case 3:
-        if (!formData.personaName || !formData.writingStyle || !formData.tone || !formData.expertise || !formData.targetAudience) {
-          toast({
-            title: "Missing information",
-            description: "Please complete your AI persona setup",
-            variant: "destructive",
-          });
-          return false;
-        }
-        return true;
+        if (!formData.personaName) newErrors.personaName = "Persona name is required";
+        if (!formData.writingStyle) newErrors.writingStyle = "Writing style is required";
+        if (!formData.tone) newErrors.tone = "Tone is required";
+        if (!formData.expertise) newErrors.expertise = "Expertise areas are required";
+        if (!formData.targetAudience) newErrors.targetAudience = "Target audience is required";
+        break;
       case 4:
-        return true; // Step 4 is optional
-      default:
-        return true;
+        // Step 4 is optional
+        break;
     }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 4));
+      setCurrentStep(prev => Math.min(prev + 1, 5));
     }
   };
 
@@ -163,264 +195,333 @@ const Register = () => {
   };
 
   const handleSubmit = async () => {
-    if (!validateStep(4)) return;
-
     setIsLoading(true);
 
-    const result = await register({
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      // Include persona data
-      persona: {
-        name: formData.personaName,
-        writingStyle: formData.writingStyle,
-        tone: formData.tone,
-        expertise: formData.expertise,
-        targetAudience: formData.targetAudience,
-        goals: formData.goals,
-        contentTypes: formData.contentTypes,
-        postingFrequency: formData.postingFrequency
-      },
-      // Include professional info
-      profile: {
-        jobTitle: formData.jobTitle,
-        company: formData.company,
-        industry: formData.industry,
-        experience: formData.experience,
-        linkedinUrl: formData.linkedinUrl
-      }
-    });
-    
-    if (result.success) {
-      toast({
-        title: "Welcome to LinkedInPulse! 🎉",
-        description: "Your account and AI persona have been created successfully",
+    try {
+      const result = await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        persona: {
+          name: formData.personaName,
+          writingStyle: formData.writingStyle,
+          tone: formData.tone,
+          expertise: formData.expertise,
+          targetAudience: formData.targetAudience,
+        },
+        profile: {
+          jobTitle: formData.jobTitle,
+          company: formData.company,
+          industry: formData.industry,
+          experience: formData.experience,
+          linkedinUrl: formData.linkedinUrl
+        }
       });
       
-      // Redirect to return URL or dashboard
-      const returnTo = location.state?.returnTo || '/dashboard';
-      navigate(returnTo);
-    } else {
+      if (result.success) {
+        toast({
+          title: "Welcome to LinkedInPulse! 🎉",
+          description: "Your account and AI persona have been created successfully",
+        });
+        
+        const returnTo = location.state?.returnTo || '/dashboard';
+        navigate(returnTo);
+      } else {
+        toast({
+          title: "Registration failed",
+          description: result.error || "Failed to create account",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
         title: "Registration failed",
-        description: result.error || "Failed to create account",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
-  const progress = (currentStep / 4) * 100;
+  const progress = (currentStep / 5) * 100;
+  const error = null; // From useAuth
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="w-full max-w-2xl">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-primary/5 to-background">
+      <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
               <Activity className="h-7 w-7 text-white animate-pulse" />
             </div>
-            <span className="text-2xl font-bold">LinkedInPulse</span>
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              LinkedInPulse
+            </span>
           </Link>
-          <h1 className="text-3xl font-bold mb-2">Create your account</h1>
-          <p className="text-muted-foreground">Let's build your AI-powered LinkedIn presence</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+            Create your AI-powered LinkedIn presence
+          </h1>
+          <p className="text-muted-foreground">Let's build something amazing together</p>
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Steps */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center flex-1">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
-                  currentStep >= step.id 
-                    ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg' 
-                    : 'bg-muted text-muted-foreground'
-                }`}>
-                  {currentStep > step.id ? <Check className="h-5 w-5" /> : step.id}
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              const isCompleted = currentStep > step.id;
+              const isCurrent = currentStep === step.id;
+              
+              return (
+                <div key={step.id} className="flex items-center flex-1">
+                  <div className={`flex flex-col items-center flex-1 ${
+                    index === steps.length - 1 ? 'flex-none' : ''
+                  }`}>
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${
+                      isCompleted
+                        ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg scale-110' 
+                        : isCurrent
+                        ? 'bg-primary text-primary-foreground shadow-md scale-105'
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {isCompleted ? <Check className="h-6 w-6" /> : <Icon className="h-6 w-6" />}
+                    </div>
+                    <span className={`text-xs mt-2 hidden sm:block text-center ${
+                      isCurrent ? 'font-medium text-primary' : 'text-muted-foreground'
+                    }`}>
+                      {step.title}
+                    </span>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className={`flex-1 h-1 mx-2 rounded transition-all ${
+                      isCompleted ? 'bg-gradient-to-r from-blue-600 to-purple-600' : 'bg-muted'
+                    }`} />
+                  )}
                 </div>
-                <div className="ml-3 hidden sm:block">
-                  <div className="text-sm font-medium">{step.title}</div>
-                  <div className="text-xs text-muted-foreground">{step.description}</div>
-                </div>
-                {index < steps.length - 1 && (
-                  <div className={`flex-1 h-1 mx-2 rounded ${currentStep > step.id ? 'bg-primary' : 'bg-muted'}`} />
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
           <Progress value={progress} className="h-2" />
         </div>
 
-        {/* Step Content */}
-        <Card className="p-8 shadow-lg border-2">
+        {/* Main Content Card */}
+        <Card className="p-6 md:p-8 shadow-2xl border-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {/* Step 1: Account Setup */}
           {currentStep === 1 && (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <User className="h-8 w-8 text-primary" />
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <User className="h-10 w-10 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold mb-2">Let's get started</h2>
-                <p className="text-muted-foreground">Create your LinkedInPulse account</p>
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">Let's get started</h2>
+                <p className="text-muted-foreground">Create your account in seconds</p>
               </div>
 
-              <div className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
                   <Input
                     id="name"
-                    name="name"
                     type="text"
-                    placeholder="Enter your full name"
+                    placeholder="John Doe"
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
-                    required
+                    className={errors.name ? 'border-red-500' : ''}
                     disabled={isLoading}
                   />
+                  {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
                   <Input
                     id="email"
-                    name="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="john@example.com"
                     value={formData.email}
                     onChange={(e) => handleChange('email', e.target.value)}
-                    required
+                    className={errors.email ? 'border-red-500' : ''}
                     disabled={isLoading}
                   />
+                  {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                   <div className="relative">
                     <Input
                       id="password"
-                      name="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Create a password"
+                      placeholder="Create a secure password"
                       value={formData.password}
                       onChange={(e) => handleChange('password', e.target.value)}
-                      required
+                      className={errors.password ? 'border-red-500' : ''}
                       disabled={isLoading}
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      className="absolute right-0 top-0 h-full px-3"
                       onClick={() => setShowPassword(!showPassword)}
                       disabled={isLoading}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
+                  {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
-                      name="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="Confirm your password"
                       value={formData.confirmPassword}
                       onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                      required
+                      className={errors.confirmPassword ? 'border-red-500' : ''}
                       disabled={isLoading}
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      className="absolute right-0 top-0 h-full px-3"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       disabled={isLoading}
                     >
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
+                  {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
                 </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <Check className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  Your password is encrypted and secure. We'll never store it in plain text.
+                </p>
               </div>
             </div>
           )}
 
-          {/* Step 2: Professional Info */}
+          {/* Step 2: Professional Info & Goals */}
           {currentStep === 2 && (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Briefcase className="h-8 w-8 text-primary" />
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Target className="h-10 w-10 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold mb-2">Tell us about your role</h2>
-                <p className="text-muted-foreground">Help us personalize your LinkedIn content</p>
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">What's your primary goal?</h2>
+                <p className="text-muted-foreground">Help us personalize your experience</p>
               </div>
 
-              <div className="space-y-4">
+              {/* Goal Selection */}
+              <div>
+                <Label className="text-sm font-medium mb-3 block">Select your goal</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {GOALS.map((goal) => {
+                    const Icon = goal.icon;
+                    return (
+                      <button
+                        key={goal.id}
+                        type="button"
+                        onClick={() => handleChange('primaryGoal', goal.id)}
+                        className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${
+                          formData.primaryGoal === goal.id
+                            ? 'border-primary bg-primary/10 shadow-md scale-105'
+                            : 'border-border hover:border-primary/50 hover:shadow-md'
+                        }`}
+                        disabled={isLoading}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-lg ${goal.color}`}>
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium">{goal.label}</p>
+                          </div>
+                          {formData.primaryGoal === goal.id && (
+                            <Check className="h-5 w-5 text-primary" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                {errors.primaryGoal && <p className="text-xs text-red-500 mt-1">{errors.primaryGoal}</p>}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="jobTitle">Job Title</Label>
+                  <Label htmlFor="jobTitle" className="text-sm font-medium">Job Title</Label>
                   <Input
                     id="jobTitle"
-                    name="jobTitle"
                     type="text"
-                    placeholder="e.g., Marketing Manager, Software Engineer"
+                    placeholder="e.g., Marketing Manager"
                     value={formData.jobTitle}
                     onChange={(e) => handleChange('jobTitle', e.target.value)}
-                    required
+                    className={errors.jobTitle ? 'border-red-500' : ''}
                     disabled={isLoading}
                   />
+                  {errors.jobTitle && <p className="text-xs text-red-500">{errors.jobTitle}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="company">Company</Label>
+                  <Label htmlFor="company" className="text-sm font-medium">Company</Label>
                   <Input
                     id="company"
-                    name="company"
                     type="text"
-                    placeholder="e.g., Google, Microsoft, Your Startup"
+                    placeholder="e.g., Acme Inc."
                     value={formData.company}
                     onChange={(e) => handleChange('company', e.target.value)}
-                    required
+                    className={errors.company ? 'border-red-500' : ''}
                     disabled={isLoading}
                   />
+                  {errors.company && <p className="text-xs text-red-500">{errors.company}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="industry">Industry</Label>
-                  <Select value={formData.industry} onValueChange={(value) => handleChange('industry', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your industry" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INDUSTRIES.map((industry) => (
-                        <SelectItem key={industry} value={industry}>
-                          {industry}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="industry" className="text-sm font-medium">Industry</Label>
+                  <select
+                    id="industry"
+                    value={formData.industry}
+                    onChange={(e) => handleChange('industry', e.target.value)}
+                    className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background ${
+                      errors.industry ? 'border-red-500' : ''
+                    }`}
+                    disabled={isLoading}
+                  >
+                    <option value="">Select industry</option>
+                    {INDUSTRIES.map((industry) => (
+                      <option key={industry} value={industry}>{industry}</option>
+                    ))}
+                  </select>
+                  {errors.industry && <p className="text-xs text-red-500">{errors.industry}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="experience">Experience Level</Label>
-                  <Select value={formData.experience} onValueChange={(value) => handleChange('experience', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your experience level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {EXPERIENCE_LEVELS.map((level) => (
-                        <SelectItem key={level} value={level}>
-                          {level}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="experience" className="text-sm font-medium">Experience Level</Label>
+                  <select
+                    id="experience"
+                    value={formData.experience}
+                    onChange={(e) => handleChange('experience', e.target.value)}
+                    className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background ${
+                      errors.experience ? 'border-red-500' : ''
+                    }`}
+                    disabled={isLoading}
+                  >
+                    <option value="">Select level</option>
+                    {EXPERIENCE_LEVELS.map((level) => (
+                      <option key={level} value={level}>{level}</option>
+                    ))}
+                  </select>
+                  {errors.experience && <p className="text-xs text-red-500">{errors.experience}</p>}
                 </div>
               </div>
             </div>
@@ -428,192 +529,247 @@ const Register = () => {
 
           {/* Step 3: AI Persona */}
           {currentStep === 3 && (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="h-8 w-8 text-primary" />
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Sparkles className="h-10 w-10 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold mb-2">Build your AI persona</h2>
-                <p className="text-muted-foreground">Create an AI that writes content in your unique voice</p>
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">Build your AI persona</h2>
+                <p className="text-muted-foreground">Create an AI that writes like you</p>
+              </div>
+
+              <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl border border-purple-200 dark:border-purple-800">
+                <div className="flex items-start gap-3">
+                  <Lightbulb className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-purple-900 dark:text-purple-100">
+                      AI-Powered Suggestions
+                    </p>
+                    <p className="text-sm text-purple-700 dark:text-purple-300">
+                      Based on your profile, we've suggested some options. Feel free to customize!
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="personaName">Persona Name</Label>
+                  <Label htmlFor="personaName" className="text-sm font-medium">Persona Name</Label>
                   <Input
                     id="personaName"
-                    name="personaName"
                     type="text"
-                    placeholder="e.g., Professional Sarah, Tech Expert Mike"
+                    placeholder="e.g., Professional Sarah"
                     value={formData.personaName}
                     onChange={(e) => handleChange('personaName', e.target.value)}
-                    required
+                    className={errors.personaName ? 'border-red-500' : ''}
                     disabled={isLoading}
                   />
+                  {errors.personaName && <p className="text-xs text-red-500">{errors.personaName}</p>}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="writingStyle">Writing Style</Label>
-                  <Select value={formData.writingStyle} onValueChange={(value) => handleChange('writingStyle', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="How do you like to write?" />
-                    </SelectTrigger>
-                    <SelectContent>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="writingStyle" className="text-sm font-medium">Writing Style</Label>
+                    <select
+                      id="writingStyle"
+                      value={formData.writingStyle}
+                      onChange={(e) => handleChange('writingStyle', e.target.value)}
+                      className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ${
+                        errors.writingStyle ? 'border-red-500' : ''
+                      }`}
+                      disabled={isLoading}
+                    >
+                      <option value="">Select style</option>
                       {WRITING_STYLES.map((style) => (
-                        <SelectItem key={style.value} value={style.value}>
-                          <div className="flex items-center gap-2">
-                            <span>{style.icon}</span>
-                            <div>
-                              <div className="font-medium">{style.label}</div>
-                              <div className="text-xs text-muted-foreground">{style.desc}</div>
-                            </div>
-                          </div>
-                        </SelectItem>
+                        <option key={style.value} value={style.value}>{style.label}</option>
                       ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                    </select>
+                    {errors.writingStyle && <p className="text-xs text-red-500">{errors.writingStyle}</p>}
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="tone">Tone</Label>
-                  <Select value={formData.tone} onValueChange={(value) => handleChange('tone', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="What tone should your content have?" />
-                    </SelectTrigger>
-                    <SelectContent>
+                  <div className="space-y-2">
+                    <Label htmlFor="tone" className="text-sm font-medium">Tone</Label>
+                    <select
+                      id="tone"
+                      value={formData.tone}
+                      onChange={(e) => handleChange('tone', e.target.value)}
+                      className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ${
+                        errors.tone ? 'border-red-500' : ''
+                      }`}
+                      disabled={isLoading}
+                    >
+                      <option value="">Select tone</option>
                       {TONE_OPTIONS.map((tone) => (
-                        <SelectItem key={tone.value} value={tone.value}>
-                          <div className="flex items-center gap-2">
-                            <span>{tone.icon}</span>
-                            <div>
-                              <div className="font-medium">{tone.label}</div>
-                              <div className="text-xs text-muted-foreground">{tone.desc}</div>
-                            </div>
-                          </div>
-                        </SelectItem>
+                        <option key={tone.value} value={tone.value}>{tone.label}</option>
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </select>
+                    {errors.tone && <p className="text-xs text-red-500">{errors.tone}</p>}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="expertise">Areas of Expertise</Label>
+                  <Label htmlFor="expertise" className="text-sm font-medium">Areas of Expertise</Label>
                   <Textarea
                     id="expertise"
-                    name="expertise"
-                    placeholder="e.g., Digital marketing, Leadership, Product management, Data analysis..."
+                    placeholder="e.g., Digital marketing, Leadership, Product management..."
                     value={formData.expertise}
                     onChange={(e) => handleChange('expertise', e.target.value)}
-                    required
+                    className={errors.expertise ? 'border-red-500' : ''}
                     disabled={isLoading}
-                    className="min-h-[80px]"
+                    rows={3}
                   />
+                  {errors.expertise && <p className="text-xs text-red-500">{errors.expertise}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="targetAudience">Target Audience</Label>
+                  <Label htmlFor="targetAudience" className="text-sm font-medium">Target Audience</Label>
                   <Textarea
                     id="targetAudience"
-                    name="targetAudience"
                     placeholder="e.g., Marketing professionals, Startup founders, Tech enthusiasts..."
                     value={formData.targetAudience}
                     onChange={(e) => handleChange('targetAudience', e.target.value)}
-                    required
+                    className={errors.targetAudience ? 'border-red-500' : ''}
                     disabled={isLoading}
-                    className="min-h-[80px]"
+                    rows={3}
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="goals">Content Goals (Optional)</Label>
-                  <Textarea
-                    id="goals"
-                    name="goals"
-                    placeholder="e.g., Build thought leadership, Generate leads, Share industry insights..."
-                    value={formData.goals}
-                    onChange={(e) => handleChange('goals', e.target.value)}
-                    disabled={isLoading}
-                    className="min-h-[80px]"
-                  />
+                  {errors.targetAudience && <p className="text-xs text-red-500">{errors.targetAudience}</p>}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Step 4: Preferences */}
+          {/* Step 4: Preferences & Topics */}
           {currentStep === 4 && (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Target className="h-8 w-8 text-primary" />
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Heart className="h-10 w-10 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold mb-2">Customize your experience</h2>
-                <p className="text-muted-foreground">Fine-tune your LinkedInPulse settings</p>
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">Customize your experience</h2>
+                <p className="text-muted-foreground">Tell us what interests you</p>
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Content Types You Want to Create</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {CONTENT_TYPES.map((type) => (
-                      <Button
-                        key={type}
+              <div>
+                <Label className="text-sm font-medium mb-3 block">Select Topics of Interest</Label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {TOPICS.map((topic) => {
+                    const Icon = topic.icon;
+                    return (
+                      <button
+                        key={topic.id}
                         type="button"
-                        variant={formData.contentTypes.includes(type) ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handleContentTypeToggle(type)}
+                        onClick={() => handleTopicToggle(topic.id)}
+                        className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                          formData.topics.includes(topic.id)
+                            ? 'border-primary bg-primary/10 shadow-md scale-105'
+                            : 'border-border hover:border-primary/50'
+                        }`}
                         disabled={isLoading}
-                        className="justify-start"
                       >
-                        {formData.contentTypes.includes(type) && <Check className="h-3 w-3 mr-2" />}
-                        {type}
-                      </Button>
-                    ))}
-                  </div>
+                        <div className="flex flex-col items-center gap-2">
+                          <Icon className={`h-6 w-6 ${
+                            formData.topics.includes(topic.id) ? 'text-primary' : 'text-muted-foreground'
+                          }`} />
+                          <span className={`text-xs font-medium ${
+                            formData.topics.includes(topic.id) ? 'text-primary' : 'text-muted-foreground'
+                          }`}>
+                            {topic.label}
+                          </span>
+                          {formData.topics.includes(topic.id) && (
+                            <Check className="h-4 w-4 text-primary" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="postingFrequency">How often do you want to post?</Label>
-                  <Select value={formData.postingFrequency} onValueChange={(value) => handleChange('postingFrequency', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select posting frequency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {postingFrequencies.map((frequency) => (
-                        <SelectItem key={frequency} value={frequency}>
-                          {frequency}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="linkedinUrl">LinkedIn Profile URL (Optional)</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="linkedinUrl"
-                      name="linkedinUrl"
-                      type="url"
-                      placeholder="https://linkedin.com/in/yourprofile"
-                      value={formData.linkedinUrl}
-                      onChange={(e) => handleChange('linkedinUrl', e.target.value)}
-                      disabled={isLoading}
-                      className="flex-1"
-                    />
-                    <Button
+              <div>
+                <Label className="text-sm font-medium mb-3 block">Content Types</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {['Posts', 'Comments', 'Stories', 'Articles', 'Polls', 'Videos'].map((type) => (
+                    <button
+                      key={type}
                       type="button"
-                      variant="outline"
-                      onClick={handleLinkedInAnalysis}
-                      disabled={!formData.linkedinUrl.trim() || isLoading}
-                      className="gap-2"
+                      onClick={() => handleContentTypeToggle(type)}
+                      className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                        formData.contentTypes.includes(type)
+                          ? 'border-primary bg-primary text-primary-foreground shadow-md'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                      disabled={isLoading}
                     >
-                      <Sparkles className="h-4 w-4" />
-                      Save URL
-                    </Button>
+                      <div className="flex items-center justify-center gap-2">
+                        {formData.contentTypes.includes(type) && <Check className="h-4 w-4" />}
+                        <span className="font-medium">{type}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="linkedinUrl" className="text-sm font-medium">LinkedIn Profile URL (Optional)</Label>
+                <Input
+                  id="linkedinUrl"
+                  type="url"
+                  placeholder="https://linkedin.com/in/yourprofile"
+                  value={formData.linkedinUrl}
+                  onChange={(e) => handleChange('linkedinUrl', e.target.value)}
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  💡 Optional: Help us analyze your profile to enhance your persona
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Confirmation */}
+          {currentStep === 5 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="text-center mb-6">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center mx-auto mb-4 shadow-lg animate-bounce">
+                  <Check className="h-10 w-10 text-white" />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">All set! 🎉</h2>
+                <p className="text-muted-foreground">You're ready to create amazing content</p>
+              </div>
+
+              <Card className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-2 border-primary/20">
+                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  Your Profile Summary
+                </h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{formData.name}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    💡 Optional: We can analyze your profile after registration to enhance your persona
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    <span>{formData.jobTitle} at {formData.company}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-muted-foreground" />
+                    <span>AI Persona: {formData.personaName}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Target className="h-4 w-4 text-muted-foreground" />
+                    <span>{formData.topics.length} topics selected</span>
+                  </div>
+                </div>
+              </Card>
+
+              <div className="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+                <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                    What's next?
+                  </p>
+                  <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                    You'll be redirected to your dashboard where you can start creating content with your AI persona.
                   </p>
                 </div>
               </div>
@@ -621,7 +777,7 @@ const Register = () => {
           )}
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8">
+          <div className="flex justify-between items-center mt-8 pt-6 border-t">
             <Button
               type="button"
               variant="outline"
@@ -633,12 +789,12 @@ const Register = () => {
               Previous
             </Button>
 
-            {currentStep < 4 ? (
+            {currentStep < 5 ? (
               <Button
                 type="button"
                 onClick={handleNext}
                 disabled={isLoading}
-                className="gap-2"
+                className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
               >
                 Next
                 <ArrowRight className="h-4 w-4" />
@@ -648,7 +804,7 @@ const Register = () => {
                 type="button"
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="gap-2 shadow-pulse hover-pulse"
+                className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
               >
                 {isLoading ? (
                   <>

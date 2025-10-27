@@ -150,6 +150,13 @@ class ApiClient {
     });
   }
 
+  async generatePostCustom(postData) {
+    return this.request("/content/posts/generate-custom", {
+      method: "POST",
+      body: JSON.stringify(postData),
+    });
+  }
+
   async generateComment(commentData) {
     return this.request("/content/comments/generate", {
       method: "POST",
@@ -459,6 +466,10 @@ class ApiClient {
     return this.request("/payment/key");
   }
 
+  async getPaymentHistory() {
+    return this.request("/payment/history");
+  }
+
   // Profile completion methods
   async getProfileStatus() {
     return this.request("/profile/status", {
@@ -476,6 +487,50 @@ class ApiClient {
     return this.request("/profile/complete-basic", {
       method: "POST",
       body: JSON.stringify(profileData),
+    });
+  }
+
+  // Coupon methods
+  async validateCoupon(code, amount = 0, plan = null) {
+    return this.request("/coupons/validate", {
+      method: "POST",
+      body: JSON.stringify({ code, amount, plan }),
+    });
+  }
+
+  async applyCoupon(code, orderId) {
+    return this.request("/coupons/apply", {
+      method: "POST",
+      body: JSON.stringify({ code, orderId }),
+    });
+  }
+
+  // Admin coupon methods
+  async getAllCoupons() {
+    return this.request("/coupons/admin/all");
+  }
+
+  async getCouponById(id) {
+    return this.request(`/coupons/admin/${id}`);
+  }
+
+  async createCoupon(couponData) {
+    return this.request("/coupons/admin/create", {
+      method: "POST",
+      body: JSON.stringify(couponData),
+    });
+  }
+
+  async updateCoupon(id, couponData) {
+    return this.request(`/coupons/admin/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(couponData),
+    });
+  }
+
+  async deleteCoupon(id) {
+    return this.request(`/coupons/admin/${id}`, {
+      method: "DELETE",
     });
   }
 }

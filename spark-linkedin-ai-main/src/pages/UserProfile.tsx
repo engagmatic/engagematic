@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useSubscription } from "../hooks/useSubscription";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +28,7 @@ import {
   AlertTriangle,
   Calendar,
   Globe,
+  Bookmark,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import api from "../services/api";
@@ -54,11 +57,15 @@ interface Payment {
 
 export const UserProfile = () => {
   const { user, setUser } = useAuth();
+  const { subscription } = useSubscription();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   
   // State management
   const [activeTab, setActiveTab] = useState("profile");
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [savedPosts, setSavedPosts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -90,12 +97,18 @@ export const UserProfile = () => {
 
   useEffect(() => {
     fetchPaymentHistory();
-  }, []);
+    fetchSavedPosts();
+    
+    // Check if saved parameter is in URL
+    if (searchParams.get("saved") === "true") {
+      setActiveTab("saved");
+    }
+  }, [searchParams]);
 
   const fetchPaymentHistory = async () => {
     setIsLoading(true);
     try {
-      const response = await api.request("/payment/history", { method: "GET" });
+      const response = await api.getPaymentHistory();
       if (response.success) {
         setPayments(response.data);
       }
@@ -103,6 +116,17 @@ export const UserProfile = () => {
       console.error("Error fetching payment history:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchSavedPosts = async () => {
+    try {
+      const response = await api.getSavedContent();
+      if (response.success) {
+        setSavedPosts(response.data.content || []);
+      }
+    } catch (error) {
+      console.error("Error fetching saved posts:", error);
     }
   };
 
@@ -341,16 +365,24 @@ export const UserProfile = () => {
                 )}
               </div>
             </div>
-            <Badge className="bg-primary text-white px-4 py-2">
+            <Badge 
+              className={`px-4 py-2 ${
+                subscription?.plan === 'pro' 
+                  ? 'bg-purple-600 text-white' 
+                  : subscription?.plan === 'starter'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-blue-600 text-white'
+              }`}
+            >
               <Crown className="h-4 w-4 mr-2" />
-              Trial User
+              {subscription?.plan === 'pro' ? 'Pro User' : subscription?.plan === 'starter' ? 'Starter User' : 'Trial User'}
             </Badge>
           </div>
         </Card>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="profile">
               <User className="h-4 w-4 mr-2" />
               Profile
@@ -366,6 +398,10 @@ export const UserProfile = () => {
             <TabsTrigger value="billing">
               <CreditCard className="h-4 w-4 mr-2" />
               Billing
+            </TabsTrigger>
+            <TabsTrigger value="saved">
+              <Bookmark className="h-4 w-4 mr-2" />
+              Saved
             </TabsTrigger>
             <TabsTrigger value="referrals">
               <Globe className="h-4 w-4 mr-2" />
@@ -616,48 +652,158 @@ export const UserProfile = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {payments.map((payment) => (
-                    <div
-                      key={payment._id}
-                      className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="font-semibold capitalize">{payment.plan} Plan</h3>
-                            {getStatusBadge(payment.status)}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-3 font-semibold">Date</th>
+                        <th className="text-left p-3 font-semibold">Plan</th>
+                        <th className="text-left p-3 font-semibold">Period</th>
+                        <th className="text-left p-3 font-semibold">Amount</th>
+                        <th className="text-left p-3 font-semibold">Status</th>
+                        <th className="text-left p-3 font-semibold">Order ID</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {payments.map((payment) => (
+                        <tr key={payment._id} className="border-b hover:bg-muted/50 transition-colors">
+                          <td className="p-3">
+                            <div className="flex items-center gap-2 text-sm">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <div>{format(new Date(payment.createdAt), "MMM dd, yyyy")}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {format(new Date(payment.createdAt), "hh:mm a")}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <span className="font-medium capitalize">{payment.plan}</span>
+                          </td>
+                          <td className="p-3">
                             <Badge variant="outline" className="capitalize">
                               {payment.billingPeriod}
                             </Badge>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            <span>
-                              {format(new Date(payment.createdAt), "MMM dd, yyyy 'at' hh:mm a")}
+                          </td>
+                          <td className="p-3">
+                            <span className="font-semibold text-primary text-lg">
+                              {formatCurrency(payment.amount, payment.currency)}
                             </span>
-                            {payment.capturedAt && (
-                              <>
-                                <span>•</span>
-                                <CheckCircle className="h-3 w-3" />
-                                <span>
-                                  Captured {format(new Date(payment.capturedAt), "MMM dd, yyyy")}
-                                </span>
-                              </>
-                            )}
+                          </td>
+                          <td className="p-3">
+                            {getStatusBadge(payment.status)}
+                          </td>
+                          <td className="p-3">
+                            <div className="text-xs text-muted-foreground font-mono">
+                              {payment.orderId}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+
+          {/* Saved Tab */}
+          <TabsContent value="saved" className="space-y-6">
+            <Card className="p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <Bookmark className="h-5 w-5 text-primary" />
+                  Saved Posts
+                </h3>
+                {savedPosts.length > 0 && (
+                  <Badge variant="secondary" className="px-3 py-1">
+                    {savedPosts.length} {savedPosts.length === 1 ? 'post' : 'posts'}
+                  </Badge>
+                )}
+              </div>
+              
+              {savedPosts.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="relative inline-block mb-6">
+                    <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl"></div>
+                    <Bookmark className="relative h-20 w-20 mx-auto text-primary/30" />
+                  </div>
+                  <h4 className="text-xl font-semibold mb-2 text-foreground">No saved posts yet</h4>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Posts and comments you save will appear here for easy access
+                  </p>
+                  <Button 
+                    onClick={() => window.location.href = "/dashboard"}
+                    className="shadow-md hover:shadow-lg transition-shadow"
+                  >
+                    Create Your First Post
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {savedPosts.map((post) => {
+                    // Truncate content to first 150 characters for preview
+                    const truncatedContent = post.content && post.content.length > 150 
+                      ? post.content.substring(0, 150) + '...' 
+                      : post.content;
+                    
+                    return (
+                      <Card
+                        key={post._id}
+                        className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-2 hover:border-primary/20 overflow-hidden"
+                        onClick={() => navigate(`/post/${post._id}`)}
+                      >
+                        <div className="p-5">
+                          {/* Header with badge */}
+                          <div className="flex items-center justify-between mb-3">
+                            <Badge 
+                              variant={post.type === 'post' ? 'default' : 'secondary'}
+                              className="capitalize font-medium"
+                            >
+                              {post.type}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(post.createdAt), "MMM d, yyyy")}
+                            </span>
                           </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Order ID: {payment.orderId}
+                          
+                          {/* Topic */}
+                          {post.topic && (
+                            <div className="mb-3">
+                              <h4 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                                {post.topic}
+                              </h4>
+                            </div>
+                          )}
+                          
+                          {/* Content Preview */}
+                          <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                            {truncatedContent}
+                          </p>
+                          
+                          {/* Footer with bookmark icon */}
+                          <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Bookmark className="h-3.5 w-3.5" />
+                              <span>Saved</span>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // TODO: Implement unsave functionality
+                              }}
+                            >
+                              Unsave
+                            </Button>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-primary">
-                            {formatCurrency(payment.amount, payment.currency)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </Card>

@@ -191,9 +191,9 @@ userSubscriptionSchema.pre("save", function (next) {
         break;
 
       case "starter":
-        this.limits.postsPerMonth = 75; // ~2.5 posts per day
-        this.limits.commentsPerMonth = 100; // ~3-4 comments per day
-        this.limits.ideasPerMonth = 100; // Plenty of inspiration
+        this.limits.postsPerMonth = 15; // ~2.5 posts per day
+        this.limits.commentsPerMonth = 30; // ~3-4 comments per day
+        this.limits.ideasPerMonth = 30; // Plenty of inspiration
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
@@ -202,9 +202,9 @@ userSubscriptionSchema.pre("save", function (next) {
         break;
 
       case "pro":
-        this.limits.postsPerMonth = 200; // ~6-7 posts per day
-        this.limits.commentsPerMonth = 400; // ~13-14 comments per day
-        this.limits.ideasPerMonth = 300; // Unlimited creativity
+        this.limits.postsPerMonth = 60; // ~6-7 posts per day
+        this.limits.commentsPerMonth = 80; // ~13-14 comments per day
+        this.limits.ideasPerMonth = 80; // Unlimited creativity
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = -1; // UNLIMITED profile analyses

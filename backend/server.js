@@ -28,6 +28,8 @@ import trialRoutes from "./routes/trial.js";
 import referralRoutes from "./routes/referrals.js";
 import linkedinScraperRoutes from "./routes/linkedinScraper.js";
 import offerRoutes from "./routes/offers.js";
+import extensionRoutes from "./routes/extension.js";
+import couponRoutes from "./routes/coupons.js";
 
 // Import services
 import emailScheduler from "./services/emailScheduler.js";
@@ -57,6 +59,9 @@ const allowedOrigins = [
   "https://www.linkedinpulse.com",
   "http://linkedinpulse.com",
   "http://www.linkedinpulse.com",
+  "chrome-extension://eofnebjkdholeglegaillijcbbefgmjm", // your Chrome extension origin
+  "http://localhost:5173", // if your frontend runs locally
+  "http://localhost:5000", // optional, if your backend talks to itself  "http://localhost:5173", // dev frontend if any
 ];
 
 const corsOptions = {
@@ -73,6 +78,7 @@ const corsOptions = {
 
     // Check if origin is in allowed list
     if (allowedOrigins.includes(origin)) {
+      console.log("CORS allowed origin:", origin);
       return callback(null, true);
     }
 
@@ -132,6 +138,8 @@ app.use("/api/trial", trialRoutes); // Trial management
 app.use("/api/referrals", referralRoutes); // Referral system
 app.use("/api/linkedin-scraper", linkedinScraperRoutes); // LinkedIn Profile Scraper
 app.use("/api/offers", offerRoutes); // Coupons and Offers
+app.use("/api/extension", extensionRoutes); // Chrome Extension API
+app.use("/api/coupons", couponRoutes); // Coupon management and validation
 
 // Admin routes
 app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication

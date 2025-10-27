@@ -28,7 +28,8 @@ class RazorpayService {
     userId,
     credits,
     currency = "INR",
-    billingPeriod = "monthly"
+    billingPeriod = "monthly",
+    discountAmount = 0
   ) {
     try {
       // Import pricing service to get correct pricing
@@ -71,13 +72,29 @@ class RazorpayService {
         }
       }
 
+      // Apply discount if provided
+      const finalAmount = Math.max(0, amount - discountAmount);
+
+      console.log("Razorpay Order Amount Calculation:", {
+        originalAmount: amount,
+        discountAmount,
+        finalAmount,
+        currency,
+      });
+
       // Convert to paise/cents
       const amountInSmallestUnit =
         currency === "INR"
-          ? Math.round(amount * 100)
-          : Math.round(amount * 100);
+          ? Math.round(finalAmount * 100)
+          : Math.round(finalAmount * 100);
       const shortId = userId.toString().slice(0, 10);
       const receiptId = `sub_${shortId}_${Date.now().toString().slice(-6)}`;
+
+      console.log("Creating Razorpay Order with Amount:", {
+        amountInSmallestUnit,
+        amountInCurrency: finalAmount,
+        currency,
+      });
 
       const order = await this.razorpay.orders.create({
         amount: amountInSmallestUnit,
@@ -95,7 +112,9 @@ class RazorpayService {
 
       return {
         orderId: order.id,
-        amount: amount,
+        amount: finalAmount, // Return final amount after discount
+        originalAmount: amount, // Keep original for display
+        discount: discountAmount,
         currency: currency,
         planType: planType,
         credits: credits,

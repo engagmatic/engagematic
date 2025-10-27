@@ -55,7 +55,7 @@ export const useRazorpay = () => {
         }
       } catch (error) {
         console.error('Failed to initialize Razorpay:', error);
-        toast.error('Failed to initialize payment system');
+        // toast.error('Failed to initialize payment system');
       }
     };
 
@@ -91,7 +91,7 @@ export const useCreditPayment = () => {
   const { isLoaded, openRazorpay } = useRazorpay();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const processCreditPayment = async (credits: any, currency: string, billingInterval: string = 'monthly') => {
+  const processCreditPayment = async (credits: any, currency: string, billingInterval: string = 'monthly', couponData?: any) => {
     if (!isLoaded) {
       toast.error('Payment system not ready. Please try again.');
       return;
@@ -99,11 +99,21 @@ export const useCreditPayment = () => {
 
     setIsProcessing(true);
     try {
+      // Log the coupon data being sent
+      console.log("Coupon Data from Frontend:", {
+        couponCode: couponData?.coupon?.code,
+        discount: couponData?.discount,
+        finalAmount: couponData?.finalAmount,
+        originalAmount: couponData?.originalAmount
+      });
+
       // Create payment order
       const orderResponse = await api.createCreditOrder({
         credits,
         currency,
-        billingInterval
+        billingInterval,
+        couponCode: couponData?.coupon?.code,
+        discountAmount: couponData?.discount || 0
       });
 
       if (!orderResponse.success) {
@@ -111,10 +121,24 @@ export const useCreditPayment = () => {
       }
 
       const orderData = orderResponse.data;
-console.log("orderData",  orderData);
-      // Open Razorpay payment
+      
+      console.log("Order Data from Backend:", {
+        planType: orderData.planType,
+        amount: orderData.amount,
+        originalAmount: orderData.originalAmount,
+        discount: orderData.discount,
+        currency: orderData.currency,
+        credits: orderData.credits
+      });
+      
+      // Open Razorpay payment with the FINAL discounted amount
+      const razorpayAmount = Math.round(orderData.amount * 100); // Convert to paise/cents
+      
+      console.log("Razorpay Amount (in smallest unit):", razorpayAmount);
+      console.log("Razorpay Amount (in currency):", orderData.amount);
+      
       openRazorpay({
-        amount: Math.round(orderData.amount * 100), // Convert to paise/cents
+        amount: razorpayAmount,
         currency: orderData.currency,
         name: 'LinkedInPulse',
         description: `${orderData.planType} Plan - ${credits.posts} posts, ${credits.comments} comments, ${credits.ideas} ideas`,

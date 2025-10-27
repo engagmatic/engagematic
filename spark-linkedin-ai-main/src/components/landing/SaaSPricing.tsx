@@ -10,6 +10,7 @@ import api from "@/services/api";
 import { useCreditPayment } from "@/hooks/useRazorpay";
 import geoLocationService from "@/services/geoLocationService";
 import { useAuth } from "@/contexts/AuthContext";
+import { CouponInput } from "@/components/CouponInput";
 
 type Currency = 'INR' | 'USD';
 type PlanType = 'starter' | 'pro' | 'custom';
@@ -96,6 +97,7 @@ export const SaaSPricing = () => {
   const [showCustomSliders, setShowCustomSliders] = useState(false);
   const [customCredits, setCustomCredits] = useState<CreditSelection>({ posts: 10, comments: 10, ideas: 10 });
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
+  const [couponData, setCouponData] = useState<any>(null);
   const navigate = useNavigate();
   const { processCreditPayment, isProcessing, isLoaded } = useCreditPayment();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -327,6 +329,18 @@ export const SaaSPricing = () => {
               </span>
             </Button>
           </div>
+        </div>
+
+        {/* Coupon Input */}
+        <div className="max-w-md mx-auto mb-8">
+          {selectedPlan !== 'custom' && (
+            <CouponInput
+              amount={getPlanPrice(plans.find(p => p.id === selectedPlan) || plans[1])}
+              plan={selectedPlan as 'starter' | 'pro'}
+              onCouponApplied={(data) => setCouponData(data)}
+              onCouponRemoved={() => setCouponData(null)}
+            />
+          )}
         </div>
 
         {/* Pricing Cards */}

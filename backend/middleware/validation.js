@@ -57,8 +57,52 @@ export const validatePostGeneration = [
   body("hookId")
     .notEmpty()
     .withMessage("Hook ID is required")
-    .isMongoId()
+    .custom((value) => {
+      // Accept both MongoDB ObjectIds and trending hook IDs
+      const mongoIdPattern = /^[0-9a-fA-F]{24}$/;
+      const trendingHookPattern = /^trending_\d+_\d+$/;
+      return mongoIdPattern.test(value) || trendingHookPattern.test(value);
+    })
     .withMessage("Invalid hook ID format"),
+  // personaId is now optional (can send persona data directly)
+  // Skip validation entirely if personaId is not provided
+  body("personaId")
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      // Only validate if value exists and is not empty
+      if (value && value !== "") {
+        return /^[0-9a-fA-F]{24}$/.test(value);
+      }
+      return true;
+    })
+    .withMessage("Invalid persona ID format"),
+  body("persona")
+    .optional()
+    .isObject()
+    .withMessage("Persona data must be an object"),
+  validateRequest,
+];
+
+// Validation for post generation without hooks (pro users)
+export const validatePostGenerationWithoutHook = [
+  body("topic")
+    .trim()
+    .notEmpty()
+    .withMessage("Topic is required")
+    .isLength({ min: 10, max: 500 })
+    .withMessage("Topic must be between 10 and 500 characters"),
+  body("title")
+    .trim()
+    .notEmpty()
+    .withMessage("Title is required")
+    .isLength({ min: 5, max: 100 })
+    .withMessage("Title must be between 5 and 100 characters"),
+  body("category")
+    .trim()
+    .notEmpty()
+    .withMessage("Category is required")
+    .isIn(["story", "question", "statement", "challenge", "insight"])
+    .withMessage("Invalid category"),
   // personaId is now optional (can send persona data directly)
   // Skip validation entirely if personaId is not provided
   body("personaId")

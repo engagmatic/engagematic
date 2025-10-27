@@ -18,7 +18,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import api from "@/services/api";
-import { useCreditPayment } from "@/hooks/useRazorpay";
+
 import React from "react";
 
 type Currency = 'INR' | 'USD';
@@ -44,9 +44,7 @@ const PlanManagement: React.FC = () => {
   const [credits, setCredits] = useState<CreditSelection>(presets.custom);
   const [currentSubscription, setCurrentSubscription] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
   const navigate = useNavigate();
-  const { processCreditPayment, isProcessing, isLoaded } = useCreditPayment();
 
   useEffect(() => {
     const fetchCurrentSubscription = async () => {
@@ -56,11 +54,11 @@ const PlanManagement: React.FC = () => {
           setCurrentSubscription(response.data);
           const sub = response.data.subscription;
           
-          // Set current credits
+          // Set current credits (cap at 100 maximum)
           const currentCredits = {
-            posts: sub.limits.postsPerMonth,
-            comments: sub.limits.commentsPerMonth,
-            ideas: sub.limits.ideasPerMonth
+            posts: Math.min(sub.limits.postsPerMonth, 100),
+            comments: Math.min(sub.limits.commentsPerMonth, 100),
+            ideas: Math.min(sub.limits.ideasPerMonth, 100)
           };
           setCredits(currentCredits);
           
@@ -97,7 +95,9 @@ const PlanManagement: React.FC = () => {
   };
 
   const handleSliderChange = (type: keyof CreditSelection, value: number[]) => {
-    const newCredits = { ...credits, [type]: value[0] };
+    // Enforce maximum limit of 100 for all types
+    const cappedValue = Math.min(value[0], 100);
+    const newCredits = { ...credits, [type]: cappedValue };
     setCredits(newCredits);
     
     // Check if this matches any preset
@@ -115,28 +115,8 @@ const PlanManagement: React.FC = () => {
   };
 
   const handleUpdatePlan = async () => {
-    if (!isLoaded) {
-      toast.error('Payment system not ready. Please try again.');
-      return;
-    }
-
-    setIsUpdating(true);
-    try {
-      // Validate credits first
-      const validation = await api.validateCredits(credits);
-      if (!validation.success || !validation.data.isValid) {
-        toast.error('Invalid credit selection. Please check your inputs.');
-        return;
-      }
-
-      // Process payment with Razorpay for the new plan
-      await processCreditPayment(credits, currency, 'monthly');
-    } catch (error) {
-      console.error('Plan update error:', error);
-      toast.error('Failed to update plan. Please try again.');
-    } finally {
-      setIsUpdating(false);
-    }
+    // Redirect to pricing page
+    navigate('/#pricing');
   };
 
   const formatPrice = (price: number): string => {
@@ -144,6 +124,21 @@ const PlanManagement: React.FC = () => {
       return `₹${Math.round(price)}`;
     }
     return `$${price.toFixed(2)}`;
+  };
+
+  // Calculate the current plan total price
+  const calculatePlanPrice = () => {
+    return (credits.posts * (currency === 'INR' ? 10 : 0.40)) +
+           (credits.comments * (currency === 'INR' ? 5 : 0.20)) +
+           (credits.ideas * (currency === 'INR' ? 5 : 0.20));
+  };
+
+  // Determine the plan type based on selected preset
+  const getPlanType = (): 'starter' | 'pro' | string => {
+    if (selectedPreset === 'starter') return 'starter';
+    if (selectedPreset === 'pro') return 'pro';
+    if (selectedPreset === '80' || selectedPreset === '100') return 'pro';
+    return 'custom';
   };
 
   if (isLoading) {
@@ -374,11 +369,10 @@ const PlanManagement: React.FC = () => {
 
               <Button 
                 onClick={handleUpdatePlan}
-                disabled={isUpdating || isProcessing || !isLoaded}
                 className="w-full mt-6 shadow-pulse hover-pulse"
                 size="lg"
               >
-                {isUpdating || isProcessing ? 'Processing Payment...' : !isLoaded ? 'Loading Payment System...' : 'Update Plan'}
+                Update Plan
               </Button>
 
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">

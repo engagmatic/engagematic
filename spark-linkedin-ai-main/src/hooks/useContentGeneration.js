@@ -53,6 +53,51 @@ export function useContentGeneration() {
     [toast]
   );
 
+  const generatePostCustom = useCallback(
+    async (postData) => {
+      setIsGenerating(true);
+      try {
+        const response = await apiClient.generatePostCustom(postData);
+        if (response.success) {
+          setGeneratedContent(response.data.content);
+          setQuotaInfo(response.data.quota);
+          toast({
+            title: "Post generated successfully! 🚀",
+            description: "Your LinkedIn pulse just got stronger!",
+          });
+          return { success: true, content: response.data.content };
+        } else {
+          throw new Error(response.message || "Failed to generate post");
+        }
+      } catch (error) {
+        console.error("Custom post generation error:", error);
+
+        if (
+          error.message.includes("QUOTA_EXCEEDED") ||
+          error.message.includes("SUBSCRIPTION_LIMIT_EXCEEDED")
+        ) {
+          toast({
+            title: "⚠️ Monthly Limit Reached",
+            description:
+              "Upgrade now to keep creating amazing content! Visit /pricing to view plans.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Generation failed",
+            description: error.message || "Failed to generate post content",
+            variant: "destructive",
+          });
+        }
+
+        return { success: false, error: error.message };
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    [toast]
+  );
+
   const generateComment = useCallback(
     async (commentData) => {
       setIsGenerating(true);
@@ -151,6 +196,7 @@ export function useContentGeneration() {
     generatedContent,
     quotaInfo,
     generatePost,
+    generatePostCustom,
     generateComment,
     saveContent,
     copyToClipboard,

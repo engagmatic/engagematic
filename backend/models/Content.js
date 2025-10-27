@@ -27,9 +27,8 @@ const contentSchema = new mongoose.Schema(
     hookId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Hook",
-      required: function () {
-        return this.type === "post";
-      },
+      required: false, // Made optional to support custom posts without hooks
+      default: null,
     },
     personaId: {
       type: mongoose.Schema.Types.ObjectId,

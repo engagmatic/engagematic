@@ -31,6 +31,7 @@ const PlanManagement = lazy(() => import("./pages/PlanManagement").then(module =
 const BlogListingPage = lazy(() => import("./pages/BlogListingPage"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
+const PostDetailPage = lazy(() => import("./pages/PostDetailPage"));
 // Admin Pages
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -135,6 +136,7 @@ const App = () => (
                   <Route path="/templates" element={<TemplatesPage />} />
                   <Route path="/plan-management" element={<PlanManagement />} />
                   <Route path="/profile" element={<UserProfile />} />
+                  <Route path="/post/:postId" element={<PostDetailPage />} />
                   <Route path="/referral" element={<Referrals />} />
                   <Route path="/blogs" element={<BlogListingPage />} />
                   <Route path="/blogs/:slug" element={<BlogPage />} />

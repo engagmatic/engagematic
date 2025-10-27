@@ -49,8 +49,10 @@ router.post(
         credits,
         currency = "USD",
         billingInterval = "monthly",
+        couponCode,
+        discountAmount = 0,
       } = req.body;
-
+      console.log("req.body", req.body);
       // Validate credits
       const validation = pricingService.validateCredits(credits);
       if (!validation.isValid) {
@@ -61,12 +63,13 @@ router.post(
         });
       }
 
-      // Create Razorpay order
+      // Create Razorpay order (with discount if coupon provided)
       const order = await razorpayService.createCreditSubscription(
         userId,
         credits,
         currency,
-        billingInterval
+        billingInterval,
+        discountAmount // Pass discount amount
       );
 
       res.json({
@@ -74,7 +77,9 @@ router.post(
         message: "Payment order created successfully",
         data: {
           orderId: order.orderId,
-          amount: order.amount,
+          amount: order.amount, // Final amount after discount
+          originalAmount: order.originalAmount, // Original amount before discount
+          discount: order.discount, // Discount amount
           currency: order.currency,
           planType: order.planType,
           credits: order.credits,

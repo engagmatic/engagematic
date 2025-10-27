@@ -180,6 +180,24 @@ export const Hero = () => {
               </div>
             </div>
             
+            {/* Product Hunt Badge */}
+            <div className="pt-6 px-4 flex justify-center">
+              <a 
+                href="https://www.producthunt.com/products/linkedinpulse?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-linkedinpulse" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="transition-transform hover:scale-105"
+              >
+                <img 
+                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1030934&theme=light&t=1761584253218" 
+                  alt="LinkedInPulse - AI Content & Analytics for LinkedIn Creators, Free | Product Hunt" 
+                  style={{width: "250px", height: "54px"}}
+                  width="250" 
+                  height="54"
+                />
+              </a>
+            </div>
+
             {/* Trust bar - Professional Roles */}
             <div className="pt-6 px-4">
               <div className="text-xs text-muted-foreground mb-4">Trusted by professionals worldwide</div>

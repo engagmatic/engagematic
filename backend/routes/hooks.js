@@ -248,17 +248,36 @@ router.get(
     try {
       const { topic, industry } = req.query;
 
-      // Generate trending hooks using AI
-      const prompt = `Generate 10 trending LinkedIn post hooks for ${
+      // Generate trending hooks using AI with variety
+      const currentDate = new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      // Add timestamp to ensure different generations
+      const timestamp = Date.now();
+
+      // Add random seed for variety
+      const randomSeed = Math.floor(Math.random() * 1000);
+
+      const prompt = `Generate 10 fresh, unique, and trending LinkedIn post hooks for ${
         topic || "general professional content"
-      } in ${industry || "various industries"}. 
+      } in ${
+        industry || "various industries"
+      }. Today is ${currentDate}. Current timestamp: ${timestamp}, seed: ${randomSeed}
     
     Requirements:
     - Each hook should be 10-80 characters
     - Mix of categories: story, question, statement, challenge, insight
-    - Based on current trends and viral content patterns
+    - Based on current trends and viral content patterns as of ${currentDate}
     - Professional but engaging
-    - Include trending topics, buzzwords, and current events
+    - Include trending topics, buzzwords, and current events relevant to this week
+    - Make each hook UNIQUE and different from previous generations
+    - Avoid repeating the same hooks
+    - Use creative variations and different angles
+    - Consider different industries and perspectives
     
     Return as JSON array with format:
     [
@@ -269,17 +288,19 @@ router.get(
       }
     ]`;
 
-      const aiResponse = await googleAIService.generateContent(prompt);
+      const aiResponse = await googleAIService.generateText(prompt);
 
-      if (!aiResponse || !aiResponse.trim()) {
+      if (!aiResponse || !aiResponse.text || !aiResponse.text.trim()) {
         throw new Error("AI response is empty");
       }
+
+      const aiText = aiResponse.text;
 
       // Parse AI response
       let trendingHooks;
       try {
         // Clean the response and extract JSON
-        const cleanedResponse = aiResponse
+        const cleanedResponse = aiText
           .replace(/```json\n?/g, "")
           .replace(/```\n?/g, "")
           .trim();
@@ -287,7 +308,7 @@ router.get(
       } catch (parseError) {
         console.error("Failed to parse AI response:", parseError);
         // Fallback: create hooks from response text
-        const lines = aiResponse
+        const lines = aiText
           .split("\n")
           .filter((line) => line.trim().length > 10 && line.trim().length < 80);
         trendingHooks = lines.slice(0, 10).map((line, index) => ({

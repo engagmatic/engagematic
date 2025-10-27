@@ -8,6 +8,7 @@ import subscriptionService from "../services/subscriptionService.js";
 import { authenticateToken, checkTrialStatus } from "../middleware/auth.js";
 import {
   validatePostGeneration,
+  validatePostGenerationWithoutHook,
   validateCommentGeneration,
   validateObjectId,
 } from "../middleware/validation.js";
@@ -65,13 +66,27 @@ router.post(
         });
       }
 
-      // Get hook
-      const hook = await Hook.findById(hookId);
-      if (!hook) {
-        return res.status(404).json({
-          success: false,
-          message: "Hook not found",
-        });
+      // Get hook - handle both database hooks and trending hooks
+      let hook;
+      if (hookId.startsWith("trending_")) {
+        // This is a trending hook (AI-generated)
+        // Try to find the hook data in the request or fetch from cache
+        // For now, extract the text from the request body if available
+        hook = {
+          text: req.body.hookText || "Here's what changed everything:",
+          category: "trending",
+          isDefault: false,
+        };
+        console.log("✅ Using trending hook:", hook.text);
+      } else {
+        // Regular database hook
+        hook = await Hook.findById(hookId);
+        if (!hook) {
+          return res.status(404).json({
+            success: false,
+            message: "Hook not found",
+          });
+        }
       }
 
       // Get or use persona - SIMPLIFIED to accept direct persona data
@@ -158,8 +173,161 @@ router.post(
       await usageService.incrementUsage(userId, "posts", aiResponse.tokensUsed);
       await subscriptionService.recordUsage(userId, "generate_post");
 
-      // Update hook usage count
-      await Hook.findByIdAndUpdate(hookId, { $inc: { usageCount: 1 } });
+      // Update hook usage count (skip for trending hooks - they're not in the database)
+      if (!hookId.startsWith("trending_")) {
+        await Hook.findByIdAndUpdate(hookId, { $inc: { usageCount: 1 } });
+      }
+
+      // Get updated subscription info
+      const subscription = await subscriptionService.getUserSubscription(
+        userId
+      );
+
+      res.json({
+        success: true,
+        message: "Post generated successfully",
+        data: {
+          content: content,
+          quota: await usageService.checkQuotaExceeded(userId, "posts"),
+          subscription: {
+            usage: subscription.usage,
+            tokens: subscription.tokens,
+            limits: subscription.limits,
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Post generation error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to generate post",
+      });
+    }
+  }
+);
+
+// Generate LinkedIn post without hooks (for pro users with custom titles)
+router.post(
+  "/posts/generate-custom",
+  authenticateToken,
+  checkTrialStatus,
+  validatePostGenerationWithoutHook,
+  async (req, res) => {
+    try {
+      const {
+        topic,
+        title,
+        category,
+        personaId,
+        persona: personaData,
+      } = req.body;
+      const userId = req.user._id;
+
+      // Check subscription and quota before generation
+      const canGenerate = await subscriptionService.canPerformAction(
+        userId,
+        "generate_post"
+      );
+      if (!canGenerate.allowed) {
+        return res.status(429).json({
+          success: false,
+          message: canGenerate.reason,
+          code: "SUBSCRIPTION_LIMIT_EXCEEDED",
+        });
+      }
+
+      // Create custom hook from title and category
+      const hook = {
+        text: title,
+        category: category,
+        isDefault: false,
+      };
+
+      // Get or use persona - SIMPLIFIED to accept direct persona data
+      let persona;
+      if (personaId) {
+        // Use persona from database
+        persona = await Persona.findById(personaId);
+        if (!persona || persona.userId.toString() !== userId.toString()) {
+          return res.status(404).json({
+            success: false,
+            message: "Persona not found or access denied",
+          });
+        }
+      } else if (personaData) {
+        // Use persona data directly (for sample personas)
+        persona = personaData;
+        console.log("✅ Using sample persona:", persona.name);
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "Either personaId or persona data is required",
+        });
+      }
+
+      // Get user profile for personalization
+      const user = req.user;
+      const userProfile = {
+        jobTitle: user.profile?.jobTitle || null,
+        company: user.profile?.company || null,
+        industry: user.profile?.industry || null,
+        experience: user.profile?.experience || null,
+        goals: user.persona?.goals || null,
+        targetAudience: user.persona?.targetAudience || null,
+        expertise: user.persona?.expertise || null,
+      };
+
+      console.log("👤 User Profile for Personalization:", userProfile);
+
+      // Generate content using Google AI with user profile
+      console.log("📝 Calling Google AI service...");
+      console.log("Data:", {
+        topic,
+        hookText: hook.text,
+        personaName: persona.name,
+        personaTone: persona.tone,
+      });
+
+      // Get profile insights for enhanced personalization
+      const profileInsights = await profileInsightsService.buildEnhancedContext(
+        userId
+      );
+
+      const aiResponse = await googleAIService.generatePost(
+        topic,
+        hook.text,
+        persona,
+        req.body.linkedinInsights || null,
+        profileInsights,
+        userProfile // Pass user profile for deep personalization
+      );
+
+      console.log("✅ AI response received:", {
+        contentLength: aiResponse.content?.length,
+        engagementScore: aiResponse.engagementScore,
+        tokensUsed: aiResponse.tokensUsed,
+      });
+
+      // Save generated content (don't save hook since it's not from database)
+      const content = new Content({
+        userId,
+        type: "post",
+        content: aiResponse.content,
+        topic,
+        hookId: null, // No hook for custom posts
+        personaId: personaId || null, // May be null for sample personas
+        engagementScore: aiResponse.engagementScore,
+        tokensUsed: aiResponse.tokensUsed,
+      });
+
+      await content.save();
+
+      // Increment usage
+      // Record usage in both systems
+      await usageService.incrementUsage(userId, "posts", aiResponse.tokensUsed);
+      await subscriptionService.recordUsage(userId, "generate_post");
+
+      // Don't update hook usage count for custom posts
 
       // Get updated subscription info
       const subscription = await subscriptionService.getUserSubscription(

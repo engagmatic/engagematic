@@ -102,13 +102,28 @@ export const Footer = () => {
             
             <div>
               <h3 className="font-semibold mb-4">Built For</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-sm text-muted-foreground mb-4">
                 <li><Link to="/blogs/linkedin-creators-guide" className="hover:text-foreground transition-smooth">LinkedIn Creators</Link></li>
                 <li><Link to="/blogs/founders-ceos-guide" className="hover:text-foreground transition-smooth">Founders & CEOs</Link></li>
                 <li><Link to="/blogs/freelancers-guide" className="hover:text-foreground transition-smooth">Freelancers</Link></li>
                 <li><Link to="/blogs/recruiters-guide" className="hover:text-foreground transition-smooth">Recruiters</Link></li>
                 <li><Link to="/blogs/sales-reps-guide" className="hover:text-foreground transition-smooth">Sales Reps</Link></li>
               </ul>
+              {/* Product Hunt Badge */}
+              <a 
+                href="https://www.producthunt.com/products/linkedinpulse?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-linkedinpulse" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block hover:opacity-80 transition-opacity"
+              >
+                <img 
+                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1030934&theme=light&t=1761584253218" 
+                  alt="LinkedInPulse - AI Content &#0043; Analytics for LinkedIn Creators&#0044; Free | Product Hunt" 
+                  style={{ width: '250px', height: '54px' }} 
+                  width="250" 
+                  height="54" 
+                />
+              </a>
             </div>
           </div>
           

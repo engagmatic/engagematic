@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { 
   User, 
-  CreditCard, 
+  Bookmark, 
   Crown, 
   Settings, 
   LogOut
@@ -86,9 +86,9 @@ export const UserDropdownMenu = () => {
         </DropdownMenuItem>
         
         <DropdownMenuItem asChild>
-          <Link to="/profile#payments" className="cursor-pointer">
-            <CreditCard className="mr-2 h-4 w-4" />
-            <span>Payment History</span>
+          <Link to="/profile?saved=true" className="cursor-pointer">
+            <Bookmark className="mr-2 h-4 w-4" />
+            <span>Saved</span>
           </Link>
         </DropdownMenuItem>
         

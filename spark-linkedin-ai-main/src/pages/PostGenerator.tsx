@@ -58,7 +58,7 @@ const PostGenerator = () => {
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { isGenerating, generatedContent, generatePost, copyToClipboard, saveContent } = useContentGeneration();
+  const { isGenerating, generatedContent, generatePost, generatePostCustom, copyToClipboard, saveContent } = useContentGeneration();
   const { subscription } = useSubscription();
 
   const handleUpgradeClick = (source: string) => {
@@ -225,11 +225,38 @@ const PostGenerator = () => {
       selectedPersona
     });
 
-    const result = await generatePost({
-      topic,
-      hookId: selectedHook._id,
-      ...personaData
-    });
+    // Check if user is pro and using a trending hook
+    const isProUser = subscription?.plan === 'pro';
+    const isTrendingHook = selectedHook._id && selectedHook._id.startsWith('trending_');
+    
+    let result;
+    
+    // Use custom API for pro users with trending hooks
+    if (isProUser && isTrendingHook) {
+      const postData: any = {
+        topic,
+        title: selectedHook.text,
+        category: selectedHook.category,
+        ...personaData
+      };
+      
+      console.log('🔥 Using custom API for pro user with trending hook:', postData);
+      result = await generatePostCustom(postData);
+    } else {
+      // Use standard API for regular hooks
+      const postData: any = {
+        topic,
+        hookId: selectedHook._id,
+        ...personaData
+      };
+      
+      // If it's a trending hook (but not pro), include the hook text
+      if (isTrendingHook) {
+        postData.hookText = selectedHook.text;
+      }
+      
+      result = await generatePost(postData);
+    }
 
     if (result.success) {
       console.log('✅ Post generated successfully!', result);
@@ -610,7 +637,13 @@ const PostGenerator = () => {
                             const formattedPost = formatForLinkedIn(generatedContent.content);
                             await navigator.clipboard.writeText(formattedPost);
                             
-                            // Step 2: Log analytics
+                            // Step 2: Show success message
+                            toast({
+                              title: "✅ Post Copied to Clipboard!",
+                              description: "Opening LinkedIn... Click the text area and press Ctrl+V (Cmd+V on Mac) to paste!",
+                            });
+                            
+                            // Step 3: Log analytics
                             try {
                               await apiClient.post('/content/share-log', {
                                 contentId: generatedContent._id,
@@ -621,46 +654,45 @@ const PostGenerator = () => {
                               console.log('Analytics log failed:', e);
                             }
                             
-                            // Step 3: Open LinkedIn's create post page
-                            const linkedInPostUrl = 'https://www.linkedin.com/feed/?shareActive=true';
-                            const popup = window.open(linkedInPostUrl, '_blank', 'width=800,height=700');
-                            
-                            if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-                              // Popup blocked
-                              toast({
-                                title: "✅ Post Copied!",
-                                description: "Popup blocked. Post copied to clipboard - open LinkedIn and paste (Ctrl+V)",
-                                variant: "default"
-                              });
-                            } else {
-                              // Success
-                              toast({
-                                title: "✅ Post Copied & LinkedIn Opened!",
-                                description: "Just paste (Ctrl+V or Cmd+V) in the LinkedIn post box and hit Post!"
-                              });
-                            }
+                            // Step 4: Wait 1 second before opening LinkedIn so toast is visible
+                            setTimeout(() => {
+                              // Open LinkedIn's create post page
+                              const linkedInPostUrl = 'https://www.linkedin.com/feed/?shareActive=true';
+                              const linkedInWindow = window.open(linkedInPostUrl, '_blank', 'width=1200,height=800');
+                              
+                              if (!linkedInWindow || linkedInWindow.closed || typeof linkedInWindow.closed === 'undefined') {
+                                // Popup blocked
+                                toast({
+                                  title: "⚠️ Popup Blocked",
+                                  description: "Please allow popups for this site, or copy the post manually from above.",
+                                  variant: "destructive"
+                                });
+                              }
+                            }, 1000);
                           } catch (error) {
                             console.error('Share error:', error);
                             // Fallback to manual copy
                             toast({
-                              title: "Opening LinkedIn...",
-                              description: "Copy the post above and paste it into LinkedIn",
-                              variant: "default"
+                              title: "Error",
+                              description: "Could not copy to clipboard. Please copy the post manually.",
+                              variant: "destructive"
                             });
                             window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank');
                           }
                         }}
                       >
                         <Share2 className="mr-2 h-4 w-4" />
-                        Copy & Open LinkedIn
+                        Publish with LinkedIn
                         <ExternalLink className="ml-2 h-3 w-3" />
                       </Button>
-                      <p className="text-xs text-muted-foreground text-center">
-                        💡 Auto-copies your post → Opens LinkedIn → Just paste (Ctrl+V) and post!
-                      </p>
-                      <p className="text-xs text-muted-foreground text-center opacity-70">
-                        Powered by LinkedInPulse
-                      </p>
+                      <div className="space-y-1 text-center">
+                        <p className="text-xs text-muted-foreground font-medium">
+                          📋 Step 1: Click button → 📋 Step 2: Paste in LinkedIn (Ctrl+V) → 📤 Step 3: Publish!
+                        </p>
+                        <p className="text-xs text-muted-foreground opacity-70">
+                          Powered by LinkedInPulse
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ) : (
