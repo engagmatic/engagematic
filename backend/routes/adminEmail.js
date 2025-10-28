@@ -4,7 +4,7 @@ import { adminAuth } from "../middleware/adminAuth.js";
 import EmailLog from "../models/EmailLog.js";
 import User from "../models/User.js";
 import Content from "../models/Content.js";
-import { emailService } from "../services/emailService.js";
+import emailService from "../services/emailService.js";
 
 const router = express.Router();
 
