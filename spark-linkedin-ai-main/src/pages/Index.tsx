@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Hero } from "@/components/landing/Hero";
 import { Features } from "@/components/landing/Features";
 import { Testimonials } from "@/components/landing/Testimonials";
+import { BlogSection } from "@/components/landing/BlogSection";
 import ReferralSection from "@/components/landing/ReferralSection";
 import { Pricing } from "@/components/landing/Pricing";
 import { FAQ } from "@/components/landing/FAQ";
@@ -33,6 +34,7 @@ const Index = () => {
       <Hero />
       <Features />
       <Testimonials />
+      <BlogSection />
       <ReferralSection />
       <Pricing />
       <FAQ />

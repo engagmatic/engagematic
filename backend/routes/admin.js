@@ -5,8 +5,12 @@ import Content from "../models/Content.js";
 import Usage from "../models/Usage.js";
 import UserSubscription from "../models/UserSubscription.js";
 import googleAnalyticsService from "../services/googleAnalyticsService.js";
+import adminEmailRoutes from "./adminEmail.js";
 
 const router = express.Router();
+
+// Mount admin email routes
+router.use("/", adminEmailRoutes);
 
 // Get dashboard statistics
 router.get("/stats", adminAuth, async (req, res) => {

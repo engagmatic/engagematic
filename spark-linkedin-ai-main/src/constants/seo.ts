@@ -11,6 +11,10 @@ export const SITE_DOMAIN = 'linkedinpulse.com';
 // Primary Keywords (High-Value)
 export const PRIMARY_KEYWORDS = [
   'LinkedIn post generator',
+  'AI LinkedIn posts',
+  'LinkedIn content generator',
+  'LinkedIn post scheduler',
+  'LinkedIn automation',
   'AI LinkedIn content',
   'LinkedIn carousel generator',
   'LinkedIn comment generator',
@@ -19,7 +23,13 @@ export const PRIMARY_KEYWORDS = [
   'LinkedIn automation tool',
   'viral LinkedIn posts',
   'LinkedIn growth tool',
-  'LinkedIn AI assistant'
+  'LinkedIn AI assistant',
+  'LinkedIn content creator',
+  'LinkedIn marketing tool',
+  'LinkedIn AI tool',
+  'LinkedIn post creator',
+  'LinkedIn content automation',
+  'LinkedIn engagement tool'
 ];
 
 // Secondary Keywords
@@ -36,11 +46,149 @@ export const SECONDARY_KEYWORDS = [
   'B2B marketing tools'
 ];
 
+// Brand Misspellings and Variations
+export const BRAND_VARIATIONS = [
+  'LinkedInPulse',
+  'LinkedIn Pulse',
+  'LinkedInPulse AI',
+  'LinkedIn Pulse AI',
+  'LinkedInPulse tool',
+  'LinkedIn Pulse tool',
+  'LinkedInPulse app',
+  'LinkedIn Pulse app',
+  'LinkedInPulse software',
+  'LinkedIn Pulse software',
+  'LinkedInPulse platform',
+  'LinkedIn Pulse platform'
+];
+
+// Competitive Keywords
+export const COMPETITIVE_KEYWORDS = [
+  // Direct Competitors
+  'LinkedInPulse vs Taplio',
+  'LinkedInPulse vs Hootsuite',
+  'LinkedInPulse vs ChatGPT',
+  'LinkedInPulse vs AuthoredUp',
+  'LinkedInPulse vs Kleo',
+  'LinkedInPulse vs Buffer',
+  'LinkedInPulse vs Sprout Social',
+  'LinkedInPulse vs Later',
+  'LinkedInPulse vs CoSchedule',
+  'LinkedInPulse vs Canva',
+  
+  // Alternative Tools
+  'Taplio alternative',
+  'Hootsuite alternative',
+  'Buffer alternative',
+  'Sprout Social alternative',
+  'Later alternative',
+  'CoSchedule alternative',
+  'Canva alternative',
+  'ChatGPT alternative LinkedIn',
+  'AuthoredUp alternative',
+  'Kleo alternative',
+  
+  // Tool Comparisons
+  'best LinkedIn automation tool',
+  'best LinkedIn content generator',
+  'best LinkedIn post scheduler',
+  'best LinkedIn AI tool',
+  'best LinkedIn marketing tool',
+  'LinkedIn automation tools comparison',
+  'LinkedIn content tools comparison',
+  'LinkedIn AI tools comparison',
+  'LinkedIn marketing tools comparison',
+  'LinkedIn post generators comparison'
+];
+
+// Long-tail Keywords
+export const LONG_TAIL_KEYWORDS = [
+  'how to create viral LinkedIn posts',
+  'how to generate LinkedIn content with AI',
+  'how to automate LinkedIn posts',
+  'how to schedule LinkedIn content',
+  'how to optimize LinkedIn profile',
+  'how to grow LinkedIn following',
+  'how to increase LinkedIn engagement',
+  'how to build LinkedIn presence',
+  'how to create LinkedIn content strategy',
+  'how to use AI for LinkedIn marketing',
+  'best practices for LinkedIn content',
+  'LinkedIn content creation tips',
+  'LinkedIn marketing strategies',
+  'LinkedIn automation best practices',
+  'LinkedIn AI content generation',
+  'LinkedIn post optimization techniques',
+  'LinkedIn engagement strategies',
+  'LinkedIn profile optimization guide',
+  'LinkedIn content calendar planning',
+  'LinkedIn thought leadership content'
+];
+
+// Industry-Specific Keywords
+export const INDUSTRY_KEYWORDS = [
+  'LinkedIn for startups',
+  'LinkedIn for SaaS companies',
+  'LinkedIn for agencies',
+  'LinkedIn for consultants',
+  'LinkedIn for freelancers',
+  'LinkedIn for recruiters',
+  'LinkedIn for sales teams',
+  'LinkedIn for marketers',
+  'LinkedIn for founders',
+  'LinkedIn for CEOs',
+  'LinkedIn for entrepreneurs',
+  'LinkedIn for B2B companies',
+  'LinkedIn for tech companies',
+  'LinkedIn for healthcare',
+  'LinkedIn for finance',
+  'LinkedIn for real estate',
+  'LinkedIn for education',
+  'LinkedIn for nonprofits',
+  'LinkedIn for e-commerce',
+  'LinkedIn for manufacturing'
+];
+
+// Problem-Solving Keywords
+export const PROBLEM_KEYWORDS = [
+  'LinkedIn shadowbanning prevention',
+  'LinkedIn algorithm changes 2025',
+  'LinkedIn content not getting views',
+  'LinkedIn posts not engaging',
+  'LinkedIn profile not visible',
+  'LinkedIn connection requests ignored',
+  'LinkedIn content ideas exhausted',
+  'LinkedIn posting frequency optimal',
+  'LinkedIn hashtag strategy',
+  'LinkedIn video content best practices',
+  'LinkedIn carousel post creation',
+  'LinkedIn article writing tips',
+  'LinkedIn company page optimization',
+  'LinkedIn personal branding mistakes',
+  'LinkedIn networking strategies',
+  'LinkedIn lead generation techniques',
+  'LinkedIn sales prospecting content',
+  'LinkedIn recruitment content',
+  'LinkedIn thought leadership positioning',
+  'LinkedIn content calendar management'
+];
+
+// Combined Keywords for SEO
+export const ALL_KEYWORDS = [
+  ...PRIMARY_KEYWORDS,
+  ...SECONDARY_KEYWORDS,
+  ...BRAND_VARIATIONS,
+  ...COMPETITIVE_KEYWORDS,
+  ...LONG_TAIL_KEYWORDS,
+  ...INDUSTRY_KEYWORDS,
+  ...PROBLEM_KEYWORDS
+];
+
 // Default SEO Configuration
 export const DEFAULT_SEO = {
   title: 'LinkedInPulse - AI-Powered LinkedIn Content Generator | Create Viral Posts',
   description: 'Create viral-worthy LinkedIn posts, comments, and carousels with AI that sounds authentically like you. Join 1000+ creators boosting their LinkedIn presence with LinkedInPulse.',
-  keywords: PRIMARY_KEYWORDS.join(', '),
+  keywords: ALL_KEYWORDS.join(', '),
   author: 'LinkedInPulse Team',
   image: `${SITE_URL}/og-default.png`, // Default OG image for all pages
   imageAlt: 'LinkedInPulse - AI LinkedIn Content Generator',
@@ -54,7 +202,7 @@ export const PAGE_SEO = {
   home: {
     title: 'LinkedInPulse - AI LinkedIn Post Generator | Create Viral Content in Seconds',
     description: 'Transform your LinkedIn presence with AI-powered content generation. Create engaging posts, viral comments, and professional carousels that sound authentically like you. Free trial available.',
-    keywords: 'LinkedIn post generator, AI LinkedIn tool, viral LinkedIn content, LinkedIn automation, content marketing AI',
+    keywords: 'LinkedIn post generator, AI LinkedIn tool, viral LinkedIn content, LinkedIn automation, content marketing AI, LinkedInPulse vs Taplio, LinkedInPulse vs Hootsuite, best LinkedIn AI tool, LinkedIn content creator, LinkedIn post scheduler',
     canonical: SITE_URL,
     image: `${SITE_URL}/og-home.png` // Special home page OG image
   },

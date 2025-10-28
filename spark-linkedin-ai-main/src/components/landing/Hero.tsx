@@ -57,7 +57,7 @@ export const Hero = () => {
             </Badge>
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold leading-tight tracking-tight px-4">
-              Never Run Out of{" "}
+              AI LinkedIn Post Generator That Creates{" "}
               <span 
                 className={`inline-block bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent transition-all duration-500 ${
                   isAnimating ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
@@ -66,66 +66,65 @@ export const Hero = () => {
               >
                 {ROTATING_WORDS[currentWordIndex]}
               </span>{" "}
-              Again.
+              in 30 Seconds
             </h1>
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl leading-relaxed mx-auto px-4">
-              <span className="text-foreground font-semibold">AI that writes in your voice.</span> Show up. Stand out.
+              <span className="text-foreground font-semibold">LinkedInPulse is the #1 AI LinkedIn content generator</span> for professionals. Create viral posts, engaging comments, and professional content that sounds authentically like you.
             </p>
 
             {/* Feature cards around the headline (premium UI) */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-5xl mx-auto">
-              {/* AI Persona */}
+              {/* AI LinkedIn Content Generator */}
               <div className="rounded-2xl border bg-white shadow-card p-6 hover-lift text-left">
-                <div className="text-xs font-semibold text-muted-foreground mb-2">Persona</div>
+                <div className="text-xs font-semibold text-muted-foreground mb-2">AI Content Generator</div>
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
-                  <h4 className="text-base font-semibold">Your authentic voice</h4>
+                  <h4 className="text-base font-semibold">LinkedIn Post Generator</h4>
                 </div>
-                <p className="text-sm text-muted-foreground">AI learns your unique style and creates content that sounds like YOU, not a robot.</p>
+                <p className="text-sm text-muted-foreground">Create viral LinkedIn posts, comments, and content ideas with AI trained on 50K+ viral posts.</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Authentic</span>
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Voice AI</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Viral Posts</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">AI Comments</span>
                 </div>
               </div>
 
-              {/* Profile Analyzer */}
+              {/* LinkedIn Profile Optimizer */}
               <div className="rounded-2xl border bg-white shadow-card p-6 hover-lift text-left">
-                <div className="text-xs font-semibold text-muted-foreground mb-2">Analyzer</div>
+                <div className="text-xs font-semibold text-muted-foreground mb-2">Profile Optimizer</div>
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                   </div>
-                  <h4 className="text-base font-semibold">Profile optimization</h4>
+                  <h4 className="text-base font-semibold">LinkedIn Profile Analyzer</h4>
                 </div>
-                <p className="text-sm text-muted-foreground">Get AI-powered score & actionable tips to boost your LinkedIn visibility.</p>
+                <p className="text-sm text-muted-foreground">Get AI-powered LinkedIn profile optimization tips and virality score analysis for maximum reach.</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Score</span>
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Tips</span>
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Insights</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Profile Score</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Optimization</span>
                 </div>
               </div>
 
-              {/* Smart Comments */}
+              {/* LinkedIn Engagement Tool */}
               <div className="rounded-2xl border bg-white shadow-card p-6 hover-lift text-left">
-                <div className="text-xs font-semibold text-muted-foreground mb-2">Engagement</div>
+                <div className="text-xs font-semibold text-muted-foreground mb-2">Engagement Tool</div>
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
                   </div>
-                  <h4 className="text-base font-semibold">Smart comments</h4>
+                  <h4 className="text-base font-semibold">LinkedIn Comment Generator</h4>
                 </div>
-                <p className="text-sm text-muted-foreground">Generate genuine comments that build real relationships and conversations.</p>
+                <p className="text-sm text-muted-foreground">Generate authentic LinkedIn comments and engagement that builds professional relationships and boosts visibility.</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Genuine</span>
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Engage</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Smart Comments</span>
+                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Engagement</span>
                 </div>
               </div>
             </div>

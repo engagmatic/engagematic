@@ -39,6 +39,7 @@ import UserManagement from "./pages/admin/UserManagement";
 import TestimonialsManagement from "./pages/admin/TestimonialsManagement";
 import BlogManagement from "./pages/admin/BlogManagement";
 import Analytics from "./pages/admin/Analytics";
+import EmailAnalytics from "./pages/admin/EmailAnalytics";
 import { ProtectedAdminRoute } from "./components/admin/ProtectedAdminRoute";
 // Roadmap and Changelog removed
 import NotFound from "./pages/NotFound";
@@ -112,6 +113,14 @@ const App = () => (
                   element={
                     <ProtectedAdminRoute>
                       <Analytics />
+                    </ProtectedAdminRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/email-analytics" 
+                  element={
+                    <ProtectedAdminRoute>
+                      <EmailAnalytics />
                     </ProtectedAdminRoute>
                   } 
                 />

@@ -12,7 +12,8 @@ import {
   LogOut,
   Shield,
   Menu,
-  X
+  X,
+  Mail
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -24,6 +25,7 @@ const navigationItems = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/admin/users', label: 'Users', icon: Users },
   { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+  { path: '/admin/email-analytics', label: 'Email Analytics', icon: Mail },
   { path: '/admin/blog', label: 'Blog CMS', icon: FileText },
   { path: '/admin/testimonials', label: 'Testimonials', icon: MessageSquare },
   { path: '/admin/settings', label: 'Settings', icon: Settings },

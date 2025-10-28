@@ -26,7 +26,7 @@ const blogs: Blog[] = [
     category: "comparison",
     readTime: "8 min read",
     publishDate: "2025-01-15",
-    banner: "/blog-banners/chatgpt-comparison.jpg",
+    banner: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop&crop=center",
     slug: "linkedinpulse-vs-chatgpt"
   },
   {
@@ -36,7 +36,7 @@ const blogs: Blog[] = [
     category: "comparison",
     readTime: "7 min read",
     publishDate: "2025-01-15",
-    banner: "/blog-banners/taplio-comparison.jpg",
+    banner: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=400&fit=crop&crop=center",
     slug: "linkedinpulse-vs-taplio"
   },
   {
@@ -46,7 +46,7 @@ const blogs: Blog[] = [
     category: "comparison",
     readTime: "6 min read",
     publishDate: "2025-01-15",
-    banner: "/blog-banners/hootsuite-comparison.jpg",
+    banner: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=400&fit=crop&crop=center",
     slug: "linkedinpulse-vs-hootsuite"
   },
   {
@@ -56,7 +56,7 @@ const blogs: Blog[] = [
     category: "comparison",
     readTime: "7 min read",
     publishDate: "2025-01-15",
-    banner: "/blog-banners/authoredup-comparison.jpg",
+    banner: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=400&fit=crop&crop=center",
     slug: "linkedinpulse-vs-authoredup"
   },
   {
@@ -66,7 +66,7 @@ const blogs: Blog[] = [
     category: "comparison",
     readTime: "6 min read",
     publishDate: "2025-01-15",
-    banner: "/blog-banners/kleo-comparison.jpg",
+    banner: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&h=400&fit=crop&crop=center",
     slug: "linkedinpulse-vs-kleo"
   },
   {
@@ -77,7 +77,7 @@ const blogs: Blog[] = [
     targetAudience: "LinkedIn Creators",
     readTime: "12 min read",
     publishDate: "2025-01-15",
-    banner: "/blog-banners/linkedin-creators.jpg",
+    banner: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=400&fit=crop&crop=center",
     slug: "linkedin-creators-guide"
   },
   {
@@ -88,7 +88,7 @@ const blogs: Blog[] = [
     targetAudience: "Founders & CEOs",
     readTime: "10 min read",
     publishDate: "2025-01-15",
-    banner: "/blog-banners/founders-ceos.jpg",
+    banner: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=400&fit=crop&crop=center",
     slug: "founders-ceos-guide"
   },
   {
@@ -99,7 +99,7 @@ const blogs: Blog[] = [
     targetAudience: "Freelancers",
     readTime: "9 min read",
     publishDate: "2025-01-15",
-    banner: "/blog-banners/freelancers.jpg",
+    banner: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=400&fit=crop&crop=center",
     slug: "freelancers-guide"
   },
   {
@@ -110,7 +110,7 @@ const blogs: Blog[] = [
     targetAudience: "Recruiters",
     readTime: "11 min read",
     publishDate: "2025-01-15",
-    banner: "/blog-banners/recruiters.jpg",
+    banner: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&h=400&fit=crop&crop=center",
     slug: "recruiters-guide"
   },
   {
@@ -121,7 +121,7 @@ const blogs: Blog[] = [
     targetAudience: "Sales Reps",
     readTime: "10 min read",
     publishDate: "2025-01-15",
-    banner: "/blog-banners/sales-reps.jpg",
+    banner: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=400&fit=crop&crop=center",
     slug: "sales-reps-guide"
   }
 ];
@@ -225,7 +225,12 @@ const BlogListingPage = () => {
           {filteredBlogs.map((blog) => (
             <Card key={blog.id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
               {/* Banner Image */}
-              <div className="relative h-48 bg-gradient-to-br from-blue-100 to-indigo-100 overflow-hidden">
+              <div className="relative h-48 overflow-hidden">
+                <img
+                  src={blog.banner || "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=400&fit=crop&crop=center"}
+                  alt={blog.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                 <div className="absolute top-4 left-4">
                   <Badge 
