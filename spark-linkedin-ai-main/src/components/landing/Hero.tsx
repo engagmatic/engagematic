@@ -153,17 +153,6 @@ export const Hero = () => {
               </Button>
             </div>
 
-            {/* Social proof below CTAs */}
-            <div className="mt-3 flex items-center justify-center gap-3 text-xs text-muted-foreground">
-              <div className="flex items-center gap-0.5 text-yellow-500">
-                <Star className="h-4 w-4 fill-current" />
-                <Star className="h-4 w-4 fill-current" />
-                <Star className="h-4 w-4 fill-current" />
-                <Star className="h-4 w-4 fill-current" />
-                <Star className="h-4 w-4 fill-current" />
-              </div>
-              <span>Rated 5/5 by 500+ creators</span>
-            </div>
 
             <div className="flex flex-col gap-3 pt-2 px-4">
               <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground">
@@ -180,27 +169,9 @@ export const Hero = () => {
               </div>
             </div>
             
-            {/* Product Hunt Badge */}
-            <div className="pt-6 px-4 flex justify-center">
-              <a 
-                href="https://www.producthunt.com/products/linkedinpulse?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-linkedinpulse" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="transition-transform hover:scale-105"
-              >
-                <img 
-                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1030934&theme=light&t=1761584253218" 
-                  alt="LinkedInPulse - AI Content & Analytics for LinkedIn Creators, Free | Product Hunt" 
-                  style={{width: "250px", height: "54px"}}
-                  width="250" 
-                  height="54"
-                />
-              </a>
-            </div>
-
-            {/* Trust bar - Professional Roles */}
+            {/* Trust Indicators - Professional Roles */}
             <div className="pt-6 px-4">
-              <div className="text-xs text-muted-foreground mb-4">Trusted by professionals worldwide</div>
+              <div className="text-xs text-muted-foreground mb-4 text-center">Trusted by professionals worldwide</div>
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                 <Badge variant="secondary" className="px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50 hover:border-blue-300 transition-colors">
                   Startup Founders
@@ -220,22 +191,24 @@ export const Hero = () => {
               </div>
             </div>
             
+            {/* Realistic Statistics */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 lg:gap-8 pt-6 border-t border-border/50 px-4">
               <div className="text-center">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">500+</div>
-                <div className="text-xs lg:text-sm text-muted-foreground">Beta Users</div>
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">150+</div>
+                <div className="text-xs lg:text-sm text-muted-foreground">Active Users</div>
               </div>
               <div className="h-8 sm:h-10 w-px bg-border/50 hidden sm:block" />
               <div className="text-center">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">5K+</div>
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">2K+</div>
                 <div className="text-xs lg:text-sm text-muted-foreground">Posts Generated</div>
               </div>
               <div className="h-8 sm:h-10 w-px bg-border/50 hidden sm:block" />
               <div className="text-center">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">30s</div>
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">15s</div>
                 <div className="text-xs lg:text-sm text-muted-foreground">Avg. Generation Time</div>
               </div>
             </div>
+
           </div>
           
         {/* Removed older duplicate section; cards are now integrated near headline */}

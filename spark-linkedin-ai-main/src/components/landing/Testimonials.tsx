@@ -54,12 +54,35 @@ export const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const itemsToShow = 4;
+  const [itemsToShow, setItemsToShow] = useState(4);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const testimonialContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchTestimonials();
+  }, []);
+
+  // Handle responsive itemsToShow based on screen size
+  useEffect(() => {
+    const updateItemsToShow = () => {
+      const width = window.innerWidth;
+      if (width < 640) { // Mobile
+        setItemsToShow(1);
+      } else if (width < 768) { // Small tablet
+        setItemsToShow(2);
+      } else if (width < 1024) { // Tablet
+        setItemsToShow(2);
+      } else if (width < 1280) { // Small desktop
+        setItemsToShow(3);
+      } else { // Large desktop
+        setItemsToShow(4);
+      }
+    };
+
+    updateItemsToShow();
+    window.addEventListener('resize', updateItemsToShow);
+    
+    return () => window.removeEventListener('resize', updateItemsToShow);
   }, []);
 
   useEffect(() => {
@@ -148,22 +171,22 @@ export const Testimonials = () => {
     <section className="py-24 bg-gradient-to-br from-primary/10 via-purple-500/10 to-pink-500/10">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16 space-y-4">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Sparkles className="h-8 w-8 text-yellow-500 fill-yellow-500" />
-            <h2 className="text-4xl lg:text-5xl font-bold">
+          <div className="flex items-center justify-center gap-1 sm:gap-2 mb-4">
+            <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 fill-yellow-500" />
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold">
               What Our Users{" "}
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Say About Us</span>
             </h2>
-            <Sparkles className="h-8 w-8 text-yellow-500 fill-yellow-500" />
+            <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 fill-yellow-500" />
           </div>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
             Real testimonials from professionals who are transforming their LinkedIn presence
           </p>
         </div>
         
         <div className="relative" ref={testimonialContainerRef}>
           {isLoading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
                 <Card key={`loading-${i}`} className="p-6 bg-card/50 animate-pulse">
                   <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
@@ -176,7 +199,7 @@ export const Testimonials = () => {
               No testimonials available yet.
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 transition-all duration-700 ease-in-out">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-all duration-700 ease-in-out">
               {displayedTestimonials.map((testimonial, index) => (
                 <Card 
                   key={`${currentIndex}-${index}`}
@@ -198,10 +221,6 @@ export const Testimonials = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <div className="font-bold text-sm">{testimonial.displayName}</div>
-                        <Badge variant="default" className="text-xs h-5 bg-green-500 hover:bg-green-600">
-                          <Sparkles className="h-3 w-3 mr-1" />
-                          Verified
-                        </Badge>
                       </div>
                       <div className="text-xs text-muted-foreground font-medium">
                         {testimonial.jobTitle}
