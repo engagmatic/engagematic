@@ -15,6 +15,7 @@ import {
   Lightbulb,
   Sparkles,
   Loader2
+  , Settings
 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Link, useNavigate } from "react-router-dom";
@@ -89,6 +90,14 @@ export const SubscriptionStatus = () => {
       color: "text-purple-500",
       bgColor: "bg-purple-50",
       borderColor: "border-purple-200"
+    }
+    ,
+    custom: {
+      name: "Custom Plan",
+      icon: Settings,
+      color: "text-orange-500",
+      bgColor: "bg-orange-50",
+      borderColor: "border-orange-200"
     }
   };
 

@@ -46,6 +46,7 @@ export const UserDropdownMenu = () => {
     if (!subscription) return "Trial";
     if (subscription.plan === "starter") return "Starter";
     if (subscription.plan === "pro") return "Pro";
+    if (subscription.plan === "custom") return "Custom";
     return "Trial";
   };
 

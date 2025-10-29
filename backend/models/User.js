@@ -29,7 +29,8 @@ const userSchema = new mongoose.Schema(
     },
     plan: {
       type: String,
-      enum: ["starter", "pro"],
+      // Allow 'custom' as a plan value to reflect credit-based purchases
+      enum: ["starter", "pro", "custom"],
       default: "starter",
     },
     subscriptionId: {

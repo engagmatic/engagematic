@@ -22,7 +22,8 @@ const paymentSchema = new mongoose.Schema(
     },
     plan: {
       type: String,
-      enum: ["starter", "pro"],
+      // support preset plans and custom credit-based plans
+      enum: ["starter", "pro", "custom"],
       required: true,
     },
     billingPeriod: {

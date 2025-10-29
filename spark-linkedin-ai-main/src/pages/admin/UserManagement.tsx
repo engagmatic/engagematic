@@ -142,7 +142,8 @@ export default function UserManagement() {
     const styles = {
       trial: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
       starter: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-      pro: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300'
+      pro: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300',
+      custom: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
     };
 
     return (
@@ -193,6 +194,7 @@ export default function UserManagement() {
               <option value="trial">Trial</option>
               <option value="starter">Starter</option>
               <option value="pro">Pro</option>
+              <option value="custom">Custom</option>
             </select>
           </div>
         </Card>

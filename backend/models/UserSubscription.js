@@ -13,7 +13,8 @@ const userSubscriptionSchema = new mongoose.Schema(
     // Subscription details
     plan: {
       type: String,
-      enum: ["trial", "starter", "pro"],
+      // Added 'custom' to support credit-based custom plans
+      enum: ["trial", "starter", "pro", "custom"],
       default: "trial",
       required: true,
     },

@@ -1,4 +1,5 @@
 import UserSubscription from "../models/UserSubscription.js";
+import User from "../models/User.js";
 
 class PricingService {
   constructor() {
@@ -232,6 +233,21 @@ class PricingService {
 
       await subscription.save();
 
+      // Also update top-level User document so frontend and other services reflect the change immediately
+      try {
+        await User.findByIdAndUpdate(userId, {
+          plan: planType,
+          subscriptionStatus: "active",
+          subscriptionId: subscription._id?.toString(),
+          subscriptionEndsAt: subscription.subscriptionEndDate || null,
+        });
+      } catch (err) {
+        console.warn(
+          "Failed to update User document after creating credit subscription:",
+          err.message
+        );
+      }
+
       return {
         subscription,
         pricing: this.getPricingBreakdown(credits, currency),
@@ -271,6 +287,21 @@ class PricingService {
       subscription.tokens.remaining = newTokenTotal - subscription.tokens.used;
 
       await subscription.save();
+
+      // Keep top-level User document in sync when upgrading existing subscription
+      try {
+        await User.findByIdAndUpdate(userId, {
+          plan: planType,
+          subscriptionStatus: "active",
+          subscriptionId: subscription._id?.toString(),
+          subscriptionEndsAt: subscription.subscriptionEndDate || null,
+        });
+      } catch (err) {
+        console.warn(
+          "Failed to update User document after updating credit subscription:",
+          err.message
+        );
+      }
 
       return {
         subscription,

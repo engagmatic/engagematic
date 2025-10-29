@@ -48,7 +48,13 @@ router.get("/stats", adminAuth, async (req, res) => {
       }),
     ]);
 
-    const totalRevenue = paidUsers * 15; // Approximate average
+    // Calculate real revenue from Payment collection (sum of captured payments)
+    const Payment = (await import("../models/Payment.js")).default;
+    const paymentAgg = await Payment.aggregate([
+      { $match: { status: "captured" } },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+    const totalRevenue = paymentAgg.length > 0 ? paymentAgg[0].total : 0;
     const conversionRate =
       totalUsers > 0 ? ((paidUsers / totalUsers) * 100).toFixed(1) : 0;
     const growthRate =
