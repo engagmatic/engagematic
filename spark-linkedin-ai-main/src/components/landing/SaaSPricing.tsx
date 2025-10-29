@@ -332,7 +332,7 @@ export const SaaSPricing = () => {
         </div>
 
         {/* Coupon Input */}
-        <div className="max-w-md mx-auto mb-8">
+        {/* <div className="max-w-md mx-auto mb-8">
           {selectedPlan !== 'custom' && (
             <CouponInput
               amount={getPlanPrice(plans.find(p => p.id === selectedPlan) || plans[1])}
@@ -341,7 +341,7 @@ export const SaaSPricing = () => {
               onCouponRemoved={() => setCouponData(null)}
             />
           )}
-        </div>
+        </div> */}
 
         {/* Pricing Cards */}
         <div className="max-w-5xl mx-auto">
