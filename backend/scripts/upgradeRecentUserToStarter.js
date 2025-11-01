@@ -41,13 +41,14 @@ const upgradeRecentUserToStarter = async () => {
 
     const userId = recentUser._id;
 
-    // Update User model
+    // Update User model - ensure active status, not trial
     await User.findByIdAndUpdate(userId, {
       plan: "starter",
-      subscriptionStatus: "active",
+      subscriptionStatus: "active", // Active, NOT trial
       subscriptionEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 1 month from now
+      trialEndsAt: null, // Clear trial end date
     });
-    console.log("✅ User model updated to STARTER");
+    console.log("✅ User model updated to STARTER (active, not trial)");
 
     // Get or create UserSubscription
     let subscription = await UserSubscription.findOne({ userId });
@@ -57,11 +58,13 @@ const upgradeRecentUserToStarter = async () => {
       subscription = new UserSubscription({
         userId: userId,
         plan: "starter",
-        status: "active",
+        status: "active", // Active status, not trial
         subscriptionStartDate: new Date(),
         subscriptionEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 1 month
+        trialStartDate: null, // No trial
+        trialEndDate: null, // No trial
         tokens: {
-          total: 225, // 15 posts * 5 + 30 comments * 3 + 30 ideas * 4 = 75 + 90 + 120 = 285
+          total: 225, // 15 posts * 5 + 30 comments * 3 + 30 ideas * 4 = 75 + 90 + 120 = 225
           used: 0,
           remaining: 225,
         },
@@ -75,21 +78,23 @@ const upgradeRecentUserToStarter = async () => {
           prioritySupport: false,
         },
         billing: {
-          amount: 12,
-          currency: "USD",
+          amount: 249, // ₹249/month for INR
+          currency: "INR",
           interval: "monthly",
           nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         },
       });
-      console.log("✅ Created new UserSubscription with STARTER plan");
+      console.log("✅ Created new UserSubscription with STARTER plan (INR ₹249/month)");
     } else {
       // Update existing subscription
       subscription.plan = "starter";
-      subscription.status = "active";
+      subscription.status = "active"; // Active status, not trial
       subscription.subscriptionStartDate = new Date();
       subscription.subscriptionEndDate = new Date(
         Date.now() + 30 * 24 * 60 * 60 * 1000
       ); // 1 month
+      subscription.trialStartDate = null; // Clear trial dates
+      subscription.trialEndDate = null; // Clear trial dates
       subscription.tokens.total = 225;
       subscription.tokens.remaining = 225 - subscription.tokens.used;
       subscription.limits.postsPerMonth = 15;
@@ -99,13 +104,13 @@ const upgradeRecentUserToStarter = async () => {
       subscription.limits.linkedinAnalysis = true;
       subscription.limits.profileAnalyses = -1;
       subscription.limits.prioritySupport = false;
-      subscription.billing.amount = 12;
-      subscription.billing.currency = "USD";
+      subscription.billing.amount = 249; // ₹249/month for INR
+      subscription.billing.currency = "INR";
       subscription.billing.interval = "monthly";
       subscription.billing.nextBillingDate = new Date(
         Date.now() + 30 * 24 * 60 * 60 * 1000
       );
-      console.log("✅ Updated existing UserSubscription to STARTER plan");
+      console.log("✅ Updated existing UserSubscription to STARTER plan (INR ₹249/month, active)");
     }
 
     await subscription.save();
@@ -130,7 +135,9 @@ const upgradeRecentUserToStarter = async () => {
       `  Comments/Month: ${updatedSubscription.limits.commentsPerMonth}`
     );
     console.log(`  Ideas/Month: ${updatedSubscription.limits.ideasPerMonth}`);
-    console.log(`  Billing Amount: $${updatedSubscription.billing.amount}/month`);
+    console.log(`  Billing Amount: ₹${updatedSubscription.billing.amount}/month (${updatedSubscription.billing.currency})`);
+    console.log(`  Status: ${updatedSubscription.status} (NOT trial)`);
+    console.log(`  Subscription Start Date: ${updatedSubscription.subscriptionStartDate}`);
     console.log(`  Subscription End Date: ${updatedSubscription.subscriptionEndDate}`);
     console.log("=".repeat(50));
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +12,8 @@ import { SEO } from "@/components/SEO";
 import { LinkedInOptimizer } from "@/components/LinkedInOptimizer";
 import { PremiumWaitlistModal } from "@/components/PremiumWaitlistModal";
 import { useSubscription } from "@/hooks/useSubscription";
+import { UpgradePopup } from "@/components/UpgradePopup";
+import { TestimonialPopup } from "@/components/TestimonialPopup";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -77,11 +79,23 @@ const IdeaGenerator = () => {
   const [ideas, setIdeas] = useState<PostIdea[]>([]);
   const [selectedIdea, setSelectedIdea] = useState<PostIdea | null>(null);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+  const [showUpgradePopup, setShowUpgradePopup] = useState(false);
+  const [showTestimonialPopup, setShowTestimonialPopup] = useState(false);
+  const testimonialTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { subscription } = useSubscription();
+  const { subscription, canPerformAction, fetchSubscription } = useSubscription();
   const navigate = useNavigate();
+
+  // Cleanup testimonial timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (testimonialTimeoutRef.current) {
+        clearTimeout(testimonialTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -128,6 +142,18 @@ const IdeaGenerator = () => {
       return;
     }
 
+    // Check quota before generating
+    const quotaCheck = await canPerformAction("generate_idea");
+    if (!quotaCheck.allowed) {
+      setShowUpgradePopup(true);
+      toast({
+        title: "Limit Reached",
+        description: quotaCheck.reason || "You've reached your idea limit. Upgrade to continue!",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     setIdeas([]);
     setSelectedIdea(null);
@@ -157,16 +183,38 @@ const IdeaGenerator = () => {
           title: "Ideas generated! 💡",
           description: `${result.data.ideas.length} post ideas ready for you`,
         });
+
+        // Refresh subscription to get updated usage
+        await fetchSubscription();
+
+        // Check if this is the first idea generation
+        const isFirstIdea = !localStorage.getItem('first_idea_generated');
+        if (isFirstIdea) {
+          localStorage.setItem('first_idea_generated', 'true');
+          
+          // Show testimonial popup after 5 seconds
+          testimonialTimeoutRef.current = setTimeout(() => {
+            if (!localStorage.getItem('testimonial_submitted_idea')) {
+              setShowTestimonialPopup(true);
+            }
+          }, 5000);
+        }
       } else {
         throw new Error(result.message || 'Failed to generate ideas');
       }
     } catch (error) {
       console.error('Idea generation error:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to generate ideas. Please try again.";
       toast({
         title: "Generation failed",
-        description: error instanceof Error ? error.message : "Failed to generate ideas. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
+
+      // Check if error is due to quota exceeded
+      if (errorMessage.includes('limit') || errorMessage.includes('quota') || errorMessage.includes('exceeded')) {
+        setShowUpgradePopup(true);
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -530,6 +578,20 @@ const IdeaGenerator = () => {
         onClose={() => setShowWaitlistModal(false)}
         source="idea-generator"
         planInterest="Pro Plan"
+      />
+
+      {/* Upgrade Popup */}
+      <UpgradePopup
+        open={showUpgradePopup}
+        onOpenChange={setShowUpgradePopup}
+        limitType="ideas"
+      />
+      
+      {/* Testimonial Popup */}
+      <TestimonialPopup
+        open={showTestimonialPopup}
+        onOpenChange={setShowTestimonialPopup}
+        contentType="idea"
       />
     </div>
   );
