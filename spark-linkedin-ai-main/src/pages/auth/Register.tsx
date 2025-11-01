@@ -111,8 +111,7 @@ const Register = () => {
     { id: 1, title: "Account Setup", icon: User },
     { id: 2, title: "Your Goals", icon: Target },
     { id: 3, title: "AI Persona", icon: Sparkles },
-    { id: 4, title: "Preferences", icon: Heart },
-    { id: 5, title: "All Set!", icon: Check }
+    { id: 4, title: "Preferences", icon: Heart }
   ];
 
   const handleChange = (field: string, value: any) => {
@@ -186,7 +185,12 @@ const Register = () => {
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 5));
+      // If on last step (4), submit instead of going to next step
+      if (currentStep === 4) {
+        handleSubmit();
+      } else {
+        setCurrentStep(prev => Math.min(prev + 1, 4));
+      }
     }
   };
 
@@ -246,7 +250,7 @@ const Register = () => {
     }
   };
 
-  const progress = (currentStep / 5) * 100;
+  const progress = (currentStep / 4) * 100;
   const error = null; // From useAuth
 
   return (
@@ -728,55 +732,6 @@ const Register = () => {
             </div>
           )}
 
-          {/* Step 5: Confirmation */}
-          {currentStep === 5 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center mx-auto mb-4 shadow-lg animate-bounce">
-                  <Check className="h-10 w-10 text-white" />
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">All set! 🎉</h2>
-                <p className="text-muted-foreground">You're ready to create amazing content</p>
-              </div>
-
-              <Card className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-2 border-primary/20">
-                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  Your Profile Summary
-                </h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{formData.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <span>{formData.jobTitle} at {formData.company}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-muted-foreground" />
-                    <span>AI Persona: {formData.personaName}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4 text-muted-foreground" />
-                    <span>{formData.topics.length} topics selected</span>
-                  </div>
-                </div>
-              </Card>
-
-              <div className="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
-                <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-green-900 dark:text-green-100">
-                    What's next?
-                  </p>
-                  <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                    You'll be redirected to your dashboard where you can start creating content with your AI persona.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Navigation Buttons */}
           <div className="flex justify-between items-center mt-8 pt-6 border-t">
@@ -791,36 +746,29 @@ const Register = () => {
               Previous
             </Button>
 
-            {currentStep < 5 ? (
-              <Button
-                type="button"
-                onClick={handleNext}
-                disabled={isLoading}
-                className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
-              >
-                Next
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isLoading}
-                className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Creating account...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4" />
-                    Complete Setup
-                  </>
-                )}
-              </Button>
-            )}
+            <Button
+              type="button"
+              onClick={handleNext}
+              disabled={isLoading}
+              className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {currentStep === 4 ? "Creating account..." : "Loading..."}
+                </>
+              ) : currentStep === 4 ? (
+                <>
+                  <Sparkles className="h-4 w-4" />
+                  Complete Setup
+                </>
+              ) : (
+                <>
+                  Next
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </Button>
           </div>
         </Card>
 
