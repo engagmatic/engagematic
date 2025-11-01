@@ -252,13 +252,6 @@ export const Testimonials = () => {
                 <div className="text-sm text-muted-foreground font-medium">
                   {Math.ceil(currentIndex / itemsToShow) + 1} / {Math.ceil(allTestimonials.length / itemsToShow)}
                 </div>
-                <button
-                  onClick={toggleAutoPlay}
-                  className="rounded-full w-8 h-8 p-0 flex items-center justify-center hover:bg-muted transition-colors"
-                  title={isAutoPlaying ? "Pause" : "Play"}
-                >
-                  {isAutoPlaying ? "⏸" : "▶"}
-                </button>
               </div>
               <Button
                 variant="outline"

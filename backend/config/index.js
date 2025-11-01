@@ -45,4 +45,9 @@ export const config = {
 
   // RapidAPI (LinkedIn Scraper)
   RAPIDAPI_KEY: process.env.RAPIDAPI_KEY || "your-rapidapi-key-here",
+
+  // Email Configuration
+  EMAIL_FROM: process.env.EMAIL_FROM || "hello@engagematic.com",
+  EMAIL_FROM_NAME: process.env.EMAIL_FROM_NAME || "LinkedInPulse",
+  RESEND_API_KEY: process.env.RESEND_API_KEY || "",
 };

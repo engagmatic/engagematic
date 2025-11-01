@@ -34,10 +34,10 @@ const Index = () => {
       <Hero />
       <Features />
       <Testimonials />
-      <BlogSection />
       <ReferralSection />
       <Pricing />
       <FAQ />
+      <BlogSection />
     </div>
   );
 };

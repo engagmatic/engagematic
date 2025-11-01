@@ -11,6 +11,7 @@ class PricingService {
         ideaPrice: 2.8,
         starterPrice: 249,
         proPrice: 649,
+        elitePrice: 1299, // Value-driven pricing
       },
       USD: {
         currency: "USD",
@@ -19,12 +20,14 @@ class PricingService {
         ideaPrice: 0.11,
         starterPrice: 10,
         proPrice: 19,
+        elitePrice: 49,
       },
     };
 
     this.presets = {
       starter: { posts: 15, comments: 30, ideas: 30 },
       pro: { posts: 60, comments: 80, ideas: 80 },
+      elite: { posts: 200, comments: 300, ideas: 200 },
       80: { posts: 80, comments: 80, ideas: 80 },
       100: { posts: 100, comments: 100, ideas: 100 },
       custom: { posts: 10, comments: 10, ideas: 10 },
@@ -63,12 +66,21 @@ class PricingService {
     );
   }
 
+  isElitePlan(credits) {
+    return (
+      credits.posts === this.presets.elite.posts &&
+      credits.comments === this.presets.elite.comments &&
+      credits.ideas === this.presets.elite.ideas
+    );
+  }
+
   // Get display price (preset price or calculated price)
   getDisplayPrice(credits, currency = "USD") {
     const config = this.pricingConfigs[currency];
 
     if (this.isStarterPlan(credits)) return config.starterPrice;
     if (this.isProPlan(credits)) return config.proPrice;
+    if (this.isElitePlan(credits)) return config.elitePrice;
     return this.calculatePrice(credits, currency);
   }
 
@@ -76,6 +88,7 @@ class PricingService {
   getPlanName(credits) {
     if (this.isStarterPlan(credits)) return "Starter Plan";
     if (this.isProPlan(credits)) return "Pro Plan";
+    if (this.isElitePlan(credits)) return "Elite Plan";
     return "Custom Plan";
   }
 
@@ -101,7 +114,7 @@ class PricingService {
       },
       total: this.calculatePrice(credits, currency),
       currency: currency,
-      isPreset: this.isStarterPlan(credits) || this.isProPlan(credits),
+      isPreset: this.isStarterPlan(credits) || this.isProPlan(credits) || this.isElitePlan(credits),
     };
   }
 
@@ -166,6 +179,8 @@ class PricingService {
         ? "starter"
         : this.isProPlan(credits)
         ? "pro"
+        : this.isElitePlan(credits)
+        ? "elite"
         : "custom";
 
       // Create or update user subscription

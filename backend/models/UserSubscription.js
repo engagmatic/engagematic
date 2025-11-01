@@ -14,7 +14,7 @@ const userSubscriptionSchema = new mongoose.Schema(
     plan: {
       type: String,
       // Added 'custom' to support credit-based custom plans
-      enum: ["trial", "starter", "pro", "custom"],
+      enum: ["trial", "starter", "pro", "elite", "custom"],
       default: "trial",
       required: true,
     },
@@ -211,6 +211,17 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
         this.limits.prioritySupport = true;
         this.billing.amount = 24; // $24/month (2x starter)
+        break;
+
+      case "elite":
+        this.limits.postsPerMonth = 200; // High volume for agencies
+        this.limits.commentsPerMonth = 300; // High engagement capacity
+        this.limits.ideasPerMonth = 200; // Plenty of content ideas
+        this.limits.templatesAccess = true;
+        this.limits.linkedinAnalysis = true;
+        this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
+        this.limits.prioritySupport = true; // Dedicated manager
+        this.billing.amount = 49; // $49/month
         break;
     }
   }

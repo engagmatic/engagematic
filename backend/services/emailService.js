@@ -12,7 +12,7 @@ class EmailService {
   constructor() {
     this.transporter = null;
     this.initialized = false;
-    this.fromEmail = process.env.EMAIL_FROM || "noreply@linkedinpulse.com";
+    this.fromEmail = process.env.EMAIL_FROM || "hello@engagematic.com";
     this.fromName = process.env.EMAIL_FROM_NAME || "LinkedInPulse";
   }
 

@@ -61,10 +61,21 @@ class UsageService {
       const usage = await this.getCurrentUsage(userId);
       const limits = razorpayService.getUsageLimits(user.plan);
 
-      const currentUsage =
-        type === "posts" ? usage.postsGenerated : usage.commentsGenerated;
-      const limit =
-        type === "posts" ? limits.postsPerMonth : limits.commentsPerMonth;
+      let currentUsage, limit;
+      
+      if (type === "posts") {
+        currentUsage = usage.postsGenerated;
+        limit = limits.postsPerMonth;
+      } else if (type === "comments") {
+        currentUsage = usage.commentsGenerated;
+        limit = limits.commentsPerMonth;
+      } else if (type === "ideas") {
+        currentUsage = usage.ideasGenerated || 0;
+        limit = limits.ideasPerMonth || 0;
+      } else {
+        currentUsage = 0;
+        limit = 0;
+      }
 
       return {
         exceeded: currentUsage >= limit,
@@ -121,15 +132,22 @@ class UsageService {
           100
         : 0;
 
+      const ideasGrowth = previousUsage
+        ? ((currentUsage.ideasGenerated || 0) - (previousUsage.ideasGenerated || 0)) /
+          Math.max(previousUsage.ideasGenerated || 1, 1) * 100
+        : 0;
+
       return {
         current: {
           postsGenerated: currentUsage.postsGenerated,
           commentsGenerated: currentUsage.commentsGenerated,
+          ideasGenerated: currentUsage.ideasGenerated || 0,
           totalTokensUsed: currentUsage.totalTokensUsed,
         },
         limits: {
           postsPerMonth: limits.postsPerMonth,
           commentsPerMonth: limits.commentsPerMonth,
+          ideasPerMonth: limits.ideasPerMonth || 0,
         },
         remaining: {
           posts: Math.max(
@@ -140,10 +158,15 @@ class UsageService {
             0,
             limits.commentsPerMonth - currentUsage.commentsGenerated
           ),
+          ideas: Math.max(
+            0,
+            (limits.ideasPerMonth || 0) - (currentUsage.ideasGenerated || 0)
+          ),
         },
         growth: {
           posts: Math.round(postsGrowth),
           comments: Math.round(commentsGrowth),
+          ideas: Math.round(ideasGrowth),
         },
       };
     } catch (error) {

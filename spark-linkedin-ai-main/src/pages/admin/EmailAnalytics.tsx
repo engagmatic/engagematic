@@ -17,28 +17,22 @@ import {
   XCircle, 
   AlertCircle,
   BarChart3,
-  PieChart,
-  Activity,
-  Calendar,
-  Filter,
-  Download,
   RefreshCw,
   Eye,
   MousePointerClick,
   Zap,
   Target,
-  ArrowUpRight,
-  ArrowDownRight,
-  MoreHorizontal,
-  Settings,
-  Play,
-  Pause,
   Edit,
   Trash2,
-  Copy,
-  ExternalLink
+  FileText,
+  Plus,
+  Search,
+  Filter
 } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { UserEmailDialog } from "@/components/admin/UserEmailDialog";
+import { UserHistoryDialog } from "@/components/admin/UserHistoryDialog";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -125,9 +119,43 @@ export default function EmailAnalytics() {
     scheduledAt: ''
   });
 
+  // Templates state
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
+  const [templateForm, setTemplateForm] = useState({
+    name: '',
+    description: '',
+    category: '',
+    journeyStage: '',
+    subject: '',
+    htmlContent: ''
+  });
+
+  // Users state
+  const [users, setUsers] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [userSearch, setUserSearch] = useState('');
+  const [userFilter, setUserFilter] = useState('all');
+
   useEffect(() => {
     fetchEmailAnalytics();
+    fetchTemplates();
+    fetchCampaigns();
   }, [selectedPeriod]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [userSearch, userFilter]);
+
+  // Real-time updates every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchEmailAnalytics();
+      fetchCampaigns();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchEmailAnalytics = async () => {
     try {
@@ -175,6 +203,198 @@ export default function EmailAnalytics() {
     }
   };
 
+  const fetchTemplates = async () => {
+    setLoadingTemplates(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_URL}/api/admin/templates`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTemplates(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      toast.error('Failed to load templates');
+    } finally {
+      setLoadingTemplates(false);
+    }
+  };
+
+  const createTemplate = async (templateData: any) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_URL}/api/admin/templates`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(templateData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast.success('Template created successfully');
+        fetchTemplates();
+        setTemplateForm({
+          name: '',
+          description: '',
+          category: '',
+          journeyStage: '',
+          subject: '',
+          htmlContent: ''
+        });
+        return true;
+      } else {
+        const error = await response.json();
+        toast.error(error.message || 'Failed to create template');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error creating template:', error);
+      toast.error('Error creating template');
+      return false;
+    }
+  };
+
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const queryParams = new URLSearchParams();
+      if (userSearch) queryParams.append('search', userSearch);
+      if (userFilter !== 'all') {
+        if (userFilter === 'active') queryParams.append('status', 'active');
+        if (userFilter === 'inactive') queryParams.append('status', 'inactive');
+        if (userFilter === 'trial') queryParams.append('subscriptionStatus', 'trial');
+      }
+
+      const response = await fetch(`${API_URL}/api/admin/users/filter?${queryParams.toString()}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data.data?.users || []);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast.error('Failed to load users');
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const fetchUserCommunications = async (userId: string) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_URL}/api/admin/users/${userId}/communications`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.data?.communications || [];
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching user communications:', error);
+      return [];
+    }
+  };
+
+  const sendEmailToUser = async (userId: string, emailData: any) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_URL}/api/admin/users/${userId}/send-email`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(emailData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast.success('Email sent successfully');
+        fetchEmailAnalytics();
+        return true;
+      } else {
+        const error = await response.json();
+        toast.error(error.message || 'Failed to send email');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast.error('Error sending email');
+      return false;
+    }
+  };
+
+  const sendCampaign = async (campaignId: string) => {
+    setSendingEmail(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_URL}/api/admin/campaigns/${campaignId}/send`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast.success(`Campaign sent to ${result.data?.sentCount || 0} users`);
+        fetchEmailAnalytics();
+        fetchCampaigns();
+        return true;
+      } else {
+        const error = await response.json();
+        toast.error(error.message || 'Failed to send campaign');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error sending campaign:', error);
+      toast.error('Error sending campaign');
+      return false;
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  const fetchCampaigns = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_URL}/api/admin/campaigns`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCampaigns(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching campaigns:', error);
+    }
+  };
+
   const sendBulkEmail = async () => {
     if (!campaignForm.subject || !campaignForm.content) {
       toast.error('Please fill in subject and content');
@@ -184,28 +404,71 @@ export default function EmailAnalytics() {
     setSendingEmail(true);
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`${API_URL}/api/admin/send-bulk-email`, {
+      
+      // Create campaign first
+      const campaignResponse = await fetch(`${API_URL}/api/admin/campaigns`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          name: campaignForm.name || `Campaign - ${new Date().toLocaleString()}`,
           subject: campaignForm.subject,
-          content: campaignForm.content,
+          customContent: campaignForm.content,
           targetAudience: campaignForm.targetAudience,
           scheduledAt: campaignForm.scheduledAt || null
         })
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        toast.success(`Email sent to ${result.sentCount} users`);
-        setCampaignForm({ name: '', subject: '', content: '', targetAudience: 'inactive_users', scheduledAt: '' });
-        fetchEmailAnalytics();
+      if (campaignResponse.ok) {
+        const campaignData = await campaignResponse.json();
+        const campaignId = campaignData.data._id;
+
+        // Send the campaign
+        const sendResponse = await fetch(`${API_URL}/api/admin/campaigns/${campaignId}/send`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (sendResponse.ok) {
+          const result = await sendResponse.json();
+          toast.success(`Email sent to ${result.data?.sentCount || 0} users`);
+          setCampaignForm({ name: '', subject: '', content: '', targetAudience: 'all_users', scheduledAt: '' });
+          fetchEmailAnalytics();
+          fetchCampaigns();
+        } else {
+          const error = await sendResponse.json();
+          toast.error(error.message || 'Failed to send campaign');
+        }
       } else {
-        const error = await response.json();
-        toast.error(error.message || 'Failed to send email');
+        // Fallback to old endpoint
+        const response = await fetch(`${API_URL}/api/admin/send-bulk-email`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            subject: campaignForm.subject,
+            content: campaignForm.content,
+            targetAudience: campaignForm.targetAudience,
+            scheduledAt: campaignForm.scheduledAt || null
+          })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          toast.success(`Email sent to ${result.sentCount} users`);
+          setCampaignForm({ name: '', subject: '', content: '', targetAudience: 'all_users', scheduledAt: '' });
+          fetchEmailAnalytics();
+        } else {
+          const error = await response.json();
+          toast.error(error.message || 'Failed to send email');
+        }
       }
     } catch (error) {
       console.error('Error sending bulk email:', error);
@@ -392,11 +655,12 @@ export default function EmailAnalytics() {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="templates">Templates</TabsTrigger>
           <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-          <TabsTrigger value="logs">Email Logs</TabsTrigger>
-          <TabsTrigger value="send">Send Email</TabsTrigger>
+          <TabsTrigger value="compose">Compose</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -527,7 +791,7 @@ export default function EmailAnalytics() {
                             {campaign.status}
                           </Badge>
                           <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="w-4 h-4" />
+                            <Edit className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
@@ -553,7 +817,320 @@ export default function EmailAnalytics() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="logs" className="space-y-6">
+        {/* Templates Tab */}
+        <TabsContent value="templates" className="space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-purple-500" />
+                  Email Templates
+                </CardTitle>
+                <CardDescription>Manage email templates for different user journey stages</CardDescription>
+              </div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button><Plus className="w-4 h-4 mr-2" />New Template</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Create Email Template</DialogTitle>
+                    <DialogDescription>Create a new email template for user communications</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <div>
+                      <Label>Template Name</Label>
+                      <Input placeholder="e.g., Welcome Email" />
+                    </div>
+                    <div>
+                      <Label>Category</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="onboarding">Onboarding</SelectItem>
+                          <SelectItem value="activation">Activation</SelectItem>
+                          <SelectItem value="feedback">Feedback</SelectItem>
+                          <SelectItem value="upgrade">Upgrade</SelectItem>
+                          <SelectItem value="inactivity">Inactivity</SelectItem>
+                          <SelectItem value="testimonials">Testimonials</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Subject Line</Label>
+                      <Input placeholder="Enter email subject" />
+                    </div>
+                    <div>
+                      <Label>Email Content (HTML)</Label>
+                      <Textarea placeholder="Use {{name}} for personalization..." className="min-h-[300px]" />
+                    </div>
+                    <Button className="w-full">Create Template</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent>
+              {loadingTemplates ? (
+                <div className="flex items-center justify-center py-12">
+                  <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : templates.length === 0 ? (
+                <div className="text-center py-12">
+                  <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No templates yet</p>
+                  <p className="text-sm text-muted-foreground">Create your first template to get started</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {templates.map((template) => (
+                    <Card key={template._id} className="hover:shadow-md transition-shadow cursor-pointer">
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg">{template.name}</CardTitle>
+                          <Badge>{template.category}</Badge>
+                        </div>
+                        <CardDescription>{template.usageCount || 0} emails sent</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" className="flex-1">
+                            <Edit className="w-4 h-4 mr-2" />Edit
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Compose Tab */}
+        <TabsContent value="compose" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Send className="w-5 h-5 text-blue-500" />
+                Compose Email
+              </CardTitle>
+              <CardDescription>Send email to users using templates or custom content</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label>Select Template (Optional)</Label>
+                    <Select 
+                      onValueChange={async (templateId) => {
+                        if (templateId === 'none') {
+                          setCampaignForm({...campaignForm, subject: '', content: ''});
+                          return;
+                        }
+                        const template = templates.find(t => t._id === templateId);
+                        if (template) {
+                          setCampaignForm({
+                            ...campaignForm,
+                            subject: template.subject,
+                            content: template.htmlContent
+                          });
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a template or write custom" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Custom Email</SelectItem>
+                        {templates.map((template) => (
+                          <SelectItem key={template._id} value={template._id}>
+                            {template.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="subject">Subject Line</Label>
+                    <Input
+                      id="subject"
+                      value={campaignForm.subject}
+                      onChange={(e) => setCampaignForm({ ...campaignForm, subject: e.target.value })}
+                      placeholder="Enter email subject"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="target-audience">Target Audience</Label>
+                    <Select 
+                      value={campaignForm.targetAudience} 
+                      onValueChange={(value) => setCampaignForm({ ...campaignForm, targetAudience: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select target audience" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all_users">All Users</SelectItem>
+                        <SelectItem value="new_users">New Users (Last 7 days)</SelectItem>
+                        <SelectItem value="inactive_users">Inactive Users (7+ days)</SelectItem>
+                        <SelectItem value="trial_expiring">Trial Expiring Soon</SelectItem>
+                        <SelectItem value="high_performers">High Performers</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="scheduled-at">Schedule (Optional)</Label>
+                    <Input
+                      id="scheduled-at"
+                      type="datetime-local"
+                      value={campaignForm.scheduledAt}
+                      onChange={(e) => setCampaignForm({ ...campaignForm, scheduledAt: e.target.value })}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="content">Email Content</Label>
+                  <Textarea
+                    id="content"
+                    value={campaignForm.content}
+                    onChange={(e) => setCampaignForm({ ...campaignForm, content: e.target.value })}
+                    placeholder="Enter your email content here... Use {{name}} for personalization"
+                    className="min-h-[300px]"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Available variables: {"{{name}}"}, {"{{email}}"}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-3">
+                <Button variant="outline">Preview</Button>
+                <Button 
+                  onClick={sendBulkEmail} 
+                  disabled={sendingEmail || !campaignForm.subject || !campaignForm.content}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  size="lg"
+                >
+                  {sendingEmail ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Send Email
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Users Tab */}
+        <TabsContent value="users" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-green-500" />
+                    User Communications
+                  </CardTitle>
+                  <CardDescription>View and manage communications for individual users</CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Search users..." 
+                    className="w-64" 
+                    value={userSearch}
+                    onChange={(e) => {
+                      setUserSearch(e.target.value);
+                      // Debounce search
+                      setTimeout(() => fetchUsers(), 500);
+                    }}
+                  />
+                  <Select value={userFilter} onValueChange={(value) => {
+                    setUserFilter(value);
+                    fetchUsers();
+                  }}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Users</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="trial">Trial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingUsers ? (
+                <div className="flex items-center justify-center py-12">
+                  <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : users.length === 0 ? (
+                <div className="text-center py-12">
+                  <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No users found</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {users.map((user) => (
+                    <Card key={user._id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div>
+                              <div className="font-semibold">{user.name}</div>
+                              <div className="text-sm text-muted-foreground">{user.email}</div>
+                            </div>
+                            <Badge variant={user.isActive ? "default" : "secondary"}>
+                              {user.subscriptionStatus || 'trial'}
+                            </Badge>
+                            <div className="text-sm text-muted-foreground">
+                              Plan: {user.plan || 'starter'}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <UserHistoryDialog 
+                              user={user} 
+                              getEmailTypeBadge={getEmailTypeBadge}
+                              getStatusBadge={getStatusBadge}
+                            />
+                            <UserEmailDialog 
+                              user={user} 
+                              templates={templates}
+                              onSent={() => {
+                                fetchEmailAnalytics();
+                                fetchUsers();
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Email Logs in Overview */}
+        <TabsContent value="overview" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -570,7 +1147,7 @@ export default function EmailAnalytics() {
                     <p className="text-muted-foreground">No email logs found</p>
                   </div>
                 ) : (
-                  emailLogs.map((log) => (
+                  emailLogs.slice(0, 10).map((log) => (
                     <div key={log._id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
@@ -607,103 +1184,6 @@ export default function EmailAnalytics() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="send" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Send className="w-5 h-5 text-blue-500" />
-                Create Email Campaign
-              </CardTitle>
-              <CardDescription>Send targeted emails to your user base</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="campaign-name">Campaign Name</Label>
-                    <Input
-                      id="campaign-name"
-                      value={campaignForm.name}
-                      onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
-                      placeholder="Enter campaign name"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="subject">Subject Line</Label>
-                    <Input
-                      id="subject"
-                      value={campaignForm.subject}
-                      onChange={(e) => setCampaignForm({ ...campaignForm, subject: e.target.value })}
-                      placeholder="Enter email subject"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="target-audience">Target Audience</Label>
-                    <Select 
-                      value={campaignForm.targetAudience} 
-                      onValueChange={(value) => setCampaignForm({ ...campaignForm, targetAudience: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select target audience" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="inactive_users">Inactive Users (7+ days)</SelectItem>
-                        <SelectItem value="trial_expiring">Trial Expiring Soon</SelectItem>
-                        <SelectItem value="high_performers">High Performers</SelectItem>
-                        <SelectItem value="new_users">New Users (Last 7 days)</SelectItem>
-                        <SelectItem value="all_users">All Users</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="scheduled-at">Schedule (Optional)</Label>
-                    <Input
-                      id="scheduled-at"
-                      type="datetime-local"
-                      value={campaignForm.scheduledAt}
-                      onChange={(e) => setCampaignForm({ ...campaignForm, scheduledAt: e.target.value })}
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <Label htmlFor="content">Email Content</Label>
-                  <Textarea
-                    id="content"
-                    value={campaignForm.content}
-                    onChange={(e) => setCampaignForm({ ...campaignForm, content: e.target.value })}
-                    placeholder="Enter your email content here..."
-                    className="min-h-[300px]"
-                  />
-                </div>
-              </div>
-              
-              <div className="flex justify-end">
-                <Button 
-                  onClick={sendBulkEmail} 
-                  disabled={sendingEmail || !campaignForm.subject || !campaignForm.content}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  size="lg"
-                >
-                  {sendingEmail ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4 mr-2" />
-                      Send Email Campaign
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );
