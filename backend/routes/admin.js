@@ -57,27 +57,27 @@ router.get("/stats", adminAuth, async (req, res) => {
     // Calculate real revenue from Payment collection (sum of captured payments by currency)
     const Payment = (await import("../models/Payment.js")).default;
     
-    // Get revenue by currency
-    const revenueByCurrency = await Payment.aggregate([
-      { $match: { status: "captured" } },
-      { 
-        $group: { 
-          _id: "$currency",
-          total: { $sum: "$amount" },
-          count: { $sum: 1 }
-        } 
-      },
-    ]);
+    // Get all captured payments and calculate revenue directly
+    const allCapturedPayments = await Payment.find({ 
+      status: "captured",
+      amount: { $exists: true, $gt: 0 }
+    })
+      .select("amount currency status")
+      .lean();
     
-    // Separate revenue by currency
+    // Calculate revenue by currency directly from payments
     let revenueINR = 0;
     let revenueUSD = 0;
     
-    revenueByCurrency.forEach(item => {
-      if (item._id === "INR") {
-        revenueINR = item.total;
-      } else if (item._id === "USD") {
-        revenueUSD = item.total;
+    allCapturedPayments.forEach(payment => {
+      const currency = (payment.currency || "INR").toString().toUpperCase().trim();
+      const amount = payment.amount || 0;
+      
+      if (currency === "USD") {
+        revenueUSD += amount;
+      } else {
+        // Default to INR for any other currency or missing currency
+        revenueINR += amount;
       }
     });
     

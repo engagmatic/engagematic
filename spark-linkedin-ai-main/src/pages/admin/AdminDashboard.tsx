@@ -199,13 +199,17 @@ export default function AdminDashboard() {
     },
     {
       title: 'Revenue',
-      value: stats.revenueINR > 0 && stats.revenueUSD > 0 
-        ? `₹${stats.revenueINR.toLocaleString()} / $${stats.revenueUSD.toLocaleString()}`
-        : stats.revenueINR > 0 
-          ? `₹${stats.revenueINR.toLocaleString()}`
-          : stats.revenueUSD > 0
-            ? `$${stats.revenueUSD.toLocaleString()}`
-            : '$0',
+      value: (() => {
+        if (stats.revenueINR > 0 && stats.revenueUSD > 0) {
+          return `₹${stats.revenueINR.toLocaleString('en-IN')} / $${stats.revenueUSD.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+        } else if (stats.revenueINR > 0) {
+          return `₹${stats.revenueINR.toLocaleString('en-IN')}`;
+        } else if (stats.revenueUSD > 0) {
+          return `$${stats.revenueUSD.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+        } else {
+          return '₹0';
+        }
+      })(),
       icon: DollarSign,
       change: `${stats.revenueChange && stats.revenueChange >= 0 ? '+' : ''}${stats.revenueChange?.toFixed(1) || 0}%`,
       positive: (stats.revenueChange || 0) >= 0,
