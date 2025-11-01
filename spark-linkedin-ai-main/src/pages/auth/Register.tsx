@@ -202,12 +202,14 @@ const Register = () => {
         name: formData.name,
         email: formData.email,
         password: formData.password,
+        interests: formData.topics || [], // Send topics as interests
         persona: {
           name: formData.personaName,
           writingStyle: formData.writingStyle,
           tone: formData.tone,
           expertise: formData.expertise,
           targetAudience: formData.targetAudience,
+          contentTypes: formData.contentTypes || [],
         },
         profile: {
           jobTitle: formData.jobTitle,

@@ -120,6 +120,12 @@ const userSchema = new mongoose.Schema(
         default: null,
       },
     },
+    // User interests/topics
+    interests: [
+      {
+        type: String,
+      },
+    ],
     // AI Persona Information
     persona: {
       name: {
