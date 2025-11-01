@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { X, Gift, Users, Star } from "lucide-react";
+import { Logo } from "../Logo";
 
 export const Footer = () => {
   const navigate = useNavigate();
@@ -56,10 +57,9 @@ export const Footer = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <img 
-                  src="/logo.svg" 
-                  alt="LinkedInPulse Logo" 
+                <Logo 
                   className="w-10 h-10"
+                  size={40}
                 />
                 <span className="text-xl font-bold">LinkedInPulse</span>
               </div>

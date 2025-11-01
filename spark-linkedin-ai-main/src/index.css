@@ -1,5 +1,4 @@
-@import 'geist/font/sans';
-@import 'geist/font/mono';
+/* Geist fonts are imported via JavaScript in main.tsx */
 
 @tailwind base;
 @tailwind components;
