@@ -109,20 +109,13 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
       const personaId = personaMap[persona] || personaMap["founder"];
       const personaData = EXPANDED_PERSONAS.find(p => p.id === personaId) || EXPANDED_PERSONAS[0];
 
-      // Use a default hook for free posts (no need to fetch, saves API call)
-      const hook = {
-        _id: "default_free_hook",
-        text: "Here's what changed everything:",
-        category: "story",
-      };
-
-      // Call free post generation endpoint (needs to be created on backend)
-      // For now, we'll use a fallback approach
+      // Let backend select hook contextually based on persona, goal, topic, and audience
+      // Don't send hookId - backend will intelligently choose based on context
       let response;
       try {
         response = await apiClient.generatePostFree({
           topic: topic.trim(),
-          hookId: hook._id,
+          // No hookId - backend will select contextually
           persona: personaData,
           audience: audience.trim() || undefined,
           goal: goal || undefined,
@@ -137,7 +130,7 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
           },
           body: JSON.stringify({
             topic: topic.trim(),
-            hookId: hook._id,
+            // No hookId - backend will select contextually based on persona, goal, topic, audience
             persona: personaData,
             audience: audience.trim() || undefined,
             goal: goal || undefined,
@@ -224,50 +217,51 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
 
   if (hasGenerated && generatedPost) {
     return (
-      <div className="w-full max-w-4xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <Card className="border-2 border-primary/20 shadow-2xl bg-gradient-to-br from-white to-primary/5 p-6 sm:p-8">
-          <div className="space-y-6">
+      <div className="w-full space-y-4 sm:space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <Card className="border-2 border-primary/20 shadow-xl bg-gradient-to-br from-white to-primary/5 p-4 sm:p-6">
+          <div className="space-y-4 sm:space-y-5">
             {/* Success Header */}
-            <div className="text-center space-y-3">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg mb-4 animate-in zoom-in duration-500">
-                <Check className="h-8 w-8 text-white" />
+            <div className="text-center space-y-2">
+              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg mb-2 animate-in zoom-in duration-500">
+                <Check className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                 Your Post is Ready! 🎉
               </h3>
-              <p className="text-muted-foreground">Here's your viral-grade LinkedIn post</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Here's your viral-grade LinkedIn post</p>
             </div>
 
             {/* Generated Post */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="relative">
-                <Label className="text-sm font-semibold mb-2 block">Generated Post</Label>
-                <div className="relative p-6 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl border-2 border-slate-200 dark:border-slate-700 min-h-[200px]">
-                  <p className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">
+                <Label className="text-xs sm:text-sm font-semibold mb-1.5 block">Generated Post</Label>
+                <div className="relative p-4 sm:p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-lg border-2 border-slate-200 dark:border-slate-700 min-h-[150px] sm:min-h-[180px] max-h-[300px] overflow-y-auto">
+                  <p className="whitespace-pre-wrap text-xs sm:text-sm leading-relaxed">
                     {formatForLinkedIn(generatedPost.content)}
                   </p>
                   {/* Gradient overlay for premium look */}
-                  <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white dark:from-background to-transparent pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-background to-transparent pointer-events-none" />
                 </div>
               </div>
 
               {generatedPost.engagementScore && (
-                <div className="flex items-center justify-center gap-2 p-3 bg-primary/10 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  <span className="text-sm font-medium">
-                    Engagement Score: <Badge variant="default">{generatedPost.engagementScore}/100</Badge>
+                <div className="flex items-center justify-center gap-2 p-2 sm:p-2.5 bg-primary/10 rounded-lg">
+                  <TrendingUp className="h-4 w-4 sm:h-4 sm:w-4 text-primary" />
+                  <span className="text-xs sm:text-sm font-medium">
+                    Engagement Score: <Badge variant="default" className="text-xs">{generatedPost.engagementScore}/100</Badge>
                   </span>
                 </div>
               )}
 
               {/* Action Buttons */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5">
                 <Button
                   variant="outline"
                   onClick={handleCopy}
-                  className="gap-2"
+                  className="gap-1.5 h-9 text-xs sm:text-sm"
+                  size="sm"
                 >
-                  <Copy className="h-4 w-4" />
+                  <Copy className="h-3.5 w-3.5" />
                   Copy
                 </Button>
                 <Button
@@ -283,9 +277,10 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
                     window.URL.revokeObjectURL(url);
                     toast({ title: "Downloaded successfully!" });
                   }}
-                  className="gap-2"
+                  className="gap-1.5 h-9 text-xs sm:text-sm"
+                  size="sm"
                 >
-                  <Download className="h-4 w-4" />
+                  <Download className="h-3.5 w-3.5" />
                   Download
                 </Button>
                 <Button
@@ -301,55 +296,56 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
                       window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank');
                     }, 1000);
                   }}
-                  className="gap-2 bg-[#0077B5] hover:bg-[#006396] text-white"
+                  className="gap-1.5 h-9 text-xs sm:text-sm bg-[#0077B5] hover:bg-[#006396] text-white"
+                  size="sm"
                 >
-                  <Share2 className="h-4 w-4" />
-                  Share on LinkedIn
+                  <Share2 className="h-3.5 w-3.5" />
+                  Share
                   <ExternalLink className="h-3 w-3" />
                 </Button>
               </div>
             </div>
 
             {/* Signup CTA */}
-            <Card className="bg-gradient-to-br from-primary/10 via-purple/10 to-pink/10 border-2 border-primary/30 p-6 sm:p-8">
-              <div className="text-center space-y-4">
-                <div className="space-y-2">
-                  <h4 className="text-xl sm:text-2xl font-bold">
+            <Card className="bg-gradient-to-br from-primary/10 via-purple/10 to-pink/10 border-2 border-primary/30 p-4 sm:p-5">
+              <div className="text-center space-y-3">
+                <div className="space-y-1.5">
+                  <h4 className="text-base sm:text-lg font-bold">
                     Love this post? ✨
                   </h4>
-                  <p className="text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Sign up to create unlimited posts, save your style, unlock analytics, and more!
                   </p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
                   <Button
-                    size="lg"
+                    size="sm"
                     onClick={handleSignup}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg group gap-2"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md group gap-1.5 text-xs sm:text-sm h-9"
                   >
                     Sign Up for Free
-                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <Button
-                    size="lg"
+                    size="sm"
                     variant="outline"
                     onClick={() => navigate("/auth/login")}
-                    className="gap-2"
+                    className="gap-1.5 text-xs sm:text-sm h-9"
                   >
-                    Already have an account? Sign in
+                    Sign in
                   </Button>
                 </div>
-                <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground pt-2">
+                <div className="flex items-center justify-center gap-3 sm:gap-4 text-[10px] sm:text-xs text-muted-foreground pt-1">
                   <span className="flex items-center gap-1">
-                    <Check className="h-3 w-3 text-green-500" />
-                    No credit card required
+                    <Check className="h-2.5 w-2.5 text-green-500" />
+                    No credit card
                   </span>
                   <span className="flex items-center gap-1">
-                    <Check className="h-3 w-3 text-green-500" />
-                    7-day free trial
+                    <Check className="h-2.5 w-2.5 text-green-500" />
+                    7-day trial
                   </span>
                   <span className="flex items-center gap-1">
-                    <Check className="h-3 w-3 text-green-500" />
+                    <Check className="h-2.5 w-2.5 text-green-500" />
                     Cancel anytime
                   </span>
                 </div>
@@ -362,34 +358,34 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
   }
 
   return (
-    <Card className="w-full border border-border/50 shadow-xl bg-white dark:bg-card backdrop-blur-sm p-4 sm:p-5 lg:p-6 animate-fade-in-up">
-      <div className="space-y-3 sm:space-y-4">
+    <Card className="w-full border border-border/50 shadow-lg bg-white dark:bg-card backdrop-blur-sm p-3 sm:p-4 lg:p-5 animate-fade-in-up">
+      <div className="space-y-2.5 sm:space-y-3">
         {/* Compact Header */}
-        <div className="space-y-1.5 text-center sm:text-left">
-          <Badge className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] sm:text-xs bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200/50">
-            <Sparkles className="w-2.5 h-2.5" />
+        <div className="space-y-1 text-center sm:text-left">
+          <Badge className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200/50">
+            <Sparkles className="w-2 h-2" />
             Try Free - No Signup Required
           </Badge>
-          <h3 className="text-lg sm:text-xl font-bold text-foreground">
+          <h3 className="text-base sm:text-lg font-bold text-foreground">
             Generate Your First{" "}
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Viral Post
             </span>
           </h3>
-          <p className="text-xs sm:text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Tell us just enough to personalize your magic post. Get results in seconds.
           </p>
         </div>
 
         {/* Compact Form */}
-        <div className="space-y-3 sm:space-y-3.5">
+        <div className="space-y-2.5 sm:space-y-3">
           {/* Persona Selection */}
-          <div className="space-y-1.5">
-            <Label htmlFor="persona" className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1">
+          <div className="space-y-1">
+            <Label htmlFor="persona" className="text-xs font-semibold text-foreground flex items-center gap-1">
               Who are you? <span className="text-red-500">*</span>
             </Label>
             <Select value={persona} onValueChange={setPersona}>
-              <SelectTrigger className="h-9 sm:h-10 bg-white dark:bg-background border hover:border-primary/50 transition-colors text-xs sm:text-sm">
+              <SelectTrigger className="h-9 bg-white dark:bg-background border hover:border-primary/50 transition-colors text-xs sm:text-sm">
                 <SelectValue placeholder="Select your role" />
               </SelectTrigger>
               <SelectContent>
@@ -406,8 +402,8 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
           </div>
 
           {/* Audience (Optional) */}
-          <div className="space-y-1.5">
-            <Label htmlFor="audience" className="text-xs sm:text-sm font-semibold text-foreground">
+          <div className="space-y-1">
+            <Label htmlFor="audience" className="text-xs font-semibold text-foreground">
               Who is your audience? <span className="text-muted-foreground text-[10px] font-normal">(optional)</span>
             </Label>
             <Input
@@ -415,17 +411,17 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
               placeholder='E.g., "SaaS buyers", "CXOs"...'
               value={audience}
               onChange={(e) => setAudience(e.target.value)}
-              className="h-9 sm:h-10 bg-white dark:bg-background border text-xs sm:text-sm"
+              className="h-9 bg-white dark:bg-background border text-xs sm:text-sm"
             />
           </div>
 
           {/* Goal (Optional) */}
-          <div className="space-y-1.5">
-            <Label htmlFor="goal" className="text-xs sm:text-sm font-semibold text-foreground">
+          <div className="space-y-1">
+            <Label htmlFor="goal" className="text-xs font-semibold text-foreground">
               What is your main goal? <span className="text-muted-foreground text-[10px] font-normal">(optional)</span>
             </Label>
             <Select value={goal} onValueChange={setGoal}>
-              <SelectTrigger className="h-9 sm:h-10 bg-white dark:bg-background border text-xs sm:text-sm">
+              <SelectTrigger className="h-9 bg-white dark:bg-background border text-xs sm:text-sm">
                 <SelectValue placeholder="Select your goal" />
               </SelectTrigger>
               <SelectContent>
@@ -445,8 +441,8 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
           </div>
 
           {/* Topic */}
-          <div className="space-y-1.5">
-            <Label htmlFor="topic" className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1">
+          <div className="space-y-1">
+            <Label htmlFor="topic" className="text-xs font-semibold text-foreground flex items-center gap-1">
               What do you want to post about? <span className="text-red-500">*</span>
             </Label>
             <Textarea
@@ -454,7 +450,7 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
               placeholder="E.g., My journey from developer to tech lead..."
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              className="min-h-[70px] sm:min-h-[80px] resize-none bg-white dark:bg-background border text-xs sm:text-sm"
+              className="min-h-[60px] sm:min-h-[70px] resize-none bg-white dark:bg-background border text-xs sm:text-sm"
             />
           </div>
 
@@ -462,23 +458,23 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
           <Button
             onClick={handleGenerate}
             disabled={isGenerating || !persona || !topic.trim()}
-            className="w-full h-10 sm:h-11 text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all group mt-1"
+            className="w-full h-9 sm:h-10 text-xs sm:text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all group"
           >
             {isGenerating ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                 Generating...
               </>
             ) : (
               <>
-                <Sparkles className="mr-2 h-4 w-4" />
+                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                 Generate My Post
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
               </>
             )}
           </Button>
 
-          <p className="text-center text-[10px] sm:text-xs text-muted-foreground leading-relaxed pt-0.5">
+          <p className="text-center text-[10px] text-muted-foreground leading-relaxed">
             ✨ <span className="font-semibold text-foreground">1 free post</span>.{" "}
             <button 
               onClick={handleSignup}

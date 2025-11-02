@@ -1398,4 +1398,283 @@ function generateFallbackIdeas(angle) {
   ];
 }
 
+// Free post generation endpoint (no auth required) - for landing page "try before signup"
+// Simple in-memory rate limiting (1 post per IP per 24 hours)
+const freePostCache = new Map(); // IP -> timestamp
+const FREE_POST_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+// Helper to get client IP
+const getClientIP = (req) => {
+  return (
+    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+    req.headers["x-real-ip"] ||
+    req.connection?.remoteAddress ||
+    req.socket?.remoteAddress ||
+    req.ip ||
+    "unknown"
+  );
+};
+
+// Smart hook selection based on context
+const selectContextualHook = async (personaData, goal, topic, audience) => {
+  try {
+    // Analyze persona to determine preferred hook categories
+    const personaName = (personaData?.name || "").toLowerCase();
+    const personaIndustry = (personaData?.industry || "").toLowerCase();
+    
+    // Analyze goal
+    const goalLower = (goal || "").toLowerCase();
+    
+    // Analyze topic for keywords
+    const topicLower = (topic || "").toLowerCase();
+    
+    // Default categories to consider
+    let preferredCategories = [];
+    
+    // Persona-based category preferences
+    if (personaName.includes("founder") || personaName.includes("entrepreneur")) {
+      preferredCategories = ["story", "insight", "challenge"];
+    } else if (personaName.includes("marketer") || personaName.includes("marketing")) {
+      preferredCategories = ["question", "statement", "insight"];
+    } else if (personaName.includes("sales") || personaName.includes("recruiter")) {
+      preferredCategories = ["question", "challenge", "statement"];
+    } else if (personaName.includes("consultant") || personaName.includes("coach")) {
+      preferredCategories = ["insight", "story", "question"];
+    } else if (personaName.includes("student") || personaName.includes("job-seeker")) {
+      preferredCategories = ["story", "question", "challenge"];
+    } else if (personaName.includes("creator") || personaName.includes("content")) {
+      preferredCategories = ["question", "statement", "insight"];
+    } else {
+      // Default mix
+      preferredCategories = ["story", "question", "insight", "statement", "challenge"];
+    }
+    
+    // Goal-based adjustments
+    if (goalLower.includes("grow") || goalLower.includes("follower")) {
+      preferredCategories = ["question", "challenge", ...preferredCategories.filter(c => c !== "question" && c !== "challenge")];
+    } else if (goalLower.includes("lead") || goalLower.includes("sales")) {
+      preferredCategories = ["question", "statement", ...preferredCategories.filter(c => c !== "question" && c !== "statement")];
+    } else if (goalLower.includes("brand") || goalLower.includes("visibility")) {
+      preferredCategories = ["story", "insight", ...preferredCategories.filter(c => c !== "story" && c !== "insight")];
+    } else if (goalLower.includes("engagement") || goalLower.includes("interaction")) {
+      preferredCategories = ["question", "challenge", ...preferredCategories.filter(c => c !== "question" && c !== "challenge")];
+    }
+    
+    // Topic-based adjustments (keyword analysis)
+    if (topicLower.includes("journey") || topicLower.includes("learned") || topicLower.includes("experience") || topicLower.includes("story")) {
+      preferredCategories = ["story", ...preferredCategories.filter(c => c !== "story")];
+    } else if (topicLower.includes("tip") || topicLower.includes("advice") || topicLower.includes("should") || topicLower.includes("mistake")) {
+      preferredCategories = ["insight", "statement", ...preferredCategories.filter(c => c !== "insight" && c !== "statement")];
+    } else if (topicLower.includes("why") || topicLower.includes("how") || topicLower.includes("what")) {
+      preferredCategories = ["question", "insight", ...preferredCategories.filter(c => c !== "question" && c !== "insight")];
+    }
+    
+    // Remove duplicates and prioritize
+    preferredCategories = [...new Set(preferredCategories)];
+    
+    console.log("🎯 Contextual hook selection:", {
+      persona: personaName,
+      goal: goalLower,
+      preferredCategories,
+      topicKeywords: topicLower.substring(0, 50),
+    });
+    
+    // Try to find hooks matching preferred categories
+    for (const category of preferredCategories) {
+      const hooks = await Hook.find({
+        category: category,
+        isActive: true,
+      }).limit(20);
+      
+      if (hooks && hooks.length > 0) {
+        // Select a random hook from the matched category (or one with lower usage for variety)
+        const sortedHooks = hooks.sort((a, b) => (a.usageCount || 0) - (b.usageCount || 0));
+        const selectedHook = sortedHooks[Math.floor(Math.random() * Math.min(5, sortedHooks.length))];
+        
+        console.log("✅ Selected contextual hook:", {
+          text: selectedHook.text,
+          category: selectedHook.category,
+          usageCount: selectedHook.usageCount,
+        });
+        
+        return {
+          _id: selectedHook._id,
+          text: selectedHook.text,
+          category: selectedHook.category,
+        };
+      }
+    }
+    
+    // Fallback: Get any active hook
+    const fallbackHook = await Hook.findOne({ isActive: true });
+    if (fallbackHook) {
+      console.log("⚠️ Using fallback hook:", fallbackHook.text);
+      return {
+        _id: fallbackHook._id,
+        text: fallbackHook.text,
+        category: fallbackHook.category,
+      };
+    }
+    
+    // Final fallback: Default hook
+    console.log("⚠️ Using default hook (no hooks in database)");
+    return {
+      _id: "default_free_hook",
+      text: "Here's what changed everything:",
+      category: "story",
+    };
+  } catch (error) {
+    console.error("Error selecting contextual hook:", error);
+    // Fallback to default
+    return {
+      _id: "default_free_hook",
+      text: "Here's what changed everything:",
+      category: "story",
+    };
+  }
+};
+
+// Free post generation - NO AUTH REQUIRED
+router.post("/posts/generate-free", async (req, res) => {
+  try {
+    // Get client identifier (IP + User-Agent for better uniqueness)
+    const ip = getClientIP(req);
+    const userAgent = req.headers["user-agent"] || "";
+    const identifier = `${ip}_${userAgent.substring(0, 50)}`;
+
+    // Check if already used (simple in-memory cache with cleanup)
+    const now = Date.now();
+    const lastUsed = freePostCache.get(identifier);
+    
+    // Clean up old entries (older than 24 hours)
+    if (lastUsed && now - lastUsed < FREE_POST_TTL) {
+      return res.status(429).json({
+        success: false,
+        message: "You've already used your free post. Sign up to generate more!",
+        code: "FREE_POST_ALREADY_USED",
+      });
+    }
+
+    // Validate input
+    const { topic, hookId, persona: personaData, audience, goal } = req.body;
+
+    if (!topic || typeof topic !== "string" || topic.trim().length < 10 || topic.trim().length > 500) {
+      return res.status(400).json({
+        success: false,
+        message: "Topic must be between 10 and 500 characters",
+      });
+    }
+
+    if (!personaData || !personaData.name) {
+      return res.status(400).json({
+        success: false,
+        message: "Persona data is required",
+      });
+    }
+
+    // Smart hook selection based on context (persona, goal, topic, audience)
+    // Always select contextually for free posts to ensure variety and relevance
+    let hook;
+    if (hookId && hookId !== "default_free_hook" && hookId !== null && hookId !== undefined) {
+      // Only use provided hookId if it's a valid database ID (for future flexibility)
+      hook = await Hook.findById(hookId);
+      if (!hook || !hook.isActive) {
+        // If hook not found or inactive, select contextually
+        hook = await selectContextualHook(personaData, goal, topic, audience);
+      }
+    } else {
+      // No hookId provided or default hook - select contextually based on persona, goal, topic, and audience
+      hook = await selectContextualHook(personaData, goal, topic, audience);
+    }
+
+    console.log("🆓 Free post generation:", {
+      topic: topic.substring(0, 50),
+      persona: personaData.name,
+      hook: hook.text,
+    });
+
+    // Generate content using Google AI (same logic as authenticated users)
+    // Build persona object from personaData
+    const persona = {
+      name: personaData.name || "Professional",
+      tone: personaData.tone || "professional",
+      writingStyle: personaData.writingStyle || personaData.description || "engaging",
+      industry: personaData.industry || null,
+      description: personaData.description || null,
+    };
+
+    // Add audience and goal context if provided
+    const additionalContext = [];
+    if (audience && audience.trim()) {
+      additionalContext.push(`Target audience: ${audience.trim()}`);
+    }
+    if (goal && goal.trim()) {
+      additionalContext.push(`Goal: ${goal.trim()}`);
+    }
+
+    // Generate post using Google AI service
+    const aiResponse = await googleAIService.generatePost(
+      topic.trim(),
+      hook.text,
+      persona,
+      null, // linkedinInsights
+      null, // profileInsights
+      null  // userProfile
+    );
+
+    // Track usage (store in cache with expiration)
+    freePostCache.set(identifier, now);
+
+    // Cleanup: Remove old entries periodically (simple cleanup on each request)
+    if (freePostCache.size > 1000) {
+      // If cache gets too large, clean up old entries
+      for (const [key, timestamp] of freePostCache.entries()) {
+        if (now - timestamp > FREE_POST_TTL) {
+          freePostCache.delete(key);
+        }
+      }
+    }
+
+    // Save to database for analytics (optional)
+    const content = new Content({
+      type: "post",
+      content: aiResponse.content,
+      topic: topic.trim(),
+      hookId: hook._id && hook._id !== "default_free_hook" ? hook._id : null,
+      engagementScore: aiResponse.engagementScore,
+      tokensUsed: aiResponse.tokensUsed,
+      isFreePost: true,
+      freePostIdentifier: identifier.substring(0, 100), // Store for analytics
+    });
+
+    await content.save().catch((err) => {
+      console.error("Failed to save free post to database:", err);
+      // Don't fail the request if DB save fails
+    });
+
+    console.log("✅ Free post generated successfully");
+
+    res.json({
+      success: true,
+      message: "Post generated successfully",
+      data: {
+        content: {
+          _id: content._id || `free_${Date.now()}`,
+          content: aiResponse.content,
+          engagementScore: aiResponse.engagementScore,
+          topic: topic.trim(),
+          createdAt: new Date().toISOString(),
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Free post generation error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to generate post",
+      error: process.env.NODE_ENV === "development" ? error.stack : undefined,
+    });
+  }
+});
+
 export default router;
