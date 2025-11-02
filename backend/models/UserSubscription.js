@@ -14,7 +14,7 @@ const userSubscriptionSchema = new mongoose.Schema(
     plan: {
       type: String,
       // Added 'custom' to support credit-based custom plans
-      enum: ["trial", "starter", "pro", "custom"],
+      enum: ["trial", "starter", "pro", "elite", "custom"],
       default: "trial",
       required: true,
     },
@@ -181,9 +181,9 @@ userSubscriptionSchema.pre("save", function (next) {
   if (this.isModified("plan")) {
     switch (this.plan) {
       case "trial":
-        this.limits.postsPerMonth = 7; // 1 post per day for 7 days
-        this.limits.commentsPerMonth = 14; // 2 comments per day for 7 days
-        this.limits.ideasPerMonth = 14; // 2 ideas per day for 7 days
+        this.limits.postsPerMonth = 3; // 3 posts for free trial
+        this.limits.commentsPerMonth = 10; // 10 comments for free trial
+        this.limits.ideasPerMonth = 10; // 10 ideas for free trial
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
@@ -211,6 +211,17 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
         this.limits.prioritySupport = true;
         this.billing.amount = 24; // $24/month (2x starter)
+        break;
+
+      case "elite":
+        this.limits.postsPerMonth = 200; // High volume for agencies
+        this.limits.commentsPerMonth = 300; // High engagement capacity
+        this.limits.ideasPerMonth = 200; // Plenty of content ideas
+        this.limits.templatesAccess = true;
+        this.limits.linkedinAnalysis = true;
+        this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
+        this.limits.prioritySupport = true; // Dedicated manager
+        this.billing.amount = 49; // $49/month
         break;
     }
   }
@@ -396,10 +407,19 @@ userSubscriptionSchema.statics.createTrial = function (userId) {
     status: "trial",
     trialStartDate: new Date(),
     trialEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    limits: {
+      postsPerMonth: 3,
+      commentsPerMonth: 10,
+      ideasPerMonth: 10,
+      templatesAccess: true,
+      linkedinAnalysis: true,
+      profileAnalyses: -1,
+      prioritySupport: false,
+    },
     tokens: {
-      total: 50, // Reduced from 100 to 50 to encourage upgrade
+      total: 95, // 3 posts * 5 + 10 comments * 3 + 10 ideas * 4 = 15 + 30 + 40 = 85
       used: 0,
-      remaining: 50,
+      remaining: 95,
     },
   });
 };

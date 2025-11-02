@@ -6,11 +6,15 @@ import Usage from "../models/Usage.js";
 import UserSubscription from "../models/UserSubscription.js";
 import googleAnalyticsService from "../services/googleAnalyticsService.js";
 import adminEmailRoutes from "./adminEmail.js";
+import adminCommunicationRoutes from "./adminCommunication.js";
 
 const router = express.Router();
 
-// Mount admin email routes
+// Mount admin email routes (legacy - keeping for backward compatibility)
 router.use("/", adminEmailRoutes);
+
+// Mount comprehensive communication dashboard routes
+router.use("/", adminCommunicationRoutes);
 
 // Get dashboard statistics
 router.get("/stats", adminAuth, async (req, res) => {
@@ -26,6 +30,7 @@ router.get("/stats", adminAuth, async (req, res) => {
     const [
       totalUsers,
       activeUsers,
+      activeUsersLastWeek,
       newUsersToday,
       totalPosts,
       totalComments,
@@ -35,11 +40,17 @@ router.get("/stats", adminAuth, async (req, res) => {
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ lastLogin: { $gte: thirtyDaysAgo } }),
+      User.countDocuments({
+        lastLogin: {
+          $gte: new Date(Date.now() - 37 * 24 * 60 * 60 * 1000),
+          $lt: thirtyDaysAgo,
+        },
+      }),
       User.countDocuments({ createdAt: { $gte: startOfDay } }),
       Content.countDocuments({ type: "post" }),
       Content.countDocuments({ type: "comment" }),
       UserSubscription.countDocuments({
-        plan: { $in: ["starter", "pro"] },
+        plan: { $in: ["starter", "pro", "elite"] },
         "status.isActive": true,
       }),
       User.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
@@ -48,7 +59,7 @@ router.get("/stats", adminAuth, async (req, res) => {
       }),
     ]);
 
-    // Calculate real revenue from Payment collection (sum of captured payments)
+    // Calculate real revenue from Payment collection (sum of captured payments by currency)
     const Payment = (await import("../models/Payment.js")).default;
     const paymentAggByCurrency = await Payment.aggregate([
       { $match: { status: "captured" } },
@@ -63,8 +74,49 @@ router.get("/stats", adminAuth, async (req, res) => {
         revenueUSD = entry.total;
       }
     });
+
+    // Get all captured payments and calculate revenue directly
+    const allCapturedPayments = await Payment.find({
+      status: "captured",
+      amount: { $exists: true, $gt: 0 },
+    })
+      .select("amount currency status")
+      .lean();
+
+    allCapturedPayments.forEach((payment) => {
+      const currency = (payment.currency || "INR")
+        .toString()
+        .toUpperCase()
+        .trim();
+      const amount = payment.amount || 0;
+
+      if (currency === "USD") {
+        revenueUSD += amount;
+      } else {
+        // Default to INR for any other currency or missing currency
+        revenueINR += amount;
+      }
+    });
+
+    // Calculate total revenue (for backward compatibility)
+    const totalRevenue = revenueINR + revenueUSD;
+
+    // Calculate real conversion rate
     const conversionRate =
       totalUsers > 0 ? ((paidUsers / totalUsers) * 100).toFixed(1) : 0;
+
+    // Calculate active users change
+    const activeUsersChange =
+      activeUsersLastWeek > 0
+        ? (
+            ((activeUsers - activeUsersLastWeek) / activeUsersLastWeek) *
+            100
+          ).toFixed(1)
+        : activeUsers > 0
+        ? "100"
+        : "0";
+
+    // Calculate real growth rate
     const growthRate =
       previousWeekUsers > 0
         ? (
@@ -73,16 +125,77 @@ router.get("/stats", adminAuth, async (req, res) => {
           ).toFixed(1)
         : 0;
 
+    // Calculate posts/comments generated today (for dynamic stats)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const [postsToday, commentsToday, postsLastWeek, commentsLastWeek] =
+      await Promise.all([
+        Content.countDocuments({ type: "post", createdAt: { $gte: today } }),
+        Content.countDocuments({ type: "comment", createdAt: { $gte: today } }),
+        Content.countDocuments({
+          type: "post",
+          createdAt: { $gte: sevenDaysAgo },
+        }),
+        Content.countDocuments({
+          type: "comment",
+          createdAt: { $gte: sevenDaysAgo },
+        }),
+      ]);
+
+    // Calculate revenue change (last 7 days vs previous 7 days)
+    const last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const previous7Days = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+
+    const revenueLastWeek = await Payment.aggregate([
+      {
+        $match: {
+          status: "captured",
+          createdAt: { $gte: last7Days },
+        },
+      },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+
+    const revenuePreviousWeek = await Payment.aggregate([
+      {
+        $match: {
+          status: "captured",
+          createdAt: { $gte: previous7Days, $lt: last7Days },
+        },
+      },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+
+    const revenueLastWeekTotal =
+      revenueLastWeek.length > 0 ? revenueLastWeek[0].total : 0;
+    const revenuePreviousWeekTotal =
+      revenuePreviousWeek.length > 0 ? revenuePreviousWeek[0].total : 0;
+    const revenueChange =
+      revenuePreviousWeekTotal > 0
+        ? (
+            ((revenueLastWeekTotal - revenuePreviousWeekTotal) /
+              revenuePreviousWeekTotal) *
+            100
+          ).toFixed(1)
+        : revenueLastWeekTotal > 0
+        ? "100"
+        : "0";
+
     res.json({
       totalUsers,
       activeUsers,
+      activeUsersChange: parseFloat(activeUsersChange),
       newUsersToday,
       postsGenerated: totalPosts,
       commentsGenerated: totalComments,
+      postsGeneratedToday: postsToday,
+      commentsGeneratedToday: commentsToday,
+      totalRevenue,
       revenueINR,
       revenueUSD,
       conversionRate: parseFloat(conversionRate),
       growthRate: parseFloat(growthRate),
+      revenueChange: parseFloat(revenueChange),
     });
   } catch (error) {
     console.error("Error fetching admin stats:", error);

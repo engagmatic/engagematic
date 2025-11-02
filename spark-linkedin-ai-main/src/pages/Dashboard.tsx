@@ -9,7 +9,7 @@ import { SubscriptionStatus } from "../components/SubscriptionStatus";
 import { CreditTrackingStatus } from "../components/CreditTrackingStatus";
 import api from "../services/api";
 import { useToast } from "../hooks/use-toast";
-import { OnboardingModal } from "@/components/ui/OnboardingModal";
+// import { OnboardingModal } from "@/components/ui/OnboardingModal";
 
 const Dashboard = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -132,7 +132,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen gradient-hero">
-      <OnboardingModal open={showOnboarding} onSubmit={handleOnboardingSubmit} />
+      {/* <OnboardingModal open={showOnboarding} onSubmit={handleOnboardingSubmit} /> */}
       {/* Block AI/content generators unless !needsOnboarding(userProfile) */}
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">

@@ -18,6 +18,8 @@ import { EXPANDED_PERSONAS, PERSONA_CATEGORIES } from "@/constants/expandedPerso
 import { formatForLinkedIn } from "@/utils/linkedinFormatting";
 import { LinkedInOptimizer } from "@/components/LinkedInOptimizer";
 import { PremiumWaitlistModal } from "@/components/PremiumWaitlistModal";
+import { UpgradePopup } from "@/components/UpgradePopup";
+import { TestimonialPopup } from "@/components/TestimonialPopup";
 
 const hookIcons = {
   story: Heart,
@@ -50,6 +52,9 @@ const PostGenerator = () => {
   const [creativeSuggestions, setCreativeSuggestions] = useState([]);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [waitlistSource, setWaitlistSource] = useState("post-generator");
+  const [showUpgradePopup, setShowUpgradePopup] = useState(false);
+  const [showTestimonialPopup, setShowTestimonialPopup] = useState(false);
+  const testimonialTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // SIMPLIFIED: Just use sample personas directly, no complex creation logic
   const { personas, samplePersonas, isLoading: personasLoading } = usePersonas();
@@ -59,7 +64,7 @@ const PostGenerator = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { isGenerating, generatedContent, generatePost, generatePostCustom, copyToClipboard, saveContent } = useContentGeneration();
-  const { subscription } = useSubscription();
+  const { subscription, canPerformAction, fetchSubscription } = useSubscription();
 
   const handleUpgradeClick = (source: string) => {
     setWaitlistSource(source);
@@ -83,6 +88,15 @@ const PostGenerator = () => {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, location.pathname, navigate, toast]);
+
+  // Cleanup testimonial timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (testimonialTimeoutRef.current) {
+        clearTimeout(testimonialTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Use user's personas first, fall back to expanded personas
   useEffect(() => {
@@ -212,6 +226,18 @@ const PostGenerator = () => {
       return;
     }
 
+    // Check quota before generating
+    const quotaCheck = await canPerformAction("generate_post");
+    if (!quotaCheck.allowed) {
+      setShowUpgradePopup(true);
+      toast({
+        title: "Limit Reached",
+        description: quotaCheck.reason || "You've reached your post limit. Upgrade to continue!",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // SIMPLIFIED: Send persona data directly if it's a sample (no _id)
     const personaData = selectedPersona._id 
       ? { personaId: selectedPersona._id } // Real persona with ID
@@ -263,8 +289,31 @@ const PostGenerator = () => {
       // Content is now stored in generatedContent from the hook
       // Generate creative suggestions after successful post generation
       generateCreativeSuggestions(topic);
+      
+      // Refresh subscription to get updated usage
+      await fetchSubscription();
+      
+      // Check if this is the first post generation
+      const isFirstPost = !localStorage.getItem('first_post_generated');
+      if (isFirstPost) {
+        // Store that first post has been generated
+        localStorage.setItem('first_post_generated', 'true');
+        
+        // Show testimonial popup after 5 seconds
+        testimonialTimeoutRef.current = setTimeout(() => {
+          // Only show if not already submitted
+          if (!localStorage.getItem('testimonial_submitted_post')) {
+            setShowTestimonialPopup(true);
+          }
+        }, 5000);
+      }
     } else {
       console.error('❌ Post generation failed:', result.error);
+      
+      // Check if error is due to quota exceeded
+      if (result.error?.includes('limit') || result.error?.includes('quota') || result.error?.includes('exceeded')) {
+        setShowUpgradePopup(true);
+      }
     }
   };
 
@@ -775,6 +824,20 @@ const PostGenerator = () => {
         onClose={() => setShowWaitlistModal(false)}
         source={waitlistSource}
         planInterest="Pro Plan"
+      />
+
+      {/* Upgrade Popup */}
+      <UpgradePopup
+        open={showUpgradePopup}
+        onOpenChange={setShowUpgradePopup}
+        limitType="posts"
+      />
+      
+      {/* Testimonial Popup */}
+      <TestimonialPopup
+        open={showTestimonialPopup}
+        onOpenChange={setShowTestimonialPopup}
+        contentType="post"
       />
     </div>
   );

@@ -70,6 +70,40 @@ const emailLogSchema = new mongoose.Schema(
     clickedAt: {
       type: Date,
     },
+    clicks: [
+      {
+        url: String,
+        clickedAt: Date,
+        count: { type: Number, default: 1 },
+      },
+    ],
+    repliedAt: {
+      type: Date,
+    },
+    replyContent: {
+      type: String,
+    },
+    engagement: {
+      opens: { type: Number, default: 0 },
+      clicks: { type: Number, default: 0 },
+      replies: { type: Number, default: 0 },
+      lastOpenedAt: Date,
+      lastClickedAt: Date,
+      lastRepliedAt: Date,
+    },
+    campaignId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "EmailCampaign",
+    },
+    templateId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "EmailTemplate",
+    },
+    trackingPixelId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
   },
   {
     timestamps: true,
@@ -80,6 +114,10 @@ const emailLogSchema = new mongoose.Schema(
 emailLogSchema.index({ userId: 1, emailType: 1 });
 emailLogSchema.index({ status: 1, createdAt: -1 });
 emailLogSchema.index({ emailType: 1, createdAt: -1 });
+emailLogSchema.index({ campaignId: 1, createdAt: -1 });
+emailLogSchema.index({ templateId: 1 });
+emailLogSchema.index({ trackingPixelId: 1 });
+emailLogSchema.index({ "engagement.lastOpenedAt": -1 });
 
 // Prevent duplicate emails within a time window
 emailLogSchema.index(

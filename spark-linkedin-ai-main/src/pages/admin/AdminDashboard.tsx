@@ -23,10 +23,15 @@ interface DashboardStats {
   newUsersToday: number;
   postsGenerated: number;
   commentsGenerated: number;
+  postsGeneratedToday?: number;
+  commentsGeneratedToday?: number;
+  totalRevenue: number;
   revenueINR: number;
   revenueUSD: number;
   conversionRate: number;
   growthRate: number;
+  revenueChange?: number;
+  activeUsersChange?: number;
 }
 
 interface RecentUser {
@@ -54,10 +59,15 @@ export default function AdminDashboard() {
     newUsersToday: 0,
     postsGenerated: 0,
     commentsGenerated: 0,
+    postsGeneratedToday: 0,
+    commentsGeneratedToday: 0,
+    totalRevenue: 0,
     revenueINR: 0,
     revenueUSD: 0,
     conversionRate: 0,
-    growthRate: 0
+    growthRate: 0,
+    revenueChange: 0,
+    activeUsersChange: 0
   });
   const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
@@ -152,31 +162,31 @@ export default function AdminDashboard() {
       title: 'Total Users',
       value: stats.totalUsers,
       icon: Users,
-      change: '+12%',
-      positive: true,
+      change: `${stats.growthRate >= 0 ? '+' : ''}${stats.growthRate.toFixed(1)}%`,
+      positive: stats.growthRate >= 0,
       color: 'from-blue-500 to-blue-600'
     },
     {
       title: 'Active Users',
       value: stats.activeUsers,
       icon: UserCheck,
-      change: '+8%',
-      positive: true,
+      change: `${stats.activeUsersChange && stats.activeUsersChange >= 0 ? '+' : ''}${stats.activeUsersChange?.toFixed(1) || 0}%`,
+      positive: (stats.activeUsersChange || 0) >= 0,
       color: 'from-green-500 to-green-600'
     },
     {
       title: 'New Today',
       value: stats.newUsersToday,
       icon: UserPlus,
-      change: '+24',
-      positive: true,
+      change: `${stats.newUsersToday > 0 ? '+' : ''}${stats.newUsersToday}`,
+      positive: stats.newUsersToday > 0,
       color: 'from-purple-500 to-purple-600'
     },
     {
       title: 'Posts Generated',
       value: stats.postsGenerated,
       icon: FileText,
-      change: '+156',
+      change: `+${stats.postsGeneratedToday || 0}`,
       positive: true,
       color: 'from-pink-500 to-pink-600'
     },
@@ -184,30 +194,33 @@ export default function AdminDashboard() {
       title: 'Comments Generated',
       value: stats.commentsGenerated,
       icon: MessageSquare,
-      change: '+89',
+      change: `+${stats.commentsGeneratedToday || 0}`,
       positive: true,
       color: 'from-orange-500 to-orange-600'
     },
     {
       title: 'Revenue',
-      value: currency === 'INR'
-        ? `₹${stats.revenueINR?.toLocaleString()}`
-        : `$${stats.revenueUSD?.toLocaleString()}`,
-      extra:
-        <div className="mt-1 flex text-xs gap-3 text-gray-500">
-          <span className="cursor-pointer" onClick={() => setCurrency('INR')}>₹: {stats.revenueINR?.toLocaleString?.() ?? 0}</span>
-          <span className="cursor-pointer" onClick={() => setCurrency('USD')}>$: {stats.revenueUSD?.toLocaleString?.() ?? 0}</span>
-        </div>,
+      value: (() => {
+        if (stats.revenueINR > 0 && stats.revenueUSD > 0) {
+          return `₹${stats.revenueINR.toLocaleString('en-IN')} / $${stats.revenueUSD.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+        } else if (stats.revenueINR > 0) {
+          return `₹${stats.revenueINR.toLocaleString('en-IN')}`;
+        } else if (stats.revenueUSD > 0) {
+          return `$${stats.revenueUSD.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+        } else {
+          return '₹0';
+        }
+      })(),
       icon: DollarSign,
-      change: '+18%',
-      positive: true,
+      change: `${stats.revenueChange && stats.revenueChange >= 0 ? '+' : ''}${stats.revenueChange?.toFixed(1) || 0}%`,
+      positive: (stats.revenueChange || 0) >= 0,
       color: 'from-emerald-500 to-emerald-600'
     },
     {
       title: 'Conversion Rate',
-      value: `${stats.conversionRate}%`,
+      value: `${stats.conversionRate.toFixed(1)}%`,
       icon: TrendingUp,
-      change: '+2.3%',
+      change: 'Real-time',
       positive: true,
       color: 'from-cyan-500 to-cyan-600'
     },
@@ -215,8 +228,8 @@ export default function AdminDashboard() {
       title: 'Growth Rate',
       value: `${stats.growthRate}%`,
       icon: Activity,
-      change: '+5.1%',
-      positive: true,
+      change: 'vs last week',
+      positive: parseFloat(stats.growthRate.toString()) >= 0,
       color: 'from-indigo-500 to-indigo-600'
     }
   ];
@@ -247,7 +260,7 @@ export default function AdminDashboard() {
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                       {isLoading ? '...' : stat.value}
                     </h3>
-                    {stat.extra}
+                    {/* {stat.extra} */}
                     <div className="flex items-center gap-1 mt-2">
                       {stat.positive ? (
                         <ArrowUpRight className="h-4 w-4 text-green-600" />

@@ -2,6 +2,7 @@ import { Home, MessageSquare, FileText, Lightbulb } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { UserDropdownMenu } from "./UserDropdownMenu";
+import { Logo } from "./Logo";
 
 export const Navigation = () => {
   const { isAuthenticated } = useAuth();
@@ -23,10 +24,9 @@ export const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <img 
-              src="/logo.svg" 
-              alt="LinkedInPulse Logo" 
+            <Logo 
               className="w-10 h-10 hover:scale-110 transition-transform duration-200"
+              size={40}
             />
             <span className="text-xl font-bold">LinkedInPulse</span>
           </Link>

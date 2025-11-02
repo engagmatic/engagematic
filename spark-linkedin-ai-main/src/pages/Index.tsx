@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Hero } from "@/components/landing/Hero";
+import { TryItFreeSection } from "@/components/landing/TryItFreeSection";
 import { Features } from "@/components/landing/Features";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { BlogSection } from "@/components/landing/BlogSection";
@@ -29,15 +30,16 @@ const Index = () => {
 
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-full overflow-x-hidden">
       <SEO {...PAGE_SEO.home} />
       <Hero />
+      <TryItFreeSection />
       <Features />
       <Testimonials />
-      <BlogSection />
       <ReferralSection />
       <Pricing />
       <FAQ />
+      <BlogSection />
     </div>
   );
 };

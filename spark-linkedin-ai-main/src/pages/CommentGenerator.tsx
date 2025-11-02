@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,12 +10,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePersonas } from "@/hooks/usePersonas";
 import { useContentGeneration } from "@/hooks/useContentGeneration";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
 import apiClient from "@/services/api";
 import { SEO } from "@/components/SEO";
 import { PAGE_SEO } from "@/constants/seo";
 import { COMMENT_TYPES, DEFAULT_COMMENT_TYPE } from "@/constants/commentTypes";
 import { EXPANDED_PERSONAS, PERSONA_CATEGORIES } from "@/constants/expandedPersonas";
+import { UpgradePopup } from "@/components/UpgradePopup";
+import { TestimonialPopup } from "@/components/TestimonialPopup";
 
 interface GeneratedComment {
   text: string;
@@ -29,13 +32,26 @@ const CommentGenerator = () => {
   const [generatedComments, setGeneratedComments] = useState([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [isFetchingFromUrl, setIsFetchingFromUrl] = useState(false);
+  const [showUpgradePopup, setShowUpgradePopup] = useState(false);
+  const [showTestimonialPopup, setShowTestimonialPopup] = useState(false);
+  const testimonialTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // Removed creative suggestions for comment generator per requirements
   
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { personas, samplePersonas, isLoading: personasLoading } = usePersonas();
   const { isGenerating, generateComment, copyToClipboard } = useContentGeneration();
+  const { canPerformAction, fetchSubscription } = useSubscription();
   const navigate = useNavigate();
+
+  // Cleanup testimonial timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (testimonialTimeoutRef.current) {
+        clearTimeout(testimonialTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Use user's personas first, fall back to expanded personas
   useEffect(() => {
@@ -116,6 +132,18 @@ const CommentGenerator = () => {
       return;
     }
 
+    // Check quota before generating
+    const quotaCheck = await canPerformAction("generate_comment");
+    if (!quotaCheck.allowed) {
+      setShowUpgradePopup(true);
+      toast({
+        title: "Limit Reached",
+        description: quotaCheck.reason || "You've reached your comment limit. Upgrade to continue!",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const result = await generateComment({
         postContent: postContent.trim(),
@@ -147,12 +175,33 @@ const CommentGenerator = () => {
           title: "Comments generated! 💬",
           description: "AI-powered comments ready for your engagement",
         });
+
+        // Refresh subscription to get updated usage
+        await fetchSubscription();
+
+        // Check if this is the first comment generation
+        const isFirstComment = !localStorage.getItem('first_comment_generated');
+        if (isFirstComment) {
+          localStorage.setItem('first_comment_generated', 'true');
+          
+          // Show testimonial popup after 5 seconds
+          testimonialTimeoutRef.current = setTimeout(() => {
+            if (!localStorage.getItem('testimonial_submitted_comment')) {
+              setShowTestimonialPopup(true);
+            }
+          }, 5000);
+        }
       } else {
         toast({
           title: "Generation failed",
           description: "Could not generate comments. Please try again.",
           variant: "destructive",
         });
+
+        // Check if error is due to quota exceeded
+        if (result.error?.includes('limit') || result.error?.includes('quota') || result.error?.includes('exceeded')) {
+          setShowUpgradePopup(true);
+        }
       }
     } catch (error) {
       console.error('Failed to generate comments:', error);

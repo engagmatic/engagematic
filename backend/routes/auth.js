@@ -41,6 +41,11 @@ router.post("/register", validateUserRegistration, async (req, res) => {
       trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days trial
     };
 
+    // Add interests if provided
+    if (req.body.interests && Array.isArray(req.body.interests)) {
+      userData.interests = req.body.interests;
+    }
+
     // Add profile data if provided
     if (profile) {
       userData.profile = {

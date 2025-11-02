@@ -41,6 +41,7 @@ class RazorpayService {
       const presets = {
         starter: { posts: 15, comments: 30, ideas: 30 },
         pro: { posts: 60, comments: 80, ideas: 80 },
+        elite: { posts: 200, comments: 300, ideas: 200 },
       };
 
       let amount;
@@ -64,6 +65,14 @@ class RazorpayService {
         amount =
           billingPeriod === "yearly" ? pricing.proPrice * 10 : pricing.proPrice; // 10 months for yearly
         planType = "pro";
+      } else if (
+        credits.posts === presets.elite.posts &&
+        credits.comments === presets.elite.comments &&
+        credits.ideas === presets.elite.ideas
+      ) {
+        amount =
+          billingPeriod === "yearly" ? (pricing.elitePrice || 1299) * 10 : (pricing.elitePrice || 1299);
+        planType = "elite";
       } else {
         // Calculate custom price using pricing service
         amount = pricingService.calculatePrice(credits, currency);
@@ -265,14 +274,22 @@ class RazorpayService {
   getUsageLimits(plan) {
     const limits = {
       starter: {
-        postsPerMonth: 300,
-        commentsPerMonth: 300,
-        personas: 3,
+        postsPerMonth: 15,
+        commentsPerMonth: 30,
+        ideasPerMonth: 30,
+        personas: 15, // curated personas
       },
       pro: {
-        postsPerMonth: 2000,
-        commentsPerMonth: 2000,
-        personas: 10,
+        postsPerMonth: 60,
+        commentsPerMonth: 80,
+        ideasPerMonth: 80,
+        personas: -1, // unlimited custom personas
+      },
+      elite: {
+        postsPerMonth: 200,
+        commentsPerMonth: 300,
+        ideasPerMonth: 200,
+        personas: -1, // unlimited personas
       },
     };
 

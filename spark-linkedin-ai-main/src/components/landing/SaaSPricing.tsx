@@ -13,7 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CouponInput } from "@/components/CouponInput";
 
 type Currency = 'INR' | 'USD';
-type PlanType = 'starter' | 'pro' | 'custom';
+type PlanType = 'starter' | 'pro' | 'elite';
 type BillingInterval = 'monthly' | 'yearly';
 
 interface Plan {
@@ -45,7 +45,7 @@ const plans: Plan[] = [
     price: { INR: 249, USD: 10 },
     yearlyPrice: { INR: 2490, USD: 100 }, // 10 months price (2 months free)
     limits: { posts: 15, comments: 30, ideas: 30 },
-    yearlyLimits: { posts: 20, comments: 40, ideas: 40 }, // Higher limits for yearly
+    yearlyLimits: { posts: 15, comments: 30, ideas: 30 }, // Same limits for yearly
     features: [], // Will be populated dynamically
     icon: <Zap className="h-6 w-6" />
   },
@@ -56,46 +56,29 @@ const plans: Plan[] = [
     price: { INR: 649, USD: 19 },
     yearlyPrice: { INR: 6490, USD: 190 }, // 10 months price (2 months free)
     limits: { posts: 60, comments: 80, ideas: 80 },
-    yearlyLimits: { posts: 80, comments: 100, ideas: 100 }, // Higher limits for yearly
+    yearlyLimits: { posts: 60, comments: 80, ideas: 80 }, // Same limits for yearly
     popular: true,
     features: [], // Will be populated dynamically
     icon: <Rocket className="h-6 w-6" />
   },
   {
-    id: 'custom',
-    name: 'Pay Only for What You Use',
-    description: 'Perfect for occasional users',
-    price: { INR: 0, USD: 0 }, // Will be calculated dynamically
-    yearlyPrice: { INR: 0, USD: 0 }, // Will be calculated dynamically
-    limits: { posts: 0, comments: 0, ideas: 0 }, // Will be set by user
-    yearlyLimits: { posts: 0, comments: 0, ideas: 0 }, // Will be set by user
-    features: [
-      { text: 'Customize your usage with sliders', icon: <Settings className="h-4 w-4" /> },
-      { text: 'Pay only for what you use', icon: <Check className="h-4 w-4" /> },
-      { text: 'Scale up or down anytime', icon: <ArrowRight className="h-4 w-4" /> },
-      { text: 'No monthly commitment', icon: <Check className="h-4 w-4" /> }
-    ],
-    icon: <Settings className="h-6 w-6" />
+    id: 'elite',
+    name: 'Elite / Agency',
+    description: 'For agencies and power users',
+    price: { INR: 1299, USD: 49 }, // Value-driven pricing for Elite
+    yearlyPrice: { INR: 12990, USD: 490 }, // 10 months price (2 months free)
+    limits: { posts: 200, comments: 300, ideas: 200 },
+    yearlyLimits: { posts: 200, comments: 300, ideas: 200 }, // Same limits for yearly
+    features: [], // Will be populated dynamically
+    icon: <Star className="h-6 w-6" />
   }
 ];
 
-interface CreditSelection {
-  posts: number;
-  comments: number;
-  ideas: number;
-}
-
-const pricingConfigs: Record<Currency, { postPrice: number; commentPrice: number; ideaPrice: number }> = {
-  INR: { postPrice: 5.5, commentPrice: 2.8, ideaPrice: 2.8 }, // Adjusted to match ₹249 for 15/30/30
-  USD: { postPrice: 0.22, commentPrice: 0.11, ideaPrice: 0.11 } // Adjusted to match $10 for 15/30/30
-};
 
 export const SaaSPricing = () => {
   const [currency, setCurrency] = useState<Currency>('USD');
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('pro');
   const [isLoading, setIsLoading] = useState(false);
-  const [showCustomSliders, setShowCustomSliders] = useState(false);
-  const [customCredits, setCustomCredits] = useState<CreditSelection>({ posts: 10, comments: 10, ideas: 10 });
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
   const [couponData, setCouponData] = useState<any>(null);
   const navigate = useNavigate();
@@ -123,29 +106,11 @@ export const SaaSPricing = () => {
 
   const currencySymbol = currency === 'INR' ? '₹' : '$';
 
-  // Calculate custom pricing
-  const calculateCustomPrice = (credits: CreditSelection): number => {
-    const config = pricingConfigs[currency];
-    const totalPrice = 
-      (credits.posts * config.postPrice) +
-      (credits.comments * config.commentPrice) +
-      (credits.ideas * config.ideaPrice);
-    return Math.round(totalPrice * 100) / 100;
-  };
-
-  const formatPrice = (price: number): string => {
-    return `${currencySymbol}${price}`;
-  };
-
   const getPlanPrice = (plan: Plan) => {
-    if (plan.id === 'custom') {
-      return calculateCustomPrice(customCredits);
-    }
     return billingInterval === 'yearly' ? plan.yearlyPrice[currency] : plan.price[currency];
   };
 
   const getMonthlyEquivalent = (plan: Plan) => {
-    if (plan.id === 'custom') return null;
     if (billingInterval === 'yearly') {
       return plan.price[currency];
     }
@@ -153,8 +118,6 @@ export const SaaSPricing = () => {
   };
 
   const getPlanFeatures = (plan: Plan) => {
-    if (plan.id === 'custom') return plan.features;
-    
     const currentLimits = billingInterval === 'yearly' ? plan.yearlyLimits : plan.limits;
     
     if (plan.id === 'starter') {
@@ -162,13 +125,11 @@ export const SaaSPricing = () => {
         { text: `${currentLimits.posts} LinkedIn posts per month`, icon: <Clock className="h-4 w-4" /> },
         { text: `${currentLimits.comments} LinkedIn comments per month`, icon: <Users className="h-4 w-4" /> },
         { text: `${currentLimits.ideas} content ideas per month`, icon: <Zap className="h-4 w-4" /> },
-        { text: 'LinkedIn-trained AI models', icon: <Shield className="h-4 w-4" /> },
         { text: '15 curated AI personas', icon: <Users className="h-4 w-4" /> },
-        { text: 'Viral hook suggestions', icon: <BarChart3 className="h-4 w-4" /> },
-        { text: 'Smart emoji placement', icon: <Eye className="h-4 w-4" /> },
-        { text: 'Copy & share to LinkedIn', icon: <ArrowRight className="h-4 w-4" /> },
-        { text: 'Unlimited profile analyses', icon: <BarChart3 className="h-4 w-4" /> },
-        { text: 'Email support', icon: <AtSign className="h-4 w-4" /> }
+        { text: 'Smart Planner', icon: <Settings className="h-4 w-4" /> },
+        { text: 'Basic analytics', icon: <BarChart3 className="h-4 w-4" /> },
+        { text: 'Basic support (Email)', icon: <AtSign className="h-4 w-4" /> },
+        { text: '7-day free trial with full Pro features', icon: <Check className="h-4 w-4" /> }
       ];
     }
     
@@ -178,32 +139,34 @@ export const SaaSPricing = () => {
         { text: `${currentLimits.posts} LinkedIn posts per month`, icon: <Clock className="h-4 w-4" /> },
         { text: `${currentLimits.comments} LinkedIn comments per month`, icon: <Users className="h-4 w-4" /> },
         { text: `${currentLimits.ideas} content ideas per month`, icon: <Zap className="h-4 w-4" /> },
-        { text: 'Priority support', icon: <Headphones className="h-4 w-4" /> },
+        { text: 'Custom persona creation, unlimited edits', icon: <Users className="h-4 w-4" /> },
+        { text: 'Smart Planner', icon: <Settings className="h-4 w-4" /> },
         { text: 'Advanced analytics', icon: <BarChart3 className="h-4 w-4" /> },
-        { text: 'Early access to features', icon: <Lightning className="h-4 w-4" /> },
-        { text: 'Custom persona creation', icon: <Users className="h-4 w-4" /> },
-        { text: 'Bulk content generation', icon: <Snowflake className="h-4 w-4" /> },
-        { text: 'API access (coming soon)', icon: <GlobeIcon className="h-4 w-4" /> }
+        { text: 'Priority support (Chat + Email)', icon: <Headphones className="h-4 w-4" /> },
+        { text: '7-day free trial with full Pro features', icon: <Check className="h-4 w-4" /> }
+      ];
+    }
+
+    if (plan.id === 'elite') {
+      return [
+        { text: 'Everything in Pro, plus:', icon: <Check className="h-4 w-4" /> },
+        { text: `${currentLimits.posts} LinkedIn posts per month`, icon: <Clock className="h-4 w-4" /> },
+        { text: `${currentLimits.comments} LinkedIn comments per month`, icon: <Users className="h-4 w-4" /> },
+        { text: `${currentLimits.ideas} content ideas per month`, icon: <Zap className="h-4 w-4" /> },
+        { text: 'Unlimited AI personas', icon: <Users className="h-4 w-4" /> },
+        { text: 'Smart Planner', icon: <Settings className="h-4 w-4" /> },
+        { text: 'Full analytics dashboard', icon: <BarChart3 className="h-4 w-4" /> },
+        { text: 'API access (coming soon)', icon: <GlobeIcon className="h-4 w-4" /> },
+        { text: 'Dedicated account manager', icon: <Headphones className="h-4 w-4" /> },
+        { text: '7-day free trial with full Elite features', icon: <Check className="h-4 w-4" /> }
       ];
     }
     
     return plan.features;
   };
 
-  const handleCustomSliderChange = (type: keyof CreditSelection, value: number[]) => {
-    setCustomCredits(prev => ({ ...prev, [type]: value[0] }));
-  };
-
   const handlePlanSelect = async (planId: PlanType) => {
     console.log('Plan selected:', planId);
-    
-    if (planId === 'custom') {
-      console.log('Showing custom sliders');
-      // Show custom sliders inline - no auth required
-      setShowCustomSliders(true);
-      setSelectedPlan('custom');
-      return;
-    }
 
     if (!isAuthenticated) {
       toast.error('Please log in to start your free trial');
@@ -237,34 +200,6 @@ export const SaaSPricing = () => {
     } catch (error) {
       console.error('Subscription error:', error);
       toast.error('Payment is currently unavailable. Please contact support or try again later.');
-    }
-  };
-
-  const handleCustomSubscription = async () => {
-    if (!isAuthenticated) {
-      toast.error('Please log in to start your free trial');
-      navigate('/auth/register');
-      return;
-    }
-
-    if (!isLoaded) {
-      toast.error('Payment system is not configured. Please contact support or check back later.');
-      console.log('Payment system not loaded - Razorpay not configured');
-      return;
-    }
-
-    try {
-      // Check if Razorpay is properly configured
-      if (!isLoaded) {
-        toast.error('Payment system is currently unavailable. Please contact support.');
-        return;
-      }
-
-      // Process payment with Razorpay
-      await processCreditPayment(customCredits, currency, billingInterval);
-    } catch (error) {
-      console.error('Custom subscription error:', error);
-      toast.error('Failed to process subscription. Please try again.');
     }
   };
 
@@ -344,7 +279,7 @@ export const SaaSPricing = () => {
         </div> */}
 
         {/* Pricing Cards */}
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {plans.map((plan) => (
               <Card 
@@ -381,31 +316,20 @@ export const SaaSPricing = () => {
 
                   {/* Pricing */}
                   <div className="text-center space-y-1">
-                    {plan.id === 'custom' ? (
-                      <div className="space-y-1">
-                        <div className="text-2xl font-bold text-primary">Pay Per Use</div>
-                        <p className="text-sm text-gray-600">Customize with sliders</p>
-                        <p className="text-xs text-gray-500">
-                          Flexible usage-based pricing
-                        </p>
+                    <div className="space-y-1">
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-3xl font-bold text-gray-900">{currencySymbol}</span>
+                        <span className="text-3xl font-bold text-gray-900">{getPlanPrice(plan)}</span>
+                        <span className="text-gray-600">
+                          {billingInterval === 'yearly' ? '/year' : '/month'}
+                        </span>
                       </div>
-                    ) : (
-                      <div className="space-y-1">
-                        <div className="flex items-baseline justify-center gap-1">
-                          <span className="text-3xl font-bold text-gray-900">{currencySymbol}</span>
-                          <span className="text-3xl font-bold text-gray-900">{getPlanPrice(plan)}</span>
-                          <span className="text-gray-600">
-                            {plan.id === 'custom' ? '' : billingInterval === 'yearly' ? '/year' : '/month'}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          {plan.id === 'custom' ? 'Pay per use' : 
-                           billingInterval === 'yearly' ? 
-                             `Billed yearly (${currencySymbol}${getMonthlyEquivalent(plan)}/month)` : 
-                             'Billed monthly'}
-                        </p>
-                      </div>
-                    )}
+                      <p className="text-sm text-gray-600">
+                        {billingInterval === 'yearly' ? 
+                          `Billed yearly (${currencySymbol}${getMonthlyEquivalent(plan)}/month)` : 
+                          'Billed monthly'}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Features */}
@@ -420,7 +344,7 @@ export const SaaSPricing = () => {
                     ))}
                     
                     {/* Yearly-specific benefits */}
-                    {billingInterval === 'yearly' && plan.id !== 'custom' && (
+                    {billingInterval === 'yearly' && (
                       <>
                         <div className="flex items-start gap-2 mt-3 pt-2 border-t border-gray-200">
                           <div className="w-4 h-4 flex items-center justify-center flex-shrink-0 mt-0.5 text-green-600">
@@ -457,7 +381,6 @@ export const SaaSPricing = () => {
                     >
                       {isProcessing ? 'Processing...' : 
                        (isAuthenticated && !isLoaded) ? 'Loading...' : 
-                       plan.id === 'custom' ? 'Customize Usage' : 
                        !isAuthenticated ? 'Start Free Trial' : 
                        `Upgrade to ${plan.name}`}
                       <ArrowRight className="ml-2 h-3 w-3" />
@@ -467,128 +390,6 @@ export const SaaSPricing = () => {
               </Card>
             ))}
           </div>
-
-          {/* Custom Plan Sliders - Premium UI */}
-          {showCustomSliders && (
-            <div className="mt-8 sm:mt-12 max-w-6xl mx-auto px-4">
-              <Card className="p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-blue-50 to-purple-50 border-primary shadow-lg">
-                <div className="text-center mb-6 sm:mb-8">
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Customize Your Usage</h3>
-                  <p className="text-sm sm:text-base text-gray-600">Adjust the sliders to set your perfect plan</p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-8">
-                  {/* Posts Slider */}
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <div className="p-3 bg-blue-100 rounded-full w-fit mx-auto mb-3">
-                        <Clock className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <h4 className="font-semibold text-gray-900">LinkedIn Posts</h4>
-                      <Badge variant="secondary" className="mt-2">
-                        {customCredits.posts} posts/month
-                      </Badge>
-                    </div>
-                    <Slider
-                      value={[customCredits.posts]}
-                      onValueChange={(value) => handleCustomSliderChange('posts', value)}
-                      min={10}
-                      max={100}
-                      step={5}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>10 posts</span>
-                      <span>100 posts</span>
-                    </div>
-                  </div>
-
-                  {/* Comments Slider */}
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <div className="p-3 bg-green-100 rounded-full w-fit mx-auto mb-3">
-                        <Users className="h-6 w-6 text-green-600" />
-                      </div>
-                      <h4 className="font-semibold text-gray-900">LinkedIn Comments</h4>
-                      <Badge variant="secondary" className="mt-2">
-                        {customCredits.comments} comments/month
-                      </Badge>
-                    </div>
-                    <Slider
-                      value={[customCredits.comments]}
-                      onValueChange={(value) => handleCustomSliderChange('comments', value)}
-                      min={10}
-                      max={100}
-                      step={5}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>10 comments</span>
-                      <span>100 comments</span>
-                    </div>
-                  </div>
-
-                  {/* Ideas Slider */}
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <div className="p-3 bg-purple-100 rounded-full w-fit mx-auto mb-3">
-                        <Zap className="h-6 w-6 text-purple-600" />
-                      </div>
-                      <h4 className="font-semibold text-gray-900">Content Ideas</h4>
-                      <Badge variant="secondary" className="mt-2">
-                        {customCredits.ideas} ideas/month
-                      </Badge>
-                    </div>
-                    <Slider
-                      value={[customCredits.ideas]}
-                      onValueChange={(value) => handleCustomSliderChange('ideas', value)}
-                      min={10}
-                      max={100}
-                      step={5}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>10 ideas</span>
-                      <span>100 ideas</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Price Summary */}
-                <div className="bg-white rounded-lg p-4 sm:p-6 border-2 border-primary/20">
-                  <div className="text-center space-y-3 sm:space-y-4">
-                    <h4 className="text-lg sm:text-xl font-bold text-gray-900">Your Custom Plan</h4>
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="text-3xl sm:text-4xl font-bold text-primary">
-                        {formatPrice(calculateCustomPrice(customCredits))}
-                      </span>
-                      <span className="text-base sm:text-lg text-gray-600">/month</span>
-                    </div>
-
-                    <Button 
-                      onClick={handleCustomSubscription}
-                      disabled={isProcessing || !isLoaded}
-                      className="w-full h-10 sm:h-12 text-sm font-medium bg-primary hover:bg-primary/90 text-white"
-                    >
-                      {isProcessing ? 'Processing...' : !isLoaded ? 'Loading...' : 'Start Free Trial'}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Close button */}
-                <div className="text-center mt-4 sm:mt-6">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowCustomSliders(false)}
-                    className="text-gray-600 hover:text-gray-800 text-sm sm:text-base"
-                  >
-                    Close Customizer
-                  </Button>
-                </div>
-              </Card>
-            </div>
-          )}
 
           {/* Simple Trial Information */}
           <div className="text-center mt-12">

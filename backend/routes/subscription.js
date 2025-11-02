@@ -55,6 +55,7 @@ router.post(
       .isIn([
         "generate_post",
         "generate_comment",
+        "generate_idea",
         "use_template",
         "analyze_linkedin",
       ])
@@ -100,6 +101,7 @@ router.post(
       .isIn([
         "generate_post",
         "generate_comment",
+        "generate_idea",
         "use_template",
         "analyze_linkedin",
       ])
