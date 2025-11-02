@@ -9,6 +9,7 @@ import { SubscriptionStatus } from "../components/SubscriptionStatus";
 import { CreditTrackingStatus } from "../components/CreditTrackingStatus";
 import api from "../services/api";
 import { useToast } from "../hooks/use-toast";
+import { OnboardingModal } from "@/components/ui/OnboardingModal";
 
 const Dashboard = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -17,6 +18,18 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [referralData, setReferralData] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  // Assumes user profile in dashboardData.currentUser (adjust as necessary)
+  const userProfile = dashboardData?.currentUser || {};
+
+  function needsOnboarding(profile) {
+    const required = [
+      'goal', 'personaName', 'style', 'tone', 'expertise', 'audience',
+      'jobTitle', 'company', 'industry', 'experience',
+      'contentTypes', 'postingFrequency', 'topics'
+    ];
+    return required.some(k => !profile?.[k] || (Array.isArray(profile[k]) && !profile[k].length));
+  }
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -29,6 +42,19 @@ const Dashboard = () => {
       fetchReferralData();
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated && needsOnboarding(userProfile)) {
+      setShowOnboarding(true);
+    }
+  }, [isAuthenticated, userProfile]);
+
+  const handleOnboardingSubmit = async (data) => {
+    // TODO: Save details to profile API; stub for now
+    // await api.savePersonaDetails(data);
+    setShowOnboarding(false);
+    // Optionally re-fetch dashboardData/profile
+  };
 
   const fetchReferralData = async () => {
     try {
@@ -106,6 +132,8 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen gradient-hero">
+      <OnboardingModal open={showOnboarding} onSubmit={handleOnboardingSubmit} />
+      {/* Block AI/content generators unless !needsOnboarding(userProfile) */}
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">

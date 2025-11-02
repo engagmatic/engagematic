@@ -50,11 +50,19 @@ router.get("/stats", adminAuth, async (req, res) => {
 
     // Calculate real revenue from Payment collection (sum of captured payments)
     const Payment = (await import("../models/Payment.js")).default;
-    const paymentAgg = await Payment.aggregate([
+    const paymentAggByCurrency = await Payment.aggregate([
       { $match: { status: "captured" } },
-      { $group: { _id: null, total: { $sum: "$amount" } } },
+      { $group: { _id: "$currency", total: { $sum: "$amount" } } },
     ]);
-    const totalRevenue = paymentAgg.length > 0 ? paymentAgg[0].total : 0;
+    let revenueINR = 0;
+    let revenueUSD = 0;
+    paymentAggByCurrency.forEach((entry) => {
+      if (entry._id === "INR" || !entry._id) {
+        revenueINR = entry.total;
+      } else if (entry._id === "USD") {
+        revenueUSD = entry.total;
+      }
+    });
     const conversionRate =
       totalUsers > 0 ? ((paidUsers / totalUsers) * 100).toFixed(1) : 0;
     const growthRate =
@@ -71,7 +79,8 @@ router.get("/stats", adminAuth, async (req, res) => {
       newUsersToday,
       postsGenerated: totalPosts,
       commentsGenerated: totalComments,
-      totalRevenue,
+      revenueINR,
+      revenueUSD,
       conversionRate: parseFloat(conversionRate),
       growthRate: parseFloat(growthRate),
     });

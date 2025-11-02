@@ -23,7 +23,8 @@ interface DashboardStats {
   newUsersToday: number;
   postsGenerated: number;
   commentsGenerated: number;
-  totalRevenue: number;
+  revenueINR: number;
+  revenueUSD: number;
   conversionRate: number;
   growthRate: number;
 }
@@ -53,13 +54,15 @@ export default function AdminDashboard() {
     newUsersToday: 0,
     postsGenerated: 0,
     commentsGenerated: 0,
-    totalRevenue: 0,
+    revenueINR: 0,
+    revenueUSD: 0,
     conversionRate: 0,
     growthRate: 0
   });
   const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currency, setCurrency] = useState<'INR'|'USD'>('INR');
 
   useEffect(() => {
     fetchDashboardStats();
@@ -187,7 +190,14 @@ export default function AdminDashboard() {
     },
     {
       title: 'Revenue',
-      value: `$${stats.totalRevenue.toLocaleString()}`,
+      value: currency === 'INR'
+        ? `₹${stats.revenueINR?.toLocaleString()}`
+        : `$${stats.revenueUSD?.toLocaleString()}`,
+      extra:
+        <div className="mt-1 flex text-xs gap-3 text-gray-500">
+          <span className="cursor-pointer" onClick={() => setCurrency('INR')}>₹: {stats.revenueINR?.toLocaleString?.() ?? 0}</span>
+          <span className="cursor-pointer" onClick={() => setCurrency('USD')}>$: {stats.revenueUSD?.toLocaleString?.() ?? 0}</span>
+        </div>,
       icon: DollarSign,
       change: '+18%',
       positive: true,
@@ -237,6 +247,7 @@ export default function AdminDashboard() {
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                       {isLoading ? '...' : stat.value}
                     </h3>
+                    {stat.extra}
                     <div className="flex items-center gap-1 mt-2">
                       {stat.positive ? (
                         <ArrowUpRight className="h-4 w-4 text-green-600" />
