@@ -157,6 +157,27 @@ class ApiClient {
     });
   }
 
+  // Free post generation (no auth required)
+  async generatePostFree(postData) {
+    // This endpoint should be created on backend without auth middleware
+    // It should track usage via session/IP to limit to 1 free post
+    const url = `${this.baseURL}/content/posts/generate-free`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(postData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "Failed to generate post" }));
+      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
   async generateComment(commentData) {
     return this.request("/content/comments/generate", {
       method: "POST",

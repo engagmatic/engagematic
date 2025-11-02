@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -113,6 +113,47 @@ const Register = () => {
     { id: 3, title: "AI Persona", icon: Sparkles },
     { id: 4, title: "Preferences", icon: Heart }
   ];
+
+  // Check for pre-filled data from free post generator
+  useEffect(() => {
+    const prefillData = sessionStorage.getItem("registration_prefill");
+    if (prefillData) {
+      try {
+        const data = JSON.parse(prefillData);
+        // Map persona from free generator to form data
+        if (data.persona) {
+          const personaMap: Record<string, any> = {
+            founder: { name: "Startup Founder", writingStyle: "storyteller", tone: "confident", expertise: "Startups, Entrepreneurship, Business Growth" },
+            marketer: { name: "Digital Marketer", writingStyle: "conversational", tone: "enthusiastic", expertise: "Digital Marketing, SEO, Growth Hacking" },
+            recruiter: { name: "HR Leader", writingStyle: "conversational", tone: "empathetic", expertise: "Talent Acquisition, HR, Recruitment" },
+            consultant: { name: "Management Consultant", writingStyle: "analytical", tone: "strategic", expertise: "Strategy, Business Consulting, Transformation" },
+            "sales-pro": { name: "Sales Leader", writingStyle: "conversational", tone: "enthusiastic", expertise: "Sales, Business Development, Revenue Growth" },
+            student: { name: "Student", writingStyle: "personal", tone: "authentic", expertise: "Learning, Career Development, Education" },
+            creator: { name: "Content Creator", writingStyle: "storyteller", tone: "creative", expertise: "Content Creation, Storytelling, Personal Branding" },
+          };
+          
+          const personaInfo = personaMap[data.persona] || personaMap.founder;
+          setFormData(prev => ({
+            ...prev,
+            personaName: personaInfo.name,
+            writingStyle: personaInfo.writingStyle,
+            tone: personaInfo.tone,
+            expertise: personaInfo.expertise,
+            targetAudience: data.audience || "",
+            primaryGoal: data.goal || "",
+          }));
+          
+          // Show toast about pre-filled data
+          toast({
+            title: "Welcome back! ✨",
+            description: "We've pre-filled your information from your free post. Just complete the remaining steps!",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to parse prefill data", error);
+      }
+    }
+  }, [toast]);
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
