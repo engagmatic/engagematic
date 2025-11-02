@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Gift, Users, Star } from "lucide-react";
 import { Logo } from "../Logo";
 
@@ -11,6 +11,15 @@ export const Footer = () => {
   const handleCloseBanner = () => {
     setIsBannerVisible(false);
   };
+
+  // Auto-dismiss banner after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsBannerVisible(false);
+    }, 3000); // 3 seconds
+
+    return () => clearTimeout(timer); // Cleanup on unmount
+  }, []);
 
   return (
     <>
