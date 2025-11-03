@@ -9,14 +9,27 @@ import { SubscriptionStatus } from "../components/SubscriptionStatus";
 import { CreditTrackingStatus } from "../components/CreditTrackingStatus";
 import api from "../services/api";
 import { useToast } from "../hooks/use-toast";
+// import { OnboardingModal } from "@/components/ui/OnboardingModal";
 
 const Dashboard = () => {
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { dashboardData, isLoading: dashboardLoading } = useDashboard();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [referralData, setReferralData] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  // Assumes user profile in dashboardData.currentUser (adjust as necessary)
+  const userProfile = dashboardData?.currentUser || {};
+
+  function needsOnboarding(profile) {
+    const required = [
+      'goal', 'personaName', 'style', 'tone', 'expertise', 'audience',
+      'jobTitle', 'company', 'industry', 'experience',
+      'contentTypes', 'postingFrequency', 'topics'
+    ];
+    return required.some(k => !profile?.[k] || (Array.isArray(profile[k]) && !profile[k].length));
+  }
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -29,6 +42,19 @@ const Dashboard = () => {
       fetchReferralData();
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated && needsOnboarding(userProfile)) {
+      setShowOnboarding(true);
+    }
+  }, [isAuthenticated, userProfile]);
+
+  const handleOnboardingSubmit = async (data) => {
+    // TODO: Save details to profile API; stub for now
+    // await api.savePersonaDetails(data);
+    setShowOnboarding(false);
+    // Optionally re-fetch dashboardData/profile
+  };
 
   const fetchReferralData = async () => {
     try {
@@ -105,78 +131,79 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-4 sm:space-y-5 md:space-y-6 w-full overflow-x-hidden">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1 sm:mb-2">
-          Dashboard
-        </h1>
-        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Track your LinkedIn growth and create engaging content</p>
-      </div>
+    <div className="min-h-screen gradient-hero">
+      {/* <OnboardingModal open={showOnboarding} onSubmit={handleOnboardingSubmit} /> */}
+      {/* Block AI/content generators unless !needsOnboarding(userProfile) */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2">
+            <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
+              Welcome back to your Dashboard
+            </span>
+          </h1>
+          <p className="text-muted-foreground">Track your LinkedIn growth and create engaging content</p>
+        </div>
 
-      {/* Subscription Status */}
-      <CreditTrackingStatus />
+        {/* Subscription Status */}
+        <div className="mb-8">
+          <CreditTrackingStatus />
+        </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {quickStats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={index} className="p-4 sm:p-5 md:p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-800 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between mb-2 sm:mb-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                  <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+          {quickStats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={index} className="p-4 sm:p-6 hover-lift gradient-card">
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl gradient-pulse flex items-center justify-center shadow-pulse">
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-medium text-green-600">{stat.change}</span>
                 </div>
-                <span className="text-xs sm:text-sm font-medium text-green-600">{stat.change}</span>
-              </div>
-              <div className="text-xl sm:text-2xl md:text-2xl font-bold mb-1 text-gray-900 dark:text-gray-100">{stat.value}</div>
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{stat.label}</div>
-            </Card>
-          );
-        })}
-      </div>
+                <div className="text-2xl sm:text-3xl font-bold mb-1">{stat.value}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">{stat.label}</div>
+              </Card>
+            );
+          })}
+        </div>
 
-      {/* Referral Section */}
-      {referralData && (
-        <Card className="p-4 sm:p-5 md:p-6 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 border-purple-200 dark:border-purple-800">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-              <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center flex-shrink-0">
-                  <Gift className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+        {/* Referral Section */}
+        {referralData && (
+          <Card className="mb-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                  <Gift className="h-6 w-6 text-white" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Earn Free Months</h3>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Earn Free Months</h3>
+                  <p className="text-sm text-gray-600">
                     {referralData.totalReferrals || 0} referrals • {referralData.freeMonthsEarned || 0} free months earned
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2 w-full sm:w-auto">
-                <Button
-                  variant="outline"
-                  size="sm"
+              <div className="flex gap-2">
+                <button 
                   onClick={handleCopyReferralLink}
-                  className="flex-1 sm:flex-initial touch-manipulation min-h-[44px] sm:min-h-0"
+                  className="px-3 py-2 bg-white text-purple-600 border border-purple-200 rounded-lg hover:bg-purple-50 transition-all text-sm font-medium"
                 >
                   {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </Button>
-                <Link to="/referral" className="flex-1 sm:flex-initial">
-                  <Button className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white touch-manipulation min-h-[44px] sm:min-h-0">
-                    <Users className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Invite Friends</span>
-                    <span className="sm:hidden">Invite</span>
-                  </Button>
+                </button>
+                <Link to="/referral">
+                  <button className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium">
+                    <Users className="h-4 w-4 inline mr-2" />
+                    Invite Friends
+                  </button>
                 </Link>
               </div>
             </div>
           </Card>
         )}
 
-        {/* Tool Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Idea Generator Card */}
-          <Link to="/idea-generator" className="touch-manipulation">
-            <Card className="relative overflow-hidden p-5 sm:p-6 md:p-8 hover:shadow-2xl transition-all duration-300 group cursor-pointer border-2 hover:border-yellow-400 bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50 active:scale-[0.98]">
+          <Link to="/idea-generator">
+            <Card className="relative overflow-hidden p-6 sm:p-8 hover:shadow-2xl transition-all duration-300 group cursor-pointer border-2 hover:border-yellow-400 bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50">
               {/* Decorative background elements */}
               <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-bl-full" />
               <div className="absolute bottom-0 left-0 w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-tr from-amber-400/10 to-yellow-400/10 rounded-tr-full" />
@@ -226,8 +253,8 @@ const Dashboard = () => {
           </Link>
 
           {/* Post Generator Card */}
-          <Link to="/post-generator" className="touch-manipulation">
-            <Card className="relative overflow-hidden p-5 sm:p-6 md:p-8 hover:shadow-2xl transition-all duration-300 group cursor-pointer border-2 hover:border-blue-400 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 active:scale-[0.98]">
+          <Link to="/post-generator">
+            <Card className="relative overflow-hidden p-6 sm:p-8 hover:shadow-2xl transition-all duration-300 group cursor-pointer border-2 hover:border-blue-400 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
               {/* Decorative background elements */}
               <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-bl-full" />
               <div className="absolute bottom-0 left-0 w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-tr from-pink-400/10 to-blue-400/10 rounded-tr-full" />
@@ -277,8 +304,8 @@ const Dashboard = () => {
           </Link>
 
           {/* Comment Generator Card */}
-          <Link to="/comment-generator" className="touch-manipulation">
-            <Card className="relative overflow-hidden p-5 sm:p-6 md:p-8 hover:shadow-2xl transition-all duration-300 group cursor-pointer border-2 hover:border-purple-400 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 active:scale-[0.98]">
+          <Link to="/comment-generator">
+            <Card className="relative overflow-hidden p-6 sm:p-8 hover:shadow-2xl transition-all duration-300 group cursor-pointer border-2 hover:border-purple-400 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
               {/* Decorative background elements */}
               <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-bl-full" />
               <div className="absolute bottom-0 left-0 w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-tr from-orange-400/10 to-purple-400/10 rounded-tr-full" />
@@ -327,6 +354,7 @@ const Dashboard = () => {
             </Card>
           </Link>
         </div>
+      </div>
     </div>
   );
 };
