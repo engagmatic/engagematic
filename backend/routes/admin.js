@@ -61,40 +61,25 @@ router.get("/stats", adminAuth, async (req, res) => {
 
     // Calculate real revenue from Payment collection (sum of captured payments by currency)
     const Payment = (await import("../models/Payment.js")).default;
+    
+    // Use aggregation to calculate revenue properly without double counting
     const paymentAggByCurrency = await Payment.aggregate([
       { $match: { status: "captured" } },
       { $group: { _id: "$currency", total: { $sum: "$amount" } } },
     ]);
+    
     let revenueINR = 0;
     let revenueUSD = 0;
+    
     paymentAggByCurrency.forEach((entry) => {
-      if (entry._id === "INR" || !entry._id) {
-        revenueINR = entry.total;
-      } else if (entry._id === "USD") {
-        revenueUSD = entry.total;
-      }
-    });
-
-    // Get all captured payments and calculate revenue directly
-    const allCapturedPayments = await Payment.find({
-      status: "captured",
-      amount: { $exists: true, $gt: 0 },
-    })
-      .select("amount currency status")
-      .lean();
-
-    allCapturedPayments.forEach((payment) => {
-      const currency = (payment.currency || "INR")
-        .toString()
-        .toUpperCase()
-        .trim();
-      const amount = payment.amount || 0;
-
+      const currency = (entry._id || "INR").toString().toUpperCase().trim();
+      const amount = entry.total || 0;
+      
       if (currency === "USD") {
-        revenueUSD += amount;
+        revenueUSD = amount;
       } else {
         // Default to INR for any other currency or missing currency
-        revenueINR += amount;
+        revenueINR = amount;
       }
     });
 
