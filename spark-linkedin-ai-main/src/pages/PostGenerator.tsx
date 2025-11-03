@@ -66,9 +66,14 @@ const PostGenerator = () => {
   const { isGenerating, generatedContent, generatePost, generatePostCustom, copyToClipboard, saveContent } = useContentGeneration();
   const { subscription, canPerformAction, fetchSubscription } = useSubscription();
 
-  const handleUpgradeClick = (source: string) => {
-    // Redirect to pricing page for premium features
-    navigate('/plan-management');
+      const handleUpgradeClick = (source: string) => {
+        // Redirect to pricing section for premium features
+        if (window.location.pathname === '/') {
+          const pricingSection = document.getElementById('pricing');
+          pricingSection?.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          navigate('/#pricing');
+        }
     toast({
       title: "Upgrade Required",
       description: "This feature is available in our premium plans. Choose a plan to continue.",

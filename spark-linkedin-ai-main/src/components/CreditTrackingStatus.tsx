@@ -321,7 +321,7 @@ export const CreditTrackingStatus = () => {
               variant="outline" 
               className="flex-1 h-12 font-semibold"
             >
-              <Link to="/plan-management" className="flex items-center justify-center gap-2">
+              <Link to="/#pricing" className="flex items-center justify-center gap-2">
                 <Settings className="w-4 h-4" />
                 Modify Plan
               </Link>

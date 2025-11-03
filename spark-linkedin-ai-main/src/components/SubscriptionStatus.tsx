@@ -39,16 +39,25 @@ export const SubscriptionStatus = () => {
     getTokensTotal,
     upgradePlan
   } = useSubscription();
-  
+
   const handleUpgrade = async () => {
     setIsNavigating(true);
-    
+
     try {
-      // Navigate to plan management page
-      navigate("/plan-management");
+      // Navigate to pricing section on home page
+      if (window.location.pathname === '/') {
+        const pricingSection = document.getElementById('pricing');
+        pricingSection?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        navigate('/#pricing');
+      }
     } catch (error) {
       console.error('Navigation error:', error);
-      toast.error('Please try again');
+      toast({
+        title: "Navigation Error",
+        description: "Please try again",
+        variant: "destructive",
+      });
     } finally {
       setIsNavigating(false);
     }
@@ -285,18 +294,23 @@ export const SubscriptionStatus = () => {
         </Button>
       )}
 
-      {isSubscriptionActive && (
-        <Button 
-          asChild
-          variant="outline" 
-          className="w-full h-12 font-semibold"
-        >
-          <Link to="/plan-management">
-            <Crown className="w-4 h-4 mr-2" />
-            Manage Subscription
-          </Link>
-        </Button>
-      )}
+            {isSubscriptionActive && (
+              <Button
+                variant="outline"
+                className="w-full h-12 font-semibold"
+                onClick={() => {
+                  if (window.location.pathname === '/') {
+                    const pricingSection = document.getElementById('pricing');
+                    pricingSection?.scrollIntoView({ behavior: 'smooth' });
+                  } else {
+                    navigate('/#pricing');
+                  }
+                }}
+              >
+                <Crown className="w-4 h-4 mr-2" />
+                View Plans
+              </Button>
+            )}
     </Card>
   );
 };

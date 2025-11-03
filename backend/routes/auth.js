@@ -270,17 +270,50 @@ router.get("/me", authenticateToken, async (req, res) => {
 // Update user profile
 router.put("/profile", authenticateToken, async (req, res) => {
   try {
-    const { name, avatar } = req.body;
+    const { name, avatar, profile, persona, interests } = req.body;
     const userId = req.user._id;
 
     const updateData = {};
     if (name) updateData.name = name;
     if (avatar) updateData.avatar = avatar;
+    
+    // Update nested profile object
+    if (profile && typeof profile === 'object') {
+      updateData.profile = {};
+      if (profile.jobTitle !== undefined) updateData.profile.jobTitle = profile.jobTitle;
+      if (profile.company !== undefined) updateData.profile.company = profile.company;
+      if (profile.industry !== undefined) updateData.profile.industry = profile.industry;
+      if (profile.experience !== undefined) updateData.profile.experience = profile.experience;
+      if (profile.linkedinUrl !== undefined) updateData.profile.linkedinUrl = profile.linkedinUrl;
+      if (profile.onboardingCompleted !== undefined) updateData.profile.onboardingCompleted = profile.onboardingCompleted;
+    }
+    
+    // Update nested persona object
+    if (persona && typeof persona === 'object') {
+      updateData.persona = {};
+      if (persona.name !== undefined) updateData.persona.name = persona.name;
+      if (persona.writingStyle !== undefined) updateData.persona.writingStyle = persona.writingStyle;
+      if (persona.tone !== undefined) updateData.persona.tone = persona.tone;
+      if (persona.expertise !== undefined) updateData.persona.expertise = persona.expertise;
+      if (persona.targetAudience !== undefined) updateData.persona.targetAudience = persona.targetAudience;
+      if (persona.goals !== undefined) updateData.persona.goals = persona.goals;
+      if (persona.contentTypes !== undefined) updateData.persona.contentTypes = persona.contentTypes;
+    }
+    
+    // Update interests array
+    if (interests && Array.isArray(interests)) {
+      updateData.interests = interests;
+    }
 
-    const user = await User.findByIdAndUpdate(userId, updateData, {
-      new: true,
-      runValidators: true,
-    }).select("-password");
+    // Use $set operator for nested updates to merge with existing data
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).select("-password");
 
     res.json({
       success: true,

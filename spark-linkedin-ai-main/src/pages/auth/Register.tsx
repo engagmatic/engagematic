@@ -3,16 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Activity, 
-  Loader2, 
-  Eye, 
-  EyeOff, 
-  Check, 
-  User, 
+import {
+  Loader2,
+  Eye,
+  EyeOff,
+  Check,
+  User,
   Sparkles,
   Lightbulb
 } from "lucide-react";
+import { LogoWithText } from "@/components/LogoWithText";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -95,6 +95,9 @@ const Register = () => {
           description: "Your account has been created. Complete your profile setup to get started.",
         });
         
+        // Small delay to ensure auth context is updated before navigation
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         const returnTo = location.state?.returnTo || '/dashboard';
         navigate(returnTo);
       } else {
@@ -120,14 +123,10 @@ const Register = () => {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-4 hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
-              <Activity className="h-6 w-6 sm:h-7 sm:w-7 text-white animate-pulse" />
-            </div>
-            <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              LinkedInPulse
-            </span>
-          </Link>
+          <LogoWithText 
+            textSize="lg"
+            className="mb-4 justify-center"
+          />
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
             Create your AI-powered LinkedIn presence
           </h1>
