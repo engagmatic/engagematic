@@ -167,47 +167,19 @@ router.put("/update", authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     const updates = req.body;
 
-    // Get current user to merge with existing data
-    const currentUser = await User.findById(userId);
-    if (!currentUser) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+    // Allowed fields
+    const allowedFields = ["name", "profile"];
+    const filteredUpdates = {};
 
-    // Build update object with nested fields - merge with existing data
-    const updateData = {};
-    
-    // Handle name
-    if (updates.name) {
-      updateData.name = updates.name;
-    }
-    
-    // Handle interests
-    if (updates.interests && Array.isArray(updates.interests)) {
-      updateData.interests = updates.interests;
-    }
-    
-    // Handle profile fields (nested) - merge with existing profile
-    if (updates.profile) {
-      updateData["profile"] = {
-        ...(currentUser.profile || {}),
-        ...updates.profile,
-      };
-    }
-    
-    // Handle persona fields (nested) - merge with existing persona
-    if (updates.persona) {
-      updateData["persona"] = {
-        ...(currentUser.persona || {}),
-        ...updates.persona,
-      };
-    }
+    Object.keys(updates).forEach((key) => {
+      if (allowedFields.includes(key) || key.startsWith("profile.")) {
+        filteredUpdates[key] = updates[key];
+      }
+    });
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $set: updateData },
+      { $set: filteredUpdates },
       { new: true, runValidators: true }
     ).select("-password");
 

@@ -10,7 +10,6 @@ import { Suspense, lazy } from "react";
 import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
 import AppLayout from "./components/layout/AppLayout";
-import { DashboardLayout } from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -42,7 +41,6 @@ import BlogManagement from "./pages/admin/BlogManagement";
 import Analytics from "./pages/admin/Analytics";
 import EmailAnalytics from "./pages/admin/EmailAnalytics";
 import { ProtectedAdminRoute } from "./components/admin/ProtectedAdminRoute";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 // Roadmap and Changelog removed
 import NotFound from "./pages/NotFound";
 
@@ -129,22 +127,14 @@ const App = () => (
                 {/* Redirect /admin to /admin/dashboard */}
                 <Route path="/admin" element={<AdminLogin />} />
 
-                {/* Dashboard Layout - Protected Routes */}
-                <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/post-generator" element={<PostGenerator />} />
-                  <Route path="/comment-generator" element={<CommentGenerator />} />
-                  <Route path="/idea-generator" element={<IdeaGenerator />} />
-                  <Route path="/plan-management" element={<PlanManagement />} />
-                  <Route path="/profile" element={<UserProfile />} />
-                </Route>
-
-                {/* Public pages with header/footer */}
+                {/* All other pages share header/footer */}
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<Index />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/idea-generator" element={<IdeaGenerator />} />
+                  <Route path="/post-generator" element={<PostGenerator />} />
+                  <Route path="/comment-generator" element={<CommentGenerator />} />
                   {/* Blog Routes */}
-                  <Route path="/blogs" element={<BlogListingPage />} />
-                  <Route path="/blogs/:slug" element={<BlogPage />} />
                   {/* Static Pages */}
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/privacy" element={<PrivacyPolicyPage />} />
@@ -153,8 +143,12 @@ const App = () => (
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/resources" element={<HelpCenterPage />} />
                   <Route path="/templates" element={<TemplatesPage />} />
+                  <Route path="/plan-management" element={<PlanManagement />} />
+                  <Route path="/profile" element={<UserProfile />} />
                   <Route path="/post/:postId" element={<PostDetailPage />} />
                   <Route path="/referral" element={<Referrals />} />
+                  <Route path="/blogs" element={<BlogListingPage />} />
+                  <Route path="/blogs/:slug" element={<BlogPage />} />
                 </Route>
 
                 {/* Catch-all */}
