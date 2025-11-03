@@ -119,6 +119,18 @@ const userSchema = new mongoose.Schema(
         type: String,
         default: null,
       },
+      onboardingCompleted: {
+        type: Boolean,
+        default: false,
+      },
+      personaType: {
+        type: String,
+        default: null,
+      },
+      role: {
+        type: String,
+        default: null,
+      },
     },
     // User interests/topics
     interests: [

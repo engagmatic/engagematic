@@ -7,22 +7,35 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { SubscriptionStatus } from "../components/SubscriptionStatus";
 import { CreditTrackingStatus } from "../components/CreditTrackingStatus";
+import { OnboardingModal } from "../components/OnboardingModal";
 import api from "../services/api";
 import { useToast } from "../hooks/use-toast";
 
 const Dashboard = () => {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const { dashboardData, isLoading: dashboardLoading } = useDashboard();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [referralData, setReferralData] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate('/auth/login');
     }
   }, [isAuthenticated, authLoading, navigate]);
+
+  // Show onboarding modal if user hasn't completed it
+  useEffect(() => {
+    if (isAuthenticated && user && !user.profile?.onboardingCompleted) {
+      // Small delay to let dashboard load first
+      const timer = setTimeout(() => {
+        setShowOnboarding(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -327,6 +340,16 @@ const Dashboard = () => {
           </Link>
         </div>
       </div>
+
+      {/* Onboarding Modal - Shows after signup for new users */}
+      <OnboardingModal 
+        isOpen={showOnboarding}
+        onComplete={() => {
+          setShowOnboarding(false);
+          // Refresh user data to get updated profile
+          window.location.reload();
+        }}
+      />
     </div>
   );
 };
