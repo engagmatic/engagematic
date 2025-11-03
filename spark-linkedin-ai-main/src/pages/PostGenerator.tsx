@@ -49,7 +49,6 @@ const PostGenerator = () => {
   const [selectedHook, setSelectedHook] = useState(null);
   const [hooks, setHooks] = useState(DEFAULT_HOOKS);
   const [isLoadingHooks, setIsLoadingHooks] = useState(false);
-  const [creativeSuggestions, setCreativeSuggestions] = useState([]);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [waitlistSource, setWaitlistSource] = useState("post-generator");
   const [showUpgradePopup, setShowUpgradePopup] = useState(false);
@@ -169,33 +168,7 @@ const PostGenerator = () => {
     };
   }, []); // Empty dependency array - run once on mount
 
-  const generateCreativeSuggestions = (topic) => {
-    // Generate creative format suggestions for LinkedIn posts
-    const suggestions = [
-      {
-        type: "Carousel",
-        title: "Carousel Post",
-        description: `Break down "${topic}" into 5-7 engaging slides with key insights and visuals`,
-        icon: "📊",
-        tips: "Use Canva or Figma. Keep each slide focused on 1 main point. Add your logo for branding."
-      },
-      {
-        type: "Video",
-        title: "Short Video",
-        description: `Record a 60-90 second authentic video sharing your perspective on "${topic}"`,
-        icon: "🎥",
-        tips: "Hook viewers in first 3 seconds. Be genuine and conversational. End with a clear CTA."
-      },
-      {
-        type: "Document",
-        title: "PDF Guide",
-        description: `Create a valuable 2-3 page PDF guide or checklist about "${topic}"`,
-        icon: "📄",
-        tips: "Include actionable steps, visuals, and your contact info. Make it downloadable."
-      }
-    ];
-    setCreativeSuggestions(suggestions);
-  };
+  // Creative suggestions removed - replaced with formatting preferences and persona customization
 
   const handleGeneratePost = async () => {
     // Validation
@@ -793,68 +766,6 @@ const PostGenerator = () => {
                 )}
           </div>
         </Card>
-
-            {/* Creative Suggestions - World-Class Design */}
-            {creativeSuggestions.length > 0 && (
-              <Card className="shadow-xl border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50">
-                <div className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-yellow-500 rounded-lg">
-                      <Lightbulb className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900">
-                        Creative Format Suggestions
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Boost engagement with these LinkedIn formats
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 gap-4">
-                    {creativeSuggestions.map((suggestion, idx) => (
-                      <div
-                        key={idx}
-                        className="group relative bg-white border-2 border-gray-200 rounded-xl p-5 hover:border-yellow-400 hover:shadow-lg transition-all duration-300 cursor-pointer"
-                      >
-                        {/* Number Badge */}
-                        <div className="absolute -top-3 -right-3 bg-gradient-to-br from-yellow-400 to-orange-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-sm shadow-lg group-hover:scale-110 transition-transform">
-                          {idx + 1}
-                        </div>
-                        
-                        {/* Header */}
-                        <div className="mb-3">
-                          <h4 className="font-bold text-lg text-gray-900 mb-1 flex items-center gap-2">
-                            <span className="text-2xl">{suggestion.icon}</span>
-                            {suggestion.title}
-                          </h4>
-                          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
-                            High Engagement Format
-                          </p>
-                        </div>
-                        
-                        {/* Description */}
-                        <p className="text-sm text-gray-700 mb-3 leading-relaxed">
-                          {suggestion.description}
-                        </p>
-                        
-                        {/* Quick Tip */}
-                        <div className="flex items-start gap-2.5 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                          <span className="flex-shrink-0 text-lg">💡</span>
-                          <div>
-                            <p className="text-xs font-semibold text-yellow-900 mb-1">Pro Tip:</p>
-                            <p className="text-xs text-gray-700 leading-relaxed">{suggestion.tips}</p>
-                          </div>
-                        </div>
-                        
-                        {/* Hover Effect */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 to-orange-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Card>
-            )}
           </div>
         </div>
       </div>

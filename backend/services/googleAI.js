@@ -16,13 +16,17 @@ class GoogleAIService {
     persona,
     linkedinInsights = null,
     profileInsights = null,
-    userProfile = null
+    userProfile = null,
+    postFormatting = "plain",
+    trainingPosts = []
   ) {
     try {
       console.log("🤖 Generating post with Google AI...");
       console.log("Topic:", topic);
       console.log("Hook:", hook);
       console.log("Persona:", persona.name);
+      console.log("Formatting:", postFormatting);
+      console.log("Training posts:", trainingPosts.length);
       if (linkedinInsights) {
         console.log(
           "LinkedIn Insights:",
@@ -40,7 +44,9 @@ class GoogleAIService {
         persona,
         linkedinInsights,
         profileInsights,
-        userProfile
+        userProfile,
+        postFormatting,
+        trainingPosts
       );
 
       const result = await this.model.generateContent({
@@ -170,7 +176,9 @@ class GoogleAIService {
     persona,
     linkedinInsights = null,
     profileInsights = null,
-    userProfile = null
+    userProfile = null,
+    postFormatting = "plain",
+    trainingPosts = []
   ) {
     let basePrompt = `You are a LinkedIn content creator with the following persona:
     
@@ -251,28 +259,25 @@ Start with this exact hook: "${hook}"
 6. Be genuinely helpful - provide REAL insights people can act on today
 7. Share specific examples, numbers, or personal experiences (make it relatable)
 
-**FORMATTING & STRUCTURE:**
+**FORMATTING & STRUCTURE (Based on user preference: ${postFormatting}):**
 8. Structure: Hook → Brief Context → Main Insights (3-5 bullet points) → Strong CTA
-9. Use **bold** for 3-5 KEY PHRASES that deserve emphasis (e.g., **game-changing**, **critical mistake**, **biggest lesson**)
-10. Short paragraphs (2-3 sentences max) with line breaks for readability
-11. Use bullet points (→ or •) for lists - makes content scannable
+${postFormatting === "bold" ? "9. Use **bold** extensively (8-10 KEY PHRASES) for emphasis - this is the user's preferred style\n10. Make key insights, numbers, and action items stand out with bold formatting" : postFormatting === "italic" ? "9. Use *italics* strategically for quotes, emphasis, and subtle highlights\n10. Prefer italics over bold for a more refined, elegant tone" : postFormatting === "emoji" ? "9. Use emojis liberally (5-8 total) for visual appeal - this is the user's preferred style\n10. Place emojis strategically: after impactful statements, before key insights, and in CTAs\n11. Use context-specific emojis (🎯📊💰🔥⚡💡🚀) not generic ones (✨🌟⭐)" : "9. Use **bold** for 3-5 KEY PHRASES that deserve emphasis (e.g., **game-changing**, **critical mistake**, **biggest lesson**)\n10. Use emojis sparingly (1-3 max) and only where they add genuine value"}
+11. Short paragraphs (2-3 sentences max) with line breaks for readability
+12. Use bullet points (→ or •) for lists - makes content scannable
 
-**EMOJIS - USE WISELY:**
-12. Use 1-3 emojis MAXIMUM, and ONLY where they add genuine emphasis or emotion
-13. Place them strategically: after impactful statements, before key insights, or in the CTA
-14. DO NOT use generic emojis (✨🚀💡) - prefer context-specific ones (🎯📊💰🔥⚡)
-15. If emojis feel forced, DON'T use them at all
+**PERSONA TRAINING (Learn from user's saved posts):**
+${trainingPosts.length > 0 ? `16. STUDY these examples of the user's preferred writing style:\n${trainingPosts.map((post, idx) => `Example ${idx + 1}:\n${post.content?.substring(0, 200)}...`).join('\n\n')}\n\n17. MATCH the tone, structure, and voice from these examples in your generated content\n18. Learn their preferred sentence length, paragraph structure, and CTA style` : ""}
 
 **LENGTH & COMPLETION:**
-16. **LENGTH**: 200-300 words (max 200 characters including spaces)
-17. End with a thought-provoking question or clear call-to-action
-18. COMPLETE THE ENTIRE POST - never cut off mid-sentence
+${trainingPosts.length > 0 ? "19" : "16"}. **LENGTH**: 200-300 words (max 200 characters including spaces)
+${trainingPosts.length > 0 ? "20" : "17"}. End with a thought-provoking question or clear call-to-action
+${trainingPosts.length > 0 ? "21" : "18"}. COMPLETE THE ENTIRE POST - never cut off mid-sentence
 
 **LINKEDIN-READY OUTPUT:**
-19. Format must be copy-paste ready - no encoding issues, clean text
-20. Preserve bold (**text**) for easy copying to LinkedIn
-21. No hashtags unless specifically requested (they look spammy)
-22. Every word should add value - zero fluff, zero filler
+${trainingPosts.length > 0 ? "22" : "19"}. Format must be copy-paste ready - no encoding issues, clean text
+${trainingPosts.length > 0 ? "23" : "20"}. Preserve bold (**text**) for easy copying to LinkedIn
+${trainingPosts.length > 0 ? "24" : "21"}. No hashtags unless specifically requested (they look spammy)
+${trainingPosts.length > 0 ? "25" : "22"}. Every word should add value - zero fluff, zero filler
 
 GENERATE A PROFESSIONAL POST THAT REQUIRES ZERO EDITING AND LOOKS INDISTINGUISHABLE FROM A TOP 1% LINKEDIN CREATOR.`;
 

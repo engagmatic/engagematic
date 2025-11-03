@@ -124,7 +124,10 @@ router.post(
       }
 
       // Get user profile for personalization
-      const user = req.user;
+      // Fetch full user to get formatting preference and training posts
+      const User = (await import("../models/User.js")).default;
+      const user = await User.findById(userId);
+      
       const userProfile = {
         jobTitle: user.profile?.jobTitle || null,
         company: user.profile?.company || null,
@@ -151,13 +154,27 @@ router.post(
         userId
       );
 
+      // Get user's formatting preference and training posts
+      const postFormatting = user.profile?.postFormatting || "plain";
+      let trainingPosts = [];
+      
+      // Fetch training posts if user has selected any (premium feature)
+      if (user.persona?.trainingPostIds && user.persona.trainingPostIds.length > 0) {
+        trainingPosts = await Content.find({
+          _id: { $in: user.persona.trainingPostIds },
+          userId: userId,
+        }).select("content").limit(10); // Limit to 10 posts for prompt length
+      }
+
       const aiResponse = await googleAIService.generatePost(
         topic,
         hook.text,
         persona,
         req.body.linkedinInsights || null,
         profileInsights,
-        userProfile // Pass user profile for deep personalization
+        userProfile, // Pass user profile for deep personalization
+        postFormatting, // User's formatting preference
+        trainingPosts // User's selected training posts (premium)
       );
 
       console.log("✅ AI response received:", {
@@ -278,7 +295,10 @@ router.post(
       }
 
       // Get user profile for personalization
-      const user = req.user;
+      // Fetch full user to get formatting preference and training posts
+      const User = (await import("../models/User.js")).default;
+      const user = await User.findById(userId);
+      
       const userProfile = {
         jobTitle: user.profile?.jobTitle || null,
         company: user.profile?.company || null,
@@ -305,13 +325,27 @@ router.post(
         userId
       );
 
+      // Get user's formatting preference and training posts
+      const postFormatting = user.profile?.postFormatting || "plain";
+      let trainingPosts = [];
+      
+      // Fetch training posts if user has selected any (premium feature)
+      if (user.persona?.trainingPostIds && user.persona.trainingPostIds.length > 0) {
+        trainingPosts = await Content.find({
+          _id: { $in: user.persona.trainingPostIds },
+          userId: userId,
+        }).select("content").limit(10); // Limit to 10 posts for prompt length
+      }
+
       const aiResponse = await googleAIService.generatePost(
         topic,
         hook.text,
         persona,
         req.body.linkedinInsights || null,
         profileInsights,
-        userProfile // Pass user profile for deep personalization
+        userProfile, // Pass user profile for deep personalization
+        postFormatting, // User's formatting preference
+        trainingPosts // User's selected training posts (premium)
       );
 
       console.log("✅ AI response received:", {
@@ -1624,14 +1658,16 @@ router.post("/posts/generate-free", async (req, res) => {
       additionalContext.push(`Goal: ${goal.trim()}`);
     }
 
-    // Generate post using Google AI service
+    // Generate post using Google AI service (free posts - no personalization)
     const aiResponse = await googleAIService.generatePost(
       topic.trim(),
       hook.text,
       persona,
       null, // linkedinInsights
       null, // profileInsights
-      null  // userProfile
+      null, // userProfile
+      "plain", // Default formatting for free posts
+      [] // No training posts for free users
     );
 
     // Track usage (store in cache with expiration)

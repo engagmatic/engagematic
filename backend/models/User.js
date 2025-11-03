@@ -123,6 +123,11 @@ const userSchema = new mongoose.Schema(
         type: Boolean,
         default: false,
       },
+      postFormatting: {
+        type: String,
+        enum: ["plain", "bold", "italic", "emoji"],
+        default: "plain",
+      },
     },
     // User interests/topics
     interests: [
@@ -165,6 +170,12 @@ const userSchema = new mongoose.Schema(
         type: String,
         default: null,
       },
+      trainingPostIds: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Content",
+        },
+      ],
     },
   },
   {

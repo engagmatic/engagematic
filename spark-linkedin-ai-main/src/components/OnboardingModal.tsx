@@ -81,6 +81,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
     topics: [] as string[],
     contentTypes: [] as string[],
     linkedinUrl: "",
+    postFormatting: "plain", // Formatting preference
   });
 
   const steps = [
@@ -159,6 +160,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
           industry: formData.industry || null,
           experience: formData.experience || null,
           linkedinUrl: formData.linkedinUrl || null,
+          postFormatting: formData.postFormatting || "plain",
         },
         persona: {
           name: formData.personaName || `${formData.jobTitle || 'Professional'} Persona`,
@@ -551,6 +553,49 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Post Formatting Preference */}
+              <div>
+                <Label className="text-sm font-medium mb-3 block">Default Post Formatting Style</Label>
+                <div className="grid grid-cols-1 gap-3">
+                  {[
+                    { value: "plain", label: "Plain Text", description: "Standard formatting (Recommended)", recommended: true },
+                    { value: "bold", label: "Bold", description: "Emphasize key points with bold text" },
+                    { value: "italic", label: "Italic", description: "Use italics for emphasis and quotes" },
+                    { value: "emoji", label: "Emoji-friendly", description: "Include emojis for visual appeal" },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => handleChange('postFormatting', option.value)}
+                      className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${
+                        formData.postFormatting === option.value
+                          ? 'border-primary bg-primary/10 shadow-md'
+                          : 'border-border hover:border-primary/50 hover:shadow-sm'
+                      }`}
+                      disabled={isLoading}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium">{option.label}</span>
+                            {option.recommended && (
+                              <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">Recommended</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">{option.description}</p>
+                        </div>
+                        {formData.postFormatting === option.value && (
+                          <Check className="h-5 w-5 text-primary ml-2 flex-shrink-0" />
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  This sets your default formatting style for all generated content. You can customize individual posts later.
+                </p>
               </div>
 
               <div className="space-y-2">
