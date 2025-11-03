@@ -186,7 +186,7 @@ export const ALL_KEYWORDS = [
 
 // Default SEO Configuration
 export const DEFAULT_SEO = {
-  title: 'LinkedInPulse - AI-Powered LinkedIn Content Generator | Create Viral Posts',
+  title: 'LinkedInPulse - AI LinkedIn Post Generator | Viral Content',
   description: 'Create viral-worthy LinkedIn posts, comments, and carousels with AI that sounds authentically like you. Join 1000+ creators boosting their LinkedIn presence with LinkedInPulse.',
   keywords: ALL_KEYWORDS.join(', '),
   author: 'LinkedInPulse Team',
@@ -200,36 +200,36 @@ export const DEFAULT_SEO = {
 // Page-Specific SEO
 export const PAGE_SEO = {
   home: {
-    title: 'LinkedInPulse - AI LinkedIn Post Generator | Create Viral Content in Seconds',
-    description: 'Transform your LinkedIn presence with AI-powered content generation. Create engaging posts, viral comments, and professional carousels that sound authentically like you. Free trial available.',
-    keywords: 'LinkedIn post generator, AI LinkedIn tool, viral LinkedIn content, LinkedIn automation, content marketing AI, LinkedInPulse vs Taplio, LinkedInPulse vs Hootsuite, best LinkedIn AI tool, LinkedIn content creator, LinkedIn post scheduler',
+    title: 'LinkedInPulse - AI LinkedIn Post Generator | Best AI Tool',
+    description: 'Transform your LinkedIn presence with AI-powered content generation. Create engaging posts, viral comments, and professional carousels that sound authentically like you. Free trial available. The best AI tools for creating LinkedIn content for businesses. Generate LinkedIn posts with AI, schedule content, and optimize engagement.',
+    keywords: 'LinkedIn post generator, AI LinkedIn tool, viral LinkedIn content, LinkedIn automation, content marketing AI, LinkedInPulse vs Taplio, LinkedInPulse vs Hootsuite, best LinkedIn AI tool, LinkedIn content creator, LinkedIn post scheduler, best AI tools for LinkedIn content, AI services that generate LinkedIn posts, AI platforms for LinkedIn content, AI-powered LinkedIn content personalization, LinkedIn content creation AI, LinkedIn post performance analysis AI, LinkedIn content automation AI, LinkedIn B2B content AI',
     canonical: SITE_URL,
     image: `${SITE_URL}/og-home.png` // Special home page OG image
   },
   
   pricing: {
-    title: 'Pricing Plans - LinkedInPulse | Affordable LinkedIn AI Tools',
+    title: 'LinkedInPulse Pricing - Affordable AI Tools',
     description: 'Choose the perfect plan for your LinkedIn growth. Starter at $12/month or Pro at $24/month. 7-day free trial, no credit card required. Cancel anytime.',
     keywords: 'LinkedIn tool pricing, AI content generator cost, LinkedIn subscription, content marketing pricing',
     canonical: `${SITE_URL}/pricing`
   },
   
   postGenerator: {
-    title: 'AI LinkedIn Post Generator - Create Viral Posts Instantly | LinkedInPulse',
-    description: 'Generate engaging LinkedIn posts with AI trained on 50K+ viral posts. 15 curated personas, smart formatting, zero-edit content. Start creating in seconds.',
-    keywords: 'LinkedIn post generator, AI post creator, viral post generator, LinkedIn content AI, automated post creation',
+    title: 'AI LinkedIn Post Generator - Viral Posts | LinkedInPulse',
+    description: 'Generate engaging LinkedIn posts with AI trained on 50K+ viral posts. 15 curated personas, smart formatting, zero-edit content. Start creating in seconds. Best AI tool for LinkedIn content creation for businesses and marketing teams.',
+    keywords: 'LinkedIn post generator, AI post creator, viral post generator, LinkedIn content AI, automated post creation, best AI tools for LinkedIn content, AI services that generate LinkedIn posts for marketing, AI platforms that schedule LinkedIn content, AI-powered LinkedIn content personalization, LinkedIn content creation AI, LinkedIn post performance analysis AI, LinkedIn content automation AI, LinkedIn B2B content AI',
     canonical: `${SITE_URL}/post-generator`
   },
   
   commentGenerator: {
-    title: 'LinkedIn Comment Generator - AI Engagement Tool | LinkedInPulse',
+    title: 'LinkedIn Comment Generator - AI Tool',
     description: 'Build authentic professional relationships with AI-generated comments. Context-aware, human-like responses that boost your LinkedIn engagement instantly.',
     keywords: 'LinkedIn comment generator, AI engagement tool, automated comments, LinkedIn networking, comment AI',
     canonical: `${SITE_URL}/comment-generator`
   },
   
   profileAnalyzer: {
-    title: 'LinkedIn Profile Analyzer - Free Profile Score & Optimization | LinkedInPulse',
+    title: 'LinkedIn Profile Analyzer - Free Score',
     description: 'Get your LinkedIn profile score and actionable optimization tips. AI-powered analysis to boost visibility, engagement, and professional opportunities.',
     keywords: 'LinkedIn profile analyzer, profile optimization, LinkedIn score, profile tips, LinkedIn SEO',
     canonical: `${SITE_URL}/profile-analyzer`
