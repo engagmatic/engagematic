@@ -13,31 +13,52 @@ export function useSubscription() {
   const fetchSubscription = useCallback(async () => {
     try {
       setLoading(true);
-      // Fetch both subscription and usage stats
-      const [subscriptionResponse, usageResponse] = await Promise.all([
-        apiClient.request("/subscription"),
-        apiClient.request("/subscription/usage"),
+      setError(null);
+      
+      // Fetch both subscription and usage stats with error handling
+      const [subscriptionResponse, usageResponse] = await Promise.allSettled([
+        apiClient.request("/subscription").catch(err => ({ success: false, error: err.message })),
+        apiClient.request("/subscription/usage").catch(err => ({ success: false, error: err.message })),
       ]);
 
-      if (subscriptionResponse.success && usageResponse.success) {
+      const subResult = subscriptionResponse.status === 'fulfilled' ? subscriptionResponse.value : { success: false };
+      const usageResult = usageResponse.status === 'fulfilled' ? usageResponse.value : { success: false };
+
+      if (subResult.success && usageResult.success) {
         // Merge subscription and usage data
         const mergedData = {
-          ...subscriptionResponse.data,
-          ...usageResponse.data,
+          ...subResult.data,
+          ...usageResult.data,
         };
         setSubscription(mergedData);
-        setUsage(usageResponse.data);
+        setUsage(usageResult.data);
       } else {
-        throw new Error("Failed to fetch subscription");
+        // Only set error, don't show toast for CORS/network errors (will be handled silently)
+        const errorMsg = subResult.error || usageResult.error || "Failed to fetch subscription";
+        setError(errorMsg);
+        
+        // Only show toast for non-CORS errors
+        if (!errorMsg.includes("CORS") && !errorMsg.includes("fetch") && !errorMsg.includes("Failed to load")) {
+          toast({
+            title: "Error",
+            description: "Failed to fetch subscription details",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error("Subscription fetch error:", error);
-      setError(error.message);
-      toast({
-        title: "Error",
-        description: "Failed to fetch subscription details",
-        variant: "destructive",
-      });
+      const errorMsg = error.message || "Failed to fetch subscription";
+      setError(errorMsg);
+      
+      // Don't show toast for network/CORS errors
+      if (!errorMsg.includes("CORS") && !errorMsg.includes("fetch") && !errorMsg.includes("Failed to load")) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch subscription details",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -55,7 +76,11 @@ export function useSubscription() {
       }
     } catch (error) {
       console.error("Usage fetch error:", error);
-      setError(error.message);
+      const errorMsg = error.message || "Failed to fetch usage stats";
+      setError(errorMsg);
+      
+      // Don't show errors for network/CORS issues (silent fail)
+      // This prevents alert boxes from appearing
     }
   }, []);
 

@@ -61,7 +61,8 @@ const allowedOrigins = [
   "http://www.linkedinpulse.com",
   "chrome-extension://eofnebjkdholeglegaillijcbbefgmjm", // your Chrome extension origin
   "http://localhost:5173", // if your frontend runs locally
-  "http://localhost:5000", // optional, if your backend talks to itself  "http://localhost:5173", // dev frontend if any
+  "http://localhost:5000", // optional, if your backend talks to itself
+  "http://localhost:8080", // frontend dev server
 ];
 
 const corsOptions = {
@@ -78,20 +79,33 @@ const corsOptions = {
 
     // Check if origin is in allowed list
     if (allowedOrigins.includes(origin)) {
-      console.log("CORS allowed origin:", origin);
+      console.log("✅ CORS allowed origin:", origin);
       return callback(null, true);
     }
 
     // Log rejected origins for debugging
-    console.warn(`CORS blocked origin: ${origin}`);
+    console.warn(`❌ CORS blocked origin: ${origin}`);
     callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: [
+    "Content-Type", 
+    "Authorization", 
+    "X-Requested-With",
+    "Accept",
+    "Origin"
+  ],
+  exposedHeaders: ["Content-Length", "X-Foo"],
+  maxAge: 86400, // 24 hours
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options("*", cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({

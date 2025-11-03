@@ -86,6 +86,16 @@ class ApiClient {
 
       return data;
     } catch (error) {
+      // Handle network errors (CORS, fetch failures) gracefully
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        console.error("Network error (CORS or connection issue):", {
+          endpoint,
+          url,
+          error: error.message,
+        });
+        throw new Error("Network error: Unable to connect to server. Please check your connection.");
+      }
+      
       console.error("API request failed:", {
         endpoint,
         error: error.message,

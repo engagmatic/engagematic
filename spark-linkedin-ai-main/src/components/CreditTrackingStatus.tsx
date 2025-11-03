@@ -47,7 +47,11 @@ export const CreditTrackingStatus = () => {
           setCreditData(response.data);
         }
       } catch (error) {
-        console.error('Failed to fetch credit data:', error);
+        // Silently handle CORS/network errors - don't show alerts
+        const errorMsg = error.message || '';
+        if (!errorMsg.includes("CORS") && !errorMsg.includes("fetch") && !errorMsg.includes("Network error")) {
+          console.error('Failed to fetch credit data:', error);
+        }
       } finally {
         setIsLoadingCredits(false);
       }

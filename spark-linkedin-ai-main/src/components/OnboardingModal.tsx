@@ -208,13 +208,13 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent 
-        className="max-w-4xl max-h-[90vh] overflow-y-auto p-6 md:p-8 [&>button]:hidden"
+        className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 md:p-8 [&>button]:hidden animate-in fade-in zoom-in duration-300"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex justify-between items-center mb-3 sm:mb-4 px-2">
             {steps.map((step, index) => {
               const Icon = step.icon;
               const isCompleted = currentStep > step.id;
@@ -225,14 +225,14 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                   <div className={`flex flex-col items-center flex-1 ${
                     index === steps.length - 1 ? 'flex-none' : ''
                   }`}>
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${
                       isCompleted
                         ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg scale-110' 
                         : isCurrent
                         ? 'bg-primary text-primary-foreground shadow-md scale-105'
                         : 'bg-muted text-muted-foreground'
                     }`}>
-                      {isCompleted ? <Check className="h-6 w-6" /> : <Icon className="h-6 w-6" />}
+                      {isCompleted ? <Check className="h-5 w-5 sm:h-6 sm:w-6" /> : <Icon className="h-5 w-5 sm:h-6 sm:w-6" />}
                     </div>
                     <span className={`text-xs mt-2 hidden sm:block text-center ${
                       isCurrent ? 'font-medium text-primary' : 'text-muted-foreground'
@@ -241,7 +241,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                     </span>
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`flex-1 h-1 mx-2 rounded transition-all ${
+                    <div className={`flex-1 h-1 mx-1 sm:mx-2 rounded transition-all duration-300 ${
                       isCompleted ? 'bg-gradient-to-r from-blue-600 to-purple-600' : 'bg-muted'
                     }`} />
                   )}
@@ -249,11 +249,11 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
               );
             })}
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress value={progress} className="h-2 transition-all duration-300" />
         </div>
 
         {/* Main Content Card */}
-        <Card className="p-6 md:p-8 shadow-2xl border-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <Card className="p-4 sm:p-6 md:p-8 shadow-2xl border-2 border-blue-100/50 dark:border-blue-900/50 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {/* Step 1: Professional Info & Goals */}
           {currentStep === 1 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -571,23 +571,26 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
           )}
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between items-center mt-8 pt-6 border-t">
+          <div className="flex justify-between items-center mt-6 sm:mt-8 pt-4 sm:pt-6 border-t gap-3 sm:gap-4">
             <Button
               type="button"
               variant="outline"
               onClick={handlePrevious}
               disabled={currentStep === 1 || isLoading}
-              className="gap-2"
+              className="gap-2 transition-all"
+              size="lg"
             >
               <ArrowLeft className="h-4 w-4" />
-              Previous
+              <span className="hidden sm:inline">Previous</span>
+              <span className="sm:hidden">Back</span>
             </Button>
 
             <Button
               type="button"
               onClick={handleNext}
               disabled={isLoading}
-              className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
+              className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 flex-1 sm:flex-initial"
+              size="lg"
             >
               {isLoading ? (
                 <>

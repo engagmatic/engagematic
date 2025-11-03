@@ -28,11 +28,14 @@ export const DashboardLayout = () => {
   // Show onboarding modal if user hasn't completed it
   useEffect(() => {
     if (user && !user.profile?.onboardingCompleted) {
-      // Small delay to let dashboard load first
+      // Delay to let dashboard load smoothly before showing modal
       const timer = setTimeout(() => {
         setShowOnboarding(true);
-      }, 500);
+      }, 800);
       return () => clearTimeout(timer);
+    } else {
+      // Hide modal if onboarding is completed
+      setShowOnboarding(false);
     }
   }, [user]);
 
@@ -51,13 +54,15 @@ export const DashboardLayout = () => {
         </div>
       </main>
 
-      {/* Onboarding Modal */}
+      {/* Onboarding Modal - Smooth transition */}
       <OnboardingModal 
         isOpen={showOnboarding}
-        onComplete={() => {
+        onComplete={async () => {
           setShowOnboarding(false);
-          // Refresh user data to get updated profile
-          window.location.reload();
+          // Small delay before refresh to allow modal close animation
+          setTimeout(() => {
+            window.location.reload();
+          }, 300);
         }}
       />
     </div>
