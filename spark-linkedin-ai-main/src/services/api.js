@@ -142,6 +142,13 @@ class ApiClient {
     });
   }
 
+  async updateProfile(data) {
+    return await this.request("/profile/update", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
   // Content generation methods
   async generatePost(postData) {
     return this.request("/content/posts/generate", {
@@ -551,6 +558,39 @@ class ApiClient {
 
   async deleteCoupon(id) {
     return this.request(`/coupons/admin/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getEmailAnalytics() {
+    return await this.request("/admin/email-analytics", { method: "GET" });
+  }
+  async getEmailLogs() {
+    return await this.request("/admin/email-logs", { method: "GET" });
+  }
+  async getEmailTemplates() {
+    return await this.request("/admin/email-templates", { method: "GET" });
+  }
+  async sendEmail({ userIds, templateId, subject, content, sendTime }) {
+    return await this.request("/admin/send-email", {
+      method: "POST",
+      body: JSON.stringify({ userIds, templateId, subject, content, sendTime }),
+    });
+  }
+  async addEmailTemplate(data) {
+    return await this.request("/admin/email-templates", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+  async updateEmailTemplate(id, data) {
+    return await this.request(`/admin/email-templates/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+  async deleteEmailTemplate(id) {
+    return await this.request(`/admin/email-templates/${id}`, {
       method: "DELETE",
     });
   }

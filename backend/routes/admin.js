@@ -40,7 +40,12 @@ router.get("/stats", adminAuth, async (req, res) => {
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ lastLogin: { $gte: thirtyDaysAgo } }),
-      User.countDocuments({ lastLogin: { $gte: new Date(Date.now() - 37 * 24 * 60 * 60 * 1000), $lt: thirtyDaysAgo } }),
+      User.countDocuments({
+        lastLogin: {
+          $gte: new Date(Date.now() - 37 * 24 * 60 * 60 * 1000),
+          $lt: thirtyDaysAgo,
+        },
+      }),
       User.countDocuments({ createdAt: { $gte: startOfDay } }),
       Content.countDocuments({ type: "post" }),
       Content.countDocuments({ type: "comment" }),
@@ -56,23 +61,35 @@ router.get("/stats", adminAuth, async (req, res) => {
 
     // Calculate real revenue from Payment collection (sum of captured payments by currency)
     const Payment = (await import("../models/Payment.js")).default;
-    
+    const paymentAggByCurrency = await Payment.aggregate([
+      { $match: { status: "captured" } },
+      { $group: { _id: "$currency", total: { $sum: "$amount" } } },
+    ]);
+    let revenueINR = 0;
+    let revenueUSD = 0;
+    paymentAggByCurrency.forEach((entry) => {
+      if (entry._id === "INR" || !entry._id) {
+        revenueINR = entry.total;
+      } else if (entry._id === "USD") {
+        revenueUSD = entry.total;
+      }
+    });
+
     // Get all captured payments and calculate revenue directly
-    const allCapturedPayments = await Payment.find({ 
+    const allCapturedPayments = await Payment.find({
       status: "captured",
-      amount: { $exists: true, $gt: 0 }
+      amount: { $exists: true, $gt: 0 },
     })
       .select("amount currency status")
       .lean();
-    
-    // Calculate revenue by currency directly from payments
-    let revenueINR = 0;
-    let revenueUSD = 0;
-    
-    allCapturedPayments.forEach(payment => {
-      const currency = (payment.currency || "INR").toString().toUpperCase().trim();
+
+    allCapturedPayments.forEach((payment) => {
+      const currency = (payment.currency || "INR")
+        .toString()
+        .toUpperCase()
+        .trim();
       const amount = payment.amount || 0;
-      
+
       if (currency === "USD") {
         revenueUSD += amount;
       } else {
@@ -80,19 +97,25 @@ router.get("/stats", adminAuth, async (req, res) => {
         revenueINR += amount;
       }
     });
-    
+
     // Calculate total revenue (for backward compatibility)
     const totalRevenue = revenueINR + revenueUSD;
-    
+
     // Calculate real conversion rate
     const conversionRate =
       totalUsers > 0 ? ((paidUsers / totalUsers) * 100).toFixed(1) : 0;
-    
+
     // Calculate active users change
-    const activeUsersChange = activeUsersLastWeek > 0
-      ? (((activeUsers - activeUsersLastWeek) / activeUsersLastWeek) * 100).toFixed(1)
-      : activeUsers > 0 ? "100" : "0";
-    
+    const activeUsersChange =
+      activeUsersLastWeek > 0
+        ? (
+            ((activeUsers - activeUsersLastWeek) / activeUsersLastWeek) *
+            100
+          ).toFixed(1)
+        : activeUsers > 0
+        ? "100"
+        : "0";
+
     // Calculate real growth rate
     const growthRate =
       previousWeekUsers > 0
@@ -101,46 +124,62 @@ router.get("/stats", adminAuth, async (req, res) => {
             100
           ).toFixed(1)
         : 0;
-    
+
     // Calculate posts/comments generated today (for dynamic stats)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const [postsToday, commentsToday, postsLastWeek, commentsLastWeek] = await Promise.all([
-      Content.countDocuments({ type: "post", createdAt: { $gte: today } }),
-      Content.countDocuments({ type: "comment", createdAt: { $gte: today } }),
-      Content.countDocuments({ type: "post", createdAt: { $gte: sevenDaysAgo } }),
-      Content.countDocuments({ type: "comment", createdAt: { $gte: sevenDaysAgo } }),
-    ]);
-    
+    const [postsToday, commentsToday, postsLastWeek, commentsLastWeek] =
+      await Promise.all([
+        Content.countDocuments({ type: "post", createdAt: { $gte: today } }),
+        Content.countDocuments({ type: "comment", createdAt: { $gte: today } }),
+        Content.countDocuments({
+          type: "post",
+          createdAt: { $gte: sevenDaysAgo },
+        }),
+        Content.countDocuments({
+          type: "comment",
+          createdAt: { $gte: sevenDaysAgo },
+        }),
+      ]);
+
     // Calculate revenue change (last 7 days vs previous 7 days)
     const last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const previous7Days = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-    
+
     const revenueLastWeek = await Payment.aggregate([
-      { 
-        $match: { 
+      {
+        $match: {
           status: "captured",
-          createdAt: { $gte: last7Days }
-        } 
+          createdAt: { $gte: last7Days },
+        },
       },
       { $group: { _id: null, total: { $sum: "$amount" } } },
     ]);
-    
+
     const revenuePreviousWeek = await Payment.aggregate([
-      { 
-        $match: { 
+      {
+        $match: {
           status: "captured",
-          createdAt: { $gte: previous7Days, $lt: last7Days }
-        } 
+          createdAt: { $gte: previous7Days, $lt: last7Days },
+        },
       },
       { $group: { _id: null, total: { $sum: "$amount" } } },
     ]);
-    
-    const revenueLastWeekTotal = revenueLastWeek.length > 0 ? revenueLastWeek[0].total : 0;
-    const revenuePreviousWeekTotal = revenuePreviousWeek.length > 0 ? revenuePreviousWeek[0].total : 0;
-    const revenueChange = revenuePreviousWeekTotal > 0 
-      ? (((revenueLastWeekTotal - revenuePreviousWeekTotal) / revenuePreviousWeekTotal) * 100).toFixed(1)
-      : revenueLastWeekTotal > 0 ? "100" : "0";
+
+    const revenueLastWeekTotal =
+      revenueLastWeek.length > 0 ? revenueLastWeek[0].total : 0;
+    const revenuePreviousWeekTotal =
+      revenuePreviousWeek.length > 0 ? revenuePreviousWeek[0].total : 0;
+    const revenueChange =
+      revenuePreviousWeekTotal > 0
+        ? (
+            ((revenueLastWeekTotal - revenuePreviousWeekTotal) /
+              revenuePreviousWeekTotal) *
+            100
+          ).toFixed(1)
+        : revenueLastWeekTotal > 0
+        ? "100"
+        : "0";
 
     res.json({
       totalUsers,

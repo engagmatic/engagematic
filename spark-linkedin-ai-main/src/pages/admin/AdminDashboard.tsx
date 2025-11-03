@@ -72,6 +72,7 @@ export default function AdminDashboard() {
   const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currency, setCurrency] = useState<'INR'|'USD'>('INR');
 
   useEffect(() => {
     fetchDashboardStats();
@@ -259,6 +260,7 @@ export default function AdminDashboard() {
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                       {isLoading ? '...' : stat.value}
                     </h3>
+                    {/* {stat.extra} */}
                     <div className="flex items-center gap-1 mt-2">
                       {stat.positive ? (
                         <ArrowUpRight className="h-4 w-4 text-green-600" />

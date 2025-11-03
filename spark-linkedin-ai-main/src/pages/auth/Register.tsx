@@ -70,31 +70,34 @@ const TOPICS = [
   { id: 'education', label: 'Education', icon: Bookmark },
 ];
 
+const CONTENT_TYPES = ["Posts", "Comments", "Ideas", "Newsletters", "Polls"];
+const POST_FREQUENCIES = ["Daily", "3-5x/week", "Weekly", "Occasionally"];
+const TOPIC_OPTIONS = [
+  "Leadership", "Technology", "Marketing", "Career Growth", "Sales", "Personal Branding", "HR/Recruitment", "Startups",
+  "Wellness", "Education", "Productivity", "Networking", "Remote Work", "Innovation", "Other"
+];
+
 const Register = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    // Step 1: Basic Info
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
     avatar: "",
-    // Step 2: Professional Info
-    primaryGoal: "",
-    jobTitle: "",
-    company: "",
-    industry: "",
-    experience: "",
-    // Step 3: Persona
     personaName: "",
     writingStyle: "",
     tone: "",
     expertise: "",
     targetAudience: "",
-    // Step 4: Preferences
-    topics: [] as string[],
-    contentTypes: [] as string[],
+    jobTitle: "",
+    company: "",
+    industry: "",
+    experience: "",
+    goal: "",
+    contentTypes: [],
     postingFrequency: "",
+    topics: [],
     linkedinUrl: ""
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -202,21 +205,12 @@ const Register = () => {
         }
         break;
       case 2:
-        if (!formData.primaryGoal) newErrors.primaryGoal = "Please select your primary goal";
-        if (!formData.jobTitle) newErrors.jobTitle = "Job title is required";
-        if (!formData.company) newErrors.company = "Company is required";
-        if (!formData.industry) newErrors.industry = "Industry is required";
-        if (!formData.experience) newErrors.experience = "Experience level is required";
+        if (!formData.goal) newErrors.goal = "Please select your primary goal";
         break;
       case 3:
         if (!formData.personaName) newErrors.personaName = "Persona name is required";
         if (!formData.writingStyle) newErrors.writingStyle = "Writing style is required";
         if (!formData.tone) newErrors.tone = "Tone is required";
-        if (!formData.expertise) newErrors.expertise = "Expertise areas are required";
-        if (!formData.targetAudience) newErrors.targetAudience = "Target audience is required";
-        break;
-      case 4:
-        // Step 4 is optional
         break;
     }
 
@@ -250,25 +244,18 @@ const Register = () => {
         interests: formData.topics || [], // Send topics as interests
         persona: {
           name: formData.personaName,
-          writingStyle: formData.writingStyle,
+          style: formData.writingStyle,
           tone: formData.tone,
           expertise: formData.expertise,
           targetAudience: formData.targetAudience,
           contentTypes: formData.contentTypes || [],
         },
-        profile: {
-          jobTitle: formData.jobTitle,
-          company: formData.company,
-          industry: formData.industry,
-          experience: formData.experience,
-          linkedinUrl: formData.linkedinUrl
-        }
       });
       
       if (result.success) {
         toast({
           title: "Welcome to LinkedInPulse! 🎉",
-          description: "Your account and AI persona have been created successfully",
+          description: "Your account and AI persona have been created successfully. Complete your profile in the dashboard.",
         });
         
         const returnTo = location.state?.returnTo || '/dashboard';
@@ -294,6 +281,16 @@ const Register = () => {
   const progress = (currentStep / 4) * 100;
   const error = null; // From useAuth
 
+  const allRequired = [
+    formData.name,
+    formData.email,
+    formData.password,
+    formData.goal,
+    formData.personaName,
+    formData.writingStyle,
+    formData.tone,
+  ].every(Boolean);
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-primary/5 to-background">
       <div className="w-full max-w-4xl">
@@ -310,7 +307,7 @@ const Register = () => {
           <h1 className="text-3xl md:text-4xl font-bold mb-2">
             Create your AI-powered LinkedIn presence
           </h1>
-          <p className="text-muted-foreground">Let's build something amazing together</p>
+          <p className="text-muted-foreground">Get started in just 10 seconds – full setup awaits in your dashboard</p>
         </div>
 
         {/* Progress Steps */}
@@ -457,7 +454,7 @@ const Register = () => {
             </div>
           )}
 
-          {/* Step 2: Professional Info & Goals */}
+          {/* Step 2: Your Goals */}
           {currentStep === 2 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center mb-6">
@@ -465,7 +462,7 @@ const Register = () => {
                   <Target className="h-10 w-10 text-white" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-2">What's your primary goal?</h2>
-                <p className="text-muted-foreground">Help us personalize your experience</p>
+                <p className="text-muted-foreground">Help us personalize your experience – more details later</p>
               </div>
 
               {/* Goal Selection */}
@@ -478,9 +475,9 @@ const Register = () => {
                       <button
                         key={goal.id}
                         type="button"
-                        onClick={() => handleChange('primaryGoal', goal.id)}
+                        onClick={() => handleChange('goal', goal.id)}
                         className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${
-                          formData.primaryGoal === goal.id
+                          formData.goal === goal.id
                             ? 'border-primary bg-primary/10 shadow-md scale-105'
                             : 'border-border hover:border-primary/50 hover:shadow-md'
                         }`}
@@ -493,7 +490,7 @@ const Register = () => {
                           <div className="flex-1">
                             <p className="font-medium">{goal.label}</p>
                           </div>
-                          {formData.primaryGoal === goal.id && (
+                          {formData.goal === goal.id && (
                             <Check className="h-5 w-5 text-primary" />
                           )}
                         </div>
@@ -501,80 +498,19 @@ const Register = () => {
                     );
                   })}
                 </div>
-                {errors.primaryGoal && <p className="text-xs text-red-500 mt-1">{errors.primaryGoal}</p>}
+                {errors.goal && <p className="text-xs text-red-500 mt-1">{errors.goal}</p>}
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="jobTitle" className="text-sm font-medium">Job Title</Label>
-                  <Input
-                    id="jobTitle"
-                    type="text"
-                    placeholder="e.g., Marketing Manager"
-                    value={formData.jobTitle}
-                    onChange={(e) => handleChange('jobTitle', e.target.value)}
-                    className={errors.jobTitle ? 'border-red-500' : ''}
-                    disabled={isLoading}
-                  />
-                  {errors.jobTitle && <p className="text-xs text-red-500">{errors.jobTitle}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="company" className="text-sm font-medium">Company</Label>
-                  <Input
-                    id="company"
-                    type="text"
-                    placeholder="e.g., Acme Inc."
-                    value={formData.company}
-                    onChange={(e) => handleChange('company', e.target.value)}
-                    className={errors.company ? 'border-red-500' : ''}
-                    disabled={isLoading}
-                  />
-                  {errors.company && <p className="text-xs text-red-500">{errors.company}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="industry" className="text-sm font-medium">Industry</Label>
-                  <select
-                    id="industry"
-                    value={formData.industry}
-                    onChange={(e) => handleChange('industry', e.target.value)}
-                    className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background ${
-                      errors.industry ? 'border-red-500' : ''
-                    }`}
-                    disabled={isLoading}
-                  >
-                    <option value="">Select industry</option>
-                    {INDUSTRIES.map((industry) => (
-                      <option key={industry} value={industry}>{industry}</option>
-                    ))}
-                  </select>
-                  {errors.industry && <p className="text-xs text-red-500">{errors.industry}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="experience" className="text-sm font-medium">Experience Level</Label>
-                  <select
-                    id="experience"
-                    value={formData.experience}
-                    onChange={(e) => handleChange('experience', e.target.value)}
-                    className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background ${
-                      errors.experience ? 'border-red-500' : ''
-                    }`}
-                    disabled={isLoading}
-                  >
-                    <option value="">Select level</option>
-                    {EXPERIENCE_LEVELS.map((level) => (
-                      <option key={level} value={level}>{level}</option>
-                    ))}
-                  </select>
-                  {errors.experience && <p className="text-xs text-red-500">{errors.experience}</p>}
-                </div>
+              <div className="flex items-start gap-3 p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                <Lightbulb className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-purple-900 dark:text-purple-100">
+                  You'll add job details, industry, and experience in your dashboard after signup.
+                </p>
               </div>
             </div>
           )}
 
-          {/* Step 3: AI Persona */}
+          {/* Step 3: AI Persona (Minimal) */}
           {currentStep === 3 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center mb-6">
@@ -582,7 +518,7 @@ const Register = () => {
                   <Sparkles className="h-10 w-10 text-white" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-2">Build your AI persona</h2>
-                <p className="text-muted-foreground">Create an AI that writes like you</p>
+                <p className="text-muted-foreground">Quick basics now – refine expertise and audience later</p>
               </div>
 
               <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl border border-purple-200 dark:border-purple-800">
@@ -590,10 +526,10 @@ const Register = () => {
                   <Lightbulb className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-sm font-medium text-purple-900 dark:text-purple-100">
-                      AI-Powered Suggestions
+                      Quick Setup
                     </p>
                     <p className="text-sm text-purple-700 dark:text-purple-300">
-                      Based on your profile, we've suggested some options. Feel free to customize!
+                      Choose a name and style to get started. Full customization in dashboard.
                     </p>
                   </div>
                 </div>
@@ -653,121 +589,12 @@ const Register = () => {
                     {errors.tone && <p className="text-xs text-red-500">{errors.tone}</p>}
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="expertise" className="text-sm font-medium">Areas of Expertise</Label>
-                  <Textarea
-                    id="expertise"
-                    placeholder="e.g., Digital marketing, Leadership, Product management..."
-                    value={formData.expertise}
-                    onChange={(e) => handleChange('expertise', e.target.value)}
-                    className={errors.expertise ? 'border-red-500' : ''}
-                    disabled={isLoading}
-                    rows={3}
-                  />
-                  {errors.expertise && <p className="text-xs text-red-500">{errors.expertise}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="targetAudience" className="text-sm font-medium">Target Audience</Label>
-                  <Textarea
-                    id="targetAudience"
-                    placeholder="e.g., Marketing professionals, Startup founders, Tech enthusiasts..."
-                    value={formData.targetAudience}
-                    onChange={(e) => handleChange('targetAudience', e.target.value)}
-                    className={errors.targetAudience ? 'border-red-500' : ''}
-                    disabled={isLoading}
-                    rows={3}
-                  />
-                  {errors.targetAudience && <p className="text-xs text-red-500">{errors.targetAudience}</p>}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Preferences & Topics */}
-          {currentStep === 4 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <Heart className="h-10 w-10 text-white" />
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">Customize your experience</h2>
-                <p className="text-muted-foreground">Tell us what interests you</p>
               </div>
 
-              <div>
-                <Label className="text-sm font-medium mb-3 block">Select Topics of Interest</Label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {TOPICS.map((topic) => {
-                    const Icon = topic.icon;
-                    return (
-                      <button
-                        key={topic.id}
-                        type="button"
-                        onClick={() => handleTopicToggle(topic.id)}
-                        className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                          formData.topics.includes(topic.id)
-                            ? 'border-primary bg-primary/10 shadow-md scale-105'
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                        disabled={isLoading}
-                      >
-                        <div className="flex flex-col items-center gap-2">
-                          <Icon className={`h-6 w-6 ${
-                            formData.topics.includes(topic.id) ? 'text-primary' : 'text-muted-foreground'
-                          }`} />
-                          <span className={`text-xs font-medium ${
-                            formData.topics.includes(topic.id) ? 'text-primary' : 'text-muted-foreground'
-                          }`}>
-                            {topic.label}
-                          </span>
-                          {formData.topics.includes(topic.id) && (
-                            <Check className="h-4 w-4 text-primary" />
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium mb-3 block">Content Types</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {['Posts', 'Comments', 'Stories', 'Articles', 'Polls', 'Videos'].map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => handleContentTypeToggle(type)}
-                      className={`p-3 rounded-lg border-2 transition-all duration-200 ${
-                        formData.contentTypes.includes(type)
-                          ? 'border-primary bg-primary text-primary-foreground shadow-md'
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                      disabled={isLoading}
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        {formData.contentTypes.includes(type) && <Check className="h-4 w-4" />}
-                        <span className="font-medium">{type}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="linkedinUrl" className="text-sm font-medium">LinkedIn Profile URL (Optional)</Label>
-                <Input
-                  id="linkedinUrl"
-                  type="url"
-                  placeholder="https://linkedin.com/in/yourprofile"
-                  value={formData.linkedinUrl}
-                  onChange={(e) => handleChange('linkedinUrl', e.target.value)}
-                  disabled={isLoading}
-                />
-                <p className="text-xs text-muted-foreground">
-                  💡 Optional: Help us analyze your profile to enhance your persona
+              <div className="flex items-start gap-3 p-4 bg-pink-50 dark:bg-pink-950/20 rounded-lg border border-pink-200 dark:border-pink-800">
+                <Lightbulb className="h-5 w-5 text-pink-600 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-pink-900 dark:text-pink-100">
+                  Add expertise areas and target audience in your dashboard to supercharge your persona.
                 </p>
               </div>
             </div>
