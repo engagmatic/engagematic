@@ -153,15 +153,15 @@ const Dashboard = () => {
           {quickStats.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <Card key={index} className="p-4 sm:p-6 hover-lift gradient-card">
+              <Card key={index} className="p-4 sm:p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-800 hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-3 sm:mb-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl gradient-pulse flex items-center justify-center shadow-pulse">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg">
                     <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
                   <span className="text-xs sm:text-sm font-medium text-green-600">{stat.change}</span>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold mb-1">{stat.value}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground">{stat.label}</div>
+                <div className="text-xl sm:text-2xl md:text-2xl font-bold mb-1 text-gray-900 dark:text-gray-100">{stat.value}</div>
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{stat.label}</div>
               </Card>
             );
           })}

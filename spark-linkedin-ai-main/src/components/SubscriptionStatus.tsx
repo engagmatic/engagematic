@@ -44,8 +44,8 @@ export const SubscriptionStatus = () => {
     setIsNavigating(true);
     
     try {
-      // Navigate to pricing section
-      window.location.href = "/#pricing";
+      // Navigate to plan management page
+      navigate("/plan-management");
     } catch (error) {
       console.error('Navigation error:', error);
       toast.error('Please try again');

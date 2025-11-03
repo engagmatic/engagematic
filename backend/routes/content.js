@@ -53,6 +53,15 @@ router.post(
       const { topic, hookId, personaId, persona: personaData } = req.body;
       const userId = req.user._id;
 
+      // Log received data for debugging
+      console.log("📥 Post generation request received:", {
+        topic: topic?.substring(0, 50),
+        hookId: hookId,
+        hookIdType: typeof hookId,
+        hasPersonaId: !!personaId,
+        hasPersonaData: !!personaData,
+      });
+
       // Check subscription and quota before generation
       const canGenerate = await subscriptionService.canPerformAction(
         userId,
@@ -68,7 +77,10 @@ router.post(
 
       // Get hook - handle both database hooks and trending hooks
       let hook;
-      if (hookId.startsWith("trending_")) {
+      // Ensure hookId is a string
+      const hookIdStr = String(hookId || "");
+      
+      if (hookIdStr.startsWith("trending_")) {
         // This is a trending hook (AI-generated)
         // Try to find the hook data in the request or fetch from cache
         // For now, extract the text from the request body if available
@@ -80,7 +92,7 @@ router.post(
         console.log("✅ Using trending hook:", hook.text);
       } else {
         // Regular database hook
-        hook = await Hook.findById(hookId);
+        hook = await Hook.findById(hookIdStr);
         if (!hook) {
           return res.status(404).json({
             success: false,
@@ -160,7 +172,7 @@ router.post(
         type: "post",
         content: aiResponse.content,
         topic,
-        hookId,
+        hookId: hookIdStr,
         personaId: personaId || null, // May be null for sample personas
         engagementScore: aiResponse.engagementScore,
         tokensUsed: aiResponse.tokensUsed,
@@ -174,8 +186,8 @@ router.post(
       await subscriptionService.recordUsage(userId, "generate_post");
 
       // Update hook usage count (skip for trending hooks - they're not in the database)
-      if (!hookId.startsWith("trending_")) {
-        await Hook.findByIdAndUpdate(hookId, { $inc: { usageCount: 1 } });
+      if (!hookIdStr.startsWith("trending_")) {
+        await Hook.findByIdAndUpdate(hookIdStr, { $inc: { usageCount: 1 } });
       }
 
       // Get updated subscription info

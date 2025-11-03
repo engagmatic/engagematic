@@ -67,8 +67,12 @@ const PostGenerator = () => {
   const { subscription, canPerformAction, fetchSubscription } = useSubscription();
 
   const handleUpgradeClick = (source: string) => {
-    setWaitlistSource(source);
-    setShowWaitlistModal(true);
+    // Redirect to pricing page for premium features
+    navigate('/plan-management');
+    toast({
+      title: "Upgrade Required",
+      description: "This feature is available in our premium plans. Choose a plan to continue.",
+    });
   };
 
   // Handle pre-filled content from Idea Generator
@@ -217,6 +221,16 @@ const PostGenerator = () => {
       return;
     }
 
+    // Validate hook ID exists
+    if (!selectedHook._id) {
+      toast({
+        title: "Invalid Hook",
+        description: "The selected hook is invalid. Please select another hook.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!selectedPersona) {
       toast({
         title: "Persona required",
@@ -253,35 +267,53 @@ const PostGenerator = () => {
 
     // Check if user is pro and using a trending hook
     const isProUser = subscription?.plan === 'pro';
-    const isTrendingHook = selectedHook._id && selectedHook._id.startsWith('trending_');
+    const isTrendingHook = selectedHook._id && selectedHook._id.toString().startsWith('trending_');
     
     let result;
     
-    // Use custom API for pro users with trending hooks
-    if (isProUser && isTrendingHook) {
-      const postData: any = {
-        topic,
-        title: selectedHook.text,
-        category: selectedHook.category,
-        ...personaData
-      };
-      
-      console.log('🔥 Using custom API for pro user with trending hook:', postData);
-      result = await generatePostCustom(postData);
-    } else {
-      // Use standard API for regular hooks
-      const postData: any = {
-        topic,
-        hookId: selectedHook._id,
-        ...personaData
-      };
-      
-      // If it's a trending hook (but not pro), include the hook text
-      if (isTrendingHook) {
-        postData.hookText = selectedHook.text;
+    try {
+      // Use custom API for pro users with trending hooks
+      if (isProUser && isTrendingHook) {
+        const postData: any = {
+          topic,
+          title: selectedHook.text || selectedHook.title,
+          category: selectedHook.category || 'story',
+          ...personaData
+        };
+        
+        console.log('🔥 Using custom API for pro user with trending hook:', postData);
+        result = await generatePostCustom(postData);
+      } else {
+        // Use standard API for regular hooks
+        // Ensure hookId is a valid string
+        const hookId = selectedHook._id?.toString() || selectedHook._id;
+        
+        if (!hookId) {
+          throw new Error("Hook ID is required");
+        }
+        
+        const postData: any = {
+          topic: topic.trim(),
+          hookId: hookId,
+          ...personaData
+        };
+        
+        // If it's a trending hook (but not pro), include the hook text
+        if (isTrendingHook) {
+          postData.hookText = selectedHook.text || selectedHook.title;
+        }
+        
+        console.log('📤 Sending post generation request:', { ...postData, persona: '...' });
+        result = await generatePost(postData);
       }
-      
-      result = await generatePost(postData);
+    } catch (error: any) {
+      console.error('❌ Post generation error:', error);
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate post. Please try again.",
+        variant: "destructive",
+      });
+      return;
     }
 
     if (result.success) {
@@ -390,9 +422,13 @@ const PostGenerator = () => {
               </label>
                   <div className="flex items-center gap-2">
                     {subscription?.plan === 'trial' && (
-                      <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border bg-muted">
+                      <button
+                        type="button"
+                        onClick={() => handleUpgradeClick('premium-badge')}
+                        className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border bg-muted hover:bg-muted/80 transition cursor-pointer"
+                      >
                         <Lock className="h-3 w-3" /> Premium
-                      </span>
+                      </button>
                     )}
                     <button
                       type="button"
@@ -476,7 +512,7 @@ const PostGenerator = () => {
                       className="gap-2 text-xs"
                     >
                       <Crown className="h-3 w-3" />
-                      Edit Personas
+                      Edit Personas (Premium)
                     </Button>
                   )}
                 </div>

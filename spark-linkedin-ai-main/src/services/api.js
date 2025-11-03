@@ -99,9 +99,17 @@ class ApiClient {
           const errorMsg =
             data.details || data.message || "Invalid request data";
           const validationErrors = data.errors
-            ?.map((e) => e.msg || e.message)
+            ?.map((e) => e.msg || e.message || `${e.path}: ${e.msg}`)
             .join(", ");
-          throw new Error(validationErrors || errorMsg);
+          const fullErrorMsg = validationErrors || errorMsg;
+          
+          console.error("Validation errors:", {
+            errors: data.errors,
+            details: data.details,
+            message: data.message,
+          });
+          
+          throw new Error(fullErrorMsg);
         } else if (response.status === 401) {
           throw new Error("Authentication required. Please log in again.");
         } else if (response.status === 403) {

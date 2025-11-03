@@ -54,7 +54,7 @@ export const TrialStatusCard = () => {
   };
 
   const handleUpgrade = () => {
-    navigate("/pricing");
+    navigate("/plan-management");
   };
 
   if (loading) {

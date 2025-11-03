@@ -58,12 +58,24 @@ export const validatePostGeneration = [
     .notEmpty()
     .withMessage("Hook ID is required")
     .custom((value) => {
+      if (!value) return false;
+      
+      // Convert to string for validation
+      const hookIdStr = String(value).trim();
+      
       // Accept both MongoDB ObjectIds and trending hook IDs
       const mongoIdPattern = /^[0-9a-fA-F]{24}$/;
-      const trendingHookPattern = /^trending_\d+_\d+$/;
-      return mongoIdPattern.test(value) || trendingHookPattern.test(value);
+      const trendingHookPattern = /^trending_\d+(_\d+)?$/; // More flexible: trending_123 or trending_123_456
+      
+      const isValid = mongoIdPattern.test(hookIdStr) || trendingHookPattern.test(hookIdStr);
+      
+      if (!isValid) {
+        console.error("Invalid hook ID format:", hookIdStr, "Type:", typeof value);
+      }
+      
+      return isValid;
     })
-    .withMessage("Invalid hook ID format"),
+    .withMessage("Invalid hook ID format. Must be a valid MongoDB ObjectId or trending hook ID."),
   // personaId is now optional (can send persona data directly)
   // Skip validation entirely if personaId is not provided
   body("personaId")

@@ -306,7 +306,7 @@ export const CreditTrackingStatus = () => {
             asChild 
             className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all"
           >
-            <Link to="/" className="flex items-center justify-center gap-2">
+            <Link to="/plan-management" className="flex items-center justify-center gap-2">
               <Sparkles className="w-5 h-5" />
               {isTrialExpired ? "Choose Your Plan" : "Upgrade Now"}
               <TrendingUp className="w-5 h-5" />
