@@ -16,7 +16,7 @@ import {
   Mail
 } from 'lucide-react';
 import { useState } from 'react';
-import { Logo } from '../Logo';
+import { LogoWithText } from '../LogoWithText';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -61,12 +61,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </Button>
             
             <Link to="/admin/dashboard" className="flex items-center gap-2">
-              <Logo 
-                className="w-10 h-10"
-                size={40}
+              <LogoWithText 
+                textSize="sm"
+                showLink={false}
               />
               <div className="hidden sm:block">
-                <div className="text-sm font-bold">LinkedInPulse</div>
                 <div className="text-xs text-muted-foreground">Admin Portal</div>
               </div>
             </Link>
