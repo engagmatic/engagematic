@@ -272,6 +272,13 @@ class ApiClient {
     });
   }
 
+  async analyzeContentOptimization(optimizationData) {
+    return this.request("/content/analyze-optimization", {
+      method: "POST",
+      body: JSON.stringify(optimizationData),
+    });
+  }
+
   async getContentHistory(params = {}) {
     const queryString = new URLSearchParams(params).toString();
     return this.request(

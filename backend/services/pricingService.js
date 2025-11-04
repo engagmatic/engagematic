@@ -6,20 +6,24 @@ class PricingService {
     this.pricingConfigs = {
       INR: {
         currency: "INR",
-        postPrice: 5.5,
+        postPrice: 15, // ₹15 per post for bulk pack (after minimum)
+        bulkPackMinPrice: 125, // Minimum ₹125 for 9 posts
+        bulkPackMinPosts: 9, // Minimum posts for bulk pack
         commentPrice: 2.8,
         ideaPrice: 2.8,
-        starterPrice: 249,
-        proPrice: 649,
-        elitePrice: 1299, // Value-driven pricing
+        starterPrice: 199, // Updated to ₹199/month
+        proPrice: 449, // Updated to ₹449/month
+        elitePrice: 1299, // Keep for backward compatibility
       },
       USD: {
         currency: "USD",
-        postPrice: 0.22,
+        postPrice: 0.18, // $0.18 per post for bulk pack (after minimum)
+        bulkPackMinPrice: 1.50, // Minimum $1.50 for 9 posts
+        bulkPackMinPosts: 9, // Minimum posts for bulk pack
         commentPrice: 0.11,
         ideaPrice: 0.11,
-        starterPrice: 10,
-        proPrice: 19,
+        starterPrice: 10, // $10/month
+        proPrice: 19, // $19/month
         elitePrice: 49,
       },
     };

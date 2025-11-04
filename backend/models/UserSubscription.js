@@ -192,25 +192,25 @@ userSubscriptionSchema.pre("save", function (next) {
         break;
 
       case "starter":
-        this.limits.postsPerMonth = 15; // ~2.5 posts per day
-        this.limits.commentsPerMonth = 30; // ~3-4 comments per day
-        this.limits.ideasPerMonth = 30; // Plenty of inspiration
+        this.limits.postsPerMonth = 15; // 15 posts per month
+        this.limits.commentsPerMonth = 30; // 30 comments per month
+        this.limits.ideasPerMonth = 30; // 30 content ideas per month
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
         this.limits.prioritySupport = false;
-        this.billing.amount = 12; // $12/month
+        this.billing.amount = 199; // ₹199/month (INR)
         break;
 
       case "pro":
-        this.limits.postsPerMonth = 60; // ~6-7 posts per day
-        this.limits.commentsPerMonth = 80; // ~13-14 comments per day
-        this.limits.ideasPerMonth = 80; // Unlimited creativity
+        this.limits.postsPerMonth = 60; // 60 posts per month
+        this.limits.commentsPerMonth = 80; // 80 comments per month
+        this.limits.ideasPerMonth = 80; // 80 content ideas per month
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
         this.limits.prioritySupport = true;
-        this.billing.amount = 24; // $24/month (2x starter)
+        this.billing.amount = 449; // ₹449/month (INR)
         break;
 
       case "elite":

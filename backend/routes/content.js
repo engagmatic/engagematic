@@ -12,7 +12,7 @@ import {
   validateCommentGeneration,
   validateObjectId,
 } from "../middleware/validation.js";
-import { body } from "express-validator";
+import { body, validationResult } from "express-validator";
 import linkedinProfileService from "../services/linkedinProfileService.js";
 import profileInsightsService from "../services/profileInsightsService.js";
 import axios from "axios";
@@ -1724,5 +1724,59 @@ router.post("/posts/generate-free", async (req, res) => {
     });
   }
 });
+
+// Analyze content for LinkedIn optimization insights (REAL-TIME AI ANALYSIS)
+router.post(
+  "/analyze-optimization",
+  authenticateToken,
+  [
+    body("content")
+      .notEmpty()
+      .withMessage("Content is required")
+      .isLength({ min: 50 })
+      .withMessage("Content must be at least 50 characters"),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: errors.array(),
+        });
+      }
+
+      const { content, topic, audience } = req.body;
+      const userId = req.user.userId;
+
+      console.log("🔍 Analyzing content optimization for user:", userId);
+
+      // Use AI service to analyze content
+      const analysisResult = await googleAIService.analyzeContentOptimization(
+        content,
+        topic || null,
+        audience || null
+      );
+
+      if (!analysisResult.success) {
+        throw new Error("Failed to analyze content");
+      }
+
+      res.json({
+        success: true,
+        message: "Content analyzed successfully",
+        data: analysisResult.data,
+      });
+    } catch (error) {
+      console.error("Content optimization analysis error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to analyze content",
+        error: process.env.NODE_ENV === "development" ? error.stack : undefined,
+      });
+    }
+  }
+);
 
 export default router;

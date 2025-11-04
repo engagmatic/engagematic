@@ -19,7 +19,8 @@ import {
   Rocket,
   Crown,
   Building2,
-  Briefcase
+  Briefcase,
+  User
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -27,30 +28,13 @@ import { WRITING_STYLES, TONE_OPTIONS, INDUSTRIES, EXPERIENCE_LEVELS } from "@/c
 import api from "@/services/api";
 
 const GOALS = [
-  { id: 'sales', label: 'Sales & Lead Generation', icon: TrendingUp, color: 'bg-blue-100 text-blue-700' },
-  { id: 'marketing', label: 'Marketing & Growth', icon: Rocket, color: 'bg-purple-100 text-purple-700' },
-  { id: 'personal', label: 'Personal Branding', icon: Crown, color: 'bg-yellow-100 text-yellow-700' },
-  { id: 'company', label: 'Company Account', icon: Building2, color: 'bg-green-100 text-green-700' },
+  { id: 'sales', label: 'Sales & Leads', icon: TrendingUp, color: 'bg-blue-100 text-blue-700' },
+  { id: 'marketing', label: 'Marketing', icon: Rocket, color: 'bg-purple-100 text-purple-700' },
+  { id: 'personal', label: 'Personal Brand', icon: Crown, color: 'bg-yellow-100 text-yellow-700' },
+  { id: 'company', label: 'Company', icon: Building2, color: 'bg-green-100 text-green-700' },
   { id: 'founder', label: 'Founder/CEO', icon: Rocket, color: 'bg-pink-100 text-pink-700' },
-  { id: 'startup', label: 'Startup Team', icon: Sparkles, color: 'bg-indigo-100 text-indigo-700' },
-  { id: 'agency', label: 'Agency/Client Work', icon: Briefcase, color: 'bg-orange-100 text-orange-700' },
-];
-
-const TOPICS = [
-  { id: 'business', label: 'Business', icon: Briefcase },
-  { id: 'tech', label: 'Technology', icon: Target },
-  { id: 'marketing', label: 'Marketing', icon: Target },
-  { id: 'design', label: 'Design', icon: Target },
-  { id: 'startup', label: 'Startups', icon: Rocket },
-  { id: 'leadership', label: 'Leadership', icon: Crown },
-  { id: 'health', label: 'Health & Wellness', icon: Heart },
-  { id: 'fitness', label: 'Fitness', icon: Target },
-  { id: 'travel', label: 'Travel', icon: Target },
-  { id: 'food', label: 'Food & Cooking', icon: Heart },
-  { id: 'music', label: 'Music', icon: Target },
-  { id: 'sports', label: 'Sports', icon: Target },
-  { id: 'entertainment', label: 'Entertainment', icon: Target },
-  { id: 'education', label: 'Education', icon: Target },
+  { id: 'startup', label: 'Startup', icon: Sparkles, color: 'bg-indigo-100 text-indigo-700' },
+  { id: 'agency', label: 'Agency', icon: Briefcase, color: 'bg-orange-100 text-orange-700' },
 ];
 
 interface OnboardingModalProps {
@@ -78,14 +62,12 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
     expertise: "",
     targetAudience: "",
     // Step 3: Preferences
-    topics: [] as string[],
-    contentTypes: [] as string[],
     linkedinUrl: "",
-    postFormatting: "plain", // Formatting preference
+    postFormatting: "plain",
   });
 
   const steps = [
-    { id: 1, title: "Your Goals", icon: Target },
+    { id: 1, title: "Profile", icon: User },
     { id: 2, title: "AI Persona", icon: Sparkles },
     { id: 3, title: "Preferences", icon: Heart }
   ];
@@ -95,24 +77,6 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
     if (errors[field]) {
       setErrors((prev: any) => ({ ...prev, [field]: null }));
     }
-  };
-
-  const handleTopicToggle = (topicId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      topics: prev.topics.includes(topicId)
-        ? prev.topics.filter(t => t !== topicId)
-        : [...prev.topics, topicId]
-    }));
-  };
-
-  const handleContentTypeToggle = (type: string) => {
-    setFormData(prev => ({
-      ...prev,
-      contentTypes: prev.contentTypes.includes(type)
-        ? prev.contentTypes.filter(t => t !== type)
-        : [...prev.contentTypes, type]
-    }));
   };
 
   const validateStep = (step: number): boolean => {
@@ -182,16 +146,15 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
           expertise: formData.expertise || null,
           targetAudience: formData.targetAudience || null,
           goals: formData.primaryGoal || null,
-          contentTypes: formData.contentTypes || [],
+          contentTypes: [],
         },
-        interests: formData.topics || [],
+        interests: [],
       });
 
       if (!response.success) {
         throw new Error(response.message || "Failed to save");
       }
 
-      // Update local user context
       if (updateProfile) {
         await updateProfile({
           profile: {
@@ -223,103 +186,83 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent 
-        className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 sm:p-6 md:p-8 [&>button]:hidden animate-in fade-in zoom-in duration-500"
+        className="max-w-2xl max-h-[85vh] overflow-hidden p-0 [&>button]:hidden animate-in fade-in zoom-in duration-300"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        {/* Enhanced backdrop overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-purple-50/50 to-pink-50/50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 -z-10" />
-        
-        {/* Welcome header */}
-        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b px-4 sm:px-6 md:px-8 py-4 mb-4 sm:mb-6">
+        {/* Compact Header */}
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b px-4 sm:px-6 py-3">
           <div className="text-center">
-            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Welcome to LinkedInPulse! 🎉
+            <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Welcome! 🎉
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Complete your profile setup to unlock the full power of AI-powered content creation
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Quick setup to personalize your experience
             </p>
           </div>
         </div>
         
-        <div className="px-4 sm:px-6 md:px-8 pb-4 sm:pb-6 md:pb-8">
-          {/* Enhanced Progress Steps */}
-          <div className="mb-6 sm:mb-8">
-            <div className="flex justify-between items-center mb-4 sm:mb-6">
-              {steps.map((step, index) => {
-                const Icon = step.icon;
-                const isCompleted = currentStep > step.id;
-                const isCurrent = currentStep === step.id;
-                
-                return (
-                  <div key={step.id} className="flex items-center flex-1">
-                    <div className={`flex flex-col items-center flex-1 ${
-                      index === steps.length - 1 ? 'flex-none' : ''
+        {/* Compact Progress Steps */}
+        <div className="px-4 sm:px-6 py-3 border-b bg-muted/30">
+          <div className="flex justify-between items-center mb-2">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              const isCompleted = currentStep > step.id;
+              const isCurrent = currentStep === step.id;
+              
+              return (
+                <div key={step.id} className="flex items-center flex-1">
+                  <div className="flex flex-col items-center flex-1">
+                    <div className={`relative w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300 ${
+                      isCompleted
+                        ? 'bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 text-white shadow-md scale-105' 
+                        : isCurrent
+                        ? 'bg-gradient-to-br from-blue-500 to-purple-500 text-white shadow-md scale-105'
+                        : 'bg-muted text-muted-foreground'
                     }`}>
-                      <div className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-500 ${
-                        isCompleted
-                          ? 'bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 text-white shadow-xl scale-110 ring-4 ring-blue-200 dark:ring-blue-800' 
-                          : isCurrent
-                          ? 'bg-gradient-to-br from-blue-500 to-purple-500 text-white shadow-lg scale-105 ring-2 ring-blue-300 dark:ring-blue-700 animate-pulse'
-                          : 'bg-muted text-muted-foreground'
-                      }`}>
-                        {isCompleted ? (
-                          <Check className="h-6 w-6 sm:h-7 sm:w-7 animate-in zoom-in duration-300" />
-                        ) : (
-                          <Icon className={`h-6 w-6 sm:h-7 sm:w-7 transition-all ${
-                            isCurrent ? 'animate-bounce' : ''
-                          }`} />
-                        )}
-                        {/* Step number badge */}
-                        {!isCompleted && (
-                          <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center font-bold">
-                            {step.id}
-                          </span>
-                        )}
-                      </div>
-                      <span className={`text-xs sm:text-sm mt-3 font-medium text-center transition-colors ${
-                        isCurrent ? 'text-primary scale-105' : isCompleted ? 'text-primary/70' : 'text-muted-foreground'
-                      }`}>
-                        {step.title}
-                      </span>
+                      {isCompleted ? (
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5" />
+                      ) : (
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                      )}
                     </div>
-                    {index < steps.length - 1 && (
-                      <div className={`flex-1 h-1.5 mx-2 sm:mx-4 rounded-full transition-all duration-500 ${
-                        isCompleted 
-                          ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 shadow-sm' 
-                          : 'bg-muted'
-                      }`} />
-                    )}
+                    <span className={`text-[10px] sm:text-xs mt-1.5 font-medium transition-colors ${
+                      isCurrent ? 'text-primary' : isCompleted ? 'text-primary/70' : 'text-muted-foreground'
+                    }`}>
+                      {step.title}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-            <div className="relative">
-              <Progress value={progress} className="h-2.5 transition-all duration-500" />
-              <div className="absolute top-0 left-0 h-2.5 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
-              <span className="absolute top-3 right-0 text-xs font-medium text-muted-foreground">
-                {Math.round(progress)}%
-              </span>
-            </div>
+                  {index < steps.length - 1 && (
+                    <div className={`flex-1 h-0.5 mx-1 sm:mx-2 rounded-full transition-all duration-300 ${
+                      isCompleted 
+                        ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600' 
+                        : 'bg-muted'
+                    }`} />
+                  )}
+                </div>
+              );
+            })}
           </div>
+          <Progress value={progress} className="h-1.5" />
+        </div>
 
-          {/* Main Content Card */}
-          <Card className="p-4 sm:p-6 md:p-8 shadow-2xl border-2 border-blue-100/50 dark:border-blue-900/50 bg-gradient-to-br from-white/95 to-blue-50/30 dark:from-slate-900/95 dark:to-blue-950/30 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+        {/* Scrollable Content - Compact */}
+        <div className="overflow-y-auto flex-1 px-4 sm:px-6 py-4 sm:py-5" style={{ maxHeight: 'calc(85vh - 180px)' }}>
           {/* Step 1: Professional Info & Goals */}
           {currentStep === 1 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <Target className="h-10 w-10 text-white" />
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-200">
+              <div className="text-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-2 shadow-md">
+                  <Target className="h-6 w-6 text-white" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">What's your primary goal?</h2>
-                <p className="text-muted-foreground">Help us personalize your AI experience for better results</p>
+                <h2 className="text-lg sm:text-xl font-bold mb-1">What's your goal?</h2>
+                <p className="text-xs text-muted-foreground">We'll personalize your experience</p>
               </div>
 
-              {/* Goal Selection */}
+              {/* Compact Goal Selection */}
               <div>
-                <Label className="text-sm font-medium mb-3 block">Select your goal</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Label className="text-xs font-medium mb-2 block">Primary Goal</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {GOALS.map((goal) => {
                     const Icon = goal.icon;
                     return (
@@ -327,22 +270,20 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                         key={goal.id}
                         type="button"
                         onClick={() => handleChange('primaryGoal', goal.id)}
-                        className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${
+                        className={`p-2.5 rounded-lg border-2 text-left transition-all duration-200 ${
                           formData.primaryGoal === goal.id
-                            ? 'border-primary bg-primary/10 shadow-md scale-105'
-                            : 'border-border hover:border-primary/50 hover:shadow-md'
+                            ? 'border-primary bg-primary/10 shadow-sm scale-105'
+                            : 'border-border hover:border-primary/50'
                         }`}
                         disabled={isLoading}
                       >
-                        <div className="flex items-start gap-3">
-                          <div className={`p-2 rounded-lg ${goal.color}`}>
-                            <Icon className="h-5 w-5" />
+                        <div className="flex items-center gap-2">
+                          <div className={`p-1 rounded ${goal.color}`}>
+                            <Icon className="h-3.5 w-3.5" />
                           </div>
-                          <div className="flex-1">
-                            <p className="font-medium">{goal.label}</p>
-                          </div>
+                          <span className="text-xs font-medium">{goal.label}</span>
                           {formData.primaryGoal === goal.id && (
-                            <Check className="h-5 w-5 text-primary" />
+                            <Check className="h-3 w-3 text-primary ml-auto" />
                           )}
                         </div>
                       </button>
@@ -352,129 +293,116 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                 {errors.primaryGoal && <p className="text-xs text-red-500 mt-1">{errors.primaryGoal}</p>}
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="jobTitle" className="text-sm font-medium">Job Title</Label>
+              {/* Compact Professional Info */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="jobTitle" className="text-xs font-medium">Job Title</Label>
                   <Input
                     id="jobTitle"
                     type="text"
                     placeholder="e.g., Marketing Manager"
                     value={formData.jobTitle}
                     onChange={(e) => handleChange('jobTitle', e.target.value)}
-                    className={errors.jobTitle ? 'border-red-500' : ''}
+                    className="h-9 text-sm"
                     disabled={isLoading}
                   />
-                  {errors.jobTitle && <p className="text-xs text-red-500">{errors.jobTitle}</p>}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="company" className="text-sm font-medium">Company</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="company" className="text-xs font-medium">Company</Label>
                   <Input
                     id="company"
                     type="text"
                     placeholder="e.g., Acme Inc."
                     value={formData.company}
                     onChange={(e) => handleChange('company', e.target.value)}
-                    className={errors.company ? 'border-red-500' : ''}
+                    className="h-9 text-sm"
                     disabled={isLoading}
                   />
-                  {errors.company && <p className="text-xs text-red-500">{errors.company}</p>}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="industry" className="text-sm font-medium">Industry</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="industry" className="text-xs font-medium">Industry</Label>
                   <select
                     id="industry"
                     value={formData.industry}
                     onChange={(e) => handleChange('industry', e.target.value)}
-                    className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background ${
-                      errors.industry ? 'border-red-500' : ''
-                    }`}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs"
                     disabled={isLoading}
                   >
-                    <option value="">Select industry</option>
-                    {INDUSTRIES.map((industry) => (
+                    <option value="">Select</option>
+                    {INDUSTRIES.slice(0, 10).map((industry) => (
                       <option key={industry} value={industry}>{industry}</option>
                     ))}
                   </select>
-                  {errors.industry && <p className="text-xs text-red-500">{errors.industry}</p>}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="experience" className="text-sm font-medium">Experience Level</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="experience" className="text-xs font-medium">Experience</Label>
                   <select
                     id="experience"
                     value={formData.experience}
                     onChange={(e) => handleChange('experience', e.target.value)}
-                    className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background ${
-                      errors.experience ? 'border-red-500' : ''
-                    }`}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs"
                     disabled={isLoading}
                   >
-                    <option value="">Select level</option>
+                    <option value="">Select</option>
                     {EXPERIENCE_LEVELS.map((level) => (
                       <option key={level} value={level}>{level}</option>
                     ))}
                   </select>
-                  {errors.experience && <p className="text-xs text-red-500">{errors.experience}</p>}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Step 2: AI Persona */}
+          {/* Step 2: AI Persona - Compact */}
           {currentStep === 2 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <Sparkles className="h-10 w-10 text-white" />
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-200">
+              <div className="text-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center mx-auto mb-2 shadow-md">
+                  <Sparkles className="h-6 w-6 text-white" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">Build your AI persona</h2>
-                <p className="text-muted-foreground">This helps create content that sounds authentically like you</p>
+                <h2 className="text-lg sm:text-xl font-bold mb-1">Build your AI persona</h2>
+                <p className="text-xs text-muted-foreground">Create content that sounds like you</p>
               </div>
 
-              <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl border border-purple-200 dark:border-purple-800">
-                <div className="flex items-start gap-3">
-                  <Lightbulb className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-purple-900 dark:text-purple-100">
-                      AI-Powered Suggestions
-                    </p>
-                    <p className="text-sm text-purple-700 dark:text-purple-300">
-                      Based on your profile, we've suggested some options. Feel free to customize!
-                    </p>
-                  </div>
+              <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="flex items-start gap-2">
+                  <Lightbulb className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-purple-700 dark:text-purple-300">
+                    AI will learn your style to create authentic content
+                  </p>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="personaName" className="text-sm font-medium">Persona Name</Label>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="personaName" className="text-xs font-medium">Persona Name (Optional)</Label>
                   <Input
                     id="personaName"
                     type="text"
                     placeholder="e.g., Professional Sarah"
                     value={formData.personaName}
                     onChange={(e) => handleChange('personaName', e.target.value)}
-                    className={errors.personaName ? 'border-red-500' : ''}
+                    className="h-9 text-sm"
                     disabled={isLoading}
                   />
-                  {errors.personaName && <p className="text-xs text-red-500">{errors.personaName}</p>}
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="writingStyle" className="text-sm font-medium">Writing Style</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="writingStyle" className="text-xs font-medium">Writing Style *</Label>
                     <select
                       id="writingStyle"
                       value={formData.writingStyle}
                       onChange={(e) => handleChange('writingStyle', e.target.value)}
-                      className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ${
+                      className={`flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs ${
                         errors.writingStyle ? 'border-red-500' : ''
                       }`}
                       disabled={isLoading}
                     >
-                      <option value="">Select style</option>
+                      <option value="">Select</option>
                       {WRITING_STYLES.map((style) => (
                         <option key={style.value} value={style.value}>{style.label}</option>
                       ))}
@@ -482,18 +410,18 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                     {errors.writingStyle && <p className="text-xs text-red-500">{errors.writingStyle}</p>}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="tone" className="text-sm font-medium">Tone</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="tone" className="text-xs font-medium">Tone *</Label>
                     <select
                       id="tone"
                       value={formData.tone}
                       onChange={(e) => handleChange('tone', e.target.value)}
-                      className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ${
+                      className={`flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs ${
                         errors.tone ? 'border-red-500' : ''
                       }`}
                       disabled={isLoading}
                     >
-                      <option value="">Select tone</option>
+                      <option value="">Select</option>
                       {TONE_OPTIONS.map((tone) => (
                         <option key={tone.value} value={tone.value}>{tone.label}</option>
                       ))}
@@ -502,209 +430,145 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="expertise" className="text-sm font-medium">Areas of Expertise</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="expertise" className="text-xs font-medium">Expertise (Optional)</Label>
                   <Textarea
                     id="expertise"
-                    placeholder="e.g., Digital marketing, Leadership, Product management..."
+                    placeholder="e.g., Digital marketing, Leadership..."
                     value={formData.expertise}
                     onChange={(e) => handleChange('expertise', e.target.value)}
-                    className={errors.expertise ? 'border-red-500' : ''}
+                    className="text-sm min-h-[60px]"
                     disabled={isLoading}
-                    rows={3}
                   />
-                  {errors.expertise && <p className="text-xs text-red-500">{errors.expertise}</p>}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="targetAudience" className="text-sm font-medium">Target Audience</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="targetAudience" className="text-xs font-medium">Target Audience (Optional)</Label>
                   <Textarea
                     id="targetAudience"
-                    placeholder="e.g., Marketing professionals, Startup founders, Tech enthusiasts..."
+                    placeholder="e.g., Marketing professionals, Startup founders..."
                     value={formData.targetAudience}
                     onChange={(e) => handleChange('targetAudience', e.target.value)}
-                    className={errors.targetAudience ? 'border-red-500' : ''}
+                    className="text-sm min-h-[60px]"
                     disabled={isLoading}
-                    rows={3}
                   />
-                  {errors.targetAudience && <p className="text-xs text-red-500">{errors.targetAudience}</p>}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Step 3: Preferences & Topics */}
+          {/* Step 3: Preferences - Compact */}
           {currentStep === 3 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <Heart className="h-10 w-10 text-white" />
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-200">
+              <div className="text-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center mx-auto mb-2 shadow-md">
+                  <Heart className="h-6 w-6 text-white" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">Final touches</h2>
-                <p className="text-muted-foreground">Almost done! Customize your preferences for the best experience</p>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium mb-3 block">Select Topics of Interest</Label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {TOPICS.map((topic) => {
-                    const Icon = topic.icon;
-                    return (
-                      <button
-                        key={topic.id}
-                        type="button"
-                        onClick={() => handleTopicToggle(topic.id)}
-                        className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                          formData.topics.includes(topic.id)
-                            ? 'border-primary bg-primary/10 shadow-md scale-105'
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                        disabled={isLoading}
-                      >
-                        <div className="flex flex-col items-center gap-2">
-                          <Icon className={`h-6 w-6 ${
-                            formData.topics.includes(topic.id) ? 'text-primary' : 'text-muted-foreground'
-                          }`} />
-                          <span className={`text-xs font-medium ${
-                            formData.topics.includes(topic.id) ? 'text-primary' : 'text-muted-foreground'
-                          }`}>
-                            {topic.label}
-                          </span>
-                          {formData.topics.includes(topic.id) && (
-                            <Check className="h-4 w-4 text-primary" />
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium mb-3 block">Content Types</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {['Posts', 'Comments', 'Stories', 'Articles', 'Polls', 'Videos'].map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => handleContentTypeToggle(type)}
-                      className={`p-3 rounded-lg border-2 transition-all duration-200 ${
-                        formData.contentTypes.includes(type)
-                          ? 'border-primary bg-primary text-primary-foreground shadow-md'
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                      disabled={isLoading}
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        {formData.contentTypes.includes(type) && <Check className="h-4 w-4" />}
-                        <span className="font-medium">{type}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                <h2 className="text-lg sm:text-xl font-bold mb-1">Final touches</h2>
+                <p className="text-xs text-muted-foreground">Almost done!</p>
               </div>
 
               {/* Post Formatting Preference */}
               <div>
-                <Label className="text-sm font-medium mb-3 block">Default Post Formatting Style</Label>
-                <div className="grid grid-cols-1 gap-3">
+                <Label className="text-xs font-medium mb-2 block">Post Formatting Style</Label>
+                <div className="grid grid-cols-2 gap-2">
                   {[
-                    { value: "plain", label: "Plain Text", description: "Standard formatting (Recommended)", recommended: true },
-                    { value: "bold", label: "Bold", description: "Emphasize key points with bold text" },
-                    { value: "italic", label: "Italic", description: "Use italics for emphasis and quotes" },
-                    { value: "emoji", label: "Emoji-friendly", description: "Include emojis for visual appeal" },
+                    { value: "plain", label: "Plain Text", recommended: true },
+                    { value: "bold", label: "Bold", description: "Key points bold" },
+                    { value: "italic", label: "Italic", description: "Emphasis italic" },
+                    { value: "emoji", label: "Emoji", description: "With emojis" },
                   ].map((option) => (
                     <button
                       key={option.value}
                       type="button"
                       onClick={() => handleChange('postFormatting', option.value)}
-                      className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${
+                      className={`p-2.5 rounded-lg border-2 text-left transition-all duration-200 ${
                         formData.postFormatting === option.value
-                          ? 'border-primary bg-primary/10 shadow-md'
-                          : 'border-border hover:border-primary/50 hover:shadow-sm'
+                          ? 'border-primary bg-primary/10 shadow-sm'
+                          : 'border-border hover:border-primary/50'
                       }`}
                       disabled={isLoading}
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium">{option.label}</span>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-medium">{option.label}</span>
                             {option.recommended && (
-                              <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">Recommended</span>
+                              <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">Rec</span>
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground">{option.description}</p>
+                          {option.description && (
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{option.description}</p>
+                          )}
                         </div>
                         {formData.postFormatting === option.value && (
-                          <Check className="h-5 w-5 text-primary ml-2 flex-shrink-0" />
+                          <Check className="h-3.5 w-3.5 text-primary" />
                         )}
                       </div>
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  This sets your default formatting style for all generated content. You can customize individual posts later.
-                </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="linkedinUrl" className="text-sm font-medium">LinkedIn Profile URL (Optional)</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="linkedinUrl" className="text-xs font-medium">LinkedIn URL (Optional)</Label>
                 <Input
                   id="linkedinUrl"
                   type="url"
                   placeholder="https://linkedin.com/in/yourprofile"
                   value={formData.linkedinUrl}
                   onChange={(e) => handleChange('linkedinUrl', e.target.value)}
+                  className="h-9 text-sm"
                   disabled={isLoading}
                 />
-                <p className="text-xs text-muted-foreground">
-                  💡 Optional: Help us analyze your profile to enhance your persona
+                <p className="text-[10px] text-muted-foreground">
+                  💡 Optional: Help us enhance your persona
                 </p>
               </div>
             </div>
           )}
+        </div>
 
-            {/* Enhanced Navigation Buttons */}
-            <div className="flex justify-between items-center mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-border/50 gap-3 sm:gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentStep === 1 || isLoading}
-                className="gap-2 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                size="lg"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span className="hidden sm:inline">Previous</span>
-                <span className="sm:hidden">Back</span>
-              </Button>
+        {/* Compact Navigation Buttons */}
+        <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t px-4 sm:px-6 py-3">
+          <div className="flex justify-between items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 1 || isLoading}
+              className="gap-1.5 h-9 text-xs"
+              size="sm"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back
+            </Button>
 
-              <Button
-                type="button"
-                onClick={handleNext}
-                disabled={isLoading || !canProceed()}
-                className="gap-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 sm:flex-initial disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
-                size="lg"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    {currentStep === 3 ? "Saving..." : "Loading..."}
-                  </>
-                ) : currentStep === 3 ? (
-                  <>
-                    <Sparkles className="h-4 w-4" />
-                    Complete Setup 🚀
-                  </>
-                ) : (
-                  <>
-                    Next
-                    <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
-              </Button>
-            </div>
-          </Card>
+            <Button
+              type="button"
+              onClick={handleNext}
+              disabled={isLoading || !canProceed()}
+              className="gap-1.5 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 h-9 text-xs flex-1 sm:flex-initial sm:px-6"
+              size="sm"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  {currentStep === 3 ? "Saving..." : "Loading..."}
+                </>
+              ) : currentStep === 3 ? (
+                <>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Complete 🚀
+                </>
+              ) : (
+                <>
+                  Next
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

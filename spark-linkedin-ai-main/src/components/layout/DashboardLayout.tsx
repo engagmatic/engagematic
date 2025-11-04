@@ -1,28 +1,48 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, Link } from "react-router-dom";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
+import { LogoWithText } from "@/components/LogoWithText";
+import { LayoutDashboard, Home, User, LogOut, Lightbulb, FileText, MessageSquare, Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const DashboardLayout = () => {
-  const { user, isLoading, checkAuthStatus } = useAuth();
+  const { user, isLoading, checkAuthStatus, logout, isAuthenticated } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [hasChecked, setHasChecked] = useState(false);
+  
+  // Sidebar state - persist in localStorage
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('sidebarOpen');
+    return saved !== null ? saved === 'true' : true;
+  });
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  const navigationItems = [
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/idea-generator', label: 'Idea Generator', icon: Lightbulb },
+    { path: '/post-generator', label: 'Post Generator', icon: FileText },
+    { path: '/comment-generator', label: 'Comment Generator', icon: MessageSquare },
+  ];
+
+  // Save sidebar state to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebarOpen', sidebarOpen.toString());
+  }, [sidebarOpen]);
 
   // Show onboarding modal if user hasn't completed it
   useEffect(() => {
-    // Wait for auth to finish loading
     if (isLoading) {
       return;
     }
 
-    // If user data is not loaded yet, check auth status
     if (!user && !isLoading) {
       checkAuthStatus?.();
       return;
     }
 
-    // Check if user exists and hasn't completed onboarding
-    // onboardingCompleted can be undefined, null, or false - all mean not completed
     const needsOnboarding = user && (
       !user.profile || 
       user.profile.onboardingCompleted === false || 
@@ -31,35 +51,191 @@ export const DashboardLayout = () => {
     );
 
     if (needsOnboarding && !hasChecked) {
-      // Delay to let dashboard load smoothly before showing modal
       const timer = setTimeout(() => {
         setShowOnboarding(true);
         setHasChecked(true);
-      }, 800); // Smooth delay for better UX
+      }, 800);
       return () => clearTimeout(timer);
     } else if (!needsOnboarding) {
-      // Hide modal if onboarding is completed
       setShowOnboarding(false);
       setHasChecked(true);
     }
   }, [user, isLoading, checkAuthStatus, hasChecked]);
 
+  const handleLogout = () => {
+    if (confirm('Are you sure you want to logout?')) {
+      logout();
+      navigate('/');
+    }
+  };
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
-    <>
-      <Outlet />
-      
-      {/* Onboarding Modal - World-class experience */}
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex">
+      {/* Sidebar - Responsive & Collapsible */}
+      <aside className={`
+        fixed lg:sticky top-0 left-0 z-40 h-screen
+        transform transition-all duration-300 ease-in-out
+        bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800
+        ${sidebarOpen ? 'w-64' : 'w-0 lg:w-20'}
+        ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        flex flex-col overflow-hidden
+      `}>
+        {/* Logo/Brand */}
+        <div className={`p-4 sm:p-6 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between ${!sidebarOpen ? 'lg:px-3' : ''}`}>
+          {sidebarOpen ? (
+            <Link to="/dashboard" className="flex-1">
+              <LogoWithText textSize="sm" />
+            </Link>
+          ) : (
+            <Link to="/dashboard" className="flex justify-center w-full lg:px-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">LP</span>
+              </div>
+            </Link>
+          )}
+          {/* Close button - only show when sidebar is open on desktop */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+            aria-label="Collapse sidebar"
+          >
+            <X className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+          </button>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-2 sm:p-4 space-y-1 overflow-y-auto">
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setMobileSidebarOpen(false)}
+                className={`
+                  flex items-center gap-3 px-3 sm:px-4 py-3 rounded-xl
+                  transition-all duration-200
+                  ${sidebarOpen ? '' : 'lg:justify-center lg:px-2'}
+                  ${
+                    isActive
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+                  }
+                `}
+                title={!sidebarOpen ? item.label : ''}
+              >
+                <Icon className="h-5 w-5 flex-shrink-0" />
+                {sidebarOpen && <span className="font-medium">{item.label}</span>}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* User Section */}
+        <div className={`p-2 sm:p-4 border-t border-gray-200 dark:border-slate-800 space-y-2 ${!sidebarOpen ? 'lg:px-2' : ''}`}>
+          <Link
+            to="/profile"
+            onClick={() => setMobileSidebarOpen(false)}
+            className={`
+              flex items-center gap-3 px-3 sm:px-4 py-3 rounded-xl
+              text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-all
+              ${sidebarOpen ? '' : 'lg:justify-center lg:px-2'}
+            `}
+            title={!sidebarOpen ? 'Profile' : ''}
+          >
+            <User className="h-5 w-5 flex-shrink-0" />
+            {sidebarOpen && <span className="font-medium">Profile</span>}
+          </Link>
+          <Link
+            to="/"
+            onClick={() => setMobileSidebarOpen(false)}
+            className={`
+              flex items-center gap-3 px-3 sm:px-4 py-3 rounded-xl
+              text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-all
+              ${sidebarOpen ? '' : 'lg:justify-center lg:px-2'}
+            `}
+            title={!sidebarOpen ? 'Home' : ''}
+          >
+            <Home className="h-5 w-5 flex-shrink-0" />
+            {sidebarOpen && <span className="font-medium">Home</span>}
+          </Link>
+          <button
+            onClick={handleLogout}
+            className={`
+              w-full flex items-center gap-3 px-3 sm:px-4 py-3 rounded-xl
+              text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all
+              ${sidebarOpen ? '' : 'lg:justify-center lg:px-2'}
+            `}
+            title={!sidebarOpen ? 'Logout' : ''}
+          >
+            <LogOut className="h-5 w-5 flex-shrink-0" />
+            {sidebarOpen && <span className="font-medium">Logout</span>}
+          </button>
+        </div>
+
+        {/* Expand button - only show when collapsed on desktop */}
+        {!sidebarOpen && (
+          <div className="hidden lg:flex p-2 border-t border-gray-200 dark:border-slate-800">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="w-full flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Expand sidebar"
+            >
+              <Menu className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            </button>
+          </div>
+        )}
+      </aside>
+
+      {/* Mobile Sidebar Overlay */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* Main Content */}
+      <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'lg:ml-0' : 'lg:ml-0'}`}>
+        {/* Top Header - Mobile menu button */}
+        <header className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 lg:hidden">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <button
+              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800"
+              aria-label="Toggle menu"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            <Link to="/dashboard">
+              <LogoWithText textSize="sm" />
+            </Link>
+            <div className="w-10" /> {/* Spacer for centering */}
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <div className="w-full">
+          <Outlet />
+        </div>
+      </main>
+
+      {/* Onboarding Modal */}
       <OnboardingModal 
         isOpen={showOnboarding}
         onComplete={async () => {
           setShowOnboarding(false);
-          // Refresh user data instead of full page reload for better UX
           if (checkAuthStatus) {
             await checkAuthStatus();
           }
         }}
       />
-    </>
+    </div>
   );
 };
-

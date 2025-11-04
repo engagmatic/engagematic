@@ -256,27 +256,29 @@ const IdeaGenerator = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="w-full bg-gray-50 dark:bg-slate-950 min-h-screen">
       <SEO 
         title="LinkedIn Post Idea Generator | LinkedInPulse"
         description="Generate viral-worthy LinkedIn post ideas with AI. Get specific, actionable content angles ready to develop into full posts."
         keywords="linkedin ideas, content ideas, post ideas, linkedin content strategy"
       />
       
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">
+      {/* Page Header */}
+      <header className="sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 hidden lg:block">
+        <div className="px-4 sm:px-6 lg:px-8 py-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-50">
             Post{" "}
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               Idea Generator
             </span>
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Discover compelling content angles and concepts ready to develop into full posts
           </p>
         </div>
+      </header>
 
+      <div className="p-4 sm:p-6 lg:p-8">
         <div className="max-w-4xl mx-auto">
           {/* Input Section */}
           <div className="space-y-6">
@@ -443,133 +445,133 @@ const IdeaGenerator = () => {
               )}
             </Button>
           </div>
-        </div>
 
-        {/* Ideas Grid - Full Width Below */}
-        {ideas.length > 0 && (
-          <div className="mt-8">
-            {/* Regenerate Button */}
-            <div className="flex justify-center mb-6">
-              <Button 
-                variant="outline" 
-                onClick={handleGenerateIdeas}
-                disabled={isGenerating}
-                className="gap-2"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Regenerating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4" />
-                    Regenerate Ideas
-                  </>
-                )}
-              </Button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {ideas.map((idea, index) => (
-                <Card 
-                  key={idea.id} 
-                  className="shadow-lg hover:shadow-xl transition-all border-2 hover:border-primary cursor-pointer group"
-                  onClick={() => handleSelectIdea(idea)}
+          {/* Ideas Grid - Full Width Below */}
+          {ideas.length > 0 && (
+            <div className="mt-8">
+              {/* Regenerate Button */}
+              <div className="flex justify-center mb-6">
+                <Button 
+                  variant="outline" 
+                  onClick={handleGenerateIdeas}
+                  disabled={isGenerating}
+                  className="gap-2"
                 >
-                  <div className="p-6">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-2xl font-bold text-primary">#{index + 1}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {idea.angle}
-                          </Badge>
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Regenerating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Regenerate Ideas
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {ideas.map((idea, index) => (
+                  <Card 
+                    key={idea.id} 
+                    className="shadow-lg hover:shadow-xl transition-all border-2 hover:border-primary cursor-pointer group"
+                    onClick={() => handleSelectIdea(idea)}
+                  >
+                    <div className="p-6">
+                      {/* Header */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-2xl font-bold text-primary">#{index + 1}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {idea.angle}
+                            </Badge>
+                          </div>
+                          <h4 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                            {idea.title.length > 35 ? `${idea.title.substring(0, 35)}...` : idea.title}
+                          </h4>
                         </div>
-                        <h4 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                          {idea.title.length > 35 ? `${idea.title.substring(0, 35)}...` : idea.title}
-                        </h4>
+                      </div>
+
+                      {/* Hook */}
+                      <div className="mb-4 p-3 bg-muted rounded-lg">
+                        <div className="text-xs font-semibold text-muted-foreground mb-1">OPENING HOOK:</div>
+                        <p className="text-sm font-medium italic line-clamp-2">
+                          {idea.hook.length > 50 ? `${idea.hook.substring(0, 50)}...` : idea.hook}
+                        </p>
+                      </div>
+
+                      {/* Framework */}
+                      <div className="mb-4">
+                        <div className="text-xs font-semibold text-muted-foreground mb-2">CONTENT FRAMEWORK:</div>
+                        <ul className="space-y-1">
+                          {idea.framework.slice(0, 3).map((point, idx) => (
+                            <li key={idx} className="text-xs flex items-start gap-2">
+                              <span className="text-primary mt-0.5">•</span>
+                              <span className="flex-1 line-clamp-1">
+                                {point.length > 25 ? `${point.substring(0, 25)}...` : point}
+                              </span>
+                            </li>
+                          ))}
+                          {idea.framework.length > 3 && (
+                            <li className="text-xs text-muted-foreground">
+                              +{idea.framework.length - 3} more points...
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+
+                      {/* Why It Works */}
+                      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="text-xs font-semibold text-blue-900 mb-1">💡 WHY THIS WORKS:</div>
+                        <p className="text-xs text-blue-700 line-clamp-2">
+                          {idea.whyItWorks.length > 40 ? `${idea.whyItWorks.substring(0, 40)}...` : idea.whyItWorks}
+                        </p>
+                      </div>
+
+                      {/* Footer */}
+                      <div className="flex items-center justify-between pt-3 border-t">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${getEngagementColor(idea.engagementPotential)}`} />
+                          <span className="text-xs font-medium">{idea.engagementPotential} Engagement</span>
+                        </div>
+                        <Button size="sm" variant="ghost" className="gap-2 group-hover:bg-primary group-hover:text-white transition-all">
+                          Select
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {/* LinkedIn Optimizer */}
+                      <div className="mt-3">
+                        <LinkedInOptimizer 
+                          content={`${idea.title}\n\n${idea.hook}`}
+                          topic={topic}
+                          audience={targetAudience}
+                          compact={true}
+                        />
+                      </div>
+
+                      {/* Best For */}
+                      <div className="mt-3 pt-3 border-t">
+                        <div className="text-xs text-muted-foreground">
+                          <span className="font-semibold">Best for:</span> {idea.bestFor.length > 20 ? `${idea.bestFor.substring(0, 20)}...` : idea.bestFor}
+                        </div>
                       </div>
                     </div>
+                  </Card>
+                ))}
+              </div>
 
-                    {/* Hook */}
-                    <div className="mb-4 p-3 bg-muted rounded-lg">
-                      <div className="text-xs font-semibold text-muted-foreground mb-1">OPENING HOOK:</div>
-                      <p className="text-sm font-medium italic line-clamp-2">
-                        {idea.hook.length > 50 ? `${idea.hook.substring(0, 50)}...` : idea.hook}
-                      </p>
-                    </div>
-
-                    {/* Framework */}
-                    <div className="mb-4">
-                      <div className="text-xs font-semibold text-muted-foreground mb-2">CONTENT FRAMEWORK:</div>
-                      <ul className="space-y-1">
-                        {idea.framework.slice(0, 3).map((point, idx) => (
-                          <li key={idx} className="text-xs flex items-start gap-2">
-                            <span className="text-primary mt-0.5">•</span>
-                            <span className="flex-1 line-clamp-1">
-                              {point.length > 25 ? `${point.substring(0, 25)}...` : point}
-                            </span>
-                          </li>
-                        ))}
-                        {idea.framework.length > 3 && (
-                          <li className="text-xs text-muted-foreground">
-                            +{idea.framework.length - 3} more points...
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-
-                    {/* Why It Works */}
-                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div className="text-xs font-semibold text-blue-900 mb-1">💡 WHY THIS WORKS:</div>
-                      <p className="text-xs text-blue-700 line-clamp-2">
-                        {idea.whyItWorks.length > 40 ? `${idea.whyItWorks.substring(0, 40)}...` : idea.whyItWorks}
-                      </p>
-                    </div>
-
-                    {/* Footer */}
-                    <div className="flex items-center justify-between pt-3 border-t">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${getEngagementColor(idea.engagementPotential)}`} />
-                        <span className="text-xs font-medium">{idea.engagementPotential} Engagement</span>
-                      </div>
-                      <Button size="sm" variant="ghost" className="gap-2 group-hover:bg-primary group-hover:text-white transition-all">
-                        Select
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {/* LinkedIn Optimizer */}
-                    <div className="mt-3">
-                      <LinkedInOptimizer 
-                        content={`${idea.title}\n\n${idea.hook}`}
-                        topic={topic}
-                        audience={targetAudience}
-                        compact={true}
-                      />
-                    </div>
-
-                    {/* Best For */}
-                    <div className="mt-3 pt-3 border-t">
-                      <div className="text-xs text-muted-foreground">
-                        <span className="font-semibold">Best for:</span> {idea.bestFor.length > 20 ? `${idea.bestFor.substring(0, 20)}...` : idea.bestFor}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+              {/* Helper Text */}
+              <div className="mt-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  💡 <strong>Ready to develop an idea?</strong> Click on any card to go to Post Generator with your selected idea
+                </p>
+              </div>
             </div>
-
-            {/* Helper Text */}
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                💡 <strong>Ready to develop an idea?</strong> Click on any card to go to Post Generator with your selected idea
-              </p>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Premium Waitlist Modal */}

@@ -73,6 +73,19 @@ class RazorpayService {
         amount =
           billingPeriod === "yearly" ? (pricing.elitePrice || 1299) * 10 : (pricing.elitePrice || 1299);
         planType = "elite";
+      } else if (billingPeriod === "one-time") {
+        // Bulk Pack: one-time purchase with minimum price
+        const minPrice = pricing.bulkPackMinPrice || (currency === "INR" ? 125 : 1.50);
+        const minPosts = pricing.bulkPackMinPosts || 9;
+        const postPrice = pricing.postPrice || (currency === "INR" ? 15 : 0.18);
+        
+        if (credits.posts <= minPosts) {
+          amount = minPrice; // Minimum price for minimum posts
+        } else {
+          // Minimum price + (additional posts × post price)
+          amount = minPrice + ((credits.posts - minPosts) * postPrice);
+        }
+        planType = "bulk";
       } else {
         // Calculate custom price using pricing service
         amount = pricingService.calculatePrice(credits, currency);

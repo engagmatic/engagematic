@@ -627,6 +627,144 @@ What's the most valuable lesson you've learned in your ${industry.toLowerCase()}
     // Ensure score is within bounds
     return Math.min(Math.max(score, 0), 100);
   }
+
+  /**
+   * Analyze content for LinkedIn optimization insights using AI
+   * Returns real-time, data-driven insights for virality, engagement, and optimal posting times
+   */
+  async analyzeContentOptimization(content, topic = null, audience = null) {
+    try {
+      console.log("🔍 Analyzing content for optimization insights...");
+
+      const prompt = `You are a LinkedIn content optimization expert. Analyze the following LinkedIn post content and provide real, data-driven insights.
+
+CONTENT TO ANALYZE:
+${content}
+
+${topic ? `TOPIC: ${topic}` : ''}
+${audience ? `TARGET AUDIENCE: ${audience}` : ''}
+
+Analyze this content and provide a JSON response with the following structure:
+{
+  "viralityScore": <number between 0-100>, // Based on: hook strength, engagement elements (questions, CTAs, numbers), personal storytelling, length optimization, emotional triggers
+  "engagementPrediction": "<Very High|High|Medium|Low>", // Based on content quality and engagement elements
+  "bestTimeToPost": "<Day HH:MM AM/PM>", // Calculate based on current day/time and optimal LinkedIn engagement patterns (Tuesday-Thursday, 8-10 AM or 12-1 PM are best)
+  "optimalDay": "<Day of week>", // Best day for this type of content
+  "peakHours": ["HH:MM AM/PM", "HH:MM AM/PM"], // Top 2 peak engagement hours
+  "audienceActivity": "<description>", // When the target audience is most active
+  "keyStrengths": ["strength1", "strength2"], // Top 2-3 content strengths
+  "improvementAreas": ["area1", "area2"], // Areas for improvement
+  "estimatedReach": "<High|Medium|Low>", // Estimated reach potential
+  "recommendations": ["rec1", "rec2"] // 2-3 actionable recommendations
+}
+
+IMPORTANT:
+- Calculate viralityScore based on REAL content analysis: hook quality (first sentence), question count, CTA presence, numbers/statistics, personal elements, optimal length (150-300 words), emotional impact
+- For bestTimeToPost: Calculate the NEXT optimal time (Tuesday-Thursday 8-10 AM or 12-1 PM EST/PST). If current time is already optimal, suggest next window.
+- Use current date/time context: Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} at ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}.
+- Be specific and data-driven, not generic.
+
+Return ONLY valid JSON, no markdown formatting.`;
+
+      const result = await this.model.generateContent(prompt);
+      const response = result.response.text();
+      
+      // Extract JSON from response (handle markdown code blocks if present)
+      let jsonStr = response.trim();
+      if (jsonStr.includes('```json')) {
+        jsonStr = jsonStr.split('```json')[1].split('```')[0].trim();
+      } else if (jsonStr.includes('```')) {
+        jsonStr = jsonStr.split('```')[1].split('```')[0].trim();
+      }
+
+      const analysis = JSON.parse(jsonStr);
+
+      // Calculate optimal posting time based on current time
+      const now = new Date();
+      const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const currentHour = now.getHours();
+      
+      // Best days: Tuesday (2), Wednesday (3), Thursday (4)
+      let optimalDay = "Tuesday";
+      if (currentDay === 2 || currentDay === 3 || currentDay === 4) {
+        optimalDay = ["Tuesday", "Wednesday", "Thursday"][currentDay - 2];
+      } else if (currentDay < 2) {
+        optimalDay = "Tuesday"; // If Sunday/Monday, suggest Tuesday
+      } else {
+        optimalDay = "Tuesday"; // If Friday/Saturday, suggest next Tuesday
+      }
+
+      // Best hours: 8-10 AM or 12-1 PM (in user's timezone)
+      const bestHours = [8, 9, 12];
+      let bestHour = 9;
+      if (currentHour < 8) {
+        bestHour = 9;
+      } else if (currentHour < 10) {
+        bestHour = 10;
+      } else if (currentHour < 12) {
+        bestHour = 12;
+      } else if (currentHour < 13) {
+        bestHour = 13;
+      } else {
+        bestHour = 9; // Next day
+      }
+
+      // Format time
+      const formatTime = (hour) => {
+        const period = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+        return `${displayHour}:00 ${period}`;
+      };
+
+      // Override with AI-suggested values if present, otherwise use calculated
+      const finalAnalysis = {
+        viralityScore: analysis.viralityScore || this.calculateEngagementScore(content),
+        engagementPrediction: analysis.engagementPrediction || "Medium",
+        bestTimeToPost: analysis.bestTimeToPost || `${optimalDay} ${formatTime(bestHour)}`,
+        optimalDay: analysis.optimalDay || optimalDay,
+        peakHours: analysis.peakHours || [formatTime(9), formatTime(12)],
+        audienceActivity: analysis.audienceActivity || (audience || "General professionals"),
+        keyStrengths: analysis.keyStrengths || [],
+        improvementAreas: analysis.improvementAreas || [],
+        estimatedReach: analysis.estimatedReach || "Medium",
+        recommendations: analysis.recommendations || []
+      };
+
+      console.log("✅ Content optimization analysis complete:", {
+        viralityScore: finalAnalysis.viralityScore,
+        engagementPrediction: finalAnalysis.engagementPrediction
+      });
+
+      return {
+        success: true,
+        data: finalAnalysis
+      };
+    } catch (error) {
+      console.error("❌ Content optimization analysis error:", error);
+      
+      // Fallback to calculated analysis if AI fails
+      const fallbackScore = this.calculateEngagementScore(content);
+      const now = new Date();
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const optimalDay = now.getDay() >= 2 && now.getDay() <= 4 ? days[now.getDay()] : "Tuesday";
+      
+      return {
+        success: true,
+        data: {
+          viralityScore: fallbackScore,
+          engagementPrediction: fallbackScore >= 80 ? "Very High" : fallbackScore >= 60 ? "High" : "Medium",
+          bestTimeToPost: `${optimalDay} 9:00 AM`,
+          optimalDay: optimalDay,
+          peakHours: ["9:00 AM", "12:00 PM"],
+          audienceActivity: audience || "General professionals",
+          keyStrengths: [],
+          improvementAreas: [],
+          estimatedReach: "Medium",
+          recommendations: []
+        }
+      };
+    }
+  }
 }
 
 export default new GoogleAIService();

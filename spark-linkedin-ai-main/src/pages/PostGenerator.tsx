@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb, Crown, Lock, Share2, Download, ExternalLink } from "lucide-react";
+import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb, Crown, Lock, Share2, ExternalLink, Minimize2, ArrowRight, Scissors, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useContentGeneration } from "../hooks/useContentGeneration";
@@ -20,6 +20,7 @@ import { LinkedInOptimizer } from "@/components/LinkedInOptimizer";
 import { PremiumWaitlistModal } from "@/components/PremiumWaitlistModal";
 import { UpgradePopup } from "@/components/UpgradePopup";
 import { TestimonialPopup } from "@/components/TestimonialPopup";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const hookIcons = {
   story: Heart,
@@ -54,6 +55,8 @@ const PostGenerator = () => {
   const [showUpgradePopup, setShowUpgradePopup] = useState(false);
   const [showTestimonialPopup, setShowTestimonialPopup] = useState(false);
   const testimonialTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isShortened, setIsShortened] = useState(false);
+  const [shortenedContent, setShortenedContent] = useState("");
   
   // SIMPLIFIED: Just use sample personas directly, no complex creation logic
   const { personas, samplePersonas, isLoading: personasLoading } = usePersonas();
@@ -64,6 +67,83 @@ const PostGenerator = () => {
   const navigate = useNavigate();
   const { isGenerating, generatedContent, generatePost, generatePostCustom, copyToClipboard, saveContent } = useContentGeneration();
   const { subscription, canPerformAction, fetchSubscription } = useSubscription();
+
+  // Reset shortened state when new content is generated
+  useEffect(() => {
+    if (generatedContent) {
+      setIsShortened(false);
+      setShortenedContent("");
+    }
+  }, [generatedContent]);
+
+  // Intelligent content shortening function
+  const shortenContent = (content: string): string => {
+    if (!content) return content;
+    
+    const originalLength = content.length;
+    const targetLength = Math.floor(originalLength * 0.4); // 60% reduction (40% of original)
+    
+    // Split into sentences
+    const sentences = content.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+    
+    if (sentences.length <= 2) {
+      // If already short, just trim words
+      const words = content.split(/\s+/);
+      const targetWords = Math.floor(words.length * 0.5);
+      return words.slice(0, targetWords).join(' ') + (words.length > targetWords ? '...' : '');
+    }
+    
+    // Keep first sentence (hook/opening)
+    let shortened = sentences[0];
+    
+    // Keep key sentences (those with important words, questions, or numbers)
+    const importantSentences = sentences.slice(1).filter(s => {
+      const lower = s.toLowerCase();
+      return /[?!]/.test(s) || // Questions or exclamations
+             /\d+/.test(s) || // Numbers
+             /(because|why|how|what|when|where|key|important|essential|critical)/i.test(lower);
+    });
+    
+    // Add 1-2 important sentences
+    if (importantSentences.length > 0) {
+      shortened += ' ' + importantSentences.slice(0, 2).join(' ');
+    }
+    
+    // Add last sentence if it's a call to action or conclusion
+    const lastSentence = sentences[sentences.length - 1];
+    if (/[?!]/.test(lastSentence) || /(share|comment|thought|idea|experience|let|think)/i.test(lastSentence.toLowerCase())) {
+      if (!shortened.includes(lastSentence)) {
+        shortened += ' ' + lastSentence;
+      }
+    }
+    
+    // If still too long, trim to target length
+    if (shortened.length > targetLength) {
+      const words = shortened.split(/\s+/);
+      const targetWords = Math.floor(words.length * 0.7);
+      shortened = words.slice(0, targetWords).join(' ') + '...';
+    }
+    
+    return shortened.trim();
+  };
+
+  const handleShorten = () => {
+    if (!generatedContent?.content) return;
+    
+    const shortened = shortenContent(generatedContent.content);
+    setShortenedContent(shortened);
+    setIsShortened(true);
+    
+    toast({
+      title: "✨ Content Shortened!",
+      description: "Post optimized for busy feeds - crisp and engaging",
+    });
+  };
+
+  const handleRestore = () => {
+    setIsShortened(false);
+    setShortenedContent("");
+  };
 
       const handleUpgradeClick = (source: string) => {
         // Redirect to pricing section for premium features
@@ -358,21 +438,27 @@ const PostGenerator = () => {
   // REMOVED: Complex persona creation screen - we now use samples directly
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="w-full bg-gray-50 dark:bg-slate-950 min-h-screen">
       <SEO {...PAGE_SEO.postGenerator} />
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">
+      
+      {/* Page Header */}
+      <header className="sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 hidden lg:block">
+        <div className="px-4 sm:px-6 lg:px-8 py-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-50">
             Post{" "}
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               Generator
             </span>
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Create viral-worthy LinkedIn posts in seconds with AI-powered content generation</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Create viral-worthy LinkedIn posts in seconds with AI-powered content generation
+          </p>
         </div>
+      </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-11 gap-6">
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-11 gap-6">
           {/* Left Column - Input */}
           <div className="lg:col-span-6 space-y-6">
             {/* Topic Input */}
@@ -610,7 +696,11 @@ const PostGenerator = () => {
                 {generatedContent ? (
                   <div className="space-y-4">
                     <div className="p-4 bg-muted rounded-lg max-h-96 overflow-y-auto">
-                      <p className="whitespace-pre-wrap text-sm">{formatForLinkedIn(generatedContent.content)}</p>
+                      <p className="whitespace-pre-wrap text-sm">
+                        {isShortened && shortenedContent 
+                          ? formatForLinkedIn(shortenedContent)
+                          : formatForLinkedIn(generatedContent.content)}
+                      </p>
                     </div>
                     
                     {generatedContent.engagementScore && (
@@ -650,54 +740,92 @@ const PostGenerator = () => {
                         )}
                       </Button>
                       
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        {/* Shorten Content Button - Premium Styling */}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant={isShortened ? "outline" : "default"}
+                                size="sm" 
+                                className={`flex-1 sm:flex-initial ${
+                                  !isShortened 
+                                    ? "bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all" 
+                                    : ""
+                                }`}
+                                onClick={isShortened ? handleRestore : handleShorten}
+                              >
+                                {isShortened ? (
+                                  <>
+                                    <RotateCcw className="mr-2 h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Restore</span>
+                                    <span className="sm:hidden">Restore</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Scissors className="mr-2 h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Shorten</span>
+                                    <span className="sm:hidden">Shorten</span>
+                                  </>
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{isShortened ? "Restore original content" : "Make it crisp—perfect for busy feeds!"}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
                         <Button 
                           variant="outline" 
                           size="sm" 
                           className="flex-1"
-                          onClick={handleCopy}
+                          onClick={async () => {
+                            const contentToCopy = isShortened && shortenedContent 
+                              ? shortenedContent 
+                              : generatedContent.content;
+                            const formattedContent = formatForLinkedIn(contentToCopy);
+                            await copyToClipboard(formattedContent);
+                          }}
                         >
-                          <Copy className="mr-2 h-4 w-4" />
-                          Copy
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1"
-                          onClick={handleSave}
-                        >
-                          <Save className="mr-2 h-4 w-4" />
-                          Save
+                          <Copy className="mr-2 h-4 w-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Copy</span>
+                          <span className="sm:hidden">Copy</span>
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm" 
                           className="flex-1"
                           onClick={async () => {
-                            const formattedText = formatForLinkedIn(generatedContent.content);
-                            const blob = new Blob([formattedText], { type: 'text/plain' });
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = `linkedin-post-${Date.now()}.txt`;
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                            toast({ title: "Downloaded successfully!" });
+                            // Save the original generated content (by ID)
+                            if (generatedContent._id) {
+                              await saveContent(generatedContent._id);
+                            } else {
+                              toast({
+                                title: "Cannot save",
+                                description: "Content must be generated first",
+                                variant: "destructive"
+                              });
+                            }
                           }}
                         >
-                          <Download className="mr-2 h-4 w-4" />
-                          Download
+                          <Save className="mr-2 h-4 w-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Save</span>
+                          <span className="sm:hidden">Save</span>
                         </Button>
                       </div>
                       
                       {/* Share on LinkedIn Button */}
                       <Button 
                         size="sm" 
-                        className="w-full bg-[#0077B5] hover:bg-[#006396] text-white"
+                        className="w-full bg-[#0077B5] hover:bg-[#006396] text-white shadow-lg hover:shadow-xl transition-all"
                         onClick={async () => {
                           try {
                             // Step 1: Copy post to clipboard with LinkedIn formatting
-                            const formattedPost = formatForLinkedIn(generatedContent.content);
+                            const contentToShare = isShortened && shortenedContent 
+                              ? shortenedContent 
+                              : generatedContent.content;
+                            const formattedPost = formatForLinkedIn(contentToShare);
                             await navigator.clipboard.writeText(formattedPost);
                             
                             // Step 2: Show success message
@@ -745,14 +873,31 @@ const PostGenerator = () => {
                         }}
                       >
                         <Share2 className="mr-2 h-4 w-4" />
-                        Publish with LinkedIn
+                        <span className="hidden sm:inline">Publish with LinkedIn</span>
+                        <span className="sm:hidden">Publish</span>
                         <ExternalLink className="ml-2 h-3 w-3" />
                       </Button>
-                      <div className="space-y-1 text-center">
-                        <p className="text-xs text-muted-foreground font-medium">
-                          📋 Step 1: Click button → 📋 Step 2: Paste in LinkedIn (Ctrl+V) → 📤 Step 3: Publish!
-                        </p>
-                        <p className="text-xs text-muted-foreground opacity-70">
+                      
+                      {/* Premium Steps Guide */}
+                      <div className="bg-gradient-to-r from-blue-50/50 via-purple-50/50 to-pink-50/50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 rounded-lg p-3 sm:p-4 border border-blue-100/50 dark:border-blue-900/50">
+                        <div className="flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">1</div>
+                            <span className="text-muted-foreground font-medium hidden sm:inline">Click</span>
+                          </div>
+                          <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center text-[10px] font-bold">2</div>
+                            <span className="text-muted-foreground font-medium hidden sm:inline">Paste</span>
+                            <span className="text-muted-foreground font-medium sm:hidden">Ctrl+V</span>
+                          </div>
+                          <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded-full bg-pink-600 text-white flex items-center justify-center text-[10px] font-bold">3</div>
+                            <span className="text-muted-foreground font-medium">Publish</span>
+                          </div>
+                        </div>
+                        <p className="text-center text-[10px] sm:text-xs text-muted-foreground mt-2 opacity-70">
                           Powered by LinkedInPulse
                         </p>
                       </div>
@@ -768,6 +913,7 @@ const PostGenerator = () => {
         </Card>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Premium Waitlist Modal */}
