@@ -8,7 +8,6 @@ import { BlogSection } from "@/components/landing/BlogSection";
 import ReferralSection from "@/components/landing/ReferralSection";
 import { Pricing } from "@/components/landing/Pricing";
 import { FAQ } from "@/components/landing/FAQ";
-import { SEOContentSection } from "@/components/landing/SEOContentSection";
 import { SEO } from "@/components/SEO";
 import { PAGE_SEO, ORGANIZATION_SCHEMA, generateFAQSchema, SITE_URL } from "@/constants/seo";
 
@@ -85,7 +84,6 @@ const Index = () => {
       <Hero />
       <TryItFreeSection />
       <Features />
-      <SEOContentSection />
       <Testimonials />
       <ReferralSection />
       <Pricing />

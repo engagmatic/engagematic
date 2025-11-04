@@ -215,13 +215,6 @@ class ApiClient {
     });
   }
 
-  async updateProfile(data) {
-    return await this.request("/profile/update", {
-      method: "PUT",
-      body: JSON.stringify(data),
-    });
-  }
-
   // Content generation methods
   async generatePost(postData) {
     return this.request("/content/posts/generate", {

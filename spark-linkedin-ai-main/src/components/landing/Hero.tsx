@@ -138,7 +138,7 @@ export const Hero = () => {
           </div>
 
           {/* Feature cards - Premium UI */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-5xl mx-auto pt-4 sm:pt-6 lg:pt-8">
+          <div className="grid grid-cols-1 gap-4 max-w-3xl mx-auto pt-4 sm:pt-6 lg:pt-8">
               {/* AI Persona */}
               <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-blue-50/30 to-indigo-50/20 dark:from-slate-900/90 dark:via-blue-950/30 dark:to-indigo-950/20 backdrop-blur-sm shadow-lg hover:shadow-xl p-6 hover-lift text-left transition-all">
                 <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2">Persona</div>
