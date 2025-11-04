@@ -1,4 +1,17 @@
 {
+    "redirects": [
+      {
+        "source": "/(.*)",
+        "has": [
+          {
+            "type": "host",
+            "value": "linkedinpulse.com"
+          }
+        ],
+        "destination": "https://www.linkedinpulse.com/:path*",
+        "permanent": true
+      }
+    ],
     "rewrites": [
       {
         "source": "/(.*)",
