@@ -55,7 +55,7 @@ const CommentGenerator = () => {
 
   // Use user's personas first, fall back to expanded personas
   useEffect(() => {
-    if (selectedPersona) return; // Already have a persona
+    if (selectedPersona || personasLoading) return; // Already have a persona or still loading
 
     // Prioritize user's personas
     if (personas.length > 0) {
@@ -65,7 +65,7 @@ const CommentGenerator = () => {
       setSelectedPersona(EXPANDED_PERSONAS[0]);
       console.log('✅ Expanded persona selected for comments:', EXPANDED_PERSONAS[0].name);
     }
-  }, [personas, selectedPersona]);
+  }, [personas, personasLoading]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -323,12 +323,15 @@ const CommentGenerator = () => {
                   Choose Your Persona *
                 </label>
                 <Select 
-                  value={selectedPersona?.name || selectedPersona?._id || selectedPersona?.id} 
+                  value={selectedPersona?._id || selectedPersona?.id || ""} 
                   onValueChange={(value) => {
                     // Find persona from either user personas or expanded personas
                     const allPersonas = [...personas, ...EXPANDED_PERSONAS];
-                    const found = allPersonas.find(p => p.name === value || p._id === value || p.id === value);
-                    if (found) setSelectedPersona(found);
+                    const found = allPersonas.find(p => p._id === value || p.id === value);
+                    if (found) {
+                      setSelectedPersona(found);
+                      console.log('✅ Persona selected:', found.name);
+                    }
                   }}
                 >
                   <SelectTrigger className="w-full">
@@ -342,7 +345,7 @@ const CommentGenerator = () => {
                           Your Personas
                         </div>
                         {personas.map((persona) => (
-                          <SelectItem key={persona._id} value={persona._id}>
+                          <SelectItem key={persona._id} value={persona._id || persona.id}>
                             {persona.name} {persona.industry && `- ${persona.industry}`}
                             {persona.source === 'onboarding' && ' ✨'}
                           </SelectItem>
