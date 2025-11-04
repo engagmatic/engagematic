@@ -10,6 +10,7 @@ import { Suspense, lazy } from "react";
 import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
 import AppLayout from "./components/layout/AppLayout";
+import { DashboardLayout } from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -131,10 +132,14 @@ const App = () => (
                 {/* All other pages share header/footer */}
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<Index />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/idea-generator" element={<IdeaGenerator />} />
-                  <Route path="/post-generator" element={<PostGenerator />} />
-                  <Route path="/comment-generator" element={<CommentGenerator />} />
+                  
+                  {/* Dashboard routes with onboarding modal */}
+                  <Route element={<DashboardLayout />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/idea-generator" element={<IdeaGenerator />} />
+                    <Route path="/post-generator" element={<PostGenerator />} />
+                    <Route path="/comment-generator" element={<CommentGenerator />} />
+                  </Route>
                   {/* Blog Routes */}
                   {/* Static Pages */}
                   <Route path="/about" element={<AboutPage />} />

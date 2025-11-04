@@ -135,6 +135,19 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
     return Object.keys(newErrors).length === 0;
   };
 
+  const canProceed = (): boolean => {
+    switch (currentStep) {
+      case 1:
+        return !!formData.primaryGoal;
+      case 2:
+        return !!formData.writingStyle && !!formData.tone;
+      case 3:
+        return true; // Step 3 is optional
+      default:
+        return false;
+    }
+  };
+
   const handleNext = () => {
     if (validateStep(currentStep)) {
       if (currentStep === 3) {
@@ -210,52 +223,88 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent 
-        className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 md:p-8 [&>button]:hidden animate-in fade-in zoom-in duration-300"
+        className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 sm:p-6 md:p-8 [&>button]:hidden animate-in fade-in zoom-in duration-500"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        {/* Progress Steps */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex justify-between items-center mb-3 sm:mb-4 px-2">
-            {steps.map((step, index) => {
-              const Icon = step.icon;
-              const isCompleted = currentStep > step.id;
-              const isCurrent = currentStep === step.id;
-              
-              return (
-                <div key={step.id} className="flex items-center flex-1">
-                  <div className={`flex flex-col items-center flex-1 ${
-                    index === steps.length - 1 ? 'flex-none' : ''
-                  }`}>
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${
-                      isCompleted
-                        ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg scale-110' 
-                        : isCurrent
-                        ? 'bg-primary text-primary-foreground shadow-md scale-105'
-                        : 'bg-muted text-muted-foreground'
-                    }`}>
-                      {isCompleted ? <Check className="h-5 w-5 sm:h-6 sm:w-6" /> : <Icon className="h-5 w-5 sm:h-6 sm:w-6" />}
-                    </div>
-                    <span className={`text-xs mt-2 hidden sm:block text-center ${
-                      isCurrent ? 'font-medium text-primary' : 'text-muted-foreground'
-                    }`}>
-                      {step.title}
-                    </span>
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className={`flex-1 h-1 mx-1 sm:mx-2 rounded transition-all duration-300 ${
-                      isCompleted ? 'bg-gradient-to-r from-blue-600 to-purple-600' : 'bg-muted'
-                    }`} />
-                  )}
-                </div>
-              );
-            })}
+        {/* Enhanced backdrop overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-purple-50/50 to-pink-50/50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 -z-10" />
+        
+        {/* Welcome header */}
+        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b px-4 sm:px-6 md:px-8 py-4 mb-4 sm:mb-6">
+          <div className="text-center">
+            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Welcome to LinkedInPulse! 🎉
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Complete your profile setup to unlock the full power of AI-powered content creation
+            </p>
           </div>
-          <Progress value={progress} className="h-2 transition-all duration-300" />
         </div>
+        
+        <div className="px-4 sm:px-6 md:px-8 pb-4 sm:pb-6 md:pb-8">
+          {/* Enhanced Progress Steps */}
+          <div className="mb-6 sm:mb-8">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              {steps.map((step, index) => {
+                const Icon = step.icon;
+                const isCompleted = currentStep > step.id;
+                const isCurrent = currentStep === step.id;
+                
+                return (
+                  <div key={step.id} className="flex items-center flex-1">
+                    <div className={`flex flex-col items-center flex-1 ${
+                      index === steps.length - 1 ? 'flex-none' : ''
+                    }`}>
+                      <div className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-500 ${
+                        isCompleted
+                          ? 'bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 text-white shadow-xl scale-110 ring-4 ring-blue-200 dark:ring-blue-800' 
+                          : isCurrent
+                          ? 'bg-gradient-to-br from-blue-500 to-purple-500 text-white shadow-lg scale-105 ring-2 ring-blue-300 dark:ring-blue-700 animate-pulse'
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {isCompleted ? (
+                          <Check className="h-6 w-6 sm:h-7 sm:w-7 animate-in zoom-in duration-300" />
+                        ) : (
+                          <Icon className={`h-6 w-6 sm:h-7 sm:w-7 transition-all ${
+                            isCurrent ? 'animate-bounce' : ''
+                          }`} />
+                        )}
+                        {/* Step number badge */}
+                        {!isCompleted && (
+                          <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center font-bold">
+                            {step.id}
+                          </span>
+                        )}
+                      </div>
+                      <span className={`text-xs sm:text-sm mt-3 font-medium text-center transition-colors ${
+                        isCurrent ? 'text-primary scale-105' : isCompleted ? 'text-primary/70' : 'text-muted-foreground'
+                      }`}>
+                        {step.title}
+                      </span>
+                    </div>
+                    {index < steps.length - 1 && (
+                      <div className={`flex-1 h-1.5 mx-2 sm:mx-4 rounded-full transition-all duration-500 ${
+                        isCompleted 
+                          ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 shadow-sm' 
+                          : 'bg-muted'
+                      }`} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="relative">
+              <Progress value={progress} className="h-2.5 transition-all duration-500" />
+              <div className="absolute top-0 left-0 h-2.5 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+              <span className="absolute top-3 right-0 text-xs font-medium text-muted-foreground">
+                {Math.round(progress)}%
+              </span>
+            </div>
+          </div>
 
-        {/* Main Content Card */}
-        <Card className="p-4 sm:p-6 md:p-8 shadow-2xl border-2 border-blue-100/50 dark:border-blue-900/50 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* Main Content Card */}
+          <Card className="p-4 sm:p-6 md:p-8 shadow-2xl border-2 border-blue-100/50 dark:border-blue-900/50 bg-gradient-to-br from-white/95 to-blue-50/30 dark:from-slate-900/95 dark:to-blue-950/30 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
           {/* Step 1: Professional Info & Goals */}
           {currentStep === 1 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -264,7 +313,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                   <Target className="h-10 w-10 text-white" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-2">What's your primary goal?</h2>
-                <p className="text-muted-foreground">Help us personalize your experience</p>
+                <p className="text-muted-foreground">Help us personalize your AI experience for better results</p>
               </div>
 
               {/* Goal Selection */}
@@ -381,7 +430,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                   <Sparkles className="h-10 w-10 text-white" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-2">Build your AI persona</h2>
-                <p className="text-muted-foreground">Create an AI that writes like you</p>
+                <p className="text-muted-foreground">This helps create content that sounds authentically like you</p>
               </div>
 
               <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl border border-purple-200 dark:border-purple-800">
@@ -491,8 +540,8 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
                   <Heart className="h-10 w-10 text-white" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">Customize your experience</h2>
-                <p className="text-muted-foreground">Tell us what interests you</p>
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">Final touches</h2>
+                <p className="text-muted-foreground">Almost done! Customize your preferences for the best experience</p>
               </div>
 
               <div>
@@ -615,47 +664,48 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
             </div>
           )}
 
-          {/* Navigation Buttons */}
-          <div className="flex justify-between items-center mt-6 sm:mt-8 pt-4 sm:pt-6 border-t gap-3 sm:gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentStep === 1 || isLoading}
-              className="gap-2 transition-all"
-              size="lg"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Previous</span>
-              <span className="sm:hidden">Back</span>
-            </Button>
+            {/* Enhanced Navigation Buttons */}
+            <div className="flex justify-between items-center mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-border/50 gap-3 sm:gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={currentStep === 1 || isLoading}
+                className="gap-2 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                size="lg"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Previous</span>
+                <span className="sm:hidden">Back</span>
+              </Button>
 
-            <Button
-              type="button"
-              onClick={handleNext}
-              disabled={isLoading}
-              className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 flex-1 sm:flex-initial"
-              size="lg"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {currentStep === 3 ? "Saving..." : "Loading..."}
-                </>
-              ) : currentStep === 3 ? (
-                <>
-                  <Sparkles className="h-4 w-4" />
-                  Complete Setup
-                </>
-              ) : (
-                <>
-                  Next
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </div>
-        </Card>
+              <Button
+                type="button"
+                onClick={handleNext}
+                disabled={isLoading || !canProceed()}
+                className="gap-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 sm:flex-initial disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
+                size="lg"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {currentStep === 3 ? "Saving..." : "Loading..."}
+                  </>
+                ) : currentStep === 3 ? (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    Complete Setup 🚀
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </Card>
+        </div>
       </DialogContent>
     </Dialog>
   );

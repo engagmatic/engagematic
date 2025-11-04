@@ -4,13 +4,20 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 
 export const DashboardLayout = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, checkAuthStatus } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [hasChecked, setHasChecked] = useState(false);
 
   // Show onboarding modal if user hasn't completed it
   useEffect(() => {
     // Wait for auth to finish loading
     if (isLoading) {
+      return;
+    }
+
+    // If user data is not loaded yet, check auth status
+    if (!user && !isLoading) {
+      checkAuthStatus?.();
       return;
     }
 
@@ -23,31 +30,33 @@ export const DashboardLayout = () => {
       user.profile.onboardingCompleted === null
     );
 
-    if (needsOnboarding) {
+    if (needsOnboarding && !hasChecked) {
       // Delay to let dashboard load smoothly before showing modal
       const timer = setTimeout(() => {
         setShowOnboarding(true);
-      }, 1000); // Slightly longer delay to ensure user context is fully loaded
+        setHasChecked(true);
+      }, 800); // Smooth delay for better UX
       return () => clearTimeout(timer);
-    } else {
+    } else if (!needsOnboarding) {
       // Hide modal if onboarding is completed
       setShowOnboarding(false);
+      setHasChecked(true);
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, checkAuthStatus, hasChecked]);
 
   return (
     <>
       <Outlet />
       
-      {/* Onboarding Modal - Smooth transition */}
+      {/* Onboarding Modal - World-class experience */}
       <OnboardingModal 
         isOpen={showOnboarding}
         onComplete={async () => {
           setShowOnboarding(false);
-          // Small delay before refresh to allow modal close animation
-          setTimeout(() => {
-            window.location.reload();
-          }, 300);
+          // Refresh user data instead of full page reload for better UX
+          if (checkAuthStatus) {
+            await checkAuthStatus();
+          }
         }}
       />
     </>
