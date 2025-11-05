@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Star, X, Heart, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import apiClient from "@/services/api";
 
 interface TestimonialPopupProps {
   open: boolean;
@@ -71,21 +72,11 @@ export const TestimonialPopup = ({
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/testimonials`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          content: testimonial.trim(),
-          rating,
-          type: contentType,
-        }),
+      const result = await apiClient.submitTestimonial({
+        comment: testimonial.trim(),
+        rating,
+        triggeredBy: contentType,
       });
-
-      const result = await response.json();
 
       if (result.success) {
         toast({
