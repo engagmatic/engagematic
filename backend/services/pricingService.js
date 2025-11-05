@@ -99,6 +99,10 @@ class PricingService {
   // Get pricing breakdown
   getPricingBreakdown(credits, currency = "USD") {
     const config = this.pricingConfigs[currency];
+    const isPreset = this.isStarterPlan(credits) || this.isProPlan(credits) || this.isElitePlan(credits);
+    
+    // For preset plans, use the preset price. For custom plans, calculate from unit prices
+    const totalPrice = isPreset ? this.getDisplayPrice(credits, currency) : this.calculatePrice(credits, currency);
 
     return {
       posts: {
@@ -116,9 +120,9 @@ class PricingService {
         unitPrice: config.ideaPrice,
         total: credits.ideas * config.ideaPrice,
       },
-      total: this.calculatePrice(credits, currency),
+      total: totalPrice,
       currency: currency,
-      isPreset: this.isStarterPlan(credits) || this.isProPlan(credits) || this.isElitePlan(credits),
+      isPreset: isPreset,
     };
   }
 
