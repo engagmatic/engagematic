@@ -139,7 +139,18 @@ export const validateCommentGeneration = [
     .trim()
     .isLength({ min: 10, max: 2000 })
     .withMessage("Post content must be between 10 and 2000 characters"),
-  body("personaId").optional().isMongoId().withMessage("Invalid persona ID"),
+  // personaId is now optional (can send persona data directly)
+  // Skip validation entirely if personaId is not provided
+  body("personaId")
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      // Only validate if value exists and is not empty
+      if (value && value !== "") {
+        return /^[0-9a-fA-F]{24}$/.test(value);
+      }
+      return true;
+    })
+    .withMessage("Invalid persona ID format"),
   body("persona")
     .optional()
     .isObject()

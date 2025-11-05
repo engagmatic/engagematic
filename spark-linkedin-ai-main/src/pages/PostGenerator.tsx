@@ -310,10 +310,14 @@ const PostGenerator = () => {
       return;
     }
 
-    // SIMPLIFIED: Send persona data directly if it's a sample (no _id)
-    const personaData = selectedPersona._id 
-      ? { personaId: selectedPersona._id } // Real persona with ID
-      : { persona: selectedPersona }; // Sample persona, send full data
+    // SIMPLIFIED: Send persona data directly if it's a sample or onboarding persona
+    // Check if it's a valid MongoDB ObjectId (24 hex characters)
+    const isValidMongoId = selectedPersona._id && /^[0-9a-fA-F]{24}$/.test(selectedPersona._id);
+    const isOnboardingPersona = selectedPersona._id?.toString().startsWith('user-persona-') || selectedPersona.source === 'onboarding';
+    
+    const personaData = (isValidMongoId && !isOnboardingPersona)
+      ? { personaId: selectedPersona._id } // Real persona with valid MongoDB ObjectId
+      : { persona: selectedPersona }; // Sample persona or onboarding persona, send full data
 
     console.log('🚀 Generating post with data:', {
       topic,
