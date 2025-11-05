@@ -30,6 +30,7 @@ export default function Referrals() {
   const [referralData, setReferralData] = useState(null);
   const [stats, setStats] = useState(null);
   const [referrals, setReferrals] = useState([]);
+  const [commissions, setCommissions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [email, setEmail] = useState("");
@@ -68,6 +69,16 @@ export default function Referrals() {
       const referralsResponse = await api.getMyReferrals();
       if (referralsResponse.success) {
         setReferrals(referralsResponse.data || []);
+      }
+
+      // Get commission history
+      try {
+        const commissionsResponse = await api.getAffiliateCommissions();
+        if (commissionsResponse.success) {
+          setCommissions(commissionsResponse.data?.commissions || []);
+        }
+      } catch (error) {
+        console.error("Error fetching commissions:", error);
       }
     } catch (error) {
       console.error("Error fetching referral data:", error);
@@ -166,15 +177,15 @@ export default function Referrals() {
             </span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Earn Free Months
+            Affiliate Dashboard
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Share LinkedInPulse with your network and get 1 month FREE for every friend who becomes a paying customer
+            Earn <strong className="text-purple-600">10% recurring commission</strong> every month when your referrals subscribe. Track your earnings in real-time.
           </p>
         </motion.div>
 
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -195,22 +206,35 @@ export default function Referrals() {
                 <span className="text-sm text-gray-500">Active</span>
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-1">
-                {stats?.totalReferrals || 0}
+                {stats?.signups || 0}
               </div>
-              <div className="text-sm text-gray-600">Successful Referrals</div>
+              <div className="text-sm text-gray-600">Signups</div>
             </Card>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card className="p-6">
+            <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
               <div className="flex items-center justify-between mb-4">
                 <DollarSign className="w-8 h-8 text-purple-600" />
-                <span className="text-sm text-gray-500">Earned</span>
+                <span className="text-sm text-gray-500">Total Earned</span>
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-1">
-                {stats?.freeMonthsEarned || 0}
+                ₹{stats?.commissions?.totalEarned?.toLocaleString() || 0}
               </div>
-              <div className="text-sm text-gray-600">Free Months Earned</div>
+              <div className="text-sm text-gray-600">All-Time Commissions</div>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+            <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+              <div className="flex items-center justify-between mb-4">
+                <Sparkles className="w-8 h-8 text-green-600" />
+                <span className="text-sm text-gray-500">Monthly</span>
+              </div>
+              <div className="text-3xl font-bold text-gray-900 mb-1">
+                ₹{stats?.commissions?.monthlyRecurring?.toLocaleString() || 0}
+              </div>
+              <div className="text-sm text-gray-600">Recurring Income</div>
             </Card>
           </motion.div>
         </div>
@@ -338,18 +362,66 @@ export default function Referrals() {
               
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
                 <div className="text-3xl font-bold mb-2">3</div>
-                <div className="font-semibold mb-2">You Both Win</div>
+                <div className="font-semibold mb-2">They Subscribe</div>
                 <div className="text-sm text-white/80">
-                  When they make their first payment, you get 1 month FREE. No limits!
+                  When they subscribe, you earn 10% commission every month they stay active. Recurring income!
                 </div>
               </div>
             </div>
           </Card>
         </motion.div>
 
+        {/* Commission History */}
+        {commissions.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
+            <Card className="p-8 mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Commission History</h2>
+              
+              <div className="space-y-4">
+                {commissions.slice(0, 10).map((commission, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold">
+                        ₹
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-900">
+                          {commission.referredUserId?.name || "Referred User"}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {commission.plan} Plan • {commission.commissionPeriod}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-green-600">
+                        ₹{commission.monthlyCommissionAmount?.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {commission.status === "paid" ? "Paid" : commission.status === "pending" ? "Pending" : commission.status}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {commissions.length > 10 && (
+                <div className="mt-4 text-center">
+                  <Button variant="outline" onClick={() => navigate("/referral?tab=commissions")}>
+                    View All Commissions
+                  </Button>
+                </div>
+              )}
+            </Card>
+          </motion.div>
+        )}
+
         {/* Referrals List */}
         {referrals.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
             <Card className="p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Referrals</h2>
               
@@ -368,21 +440,21 @@ export default function Referrals() {
                           {referral.referredUser?.name || referral.referredUser?.email || "Anonymous"}
                         </div>
                         <div className="text-sm text-gray-600">
-                          {new Date(referral.createdAt).toLocaleDateString()}
+                          {new Date(referral.joinedDate || referral.createdAt).toLocaleDateString()}
                         </div>
                       </div>
                     </div>
                     <div>
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          referral.status === "completed"
+                          referral.status === "completed" || referral.status === "rewarded"
                             ? "bg-green-100 text-green-800"
                             : referral.status === "pending"
                             ? "bg-yellow-100 text-yellow-800"
                             : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {referral.status === "completed" ? "✓ Rewarded" : "⏳ Pending"}
+                        {referral.status === "completed" || referral.status === "rewarded" ? "✓ Active" : "⏳ Pending"}
                       </span>
                     </div>
                   </div>

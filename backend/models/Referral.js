@@ -2,11 +2,18 @@ import mongoose from "mongoose";
 
 const referralSchema = new mongoose.Schema(
   {
-    // The user who is referring others
+    // The user/affiliate who is referring others (can be User or Affiliate)
     referrerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      refPath: "referrerType",
       required: true,
+      index: true,
+    },
+    // Type of referrer: "User" or "Affiliate"
+    referrerType: {
+      type: String,
+      enum: ["User", "Affiliate"],
+      default: "User",
       index: true,
     },
     referrerEmail: {

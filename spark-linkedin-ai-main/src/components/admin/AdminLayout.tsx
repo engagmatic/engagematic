@@ -13,7 +13,8 @@ import {
   Shield,
   Menu,
   X,
-  Mail
+  Mail,
+  UserPlus
 } from 'lucide-react';
 import { useState } from 'react';
 import { LogoWithText } from '../LogoWithText';
@@ -25,6 +26,7 @@ interface AdminLayoutProps {
 const navigationItems = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/admin/users', label: 'Users', icon: Users },
+  { path: '/admin/affiliates', label: 'Affiliates', icon: UserPlus },
   { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/admin/email-analytics', label: 'Email Analytics', icon: Mail },
   { path: '/admin/blog', label: 'Blog CMS', icon: FileText },

@@ -1,7 +1,10 @@
 import mongoose from "mongoose";
 import Referral from "../models/Referral.js";
 import ReferralReward from "../models/ReferralReward.js";
+import AffiliateCommission from "../models/AffiliateCommission.js";
+import Affiliate from "../models/Affiliate.js";
 import User from "../models/User.js";
+import UserSubscription from "../models/UserSubscription.js";
 import emailService from "./emailService.js";
 
 class ReferralService {
@@ -31,7 +34,7 @@ class ReferralService {
   }
 
   /**
-   * Track referral click
+   * Track referral click - works for both affiliates and regular users
    */
   async trackReferralClick(
     referralCode,
@@ -40,8 +43,49 @@ class ReferralService {
     source = "direct"
   ) {
     try {
+      const code = referralCode.toUpperCase();
+
+      // Check if it's an affiliate code
+      const affiliate = await Affiliate.findOne({
+        affiliateCode: code,
+        status: "active",
+      });
+
+      if (affiliate) {
+        // Track affiliate click
+        let referral = await Referral.findOne({
+          referralCode: code,
+        });
+
+        if (!referral) {
+          // Create referral record if it doesn't exist
+          referral = new Referral({
+            referrerId: affiliate._id,
+            referrerType: "Affiliate",
+            referrerEmail: affiliate.email,
+            referralCode: code,
+            status: "pending",
+          });
+          await referral.save();
+        }
+
+        await referral.trackClick(ipAddress, userAgent);
+        if (source) {
+          referral.source = source;
+          await referral.save();
+        }
+
+        // Update affiliate stats
+        affiliate.stats.totalClicks += 1;
+        await affiliate.save();
+
+        console.log(`✅ Tracked affiliate click for code: ${code}`);
+        return { success: true, referral, isAffiliate: true };
+      }
+
+      // Check for regular user referral
       const referral = await Referral.findOne({
-        referralCode: referralCode.toUpperCase(),
+        referralCode: code,
       });
 
       if (!referral) {
@@ -49,14 +93,13 @@ class ReferralService {
       }
 
       await referral.trackClick(ipAddress, userAgent);
-
       if (source) {
         referral.source = source;
         await referral.save();
       }
 
-      console.log(`✅ Tracked click for referral code: ${referralCode}`);
-      return { success: true, referral };
+      console.log(`✅ Tracked click for referral code: ${code}`);
+      return { success: true, referral, isAffiliate: false };
     } catch (error) {
       console.error("Error tracking referral click:", error);
       return { success: false, error: error.message };
@@ -64,59 +107,67 @@ class ReferralService {
   }
 
   /**
-   * Process referral signup - Mark referral, rewards given AFTER first payment
+   * Process referral signup - Check if affiliate or regular user referral
    */
   async processReferralSignup(newUser, referralCode) {
     try {
-      // Find the referral entry
-      const referral = await Referral.findOne({
-        referralCode: referralCode.toUpperCase(),
+      const code = referralCode.toUpperCase();
+
+      // First check if it's an affiliate code
+      const affiliate = await Affiliate.findOne({
+        affiliateCode: code,
+        status: "active",
+      });
+
+      if (affiliate) {
+        // This is an affiliate referral
+        return await this.processAffiliateReferral(newUser, affiliate, code);
+      }
+
+      // Check if it's a regular user referral (legacy)
+      const userReferral = await Referral.findOne({
+        referralCode: code,
         status: "pending",
       });
 
-      if (!referral) {
-        console.log(`❌ No valid referral found for code: ${referralCode}`);
+      if (userReferral && userReferral.referrerType === "User") {
+        // Legacy user referral
+        const referrer = await User.findById(userReferral.referrerId);
+        if (!referrer) {
+          return { success: false, message: "Referrer not found" };
+        }
+
+        // Prevent self-referral
+        if (referrer.email === newUser.email) {
+          return { success: false, message: "Cannot refer yourself" };
+        }
+
+        // Update new user with referral info
+        newUser.referredBy = referrer._id;
+        newUser.referredByCode = code;
+
+        // Give referred user extended trial
+        newUser.referralRewards.extendedTrial = true;
+        newUser.trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+        await newUser.save();
+
+        // Complete the referral
+        await userReferral.completeReferral(newUser);
+
         return {
-          success: false,
-          message: "Invalid or already used referral code",
+          success: true,
+          referrer,
+          referredUser: newUser,
+          isAffiliate: false,
+          message: "Referral tracked",
         };
       }
 
-      // Get referrer user
-      const referrer = await User.findById(referral.referrerId);
-      if (!referrer) {
-        console.log(`❌ Referrer not found for code: ${referralCode}`);
-        return { success: false, message: "Referrer not found" };
-      }
-
-      // Prevent self-referral
-      if (referrer.email === newUser.email) {
-        console.log(`❌ Self-referral attempt: ${newUser.email}`);
-        return { success: false, message: "Cannot refer yourself" };
-      }
-
-      // Update new user with referral info
-      newUser.referredBy = referrer._id;
-      newUser.referredByCode = referralCode.toUpperCase();
-
-      // Give referred user extended trial (14 days instead of 7)
-      newUser.referralRewards.extendedTrial = true;
-      newUser.trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 days
-      await newUser.save();
-
-      // Complete the referral (but don't mark as rewarded yet)
-      await referral.completeReferral(newUser);
-
-      console.log(
-        `✅ Referral tracked: ${referrer.email} → ${newUser.email} (rewards pending first payment)`
-      );
-
+      // No referral found
+      console.log(`❌ No valid referral found for code: ${code}`);
       return {
-        success: true,
-        referrer,
-        referredUser: newUser,
-        pendingReward: true,
-        message: "Rewards will be given after first payment",
+        success: false,
+        message: "Invalid referral code",
       };
     } catch (error) {
       console.error("Error processing referral signup:", error);
@@ -125,90 +176,324 @@ class ReferralService {
   }
 
   /**
-   * Apply referral rewards AFTER user makes first payment
+   * Process affiliate referral signup
    */
-  async applyReferralRewardsAfterPayment(userId) {
+  async processAffiliateReferral(newUser, affiliate, referralCode) {
+    try {
+      // Prevent self-referral
+      if (affiliate.email === newUser.email) {
+        console.log(`❌ Self-referral attempt: ${newUser.email}`);
+        return { success: false, message: "Cannot refer yourself" };
+      }
+
+      // Check if referral already exists
+      let referral = await Referral.findOne({
+        referralCode: referralCode,
+        referredUserId: null,
+      });
+
+      if (!referral) {
+        // Create new referral record for affiliate
+        referral = new Referral({
+          referrerId: affiliate._id,
+          referrerType: "Affiliate",
+          referrerEmail: affiliate.email,
+          referralCode: referralCode,
+          status: "pending",
+        });
+        await referral.save();
+      }
+
+      // Update new user with referral info
+      newUser.referredByCode = referralCode;
+      // Note: referredBy is for User model, we'll track via referralCode for affiliates
+
+      // Give referred user extended trial (14 days instead of 7)
+      newUser.referralRewards.extendedTrial = true;
+      newUser.trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+      await newUser.save();
+
+      // Complete the referral
+      await referral.completeReferral(newUser);
+
+      // Update affiliate stats
+      affiliate.stats.totalSignups += 1;
+      await affiliate.save();
+
+      console.log(
+        `✅ Affiliate referral tracked: ${affiliate.email} → ${newUser.email}`
+      );
+
+      return {
+        success: true,
+        affiliate,
+        referredUser: newUser,
+        isAffiliate: true,
+        message: "Affiliate referral tracked successfully",
+      };
+    } catch (error) {
+      console.error("Error processing affiliate referral:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Create recurring commission for affiliate (10% of monthly subscription)
+   * Called when referred user makes their first payment
+   */
+  async createRecurringCommission(userId, subscriptionId, paymentId, plan, monthlyAmount) {
     try {
       const user = await User.findById(userId);
       if (!user || !user.referredBy) {
         return { success: false, message: "No referral to process" };
       }
 
-      // Check if user was referred
+      // Find the referral
       const referral = await Referral.findOne({
         referredUserId: userId,
-        status: "completed", // Not yet rewarded
+        status: { $in: ["completed", "rewarded"] },
       });
 
       if (!referral) {
         return {
           success: false,
-          message: "Referral already processed or not found",
+          message: "Referral not found",
         };
       }
 
-      // Get referrer
-      const referrer = await User.findById(user.referredBy);
-      if (!referrer) {
-        return { success: false, message: "Referrer not found" };
+      // Check if user was referred by an affiliate (via referral code)
+      const userRefCode = user.referredByCode;
+      if (!userRefCode) {
+        return { success: false, message: "No referral code found for user" };
       }
 
-      // NOW give the rewards (after first payment)
-      referrer.referralCount += 1;
-      referrer.referralRewards.freeMonthsEarned += 1;
-      await referrer.save();
-
-      // Create reward for referrer (1 free month)
-      await ReferralReward.create({
-        userId: referrer._id,
-        referralId: referral._id,
-        rewardType: "free_month",
-        rewardValue: 30, // 30 days
+      // Find affiliate by referral code
+      const affiliate = await Affiliate.findOne({
+        affiliateCode: userRefCode.toUpperCase(),
         status: "active",
-        description: `1 month free for referring ${user.email}`,
-        appliedDate: new Date(),
-        expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year expiry
       });
+
+      if (!affiliate) {
+        // Not an affiliate referral - skip commission creation
+        return { success: false, message: "Not an affiliate referral" };
+      }
+
+      // Find the referral record
+      const referral = await Referral.findOne({
+        referralCode: userRefCode.toUpperCase(),
+        referredUserId: userId,
+        referrerType: "Affiliate",
+        status: { $in: ["completed", "rewarded"] },
+      });
+
+      if (!referral) {
+        return { success: false, message: "Referral record not found" };
+      }
+
+      // Check if commission already exists for this subscription
+      const existingCommission = await AffiliateCommission.findOne({
+        subscriptionId: subscriptionId,
+      });
+
+      if (existingCommission) {
+        console.log(`ℹ️ Commission already exists for subscription ${subscriptionId}`);
+        return {
+          success: true,
+          commission: existingCommission,
+          message: "Commission already created",
+        };
+      }
+
+      // Calculate 10% commission
+      const commissionAmount = AffiliateCommission.calculateCommission(
+        monthlyAmount,
+        10
+      );
+
+      // Get current month for commission period
+      const now = new Date();
+      const commissionPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+      // Calculate next commission date (next month)
+      const nextCommissionDate = new Date(now);
+      nextCommissionDate.setMonth(nextCommissionDate.getMonth() + 1);
+      nextCommissionDate.setDate(1); // First day of next month
+
+      // Create recurring commission record
+      const commission = await AffiliateCommission.create({
+        affiliateId: affiliate._id,
+        referralId: referral._id,
+        referredUserId: userId,
+        subscriptionId: subscriptionId,
+        paymentId: paymentId,
+        plan: plan,
+        monthlySubscriptionAmount: monthlyAmount,
+        monthlyCommissionAmount: commissionAmount,
+        commissionRate: 10, // 10% fixed
+        isRecurring: true,
+        commissionPeriod: commissionPeriod,
+        subscriptionActive: true,
+        nextCommissionDate: nextCommissionDate,
+        status: "pending",
+      });
+
+      // Update referral count
+      affiliate.referralCount = (affiliate.referralCount || 0) + 1;
+      await affiliate.save();
 
       // Mark referral as rewarded
       await referral.markAsRewarded();
 
-      // Send thank you email to referrer
+      // Send email to affiliate
       try {
         await emailService.sendEmail({
-          userId: referrer._id,
-          to: referrer.email,
-          subject: "🎉 You earned a free month!",
-          templateName: "referral_success",
+          userId: affiliate._id,
+          to: affiliate.email,
+          subject: "🎉 You earned a recurring commission!",
+          templateName: "affiliate_commission",
           templateData: {
-            name: referrer.name,
+            name: affiliate.name,
             referredUserName: user.name,
-            rewardMonths: 1,
-            totalReferrals: referrer.referralCount,
+            monthlyCommission: commissionAmount,
+            monthlySubscription: monthlyAmount,
+            plan: plan,
+            commissionRate: 10,
           },
           emailType: "custom",
         });
       } catch (emailError) {
-        console.error("Error sending referral success email:", emailError);
+        console.error("Error sending affiliate commission email:", emailError);
       }
 
       console.log(
-        `✅ Referral reward applied: ${referrer.email} earned 1 month for ${user.email}'s payment`
+        `✅ Recurring commission created: ${affiliate.email} earns ₹${commissionAmount}/month (10% of ₹${monthlyAmount}) for ${user.email}'s ${plan} subscription`
       );
 
       return {
         success: true,
-        referrer,
-        rewardApplied: true,
+        commission: commission,
+        message: "Recurring commission created successfully",
       };
     } catch (error) {
-      console.error("Error applying referral rewards:", error);
+      console.error("Error creating recurring commission:", error);
       return { success: false, error: error.message };
     }
   }
 
   /**
-   * Get user's referral stats
+   * Process monthly commission for active subscriptions
+   * Called by scheduled job monthly
+   */
+  async processMonthlyCommissions() {
+    try {
+      const now = new Date();
+      const currentPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+      // Find all active commissions where next commission date is due
+      const activeCommissions = await AffiliateCommission.find({
+        subscriptionActive: true,
+        nextCommissionDate: { $lte: now },
+        status: { $ne: "expired" },
+      }).populate("subscriptionId");
+
+      console.log(`📊 Processing monthly commissions for ${activeCommissions.length} active subscriptions`);
+
+      let processed = 0;
+      let errors = 0;
+
+      for (const commission of activeCommissions) {
+        try {
+          // Check if subscription is still active
+          const subscription = await UserSubscription.findById(
+            commission.subscriptionId
+          );
+
+          if (!subscription || subscription.status !== "active") {
+            // Mark commission as expired
+            await commission.markSubscriptionCancelled();
+            console.log(`⏸️ Subscription ${commission.subscriptionId} is no longer active`);
+            continue;
+          }
+
+          // Check if commission for this period already exists
+          const existingPeriodCommission = await AffiliateCommission.findOne({
+            subscriptionId: commission.subscriptionId,
+            commissionPeriod: currentPeriod,
+          });
+
+          if (existingPeriodCommission) {
+            console.log(
+              `ℹ️ Commission for period ${currentPeriod} already exists for subscription ${commission.subscriptionId}`
+            );
+            continue;
+          }
+
+          // Create new commission record for this month
+          const nextCommissionDate = new Date(now);
+          nextCommissionDate.setMonth(nextCommissionDate.getMonth() + 1);
+          nextCommissionDate.setDate(1);
+
+          await AffiliateCommission.create({
+            affiliateId: commission.affiliateId,
+            referralId: commission.referralId,
+            referredUserId: commission.referredUserId,
+            subscriptionId: commission.subscriptionId,
+            plan: commission.plan,
+            monthlySubscriptionAmount: commission.monthlySubscriptionAmount,
+            monthlyCommissionAmount: commission.monthlyCommissionAmount,
+            commissionRate: 10,
+            isRecurring: true,
+            commissionPeriod: currentPeriod,
+            subscriptionActive: true,
+            nextCommissionDate: nextCommissionDate,
+            status: "pending",
+          });
+
+          // Update original commission record
+          commission.totalCommissionsEarned += commission.monthlyCommissionAmount;
+          commission.monthsPaid += 1;
+          commission.lastCommissionDate = now;
+          commission.nextCommissionDate = nextCommissionDate;
+          await commission.save();
+
+          processed++;
+        } catch (error) {
+          console.error(
+            `❌ Error processing commission for subscription ${commission.subscriptionId}:`,
+            error
+          );
+          errors++;
+        }
+      }
+
+      console.log(
+        `✅ Monthly commission processing complete: ${processed} processed, ${errors} errors`
+      );
+
+      return {
+        success: true,
+        processed,
+        errors,
+        total: activeCommissions.length,
+      };
+    } catch (error) {
+      console.error("Error processing monthly commissions:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Apply referral rewards AFTER user makes first payment (DEPRECATED - now using recurring commissions)
+   * Kept for backward compatibility
+   */
+  async applyReferralRewardsAfterPayment(userId) {
+    // This method is now handled by createRecurringCommission
+    // But we keep it for backward compatibility
+    return { success: false, message: "Use createRecurringCommission instead" };
+  }
+
+  /**
+   * Get user's referral stats with commission data
    */
   async getUserReferralStats(userId) {
     try {
@@ -230,7 +515,7 @@ class ReferralService {
         .populate("referredUserId", "name email createdAt")
         .sort({ createdAt: -1 });
 
-      // Get pending rewards
+      // Get pending rewards (legacy)
       const rewards = await ReferralReward.find({
         userId,
         status: "active",
@@ -242,22 +527,98 @@ class ReferralService {
         { $group: { _id: null, total: { $sum: "$clickCount" } } },
       ]);
 
+      // Get commission stats
+      const commissionStats = await AffiliateCommission.aggregate([
+        { $match: { affiliateId: new mongoose.Types.ObjectId(userId) } },
+        {
+          $group: {
+            _id: null,
+            totalEarned: { $sum: "$monthlyCommissionAmount" },
+            totalPending: {
+              $sum: {
+                $cond: [{ $eq: ["$status", "pending"] }, "$monthlyCommissionAmount", 0],
+              },
+            },
+            totalPaid: {
+              $sum: {
+                $cond: [{ $eq: ["$status", "paid"] }, "$monthlyCommissionAmount", 0],
+              },
+            },
+            activeSubscriptions: {
+              $sum: {
+                $cond: [{ $eq: ["$subscriptionActive", true] }, 1, 0],
+              },
+            },
+            monthlyRecurring: {
+              $sum: {
+                $cond: [
+                  { $eq: ["$subscriptionActive", true] },
+                  "$monthlyCommissionAmount",
+                  0,
+                ],
+              },
+            },
+          },
+        },
+      ]);
+
+      const stats = commissionStats[0] || {
+        totalEarned: 0,
+        totalPending: 0,
+        totalPaid: 0,
+        activeSubscriptions: 0,
+        monthlyRecurring: 0,
+      };
+
+      // Get signups (conversions)
+      const signups = await Referral.countDocuments({
+        referrerId: userId,
+        status: { $in: ["completed", "rewarded"] },
+      });
+
+      // Get pending payouts (sum of pending commissions above threshold)
+      const pendingPayouts = await AffiliateCommission.aggregate([
+        {
+          $match: {
+            affiliateId: new mongoose.Types.ObjectId(userId),
+            status: "pending",
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$monthlyCommissionAmount" },
+          },
+        },
+      ]);
+
       return {
         success: true,
         data: {
           referralCode: user.referralCode,
           totalReferrals: user.referralCount || 0,
+          totalClicks: totalClicks[0]?.total || 0,
+          signups: signups,
+          referrals,
+          activeRewards: rewards,
+          referralLink: `${
+            process.env.FRONTEND_URL || "http://localhost:5173"
+          }/signup?ref=${user.referralCode}`,
+          // Commission stats
+          commissions: {
+            totalEarned: stats.totalEarned || 0,
+            totalPending: stats.totalPending || 0,
+            totalPaid: stats.totalPaid || 0,
+            activeSubscriptions: stats.activeSubscriptions || 0,
+            monthlyRecurring: stats.monthlyRecurring || 0, // Monthly recurring income
+            pendingPayout: pendingPayouts[0]?.total || 0,
+          },
+          // Legacy free months (for backward compatibility)
           freeMonthsEarned: user.referralRewards?.freeMonthsEarned || 0,
           freeMonthsUsed: user.referralRewards?.freeMonthsUsed || 0,
           freeMonthsAvailable:
             (user.referralRewards?.freeMonthsEarned || 0) -
             (user.referralRewards?.freeMonthsUsed || 0),
-          totalClicks: totalClicks[0]?.total || 0,
-          referrals,
-          activeRewards: rewards,
-          referralLink: `${
-            process.env.FRONTEND_URL || "http://localhost:3000"
-          }/signup?ref=${user.referralCode}`,
         },
       };
     } catch (error) {

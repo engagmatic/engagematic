@@ -27,6 +27,10 @@ const ContactPage = lazy(() => import("./pages/ContactPage"));
 const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
 const TemplatesPage = lazy(() => import("./pages/TemplatesPage"));
 const Referrals = lazy(() => import("./pages/Referrals"));
+const AffiliateProgram = lazy(() => import("./pages/AffiliateProgram"));
+const AffiliateRegister = lazy(() => import("./pages/affiliate/AffiliateRegister"));
+const AffiliateLogin = lazy(() => import("./pages/affiliate/AffiliateLogin"));
+const AffiliateDashboard = lazy(() => import("./pages/affiliate/AffiliateDashboard"));
 const TestimonialCollection = lazy(() => import("./pages/TestimonialCollection"));
 // PlanManagement page removed - redirects to pricing section
 const BlogListingPage = lazy(() => import("./pages/BlogListingPage"));
@@ -38,6 +42,7 @@ const PricingRedirect = lazy(() => import("./pages/PricingRedirect"));
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
+import AffiliateManagement from "./pages/admin/AffiliateManagement";
 import TestimonialsManagement from "./pages/admin/TestimonialsManagement";
 import BlogManagement from "./pages/admin/BlogManagement";
 import Analytics from "./pages/admin/Analytics";
@@ -91,6 +96,14 @@ const App = () => (
                   element={
                     <ProtectedAdminRoute>
                       <UserManagement />
+                    </ProtectedAdminRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/affiliates" 
+                  element={
+                    <ProtectedAdminRoute>
+                      <AffiliateManagement />
                     </ProtectedAdminRoute>
                   } 
                 />
@@ -153,8 +166,12 @@ const App = () => (
                   <Route path="/plan-management" element={<PricingRedirect />} />
                   <Route path="/profile" element={<UserProfile />} />
                   <Route path="/post/:postId" element={<PostDetailPage />} />
-                  <Route path="/referral" element={<Referrals />} />
-                  <Route path="/blogs" element={<BlogListingPage />} />
+                <Route path="/referral" element={<Referrals />} />
+                <Route path="/affiliate" element={<AffiliateProgram />} />
+                <Route path="/affiliate/register" element={<AffiliateRegister />} />
+                <Route path="/affiliate/login" element={<AffiliateLogin />} />
+                <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
+                <Route path="/blogs" element={<BlogListingPage />} />
                   <Route path="/blogs/:slug" element={<BlogPage />} />
                 </Route>
 

@@ -478,6 +478,57 @@ class ApiClient {
     });
   }
 
+  // Affiliate authentication methods
+  async affiliateRegister(data) {
+    const response = await this.request("/affiliate/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+
+    if (response.success && response.data.token) {
+      this.setToken(response.data.token);
+    }
+
+    return response;
+  }
+
+  async affiliateLogin(credentials) {
+    const response = await this.request("/affiliate/login", {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    });
+
+    if (response.success && response.data.token) {
+      this.setToken(response.data.token);
+    }
+
+    return response;
+  }
+
+  async getAffiliateProfile() {
+    return this.request("/affiliate/me");
+  }
+
+  async updateAffiliateProfile(profileData) {
+    return this.request("/affiliate/profile", {
+      method: "PUT",
+      body: JSON.stringify(profileData),
+    });
+  }
+
+  // Affiliate dashboard methods
+  async getAffiliateDashboardStats() {
+    return this.request("/affiliate/dashboard/stats");
+  }
+
+  async getAffiliateCommissions(page = 1, limit = 50) {
+    return this.request(`/affiliate/dashboard/commissions?page=${page}&limit=${limit}`);
+  }
+
+  async getAffiliateReferrals() {
+    return this.request("/affiliate/dashboard/referrals");
+  }
+
   // Testimonial methods
   async collectTestimonial(testimonialData) {
     return this.request("/testimonials/collect", {
