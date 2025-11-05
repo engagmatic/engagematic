@@ -974,8 +974,8 @@ router.post(
     body("topic")
       .isString()
       .trim()
-      .isLength({ min: 10 })
-      .withMessage("Topic must be at least 10 characters"),
+      .isLength({ min: 10, max: 1000 })
+      .withMessage("Topic must be between 10 and 1000 characters"),
     body("angle")
       .isString()
       .trim()

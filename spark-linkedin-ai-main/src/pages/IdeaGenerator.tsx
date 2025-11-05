@@ -293,10 +293,16 @@ const IdeaGenerator = () => {
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   className="min-h-[120px] resize-none"
+                  maxLength={1000}
                 />
-                <p className="text-xs text-muted-foreground mt-2">
-                  💡 Be specific for better ideas. Instead of "productivity", try "productivity hacks for remote workers"
-                </p>
+                <div className="flex justify-between items-center mt-2">
+                  <p className="text-xs text-muted-foreground">
+                    💡 Be specific for better ideas. Instead of "productivity", try "productivity hacks for remote workers"
+                  </p>
+                  <span className={`text-xs ${topic.length > 950 ? 'text-orange-500' : topic.length > 900 ? 'text-yellow-600' : 'text-muted-foreground'}`}>
+                    {topic.length}/1000
+                  </span>
+                </div>
               </div>
             </Card>
 

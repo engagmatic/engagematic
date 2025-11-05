@@ -52,8 +52,8 @@ export const validatePostGeneration = [
     .trim()
     .notEmpty()
     .withMessage("Topic is required")
-    .isLength({ min: 10, max: 500 })
-    .withMessage("Topic must be between 10 and 500 characters"),
+    .isLength({ min: 10, max: 1000 })
+    .withMessage("Topic must be between 10 and 1000 characters"),
   body("hookId")
     .notEmpty()
     .withMessage("Hook ID is required")
@@ -101,8 +101,8 @@ export const validatePostGenerationWithoutHook = [
     .trim()
     .notEmpty()
     .withMessage("Topic is required")
-    .isLength({ min: 10, max: 500 })
-    .withMessage("Topic must be between 10 and 500 characters"),
+    .isLength({ min: 10, max: 1000 })
+    .withMessage("Topic must be between 10 and 1000 characters"),
   body("title")
     .trim()
     .notEmpty()
