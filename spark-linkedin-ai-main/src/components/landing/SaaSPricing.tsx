@@ -176,11 +176,12 @@ export const SaaSPricing = () => {
       // For 10+ posts: ₹125 base + (additional posts × ₹15)
       return 125 + ((bulkCredits.posts - 9) * 15);
     } else {
-      // USD equivalent: $1.50 minimum, then $0.18 per post
-      if (bulkCredits.posts <= 9) {
-        return 1.50;
-      }
-      const price = 1.50 + ((bulkCredits.posts - 9) * 0.18);
+      // USD: $0.49 per post (100 posts = $49)
+      // Minimum is based on posts selected (9 posts minimum = $4.41)
+      const minPosts = 9;
+      const postPrice = 0.49;
+      const postsSelected = Math.max(bulkCredits.posts, minPosts);
+      const price = postsSelected * postPrice;
       return Math.round(price * 100) / 100; // Round to 2 decimal places
     }
   };

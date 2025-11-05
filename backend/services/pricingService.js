@@ -17,8 +17,8 @@ class PricingService {
       },
       USD: {
         currency: "USD",
-        postPrice: 0.18, // $0.18 per post for bulk pack (after minimum)
-        bulkPackMinPrice: 1.50, // Minimum $1.50 for 9 posts
+        postPrice: 0.49, // $0.49 per post (100 posts = $49)
+        bulkPackMinPrice: 4.41, // Minimum $4.41 for 9 posts (9 × $0.49)
         bulkPackMinPosts: 9, // Minimum posts for bulk pack
         commentPrice: 0.11,
         ideaPrice: 0.11,
@@ -45,10 +45,13 @@ class PricingService {
       throw new Error("Invalid currency");
     }
 
-    const totalPrice =
-      credits.posts * config.postPrice +
-      credits.comments * config.commentPrice +
-      credits.ideas * config.ideaPrice;
+    // For bulk pack (one-time), calculate based on posts only (minimum based on posts selected)
+    // For regular subscriptions, include all credits
+    const postPrice = credits.posts * config.postPrice;
+    const commentPrice = credits.comments * config.commentPrice;
+    const ideaPrice = credits.ideas * config.ideaPrice;
+
+    const totalPrice = postPrice + commentPrice + ideaPrice;
 
     return Math.round(totalPrice * 100) / 100; // Round to 2 decimal places
   }
