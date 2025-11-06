@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 const features = [
   {
     icon: UserCircle,
-    title: "Write Like Yourself, Not Like \"AI\"",
+    title: "Write Like Yourself, Not Like AI",
     description: "Every post sounds authentically you. No robotic templates—just your natural voice, amplified.",
     gradient: "from-blue-500 via-purple-500 to-pink-500",
     shadowColor: "shadow-blue-500/20"
@@ -59,13 +59,13 @@ export const Features = () => {
         </div>
 
         {/* Features Grid - Perfect Square Cards - 2x2 Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <Card 
                 key={index}
-                className={`group relative p-6 sm:p-7 bg-white dark:bg-slate-900 border-0 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden aspect-square flex flex-col ${
+                className={`group relative p-5 sm:p-6 bg-white dark:bg-slate-900 border-0 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden aspect-square flex flex-col ${
                   isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                 }`}
                 style={{
@@ -79,7 +79,7 @@ export const Features = () => {
                 
                 {/* Content - Fits completely */}
                 <div className="relative z-10 flex flex-col flex-grow">
-                  <h3 className="text-lg sm:text-xl font-bold mb-3 text-gray-900 dark:text-gray-50 leading-tight">
+                  <h3 className="text-lg sm:text-xl font-bold mb-2 text-gray-900 dark:text-gray-50 leading-tight">
                     {feature.title}
                   </h3>
                   <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
