@@ -44,8 +44,8 @@ const plans: Plan[] = [
     description: 'LinkedIn newcomers',
     price: { INR: 199, USD: 10 }, // Updated to ₹199/month
     yearlyPrice: { INR: 1990, USD: 100 }, // 10 months price (2 months free)
-    limits: { posts: 15, comments: 30, ideas: 30 },
-    yearlyLimits: { posts: 15, comments: 30, ideas: 30 }, // Same limits for yearly
+    limits: { posts: 15, comments: 30, ideas: -1 }, // -1 means unlimited
+    yearlyLimits: { posts: 15, comments: 30, ideas: -1 }, // Unlimited ideas
     features: [], // Will be populated dynamically
     icon: <Zap className="h-6 w-6" />
   },
@@ -55,8 +55,8 @@ const plans: Plan[] = [
     description: 'Professionals & content creators',
     price: { INR: 449, USD: 19 }, // Updated to ₹449/month
     yearlyPrice: { INR: 4490, USD: 190 }, // 10 months price (2 months free)
-    limits: { posts: 60, comments: 80, ideas: 80 },
-    yearlyLimits: { posts: 60, comments: 80, ideas: 80 }, // Same limits for yearly
+    limits: { posts: 60, comments: 80, ideas: -1 }, // -1 means unlimited
+    yearlyLimits: { posts: 60, comments: 80, ideas: -1 }, // Unlimited ideas
     popular: true,
     features: [], // Will be populated dynamically
     icon: <Rocket className="h-6 w-6" />
@@ -123,10 +123,11 @@ export const SaaSPricing = () => {
     const currentLimits = billingInterval === 'yearly' ? plan.yearlyLimits : plan.limits;
     
     if (plan.id === 'starter') {
+      const ideasText = currentLimits.ideas === -1 ? 'Unlimited content ideas per month' : `${currentLimits.ideas} content ideas per month`;
       return [
         { text: `${currentLimits.posts} LinkedIn posts per month`, icon: <Clock className="h-4 w-4" /> },
         { text: `${currentLimits.comments} comments per month`, icon: <Users className="h-4 w-4" /> },
-        { text: `${currentLimits.ideas} content ideas per month`, icon: <Zap className="h-4 w-4" /> },
+        { text: ideasText, icon: <Zap className="h-4 w-4" /> },
         { text: '15 curated AI personas', icon: <Users className="h-4 w-4" /> },
         { text: 'Smart Planner', icon: <Check className="h-4 w-4" /> },
         { text: 'Basic analytics', icon: <BarChart3 className="h-4 w-4" /> },
@@ -137,10 +138,11 @@ export const SaaSPricing = () => {
     }
     
     if (plan.id === 'pro') {
+      const ideasText = currentLimits.ideas === -1 ? 'Unlimited content ideas per month' : `${currentLimits.ideas} content ideas per month`;
       return [
         { text: `${currentLimits.posts} LinkedIn posts per month`, icon: <Clock className="h-4 w-4" /> },
         { text: `${currentLimits.comments} comments per month`, icon: <Users className="h-4 w-4" /> },
-        { text: `${currentLimits.ideas} content ideas per month`, icon: <Zap className="h-4 w-4" /> },
+        { text: ideasText, icon: <Zap className="h-4 w-4" /> },
         { text: 'Unlimited custom AI personas, full edits', icon: <Users className="h-4 w-4" /> },
         { text: 'Smart Planner', icon: <Check className="h-4 w-4" /> },
         { text: 'Advanced analytics', icon: <BarChart3 className="h-4 w-4" /> },

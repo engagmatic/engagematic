@@ -289,13 +289,13 @@ class RazorpayService {
       starter: {
         postsPerMonth: 15,
         commentsPerMonth: 30,
-        ideasPerMonth: 30,
+        ideasPerMonth: -1, // UNLIMITED ideas
         personas: 15, // curated personas
       },
       pro: {
         postsPerMonth: 60,
         commentsPerMonth: 80,
-        ideasPerMonth: 80,
+        ideasPerMonth: -1, // UNLIMITED ideas
         personas: -1, // unlimited custom personas
       },
       elite: {

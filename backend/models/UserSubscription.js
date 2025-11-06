@@ -194,7 +194,7 @@ userSubscriptionSchema.pre("save", function (next) {
       case "starter":
         this.limits.postsPerMonth = 15; // 15 posts per month
         this.limits.commentsPerMonth = 30; // 30 comments per month
-        this.limits.ideasPerMonth = 30; // 30 content ideas per month
+        this.limits.ideasPerMonth = -1; // UNLIMITED ideas per month
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
@@ -205,7 +205,7 @@ userSubscriptionSchema.pre("save", function (next) {
       case "pro":
         this.limits.postsPerMonth = 60; // 60 posts per month
         this.limits.commentsPerMonth = 80; // 80 comments per month
-        this.limits.ideasPerMonth = 80; // 80 content ideas per month
+        this.limits.ideasPerMonth = -1; // UNLIMITED ideas per month
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
@@ -261,7 +261,8 @@ userSubscriptionSchema.methods.canPerformAction = function (action) {
       break;
 
     case "generate_idea":
-      if (this.usage.ideasGenerated >= this.limits.ideasPerMonth) {
+      // -1 means unlimited
+      if (this.limits.ideasPerMonth !== -1 && this.usage.ideasGenerated >= this.limits.ideasPerMonth) {
         return { allowed: false, reason: "Monthly idea limit reached" };
       }
       break;

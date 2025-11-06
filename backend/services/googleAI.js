@@ -189,32 +189,45 @@ Tone: ${persona.tone}
 Writing Style: ${persona.writingStyle}
 Description: ${persona.description}`;
 
-    // Add user profile for DEEP personalization
+    // Add user profile for DEEP personalization with contextual relevance
     if (
       userProfile &&
       (userProfile.jobTitle || userProfile.industry || userProfile.goals)
     ) {
+      // Build contextual persona description
+      let personaContext = "";
+      if (userProfile.jobTitle && userProfile.industry) {
+        personaContext = `a ${userProfile.experience || persona.experience || "professional"} ${userProfile.jobTitle} in ${userProfile.industry}`;
+      } else if (userProfile.jobTitle) {
+        personaContext = `a ${userProfile.jobTitle}`;
+      } else if (userProfile.industry) {
+        personaContext = `a professional in ${userProfile.industry}`;
+      }
+
       basePrompt += `
 
-🎯 USER PROFILE CONTEXT (Use this to deeply personalize the content):
-${userProfile.jobTitle ? `- Current Role: ${userProfile.jobTitle}` : ""}
-${userProfile.company ? `- Company: ${userProfile.company}` : ""}
-${userProfile.industry ? `- Industry: ${userProfile.industry}` : ""}
-${userProfile.experience ? `- Experience Level: ${userProfile.experience}` : ""}
-${userProfile.goals ? `- Professional Goals: ${userProfile.goals}` : ""}
+🎯 USER PROFILE CONTEXT (CRITICAL - Inject this naturally throughout the post):
+**Who you're writing as**: ${personaContext || "a professional"}
+${userProfile.jobTitle ? `**Current Role**: ${userProfile.jobTitle}` : ""}
+${userProfile.company ? `**Company**: ${userProfile.company}` : ""}
+${userProfile.industry ? `**Industry**: ${userProfile.industry} - Use industry-specific examples, pain points, and terminology` : ""}
+${userProfile.experience ? `**Experience Level**: ${userProfile.experience} - Write from this perspective (${userProfile.experience.includes("entry") || userProfile.experience.includes("junior") ? "learning, growing, asking questions" : userProfile.experience.includes("senior") || userProfile.experience.includes("executive") ? "leading, mentoring, sharing wisdom" : "experienced professional sharing insights"})` : ""}
+${userProfile.goals ? `**Professional Goals**: ${userProfile.goals} - Every insight should align with achieving these goals` : ""}
 ${
   userProfile.targetAudience
-    ? `- Target Audience: ${userProfile.targetAudience}`
+    ? `**Target Audience**: ${userProfile.targetAudience} - Write TO these people, address their specific needs`
     : ""
 }
-${userProfile.expertise ? `- Areas of Expertise: ${userProfile.expertise}` : ""}
+${userProfile.expertise ? `**Areas of Expertise**: ${userProfile.expertise} - Reference these naturally, don't force them` : ""}
 
-**CRITICAL**: Use these details to:
-1. Reference their specific role/industry in examples
-2. Align content with their professional goals
-3. Target their specific audience
-4. Showcase their expertise areas
-5. Make the post feel authentically theirs (not generic)`;
+**HOW TO USE THIS CONTEXT (Make it feel authentic, not forced):**
+1. **Role-specific examples**: If they're a ${userProfile.jobTitle || "professional"}, use examples from their daily work
+2. **Industry context**: Reference ${userProfile.industry || "industry"}-specific challenges, trends, or opportunities
+3. **Experience-appropriate voice**: ${userProfile.experience?.includes("entry") ? "Write with curiosity and eagerness to learn" : userProfile.experience?.includes("senior") ? "Write with authority and wisdom from experience" : "Write with confidence and practical insights"}
+4. **Goal alignment**: Every piece of advice should help them achieve: ${userProfile.goals || "their professional goals"}
+5. **Audience targeting**: Write as if speaking directly to ${userProfile.targetAudience || "their target audience"}
+6. **Natural integration**: Don't list these facts - weave them into stories, examples, and insights naturally
+7. **Authenticity check**: Would a real ${userProfile.jobTitle || "professional"} in ${userProfile.industry || "this field"} actually say this? If not, rewrite it.`;
     }
 
     // Add LinkedIn insights if available
@@ -240,46 +253,118 @@ LinkedIn Profile Insights:
       basePrompt += `\n\n${profileInsights}`;
     }
 
+    // Determine engagement goal based on user profile
+    const engagementGoal = this.determineEngagementGoal(userProfile, persona);
+    
     basePrompt += `
 
-Create a high-quality, engaging LinkedIn post about: "${topic}"
+Create a VIRAL-WORTHY, high-engagement LinkedIn post about: "${topic}"
 
 Start with this exact hook: "${hook}"
 
-🎯 CRITICAL REQUIREMENTS - Must complete ALL of these:
+🎯 ENGAGEMENT GOAL: ${engagementGoal.description}
+**Your post must achieve**: ${engagementGoal.objectives.join(", ")}
 
-**PROFESSIONAL & HUMAN-LIKE:**
-1. Write like a REAL professional, not an AI - avoid phrases like "delve into", "in conclusion", "furthermore", "moreover"
-2. Use natural language, contractions (I'm, you're, it's), and conversational flow
-3. NO corporate jargon or buzzwords ("synergy", "leverage", "paradigm shift", "disrupt")
-4. Sound 100% authentic - like you're sharing insights over coffee, not writing a business report
+🔥 VIRAL CONTENT STRATEGY - Apply these proven patterns:
 
-**VOICE & TONE:**
-5. Write in ${persona.name}'s voice (${persona.tone} tone, ${persona.writingStyle} style)
-6. Be genuinely helpful - provide REAL insights people can act on today
-7. Share specific examples, numbers, or personal experiences (make it relatable)
+**1. HOOK OPTIMIZATION (First 125 characters are CRITICAL):**
+- Your hook "${hook}" must create IMMEDIATE curiosity, emotion, or cognitive dissonance
+- Use one of these viral patterns:
+  * Contrarian take: Challenge common belief
+  * Personal revelation: "I made a mistake that cost me..."
+  * Surprising stat: "90% of people don't know..."
+  * Emotional trigger: "This changed everything for me..."
+  * Question that makes people pause: "What if everything you know about X is wrong?"
+- First sentence MUST stop the scroll - make them think "Wait, what?"
 
-**FORMATTING & STRUCTURE (Based on user preference: ${postFormatting}):**
-8. Structure: Hook → Brief Context → Main Insights (3-5 bullet points) → Strong CTA
-${postFormatting === "bold" ? "9. Use **bold** extensively (8-10 KEY PHRASES) for emphasis - this is the user's preferred style\n10. Make key insights, numbers, and action items stand out with bold formatting" : postFormatting === "italic" ? "9. Use *italics* strategically for quotes, emphasis, and subtle highlights\n10. Prefer italics over bold for a more refined, elegant tone" : postFormatting === "emoji" ? "9. Use emojis liberally (5-8 total) for visual appeal - this is the user's preferred style\n10. Place emojis strategically: after impactful statements, before key insights, and in CTAs\n11. Use context-specific emojis (🎯📊💰🔥⚡💡🚀) not generic ones (✨🌟⭐)" : "9. Use **bold** for 3-5 KEY PHRASES that deserve emphasis (e.g., **game-changing**, **critical mistake**, **biggest lesson**)\n10. Use emojis sparingly (1-3 max) and only where they add genuine value"}
-11. Short paragraphs (2-3 sentences max) with line breaks for readability
-12. Use bullet points (→ or •) for lists - makes content scannable
+**2. ENGAGEMENT TRIGGERS (Include 3-4 of these):**
+- **Emotional resonance**: Tap into frustration, excitement, fear, hope, or pride
+- **Relatability**: "If you've ever...", "We've all been there..."
+- **Specificity**: Use exact numbers, dates, names, or scenarios (not vague)
+- **Vulnerability**: Share a real struggle, failure, or learning moment
+- **Controversy (tasteful)**: Take a stance that makes people think
+- **Value promise**: "Here's what I learned that saved me 10 hours/week..."
 
-**PERSONA TRAINING (Learn from user's saved posts):**
-${trainingPosts.length > 0 ? `16. STUDY these examples of the user's preferred writing style:\n${trainingPosts.map((post, idx) => `Example ${idx + 1}:\n${post.content?.substring(0, 200)}...`).join('\n\n')}\n\n17. MATCH the tone, structure, and voice from these examples in your generated content\n18. Learn their preferred sentence length, paragraph structure, and CTA style` : ""}
+**3. NATURAL LANGUAGE & AUTHENTICITY:**
+- Write like a REAL professional, not an AI - avoid phrases like "delve into", "in conclusion", "furthermore", "moreover"
+- Use natural language, contractions (I'm, you're, it's), and conversational flow
+- NO corporate jargon or buzzwords ("synergy", "leverage", "paradigm shift", "disrupt")
+- Sound 100% authentic - like you're sharing insights over coffee, not writing a business report
+- Use "I" statements for personal stories, "you" for direct engagement
+- Include conversational fillers naturally: "Here's the thing...", "Look, I get it...", "The reality is..."
 
-**LENGTH & COMPLETION:**
-${trainingPosts.length > 0 ? "19" : "16"}. **LENGTH**: 200-300 words (max 200 characters including spaces)
-${trainingPosts.length > 0 ? "20" : "17"}. End with a thought-provoking question or clear call-to-action
-${trainingPosts.length > 0 ? "21" : "18"}. COMPLETE THE ENTIRE POST - never cut off mid-sentence
+**4. VOICE & PERSONA ALIGNMENT:**
+- Write in ${persona.name}'s voice (${persona.tone} tone, ${persona.writingStyle} style)
+- Match their career stage: ${persona.experience} professionals speak differently than entry-level
+- Reflect their industry context: ${persona.industry} professionals have specific pain points
+- Be genuinely helpful - provide REAL insights people can act on today
+- Share specific examples, numbers, or personal experiences (make it relatable)
 
-**LINKEDIN-READY OUTPUT:**
-${trainingPosts.length > 0 ? "22" : "19"}. Format must be copy-paste ready - no encoding issues, clean text
-${trainingPosts.length > 0 ? "23" : "20"}. Preserve bold (**text**) for easy copying to LinkedIn
-${trainingPosts.length > 0 ? "24" : "21"}. No hashtags unless specifically requested (they look spammy)
-${trainingPosts.length > 0 ? "25" : "22"}. Every word should add value - zero fluff, zero filler
+**5. STRUCTURE FOR MAXIMUM ENGAGEMENT:**
+- **Hook** (125 chars): Stop the scroll with curiosity/emotion
+- **Context** (1-2 sentences): Why this matters NOW
+- **Story/Insight** (3-5 bullet points): The meat - specific, actionable, relatable
+- **CTA** (1-2 sentences): Drive engagement with question or call-to-action
 
-GENERATE A PROFESSIONAL POST THAT REQUIRES ZERO EDITING AND LOOKS INDISTINGUISHABLE FROM A TOP 1% LINKEDIN CREATOR.`;
+**6. FORMATTING & VISUAL APPEAL (Based on user preference: ${postFormatting}):**
+${postFormatting === "bold" ? 
+  "- Use **bold** extensively (8-10 KEY PHRASES) for emphasis - this is the user's preferred style\n- Make key insights, numbers, and action items stand out with bold formatting\n- Bold the most shareable quotes and takeaways" : 
+  postFormatting === "italic" ? 
+  "- Use *italics* strategically for quotes, emphasis, and subtle highlights\n- Prefer italics over bold for a more refined, elegant tone\n- Use for internal thoughts or emphasis" : 
+  postFormatting === "emoji" ? 
+  "- Use emojis liberally (5-8 total) for visual appeal - this is the user's preferred style\n- Place emojis strategically: after impactful statements, before key insights, and in CTAs\n- Use context-specific emojis (🎯📊💰🔥⚡💡🚀) not generic ones (✨🌟⭐)\n- Emojis increase engagement by 25% - use them wisely" : 
+  "- Use **bold** for 3-5 KEY PHRASES that deserve emphasis (e.g., **game-changing**, **critical mistake**, **biggest lesson**)\n- Use emojis sparingly (1-3 max) and only where they add genuine value\n- Bold numbers, key insights, and action items"}
+- Short paragraphs (2-3 sentences max) with line breaks for readability
+- Use bullet points (→ or •) for lists - makes content scannable
+- White space is your friend - break up text for easy reading
+
+**7. VALUE-FIRST CONTENT (Every sentence must earn its place):**
+- Offer actionable advice, avoid generic content
+- Introduce helpful resources or next steps in every post
+- Every insight should be something the reader can use TODAY
+- No fluff - if it doesn't add value, cut it
+- Include specific examples, frameworks, or tactics
+- Make it shareable - would someone want to save/bookmark this?
+
+**8. GOAL-DRIVEN ENGAGEMENT:**
+${engagementGoal.ctaStrategy}
+- End with a thought-provoking question that invites discussion
+- OR a clear call-to-action that drives the desired outcome
+- Make it easy for people to engage - ask for opinions, experiences, or advice
+- Questions that start with "What's been your experience with...?" get 3x more comments
+
+**9. PERSONA TRAINING (Learn from user's saved posts):**
+${trainingPosts.length > 0 ? `STUDY these examples of the user's preferred writing style:\n${trainingPosts.map((post, idx) => `Example ${idx + 1}:\n${post.content?.substring(0, 200)}...`).join('\n\n')}\n\nMATCH the tone, structure, and voice from these examples in your generated content\nLearn their preferred sentence length, paragraph structure, and CTA style\nNotice what made these posts successful - replicate those patterns` : ""}
+
+**10. LENGTH & COMPLETION:**
+- **LENGTH**: 200-300 words (sweet spot for engagement)
+- COMPLETE THE ENTIRE POST - never cut off mid-sentence
+- Every paragraph should build on the previous one
+- End strong - your last sentence is what people remember
+
+**11. LINKEDIN-READY OUTPUT:**
+- Format must be copy-paste ready - no encoding issues, clean text
+- Preserve bold (**text**) for easy copying to LinkedIn
+- No hashtags unless specifically requested (they look spammy)
+- Every word should add value - zero fluff, zero filler
+
+**12. VIRAL CHECKLIST (Before finalizing, ensure your post has):**
+✅ Hook that stops the scroll (first 125 chars)
+✅ At least 3 engagement triggers (emotion, relatability, specificity, vulnerability, value)
+✅ Specific examples/numbers (not vague)
+✅ Clear value proposition (what will reader gain?)
+✅ Strong CTA that invites engagement
+✅ Natural, conversational tone (not AI-generated)
+✅ Scannable format (short paragraphs, bullets, white space)
+✅ Authentic voice matching ${persona.name}'s style
+
+GENERATE A POST THAT:
+- Gets saved/bookmarked (high value)
+- Gets shared (relatable/controversial)
+- Gets commented on (asks questions, invites discussion)
+- Gets liked (emotional resonance)
+- Looks INDISTINGUISHABLE from a top 1% LinkedIn creator
+- Requires ZERO editing - ready to post immediately`;
 
     if (linkedinInsights?.contentStrategy?.contentTypes) {
       basePrompt += `
@@ -339,29 +424,38 @@ Generate only the post content, no additional explanations.`;
         "This is gold. The 'evolving without ego' mindset separates good teams from great ones.",
     };
 
-    let prompt = `You are writing SHORT LinkedIn comments as ${persona.name} (${
+    let prompt = `You are writing HIGH-ENGAGEMENT LinkedIn comments as ${persona.name} (${
       persona.tone
     } tone, ${persona.writingStyle} style).
 
-POST:
+POST TO COMMENT ON:
 "${postContent}"
 
-🎯 FOCUS: Generate "${commentType}" style comments
+🎯 COMMENT TYPE: "${commentType}"
 ${typeInstructions[commentType] || typeInstructions.value_add}
+
+🔥 ENGAGEMENT STRATEGY FOR COMMENTS:
+- Comments that get the most replies are: personal, specific, and add genuine value
+- Reference EXACT points from the post (not generic agreement)
+- Share a micro-story or specific example (15-20 words can still tell a story)
+- Ask a follow-up question if appropriate for the comment type
+- Show you actually READ the post, not just skimmed it
 
 CRITICAL COMMENT REQUIREMENTS:
 1. **ULTRA SHORT**: STRICT 15-20 words MAXIMUM (count every word - this is critical!)
-2. **DIRECTLY ADDRESS THE POST**: Reference specific points from the post content
-3. **BE RELATABLE**: Share a quick personal insight or experience that connects
+2. **DIRECTLY ADDRESS THE POST**: Reference specific points, quotes, or ideas from the post content
+3. **BE RELATABLE**: Share a quick personal insight, experience, or "me too" moment that connects
 4. **NATURAL & CONVERSATIONAL**: Write like you're texting a colleague, not writing an essay
-5. **ADD VALUE**: Give a quick tip, insight, or perspective - but keep it SUPER BRIEF
+5. **ADD VALUE**: Give a quick tip, insight, framework, or perspective - but keep it SUPER BRIEF
 6. **AUTHENTIC TONE**: Use ${
       persona.tone
-    } tone naturally - no corporate buzzwords
+    } tone naturally - no corporate buzzwords, no AI-sounding phrases
 7. **NO FLUFF**: Cut ALL unnecessary words - get straight to the point
-8. **HUMAN-LIKE**: Use contractions, casual language, real emotions
+8. **HUMAN-LIKE**: Use contractions (I'm, you're, it's), casual language, real emotions
 9. **EMOJIS**: Use 1 emoji MAX, and ONLY if it adds emphasis or emotion (🎯💯🔥👏). Don't force it!
 10. **WORD LIMIT**: If over 20 words, CUT IT DOWN. Brevity is critical for LinkedIn comments!
+11. **ENGAGEMENT TRIGGER**: Make the post author WANT to reply to you
+12. **SPECIFICITY**: Use exact numbers, names, or scenarios when possible (not vague)
 
 BAD EXAMPLE (too long):
 "Absolutely spot on! The greatest killer of sustained growth is a leader or team clinging too tightly to the initial perfect vision. Your emphasis on 'evolving without ego' hits the nail..."
@@ -607,6 +701,75 @@ What's the most valuable lesson you've learned in your ${industry.toLowerCase()}
     // Select a random mock post
     const randomIndex = Math.floor(Math.random() * mockPosts.length);
     return mockPosts[randomIndex];
+  }
+
+  /**
+   * Determine engagement goal based on user profile and persona
+   * This helps tailor the prompt for maximum engagement
+   */
+  determineEngagementGoal(userProfile, persona) {
+    // Default goal
+    let goal = {
+      description: "Drive meaningful engagement and profile visibility",
+      objectives: ["Increase profile visits", "Attract quality connections", "Start meaningful conversations"],
+      ctaStrategy: "- Ask questions that invite personal experiences\n- Encourage sharing of similar stories\n- Request actionable advice from the community"
+    };
+
+    // Analyze user profile for goal inference
+    if (userProfile) {
+      const goals = userProfile.goals?.toLowerCase() || "";
+      const targetAudience = userProfile.targetAudience?.toLowerCase() || "";
+      const experience = userProfile.experience?.toLowerCase() || persona?.experience?.toLowerCase() || "";
+
+      // Job seeker / Entry level
+      if (goals.includes("job") || goals.includes("career") || experience.includes("entry") || experience.includes("junior")) {
+        goal = {
+          description: "Attract recruiter attention and showcase expertise",
+          objectives: ["Get noticed by recruiters", "Increase profile views from hiring managers", "Demonstrate value and skills"],
+          ctaStrategy: "- Ask about industry experiences or career advice\n- Invite connections to share their journey\n- Request feedback on the topic from experienced professionals"
+        };
+      }
+      // Networking / Connections
+      else if (goals.includes("network") || goals.includes("connect") || targetAudience.includes("peer")) {
+        goal = {
+          description: "Build meaningful professional connections",
+          objectives: ["Increase connection requests", "Start conversations with peers", "Build industry relationships"],
+          ctaStrategy: "- Ask for opinions and experiences from the community\n- Invite people to share their perspectives\n- Create discussion around common challenges"
+        };
+      }
+      // Thought leadership / Authority
+      else if (goals.includes("authority") || goals.includes("thought leader") || experience.includes("senior") || experience.includes("executive")) {
+        goal = {
+          description: "Establish thought leadership and industry authority",
+          objectives: ["Increase shares and saves", "Position as industry expert", "Drive meaningful discussions"],
+          ctaStrategy: "- Pose thought-provoking questions that challenge assumptions\n- Invite debate and diverse perspectives\n- Ask for real-world applications of the insights shared"
+        };
+      }
+      // Business / Client acquisition
+      else if (goals.includes("client") || goals.includes("business") || goals.includes("sales") || targetAudience.includes("client")) {
+        goal = {
+          description: "Attract potential clients and business opportunities",
+          objectives: ["Generate leads", "Showcase expertise to prospects", "Build trust with potential clients"],
+          ctaStrategy: "- Ask about challenges they face in this area\n- Invite DMs for deeper conversations\n- Request examples of how they've applied similar strategies"
+        };
+      }
+    }
+
+    // Persona-based adjustments
+    if (persona) {
+      const personaName = persona.name?.toLowerCase() || "";
+      const personaDesc = persona.description?.toLowerCase() || "";
+
+      if (personaName.includes("marketer") || personaDesc.includes("marketing")) {
+        goal.ctaStrategy += "\n- Ask about marketing challenges or successes\n- Invite sharing of campaign results";
+      } else if (personaName.includes("developer") || personaDesc.includes("tech")) {
+        goal.ctaStrategy += "\n- Ask about technical implementations\n- Invite code examples or technical insights";
+      } else if (personaName.includes("founder") || personaDesc.includes("entrepreneur")) {
+        goal.ctaStrategy += "\n- Ask about startup challenges\n- Invite sharing of entrepreneurial experiences";
+      }
+    }
+
+    return goal;
   }
 
   calculateEngagementScore(content) {
