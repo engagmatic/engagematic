@@ -14,7 +14,8 @@ import {
   MessageSquare,
   Filter,
   Download,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
 import {
   Table,
@@ -34,8 +35,8 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const API_BASE = `${API_URL}`;
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = `${API_URL}/api`;
 
 interface Testimonial {
   _id: string;
@@ -70,6 +71,7 @@ export default function TestimonialsManagement() {
   const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
+  const [isActionLoading, setIsActionLoading] = useState(false);
   
   // Add Testimonial State
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -95,15 +97,22 @@ export default function TestimonialsManagement() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/testimonials/admin/stats`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
       if (response.ok) {
         const result = await response.json();
-        setStats(result.data);
+        if (result.success) {
+          setStats(result.data);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
@@ -114,22 +123,50 @@ export default function TestimonialsManagement() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        console.error('No admin token found');
+        return;
+      }
+
       const url = filterStatus === 'all'
         ? `${API_BASE}/testimonials/admin/all`
         : `${API_BASE}/testimonials/admin/all?status=${filterStatus}`;
       
       const response = await fetch(url, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
       if (response.ok) {
         const result = await response.json();
-        setTestimonials(result.data);
+        if (result.success) {
+          setTestimonials(result.data || []);
+        } else {
+          console.error('Failed to fetch testimonials:', result.message);
+          toast({
+            title: 'Error',
+            description: result.message || 'Failed to fetch testimonials',
+            variant: 'destructive'
+          });
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to fetch testimonials:', errorData);
+        toast({
+          title: 'Error',
+          description: errorData.message || 'Failed to fetch testimonials',
+          variant: 'destructive'
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch testimonials:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to fetch testimonials. Please refresh the page.',
+        variant: 'destructive'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -143,8 +180,18 @@ export default function TestimonialsManagement() {
   const confirmAction = async () => {
     if (!selectedTestimonial || !actionType) return;
 
+    setIsActionLoading(true);
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        toast({
+          title: 'Authentication Error',
+          description: 'Please login again',
+          variant: 'destructive'
+        });
+        return;
+      }
+
       const endpoint = actionType === 'approve' ? 'approve' : 'reject';
       
       const response = await fetch(
@@ -159,51 +206,84 @@ export default function TestimonialsManagement() {
         }
       );
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         toast({
           title: `Testimonial ${actionType}d`,
-          description: `Successfully ${actionType}d the testimonial.`,
+          description: data.message || `Successfully ${actionType}d the testimonial.`,
         });
         
-        fetchTestimonials();
-        fetchStats();
+        await fetchTestimonials();
+        await fetchStats();
         setSelectedTestimonial(null);
         setReviewNotes('');
         setActionType(null);
+      } else {
+        toast({
+          title: 'Action failed',
+          description: data.message || `Failed to ${actionType} testimonial`,
+          variant: 'destructive'
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Failed to ${actionType}:`, error);
       toast({
         title: 'Action failed',
-        description: `Failed to ${actionType} testimonial`,
+        description: error.message || `Failed to ${actionType} testimonial. Please try again.`,
         variant: 'destructive'
       });
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
   const toggleFeatured = async (testimonial: Testimonial) => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        toast({
+          title: 'Authentication Error',
+          description: 'Please login again',
+          variant: 'destructive'
+        });
+        return;
+      }
+
       const response = await fetch(
         `${API_BASE}/testimonials/admin/${testimonial._id}/toggle-featured`,
         {
           method: 'PATCH',
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           }
         }
       );
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         toast({
           title: testimonial.isFeatured ? 'Unfeatured' : 'Featured',
-          description: `Testimonial ${testimonial.isFeatured ? 'removed from' : 'added to'} featured list.`,
+          description: data.message || `Testimonial ${testimonial.isFeatured ? 'removed from' : 'added to'} featured list.`,
         });
         fetchTestimonials();
         fetchStats();
+      } else {
+        toast({
+          title: 'Action failed',
+          description: data.message || 'Failed to toggle featured status',
+          variant: 'destructive'
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to toggle featured:', error);
+      toast({
+        title: 'Action failed',
+        description: error.message || 'Failed to toggle featured status',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -568,9 +648,17 @@ export default function TestimonialsManagement() {
             </Button>
             <Button
               onClick={confirmAction}
+              disabled={isActionLoading}
               className={actionType === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
             >
-              {actionType === 'approve' ? 'Approve' : 'Reject'}
+              {isActionLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                actionType === 'approve' ? 'Approve' : 'Reject'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
