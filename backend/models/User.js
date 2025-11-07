@@ -183,9 +183,11 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Index for better query performance
+// Indexes for better query performance
 // Note: email index is already created by unique: true
 userSchema.index({ subscriptionId: 1 });
+userSchema.index({ email: 1, isActive: 1 }); // Compound index for login queries
+userSchema.index({ isActive: 1 }); // For filtering active users
 
 const User = mongoose.model("User", userSchema);
 
