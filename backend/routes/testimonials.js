@@ -456,6 +456,7 @@ router.delete("/admin/:id", adminAuth, async (req, res) => {
 
 // Get testimonial statistics
 router.get("/admin/stats", adminAuth, async (req, res) => {
+  console.log("📊 Testimonials stats endpoint hit by admin:", req.admin?.username);
   try {
     const total = await Testimonial.countDocuments();
     const pending = await Testimonial.countDocuments({ status: "pending" });

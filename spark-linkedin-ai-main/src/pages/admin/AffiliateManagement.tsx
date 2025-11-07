@@ -120,21 +120,37 @@ export default function AffiliateManagement() {
 
   const fetchAffiliates = async () => {
     try {
+      setIsLoading(true);
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        console.error('No admin token found');
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/admin/affiliates`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
       if (response.ok) {
         const result = await response.json();
-        setAffiliates(result.data?.affiliates || []);
-        setFilteredAffiliates(result.data?.affiliates || []);
+        if (result.success) {
+          setAffiliates(result.data?.affiliates || []);
+          setFilteredAffiliates(result.data?.affiliates || []);
+        } else {
+          console.error('Failed to fetch affiliates:', result.message);
+          toast.error(result.message || 'Failed to load affiliates');
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to fetch affiliates:', errorData);
+        toast.error(errorData.message || 'Failed to load affiliates');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch affiliates:', error);
-      toast.error('Failed to load affiliates');
+      toast.error(error.message || 'Failed to load affiliates. Please refresh the page.');
     } finally {
       setIsLoading(false);
     }
@@ -143,15 +159,22 @@ export default function AffiliateManagement() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/admin/affiliates/stats`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
       if (response.ok) {
         const result = await response.json();
-        setStats(result.data);
+        if (result.success) {
+          setStats(result.data);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch affiliate stats:', error);
@@ -181,22 +204,31 @@ export default function AffiliateManagement() {
   const handleApprove = async (affiliateId: string) => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        toast.error('Authentication error. Please login again.');
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/admin/affiliates/${affiliateId}/approve`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
-      if (response.ok) {
-        toast.success('Affiliate approved successfully');
-        fetchAffiliates();
-        fetchStats();
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success(data.message || 'Affiliate approved successfully');
+        await fetchAffiliates();
+        await fetchStats();
       } else {
-        toast.error('Failed to approve affiliate');
+        toast.error(data.message || 'Failed to approve affiliate');
       }
-    } catch (error) {
-      toast.error('Failed to approve affiliate');
+    } catch (error: any) {
+      console.error('Failed to approve affiliate:', error);
+      toast.error(error.message || 'Failed to approve affiliate. Please try again.');
     }
   };
 
@@ -207,22 +239,31 @@ export default function AffiliateManagement() {
 
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        toast.error('Authentication error. Please login again.');
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/admin/affiliates/${affiliateId}/reject`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
-      if (response.ok) {
-        toast.success('Affiliate application rejected');
-        fetchAffiliates();
-        fetchStats();
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success(data.message || 'Affiliate application rejected');
+        await fetchAffiliates();
+        await fetchStats();
       } else {
-        toast.error('Failed to reject affiliate');
+        toast.error(data.message || 'Failed to reject affiliate');
       }
-    } catch (error) {
-      toast.error('Failed to reject affiliate');
+    } catch (error: any) {
+      console.error('Failed to reject affiliate:', error);
+      toast.error(error.message || 'Failed to reject affiliate. Please try again.');
     }
   };
 
@@ -233,63 +274,91 @@ export default function AffiliateManagement() {
 
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        toast.error('Authentication error. Please login again.');
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/admin/affiliates/${affiliateId}/suspend`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
-      if (response.ok) {
-        toast.success('Affiliate suspended successfully');
-        fetchAffiliates();
-        fetchStats();
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success(data.message || 'Affiliate suspended successfully');
+        await fetchAffiliates();
+        await fetchStats();
       } else {
-        toast.error('Failed to suspend affiliate');
+        toast.error(data.message || 'Failed to suspend affiliate');
       }
-    } catch (error) {
-      toast.error('Failed to suspend affiliate');
+    } catch (error: any) {
+      console.error('Failed to suspend affiliate:', error);
+      toast.error(error.message || 'Failed to suspend affiliate. Please try again.');
     }
   };
 
   const handleActivate = async (affiliateId: string) => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        toast.error('Authentication error. Please login again.');
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/admin/affiliates/${affiliateId}/activate`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
-      if (response.ok) {
-        toast.success('Affiliate activated successfully');
-        fetchAffiliates();
-        fetchStats();
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success(data.message || 'Affiliate activated successfully');
+        await fetchAffiliates();
+        await fetchStats();
       } else {
-        toast.error('Failed to activate affiliate');
+        toast.error(data.message || 'Failed to activate affiliate');
       }
-    } catch (error) {
-      toast.error('Failed to activate affiliate');
+    } catch (error: any) {
+      console.error('Failed to activate affiliate:', error);
+      toast.error(error.message || 'Failed to activate affiliate. Please try again.');
     }
   };
 
   const viewAffiliateDetails = async (affiliateId: string) => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        toast.error('Authentication error. Please login again.');
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/admin/affiliates/${affiliateId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        setSelectedAffiliate(result.data.affiliate);
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSelectedAffiliate(data.data.affiliate);
         setViewDialogOpen(true);
+      } else {
+        toast.error(data.message || 'Failed to load affiliate details');
       }
-    } catch (error) {
-      toast.error('Failed to load affiliate details');
+    } catch (error: any) {
+      console.error('Failed to load affiliate details:', error);
+      toast.error(error.message || 'Failed to load affiliate details. Please try again.');
     }
   };
 

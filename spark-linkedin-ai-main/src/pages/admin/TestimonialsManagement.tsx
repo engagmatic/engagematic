@@ -112,10 +112,38 @@ export default function TestimonialsManagement() {
         const result = await response.json();
         if (result.success) {
           setStats(result.data);
+        } else {
+          console.error('Failed to fetch stats:', result.message);
+          toast({
+            title: 'Error',
+            description: result.message || 'Failed to fetch testimonial statistics',
+            variant: 'destructive'
+          });
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to fetch stats:', response.status, errorData);
+        if (response.status === 404) {
+          toast({
+            title: 'Error',
+            description: 'API endpoint not found. Please check server configuration.',
+            variant: 'destructive'
+          });
+        } else {
+          toast({
+            title: 'Error',
+            description: errorData.message || `Failed to fetch stats (${response.status})`,
+            variant: 'destructive'
+          });
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch stats:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to fetch testimonial statistics. Please refresh the page.',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -153,12 +181,20 @@ export default function TestimonialsManagement() {
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Failed to fetch testimonials:', errorData);
-        toast({
-          title: 'Error',
-          description: errorData.message || 'Failed to fetch testimonials',
-          variant: 'destructive'
-        });
+        console.error('Failed to fetch testimonials:', response.status, errorData);
+        if (response.status === 404) {
+          toast({
+            title: 'Error',
+            description: 'API endpoint not found. Please check server configuration.',
+            variant: 'destructive'
+          });
+        } else {
+          toast({
+            title: 'Error',
+            description: errorData.message || `Failed to fetch testimonials (${response.status})`,
+            variant: 'destructive'
+          });
+        }
       }
     } catch (error: any) {
       console.error('Failed to fetch testimonials:', error);
