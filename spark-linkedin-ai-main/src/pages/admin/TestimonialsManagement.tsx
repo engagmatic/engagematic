@@ -342,9 +342,14 @@ export default function TestimonialsManagement() {
               <div className="text-sm text-gray-600 dark:text-gray-400">Total</div>
               <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</div>
             </Card>
-            <Card className="p-4">
-              <div className="text-sm text-yellow-600">Pending</div>
+            <Card className={`p-4 ${stats.pending > 0 ? 'border-2 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : ''}`}>
+              <div className="text-sm text-yellow-600 font-semibold">Pending Review</div>
               <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+              {stats.pending > 0 && (
+                <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                  Needs approval
+                </p>
+              )}
             </Card>
             <Card className="p-4">
               <div className="text-sm text-green-600">Approved</div>
@@ -467,19 +472,47 @@ export default function TestimonialsManagement() {
                         <div className="flex justify-end gap-2">
                           <Button
                             size="sm"
-                            variant="outline"
-                            className="text-green-600 hover:text-green-700"
+                            className="bg-green-600 hover:bg-green-700 text-white"
                             onClick={() => handleAction(testimonial, 'approve')}
+                            title="Approve testimonial"
                           >
-                            <Check className="h-4 w-4" />
+                            <Check className="h-4 w-4 mr-1" />
+                            Approve
                           </Button>
                           <Button
                             size="sm"
-                            variant="outline"
-                            className="text-red-600 hover:text-red-700"
+                            variant="destructive"
                             onClick={() => handleAction(testimonial, 'reject')}
+                            title="Reject testimonial"
+                          >
+                            <X className="h-4 w-4 mr-1" />
+                            Reject
+                          </Button>
+                        </div>
+                      )}
+                      {testimonial.status === 'approved' && (
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleAction(testimonial, 'reject')}
+                            title="Reject testimonial"
+                            className="text-red-600 hover:text-red-700"
                           >
                             <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                      {testimonial.status === 'rejected' && (
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => handleAction(testimonial, 'approve')}
+                            title="Approve testimonial"
+                          >
+                            <Check className="h-4 w-4 mr-1" />
+                            Approve
                           </Button>
                         </div>
                       )}
