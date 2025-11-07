@@ -277,6 +277,15 @@ router.get("/check-eligibility", authenticateToken, async (req, res) => {
 // ADMIN ROUTES (Admin authentication required)
 // ==========================================
 
+// Test route to verify admin routes are accessible
+router.get("/admin/test", adminAuth, async (req, res) => {
+  res.json({
+    success: true,
+    message: "Admin testimonials route is working",
+    admin: req.admin?.username,
+  });
+});
+
 // Get all testimonials for admin
 router.get("/admin/all", adminAuth, async (req, res) => {
   try {
