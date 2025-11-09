@@ -249,12 +249,12 @@ class ReferralService {
       }
 
       // Find the referral
-      const referral = await Referral.findOne({
+      const userReferral = await Referral.findOne({
         referredUserId: userId,
         status: { $in: ["completed", "rewarded"] },
       });
 
-      if (!referral) {
+      if (!userReferral) {
         return {
           success: false,
           message: "Referral not found",
@@ -278,15 +278,15 @@ class ReferralService {
         return { success: false, message: "Not an affiliate referral" };
       }
 
-      // Find the referral record
-      const referral = await Referral.findOne({
+      // Find the affiliate referral record
+      const affiliateReferral = await Referral.findOne({
         referralCode: userRefCode.toUpperCase(),
         referredUserId: userId,
         referrerType: "Affiliate",
         status: { $in: ["completed", "rewarded"] },
       });
 
-      if (!referral) {
+      if (!affiliateReferral) {
         return { success: false, message: "Referral record not found" };
       }
 
@@ -322,7 +322,7 @@ class ReferralService {
       // Create recurring commission record
       const commission = await AffiliateCommission.create({
         affiliateId: affiliate._id,
-        referralId: referral._id,
+        referralId: affiliateReferral._id,
         referredUserId: userId,
         subscriptionId: subscriptionId,
         paymentId: paymentId,
@@ -342,7 +342,7 @@ class ReferralService {
       await affiliate.save();
 
       // Mark referral as rewarded
-      await referral.markAsRewarded();
+      await affiliateReferral.markAsRewarded();
 
       // Send email to affiliate
       try {
