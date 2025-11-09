@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Menu, Home, FileText, MessageSquare, Lightbulb, User, LogOut } from "lucide-react";
+import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon } from "@/styles/premiumButtons";
+import { Menu, Home, FileText, MessageSquare, Lightbulb, User, LogOut, ArrowRight } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useState } from "react";
@@ -134,10 +135,11 @@ export const Header = () => {
                   </Button>
                   <Button 
                     onClick={handleStartFree}
-                    className="shadow-pulse hover-pulse"
-                    size="sm"
+                    className={premiumCTAClasses}
                   >
-                    Start Free
+                    <span className={premiumCTAHighlight} />
+                    <span className="relative">Start Free</span>
+                    <ArrowRight className={premiumCTAIcon} />
                   </Button>
                 </>
               )}
@@ -250,9 +252,11 @@ export const Header = () => {
                           handleStartFree();
                           setMobileMenuOpen(false);
                         }}
-                        className="w-full shadow-pulse hover-pulse"
+                        className={`${premiumCTAClasses} w-full`}
                       >
-                        Start Free Trial
+                        <span className={premiumCTAHighlight} />
+                        <span className="relative">Start Free Trial</span>
+                        <ArrowRight className={premiumCTAIcon} />
                       </Button>
                     </div>
                   </>

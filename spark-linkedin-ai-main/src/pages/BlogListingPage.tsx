@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Calendar, Clock, ArrowRight, Users, TrendingUp, Target, Briefcase, UserCheck } from "lucide-react";
+import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon, premiumOutlineCTAClasses } from "@/styles/premiumButtons";
 import { Link } from "react-router-dom";
 
 interface Blog {
@@ -302,14 +303,18 @@ const BlogListingPage = () => {
             Join thousands of professionals using LinkedInPulse to create engaging content that drives results.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/auth/register">
-              <Button size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100">
-                Start Free Trial
+            <Link to="/auth/register" className="w-full sm:w-auto">
+              <Button className={`${premiumCTAClasses} w-full sm:w-auto`}>
+                <span className={premiumCTAHighlight} />
+                <span className="relative">Start Free Trial</span>
+                <ArrowRight className={premiumCTAIcon} />
               </Button>
             </Link>
-            <Link to="/#features">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
-                Explore Features
+            <Link to="/#features" className="w-full sm:w-auto">
+              <Button variant="ghost" className={`${premiumOutlineCTAClasses} w-full sm:w-auto text-white`}>
+                <span className={premiumCTAHighlight} />
+                <span className="relative">Explore Features</span>
+                <ArrowRight className={premiumCTAIcon} />
               </Button>
             </Link>
           </div>

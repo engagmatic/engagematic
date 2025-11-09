@@ -10,6 +10,7 @@ import api from "@/services/api";
 import { useCreditPayment } from "@/hooks/useRazorpay";
 import geoLocationService from "@/services/geoLocationService";
 import { useAuth } from "@/contexts/AuthContext";
+import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon } from "@/styles/premiumButtons";
 import { CouponInput } from "@/components/CouponInput";
 
 type Currency = 'INR' | 'USD';
@@ -546,17 +547,16 @@ export const SaaSPricing = () => {
                     <Button 
                       onClick={() => handlePlanSelect(plan.id)}
                       disabled={isProcessing || (isAuthenticated && !isLoaded)}
-                      className={`w-full h-10 text-sm font-medium ${
-                        plan.popular 
-                          ? 'bg-primary hover:bg-primary/90 text-white' 
-                          : 'bg-primary hover:bg-primary/90 text-white'
-                      }`}
+                      className={`${premiumCTAClasses} ${(isProcessing || (isAuthenticated && !isLoaded)) ? 'pointer-events-none opacity-60' : ''}`}
                     >
-                      {isProcessing ? 'Processing...' : 
-                       (isAuthenticated && !isLoaded) ? 'Loading...' : 
-                       !isAuthenticated ? 'Start Free Trial' : 
-                       `Upgrade to ${plan.name}`}
-                      <ArrowRight className="ml-2 h-3 w-3" />
+                      <span className={premiumCTAHighlight} />
+                      <span className="relative">
+                        {isProcessing ? 'Processing...' : 
+                         (isAuthenticated && !isLoaded) ? 'Loading...' : 
+                         !isAuthenticated ? 'Start Free Trial' : 
+                         `Upgrade to ${plan.name}`}
+                      </span>
+                      <ArrowRight className={`${premiumCTAIcon}`} />
                     </Button>
                   </div>
                 </div>

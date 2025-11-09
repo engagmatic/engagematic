@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Clock, Share2, Users, TrendingUp, Target, Briefcase, UserCheck } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Share2, Users, TrendingUp, Target, Briefcase, UserCheck, ArrowRight } from "lucide-react";
+import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon, premiumOutlineCTAClasses } from "@/styles/premiumButtons";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -1120,14 +1121,18 @@ const BlogPage = () => {
                 Join thousands of professionals using LinkedInPulse to create engaging content that drives results.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/auth/register">
-                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                    Start Free Trial
+                <Link to="/auth/register" className="w-full sm:w-auto">
+                  <Button className={`${premiumCTAClasses} w-full sm:w-auto`}>
+                    <span className={premiumCTAHighlight} />
+                    <span className="relative">Start Free Trial</span>
+                    <ArrowRight className={premiumCTAIcon} />
                   </Button>
                 </Link>
-                <Link to="/#features">
-                  <Button size="lg" variant="outline">
-                    Explore Features
+                <Link to="/#features" className="w-full sm:w-auto">
+                  <Button variant="ghost" className={`${premiumOutlineCTAClasses} w-full sm:w-auto`}>
+                    <span className={premiumCTAHighlight} />
+                    <span className="relative">Explore Features</span>
+                    <ArrowRight className={premiumCTAIcon} />
                   </Button>
                 </Link>
               </div>
