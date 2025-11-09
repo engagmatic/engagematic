@@ -1,7 +1,23 @@
 import { Link } from "react-router-dom";
-import { GraduationCap, PenTool, ArrowUpRight } from "lucide-react";
+import { GraduationCap, PenTool, ArrowUpRight, Briefcase, Megaphone } from "lucide-react";
 
 const audiences = [
+  {
+    label: "Founders",
+    icon: Briefcase,
+    stat: "5x warmer intros",
+    lineOne: "Package POVs, product drops, and customer wins without staring at a blank draft.",
+    lineTwo: "Show up daily while Spark keeps your voice polished and on-message.",
+    cta: "/contact?persona=founders",
+  },
+  {
+    label: "Sales Teams",
+    icon: Megaphone,
+    stat: "+27% meetings booked",
+    lineOne: "Arm every rep with scroll-stopping narratives and deal teardowns buyers trust.",
+    lineTwo: "Warm up sequences before the outreach lands in their inbox.",
+    cta: "/contact?persona=sales",
+  },
   {
     label: "Students & New Professionals",
     icon: GraduationCap,
@@ -44,7 +60,7 @@ export const UseCases = () => {
           </p>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {audiences.map(({ icon: Icon, label, stat, lineOne, lineTwo, cta }) => (
             <article
               key={label}
