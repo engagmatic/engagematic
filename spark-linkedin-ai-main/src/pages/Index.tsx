@@ -10,6 +10,7 @@ import { Pricing } from "@/components/landing/Pricing";
 import { FAQ } from "@/components/landing/FAQ";
 import { SEO } from "@/components/SEO";
 import { PAGE_SEO, ORGANIZATION_SCHEMA, generateFAQSchema, SITE_URL } from "@/constants/seo";
+import { UseCases } from "@/components/landing/UseCases";
 
 // FAQ data for structured data
 const faqData = [
@@ -66,6 +67,7 @@ const Index = () => {
     <div className="min-h-screen w-full overflow-x-hidden">
       <SEO {...PAGE_SEO.home} structuredData={structuredData} />
       <Hero />
+      <UseCases />
       <TryItFreeSection />
       <Features />
       <Testimonials />
