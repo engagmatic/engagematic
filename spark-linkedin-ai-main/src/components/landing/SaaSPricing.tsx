@@ -394,9 +394,9 @@ export const SaaSPricing = () => {
                         {!showBulkSlider ? (
                           <Button
                             onClick={() => setShowBulkSlider(true)}
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
-                            className="w-full gap-2"
+                            className="w-full justify-center gap-2 rounded-full border border-white/40 bg-white/10 text-primary shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur transition-all duration-300 hover:border-primary/60 hover:bg-white/20 hover:text-primary-foreground"
                           >
                             <Settings className="h-4 w-4" />
                             Customize Your Pack
