@@ -8,7 +8,6 @@ import { BlogSection } from "@/components/landing/BlogSection";
 import ReferralSection from "@/components/landing/ReferralSection";
 import { Pricing } from "@/components/landing/Pricing";
 import { FAQ } from "@/components/landing/FAQ";
-import { VisibilitySpotlight } from "@/components/landing/VisibilitySpotlight";
 import { UseCases } from "@/components/landing/UseCases";
 import { SEO } from "@/components/SEO";
 import { PAGE_SEO, ORGANIZATION_SCHEMA, generateFAQSchema, SITE_URL } from "@/constants/seo";
@@ -68,7 +67,6 @@ const Index = () => {
     <div className="min-h-screen w-full overflow-x-hidden">
       <SEO {...PAGE_SEO.home} structuredData={structuredData} />
       <Hero />
-      <VisibilitySpotlight />
       <UseCases />
       <TryItFreeSection />
       <Features />

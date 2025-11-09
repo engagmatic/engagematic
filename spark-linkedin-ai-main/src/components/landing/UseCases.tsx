@@ -1,29 +1,22 @@
-import { Briefcase, Target, Megaphone, Users, ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { GraduationCap, PenTool, ArrowUpRight } from "lucide-react";
 
 const audiences = [
   {
-    label: "Founders",
-    icon: Briefcase,
-    line: "Ship POV-driven updates without staring at a blank draft.",
-    stat: "6x warmer intros",
+    label: "Students & New Professionals",
+    icon: GraduationCap,
+    stat: "2x connection growth",
+    lineOne: "Turn uni achievements and projects into buzzworthy posts and carousels.",
+    lineTwo: "Build reputation before your first job lands.",
+    cta: "/contact?persona=students",
   },
   {
-    label: "Revenue Teams",
-    icon: Megaphone,
-    line: "Turn reps into trusted voices your buyers follow.",
-    stat: "+27% meetings booked",
-  },
-  {
-    label: "Marketing",
-    icon: Target,
-    line: "Repurpose launches into scroll-stopping category stories.",
-    stat: "4x content velocity",
-  },
-  {
-    label: "Career Switchers",
-    icon: Users,
-    line: "Show proof of work that recruiters can’t ignore.",
-    stat: "3x inbound interviews",
+    label: "Aspiring Creators",
+    icon: PenTool,
+    stat: "+50% engagement per post",
+    lineOne: "Jumpstart your presence with scroll-stopping carousels and authentic comments.",
+    lineTwo: "Stand out—without wasting hours or “faking it.”",
+    cta: "/contact?persona=creators",
   },
 ];
 
@@ -51,11 +44,11 @@ export const UseCases = () => {
           </p>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {audiences.map(({ icon: Icon, label, line, stat }) => (
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {audiences.map(({ icon: Icon, label, stat, lineOne, lineTwo, cta }) => (
             <article
               key={label}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 px-5 py-6 shadow-[0_18px_40px_rgba(15,23,42,0.35)] transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/10"
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 px-6 py-7 shadow-[0_18px_40px_rgba(15,23,42,0.35)] transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/10"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-purple-400/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               <div className="relative flex flex-col gap-4">
@@ -67,14 +60,18 @@ export const UseCases = () => {
                     <div className="text-xs font-semibold uppercase tracking-[0.3em] text-white/60">
                       {label}
                     </div>
-                    <div className="text-sm font-semibold text-white/80">{stat}</div>
+                    <div className="text-sm font-semibold text-white">{stat}</div>
                   </div>
                 </div>
-                <p className="text-sm leading-relaxed text-white/70">{line}</p>
-                <span className="inline-flex items-center gap-2 text-sm font-semibold text-white/80 transition-all duration-300 group-hover:text-white">
+                <p className="text-sm leading-relaxed text-white/75">{lineOne}</p>
+                <p className="text-sm leading-relaxed text-white/70">{lineTwo}</p>
+                <Link
+                  to={cta}
+                  className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60"
+                >
                   Explore how
-                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-[3px]" strokeWidth={2.4} />
-                </span>
+                  <ArrowUpRight className="h-4 w-4" strokeWidth={2.4} />
+                </Link>
               </div>
             </article>
           ))}
