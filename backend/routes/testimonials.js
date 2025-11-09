@@ -277,15 +277,6 @@ router.get("/check-eligibility", authenticateToken, async (req, res) => {
 // ADMIN ROUTES (Admin authentication required)
 // ==========================================
 
-// Test route to verify admin routes are accessible
-router.get("/admin/test", adminAuth, async (req, res) => {
-  res.json({
-    success: true,
-    message: "Admin testimonials route is working",
-    admin: req.admin?.username,
-  });
-});
-
 // Get all testimonials for admin
 router.get("/admin/all", adminAuth, async (req, res) => {
   try {
@@ -465,7 +456,6 @@ router.delete("/admin/:id", adminAuth, async (req, res) => {
 
 // Get testimonial statistics
 router.get("/admin/stats", adminAuth, async (req, res) => {
-  console.log("📊 Testimonials stats endpoint hit by admin:", req.admin?.username);
   try {
     const total = await Testimonial.countDocuments();
     const pending = await Testimonial.countDocuments({ status: "pending" });

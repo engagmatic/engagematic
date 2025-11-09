@@ -166,15 +166,11 @@ app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication
 app.use("/api/admin", adminRoutes); // Admin-only dashboard routes
 app.use("/api/admin/affiliates", adminAffiliatesRoutes); // Admin affiliate management
 
-// 404 handler with debugging
+// 404 handler
 app.use("*", (req, res) => {
-  console.log("❌ 404 - Route not found:", req.method, req.originalUrl);
-  console.log("   Available routes include: /api/testimonials/admin/stats");
   res.status(404).json({
     success: false,
     message: "API endpoint not found",
-    path: req.originalUrl,
-    method: req.method,
   });
 });
 
