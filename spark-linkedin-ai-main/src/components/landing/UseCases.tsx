@@ -1,40 +1,15 @@
 import { Link } from "react-router-dom";
-import { GraduationCap, PenTool, ArrowUpRight, Briefcase, Megaphone } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import { PERSONA_PRESETS } from "@/constants/personaPresets";
 
-const audiences = [
-  {
-    label: "Founders",
-    icon: Briefcase,
-    stat: "5x warmer intros",
-    lineOne: "Package POVs, product drops, and customer wins without staring at a blank draft.",
-    lineTwo: "Show up daily while Spark keeps your voice polished and on-message.",
-    cta: "/contact?persona=founders",
-  },
-  {
-    label: "Sales Teams",
-    icon: Megaphone,
-    stat: "+27% meetings booked",
-    lineOne: "Arm every rep with scroll-stopping narratives and deal teardowns buyers trust.",
-    lineTwo: "Warm up sequences before the outreach lands in their inbox.",
-    cta: "/contact?persona=sales",
-  },
-  {
-    label: "Students & New Professionals",
-    icon: GraduationCap,
-    stat: "2x connection growth",
-    lineOne: "Turn uni achievements and projects into buzzworthy posts and carousels.",
-    lineTwo: "Build reputation before your first job lands.",
-    cta: "/contact?persona=students",
-  },
-  {
-    label: "Aspiring Creators",
-    icon: PenTool,
-    stat: "+50% engagement per post",
-    lineOne: "Jumpstart your presence with scroll-stopping carousels and authentic comments.",
-    lineTwo: "Stand out—without wasting hours or “faking it.”",
-    cta: "/contact?persona=creators",
-  },
-];
+const audiences = Object.entries(PERSONA_PRESETS).map(([slug, config]) => ({
+  slug,
+  label: config.label,
+  icon: config.icon,
+  stat: config.stat,
+  lines: config.lines,
+  cta: `/auth/register?persona=${slug}`,
+}));
 
 export const UseCases = () => {
   return (
@@ -61,7 +36,7 @@ export const UseCases = () => {
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {audiences.map(({ icon: Icon, label, stat, lineOne, lineTwo, cta }) => (
+          {audiences.map(({ icon: Icon, label, stat, lines, cta }) => (
             <article
               key={label}
               className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 px-6 py-7 shadow-[0_18px_40px_rgba(15,23,42,0.35)] transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/10"
@@ -79,8 +54,11 @@ export const UseCases = () => {
                     <div className="text-sm font-semibold text-white">{stat}</div>
                   </div>
                 </div>
-                <p className="text-sm leading-relaxed text-white/75">{lineOne}</p>
-                <p className="text-sm leading-relaxed text-white/70">{lineTwo}</p>
+                {lines.map((line, index) => (
+                  <p key={index} className="text-sm leading-relaxed text-white/75">
+                    {line}
+                  </p>
+                ))}
                 <Link
                   to={cta}
                   className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60"

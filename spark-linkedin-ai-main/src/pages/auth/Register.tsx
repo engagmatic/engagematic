@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { LogoWithText } from "@/components/LogoWithText";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { PERSONA_PRESETS, isPersonaSlug, type PersonaSlug } from "@/constants/personaPresets";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -28,6 +29,7 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<any>({});
+  const [personaSlug, setPersonaSlug] = useState<PersonaSlug | null>(null);
 
   const { register } = useAuth();
   const { toast } = useToast();
@@ -73,6 +75,19 @@ const Register = () => {
     }
   };
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const slugParam = params.get("persona");
+
+    if (isPersonaSlug(slugParam)) {
+      setPersonaSlug(slugParam);
+    } else {
+      setPersonaSlug(null);
+    }
+  }, [location.search]);
+
+  const selectedPersona = personaSlug ? PERSONA_PRESETS[personaSlug] : null;
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
@@ -83,10 +98,15 @@ const Register = () => {
     setIsLoading(true);
 
     try {
+      const personaPayload = selectedPersona?.persona;
+      const profilePayload = selectedPersona?.profile;
+
       const result = await register({
         name: formData.name,
         email: formData.email,
         password: formData.password,
+        ...(profilePayload ? { profile: profilePayload } : {}),
+        ...(personaPayload ? { persona: personaPayload } : {})
       });
       
       if (result.success) {
@@ -134,6 +154,25 @@ const Register = () => {
             Get started in seconds – complete your profile setup after signup
           </p>
         </div>
+
+        {selectedPersona && (
+          <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-left shadow-sm dark:border-blue-900/60 dark:bg-blue-950/40 animate-in fade-in slide-in-from-top-2">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-blue-700 dark:text-blue-200">
+              {selectedPersona.label}
+            </div>
+            <div className="mt-2 text-sm font-semibold text-blue-900 dark:text-blue-100">
+              {selectedPersona.stat}
+            </div>
+            {selectedPersona.lines.map((line, index) => (
+              <p key={index} className="mt-1 text-sm text-blue-900/80 dark:text-blue-100/80">
+                {line}
+              </p>
+            ))}
+            <p className="mt-3 text-xs font-medium uppercase tracking-[0.26em] text-blue-600/80 dark:text-blue-300/80">
+              We’ll preload this playbook into your workspace.
+            </p>
+          </div>
+        )}
 
         {/* Main Content Card */}
         <Card className="p-5 sm:p-6 md:p-8 shadow-2xl border-2 border-blue-100/50 dark:border-blue-900/50 animate-in fade-in slide-in-from-bottom-4 duration-500">
