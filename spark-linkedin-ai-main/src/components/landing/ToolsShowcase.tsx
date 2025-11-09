@@ -1,3 +1,4 @@
+import { Card } from "@/components/ui/card";
 import { Brain, MessageSquare, Sparkles } from "lucide-react";
 
 const tools = [
@@ -26,57 +27,45 @@ const tools = [
 
 export const ToolsShowcase = () => {
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-primary/15 bg-white/85 p-6 shadow-[0_20px_55px_rgba(59,91,255,0.15)] backdrop-blur-sm transition-all duration-300 sm:p-7 lg:p-8 dark:bg-slate-950/85">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-20 -right-10 h-40 w-40 rounded-full bg-primary/15 blur-3xl" />
-        <div className="absolute bottom-[-3rem] left-[-3rem] h-44 w-44 rounded-full bg-purple-500/15 blur-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,91,255,0.08)_0,_transparent_60%)]" />
+    <div className="space-y-4 sm:space-y-5">
+      <div className="space-y-2">
+        <h3 className="text-xl sm:text-2xl font-bold text-foreground">
+          This is Just the{" "}
+          <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Beginning
+          </span>
+        </h3>
       </div>
 
-      <div className="relative space-y-5">
-        <div className="space-y-2 text-center sm:text-left">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.32em] text-primary">
-            Inside the platform
-          </span>
-          <h3 className="text-xl font-bold text-foreground sm:text-2xl">
-            This is just the{" "}
-            <span className="bg-gradient-to-r from-primary via-indigo-500 to-purple-500 bg-clip-text text-transparent">
-              beginning
-            </span>
-          </h3>
-          <p className="text-sm text-muted-foreground sm:text-base sm:max-w-md">
-            Unlock the full stack of tools the moment you sign in—designed to keep your content pipeline moving with your voice on every draft.
-          </p>
-        </div>
+      <div className="grid grid-cols-1 gap-4 sm:gap-5">
+        {tools.map((tool, index) => {
+          const Icon = tool.icon;
+          return (
+            <Card
+              key={index}
+              className="group relative p-4 sm:p-5 border border-border/50 hover:border-primary/30 bg-gradient-to-br from-white via-white to-slate-50/50 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-800/80 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/3 group-hover:to-primary/5 transition-all duration-300 pointer-events-none" />
 
-        <div className="grid grid-cols-1 gap-4 sm:gap-5">
-          {tools.map((tool, index) => {
-            const Icon = tool.icon;
-            return (
-              <div
-                key={index}
-                className="group relative flex flex-col gap-4 rounded-2xl border border-primary/15 bg-white/90 p-5 shadow-[0_16px_40px_rgba(59,91,255,0.12)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_24px_55px_rgba(59,91,255,0.2)] sm:flex-row sm:items-center dark:bg-slate-950/90"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-purple-500/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-                <div className={`relative flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${tool.color} text-white shadow-xl ${tool.shadowColor} transition-transform duration-300 group-hover:scale-110 sm:h-16 sm:w-16`}>
-                  <div className="absolute inset-0 rounded-2xl bg-white/15 blur-sm transition-all duration-300 group-hover:bg-white/25" />
-                  <Icon className="relative z-10 h-7 w-7 sm:h-8 sm:w-8 drop-shadow-sm" strokeWidth={2.4} />
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] transition-transform duration-700 ease-in-out group-hover:translate-x-[100%]" />
+              <div className="relative flex items-start gap-4">
+                <div className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${tool.color} flex items-center justify-center flex-shrink-0 shadow-lg ${tool.shadowColor} group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}>
+                  <div className="absolute inset-0 rounded-2xl bg-white/20 blur-sm group-hover:bg-white/30 transition-all duration-300" />
+                  <Icon className="relative w-7 h-7 sm:w-8 sm:h-8 text-white drop-shadow-sm z-10" strokeWidth={2.5} />
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out" />
                 </div>
 
-                <div className="relative flex-1 space-y-1.5">
-                  <h4 className="text-base font-semibold text-foreground transition-colors duration-300 group-hover:text-primary sm:text-lg">
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <h4 className="text-base sm:text-lg font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors">
                     {tool.title}
                   </h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed sm:text-base">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     {tool.description}
                   </p>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
