@@ -396,10 +396,11 @@ export const SaaSPricing = () => {
                             onClick={() => setShowBulkSlider(true)}
                             variant="ghost"
                             size="sm"
-                            className="w-full justify-center gap-2 rounded-full border border-white/40 bg-white/10 text-primary shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur transition-all duration-300 hover:border-primary/60 hover:bg-white/20 hover:text-primary-foreground"
+                            className="group relative w-full justify-center gap-2 overflow-hidden rounded-full border border-white/40 bg-gradient-to-br from-white/25 via-white/10 to-transparent px-5 py-5 text-sm font-semibold text-primary shadow-[0_18px_45px_rgba(15,23,42,0.18)] backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/80 hover:bg-primary/90 hover:text-white"
                           >
-                            <Settings className="h-4 w-4" />
-                            Customize Your Pack
+                            <span className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                            <Settings className="relative h-4 w-4 transition-transform duration-300 group-hover:rotate-12" />
+                            <span className="relative">Customize Your Pack</span>
                           </Button>
                         ) : (
                           <Button
