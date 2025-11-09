@@ -9,6 +9,7 @@ import ReferralSection from "@/components/landing/ReferralSection";
 import { Pricing } from "@/components/landing/Pricing";
 import { FAQ } from "@/components/landing/FAQ";
 import { VisibilitySpotlight } from "@/components/landing/VisibilitySpotlight";
+import { UseCases } from "@/components/landing/UseCases";
 import { SEO } from "@/components/SEO";
 import { PAGE_SEO, ORGANIZATION_SCHEMA, generateFAQSchema, SITE_URL } from "@/constants/seo";
 
@@ -68,6 +69,7 @@ const Index = () => {
       <SEO {...PAGE_SEO.home} structuredData={structuredData} />
       <Hero />
       <VisibilitySpotlight />
+      <UseCases />
       <TryItFreeSection />
       <Features />
       <Testimonials />
