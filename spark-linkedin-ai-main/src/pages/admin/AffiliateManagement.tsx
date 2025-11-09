@@ -13,8 +13,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const API_BASE = `${API_URL}/api`;
+// Get API URL - handle both cases where it includes /api or not
+const getApiBase = () => {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  // If URL already ends with /api, use it as is, otherwise add /api
+  return apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
+};
+const API_BASE = getApiBase();
 import { 
   Search, 
   Filter, 
