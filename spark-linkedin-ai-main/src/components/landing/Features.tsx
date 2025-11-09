@@ -49,40 +49,46 @@ export const Features = () => {
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header Section */}
-        <div className="text-center mb-12 sm:mb-16 lg:mb-20 space-y-3">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-gray-50">
+        <div className="text-center mb-12 sm:mb-16 lg:mb-20 space-y-3 animate-fade-in-up">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
             What You Get
           </h2>
-          <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
             Everything you need to sound like you—not like everyone else.
           </p>
         </div>
 
         {/* Features Grid - Perfect Square Cards - 2x2 Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 max-w-6xl mx-auto">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <Card 
                 key={index}
-                className={`group relative p-5 sm:p-6 bg-white dark:bg-slate-900 border-0 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden aspect-square flex flex-col ${
+                className={`group relative flex h-full flex-col justify-between gap-4 rounded-3xl border border-white/60 bg-white/95 p-5 shadow-[0_12px_40px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_20px_60px_rgba(59,91,255,0.16)] dark:border-slate-800/80 dark:bg-slate-900/80 ${
                   isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                 }`}
                 style={{
                   transitionDelay: `${index * 50}ms`
                 }}
               >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-primary/5 to-purple-500/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-slate-900/0 dark:via-primary/10 dark:to-purple-500/15" />
+
                 {/* Icon Container - Clean and Simple */}
-                <div className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 flex-shrink-0`}>
-                  <Icon className="relative w-6 h-6 sm:w-7 sm:h-7 text-white" strokeWidth={2.5} />
+                <div className="relative z-10 flex items-center justify-center">
+                  <div className={`relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.gradient} shadow-lg ${feature.shadowColor} transition-transform duration-300 group-hover:scale-110 sm:h-14 sm:w-14`}>
+                    <div className="absolute inset-0 rounded-2xl bg-white/20 blur-sm transition-all duration-300 group-hover:bg-white/30" />
+                    <Icon className="relative h-6 w-6 text-white sm:h-7 sm:w-7" strokeWidth={2.5} />
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] transition-transform duration-700 ease-in-out group-hover:translate-x-[100%]" />
+                  </div>
                 </div>
                 
                 {/* Content - Fits completely */}
-                <div className="relative z-10 flex flex-col flex-grow">
-                  <h3 className="text-lg sm:text-xl font-bold mb-2 text-gray-900 dark:text-gray-50 leading-tight">
+                <div className="relative z-10 flex flex-col gap-3 text-center sm:text-left">
+                  <h3 className="text-lg font-semibold text-gray-900 transition-colors duration-300 group-hover:text-primary sm:text-xl dark:text-gray-50">
                     {feature.title}
                   </h3>
-                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                  <p className="text-sm leading-relaxed text-gray-600 sm:text-base dark:text-gray-400">
                     {feature.description}
                   </p>
                 </div>
