@@ -71,10 +71,29 @@ export function formatNumberedList(text: string): string {
 }
 
 /**
+ * Clean up text - remove excessive line breaks and normalize spacing
+ */
+function cleanText(text: string): string {
+  // Remove excessive line breaks (more than 2 consecutive)
+  text = text.replace(/\n{3,}/g, '\n\n');
+  
+  // Remove trailing whitespace from lines
+  text = text.split('\n').map(line => line.trimEnd()).join('\n');
+  
+  // Normalize spaces (remove multiple spaces but keep single spaces)
+  text = text.replace(/[ \t]+/g, ' ');
+  
+  return text.trim();
+}
+
+/**
  * Complete LinkedIn post formatting pipeline
  */
 export function formatForLinkedIn(text: string): string {
   let formatted = text;
+  
+  // Clean up text first
+  formatted = cleanText(formatted);
   
   // Apply bold formatting
   formatted = applyLinkedInFormatting(formatted);

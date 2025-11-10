@@ -186,12 +186,12 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent 
-        className="max-w-2xl max-h-[85vh] overflow-hidden p-0 [&>button]:hidden animate-in fade-in zoom-in duration-300"
+        className="max-w-2xl max-h-[90vh] sm:max-h-[85vh] w-[95vw] sm:w-full p-0 !grid-cols-1 flex flex-col [&>button]:hidden animate-in fade-in zoom-in duration-300"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         {/* Compact Header */}
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b px-4 sm:px-6 py-3">
+        <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-b px-4 sm:px-6 py-3">
           <div className="text-center">
             <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               Welcome! 🎉
@@ -203,7 +203,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
         </div>
         
         {/* Compact Progress Steps */}
-        <div className="px-4 sm:px-6 py-3 border-b bg-muted/30">
+        <div className="flex-shrink-0 px-4 sm:px-6 py-3 border-b bg-muted/30">
           <div className="flex justify-between items-center mb-2">
             {steps.map((step, index) => {
               const Icon = step.icon;
@@ -246,11 +246,17 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
           <Progress value={progress} className="h-1.5" />
         </div>
 
-        {/* Scrollable Content - Compact */}
-        <div className="overflow-y-auto flex-1 px-4 sm:px-6 py-4 sm:py-5" style={{ maxHeight: 'calc(85vh - 180px)' }}>
+        {/* Scrollable Content - Fixed */}
+        <div 
+          className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6 py-4 sm:py-5 min-h-0"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(59, 91, 255, 0.3) transparent'
+          }}
+        >
           {/* Step 1: Professional Info & Goals */}
           {currentStep === 1 && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-200">
+            <div className="space-y-4 pb-6 animate-in fade-in slide-in-from-right-4 duration-200">
               <div className="text-center mb-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-2 shadow-md">
                   <Target className="h-6 w-6 text-white" />
@@ -358,7 +364,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
 
           {/* Step 2: AI Persona - Compact */}
           {currentStep === 2 && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-200">
+            <div className="space-y-4 pb-6 animate-in fade-in slide-in-from-right-4 duration-200">
               <div className="text-center mb-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center mx-auto mb-2 shadow-md">
                   <Sparkles className="h-6 w-6 text-white" />
@@ -459,7 +465,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
 
           {/* Step 3: Preferences - Compact */}
           {currentStep === 3 && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-200">
+            <div className="space-y-4 pb-6 animate-in fade-in slide-in-from-right-4 duration-200">
               <div className="text-center mb-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center mx-auto mb-2 shadow-md">
                   <Heart className="h-6 w-6 text-white" />
@@ -530,7 +536,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
         </div>
 
         {/* Compact Navigation Buttons */}
-        <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t px-4 sm:px-6 py-3">
+        <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t px-4 sm:px-6 py-3">
           <div className="flex justify-between items-center gap-3">
             <Button
               type="button"

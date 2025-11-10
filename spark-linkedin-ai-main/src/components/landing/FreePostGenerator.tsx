@@ -218,7 +218,7 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
   if (hasGenerated && generatedPost) {
     return (
       <div className="w-full space-y-4 sm:space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <Card className="border-2 border-primary/20 shadow-xl bg-gradient-to-br from-white to-primary/5 p-4 sm:p-6">
+        <Card className="border-2 border-primary/20 shadow-xl bg-gradient-to-br from-white to-primary/5 p-4 sm:p-6 overflow-hidden">
           <div className="space-y-4 sm:space-y-5">
             {/* Success Header */}
             <div className="text-center space-y-2">
@@ -235,12 +235,27 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
             <div className="space-y-3">
               <div className="relative">
                 <Label className="text-xs sm:text-sm font-semibold mb-1.5 block">Generated Post</Label>
-                <div className="relative p-4 sm:p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-lg border-2 border-slate-200 dark:border-slate-700 min-h-[150px] sm:min-h-[180px] max-h-[300px] overflow-y-auto">
-                  <p className="whitespace-pre-wrap text-xs sm:text-sm leading-relaxed">
+                <div 
+                  className="relative p-4 sm:p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-lg border-2 border-slate-200 dark:border-slate-700 min-h-[180px] sm:min-h-[200px] max-h-[400px] sm:max-h-[500px] overflow-y-auto"
+                  style={{
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'rgba(59, 91, 255, 0.3) transparent'
+                  }}
+                >
+                  <div 
+                    className="text-xs sm:text-sm leading-relaxed break-words overflow-wrap-anywhere pr-2"
+                    style={{
+                      wordBreak: 'break-word',
+                      overflowWrap: 'anywhere',
+                      whiteSpace: 'pre-wrap',
+                      fontFamily: 'system-ui, -apple-system, sans-serif',
+                      lineHeight: '1.6'
+                    }}
+                  >
                     {formatForLinkedIn(generatedPost.content)}
-                  </p>
+                  </div>
                   {/* Gradient overlay for premium look */}
-                  <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-background to-transparent pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-slate-50 dark:from-slate-900 to-transparent pointer-events-none" />
                 </div>
               </div>
 
@@ -258,11 +273,11 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
                 <Button
                   variant="outline"
                   onClick={handleCopy}
-                  className="gap-1.5 h-9 text-xs sm:text-sm"
+                  className="gap-1.5 h-9 sm:h-10 text-xs sm:text-sm w-full"
                   size="sm"
                 >
-                  <Copy className="h-3.5 w-3.5" />
-                  Copy
+                  <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="truncate">Copy</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -277,11 +292,11 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
                     window.URL.revokeObjectURL(url);
                     toast({ title: "Downloaded successfully!" });
                   }}
-                  className="gap-1.5 h-9 text-xs sm:text-sm"
+                  className="gap-1.5 h-9 sm:h-10 text-xs sm:text-sm w-full"
                   size="sm"
                 >
-                  <Download className="h-3.5 w-3.5" />
-                  Download
+                  <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="truncate">Download</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -296,12 +311,12 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
                       window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank');
                     }, 1000);
                   }}
-                  className="gap-1.5 h-9 text-xs sm:text-sm bg-[#0077B5] hover:bg-[#006396] text-white"
+                  className="gap-1.5 h-9 sm:h-10 text-xs sm:text-sm bg-[#0077B5] hover:bg-[#006396] text-white w-full"
                   size="sm"
                 >
-                  <Share2 className="h-3.5 w-3.5" />
-                  Share
-                  <ExternalLink className="h-3 w-3" />
+                  <Share2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="truncate">Share</span>
+                  <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 </Button>
               </div>
             </div>
