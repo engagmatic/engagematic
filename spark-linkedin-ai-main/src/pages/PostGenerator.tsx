@@ -63,7 +63,7 @@ const PostGenerator = () => {
   const [selectedPersona, setSelectedPersona] = useState(null);
   
   const { toast } = useToast();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const navigate = useNavigate();
   const { isGenerating, generatedContent, generatePost, generatePostCustom, copyToClipboard, saveContent } = useContentGeneration();
   const { subscription, canPerformAction, fetchSubscription } = useSubscription();
@@ -700,23 +700,93 @@ const PostGenerator = () => {
 
           {/* Right Column - Generated Content */}
           <div className="lg:col-span-5 space-y-6">
-            <Card className="shadow-lg">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Generated Post</h3>
-                {generatedContent ? (
-                  <div className="space-y-4">
-                    <div className="p-4 bg-muted rounded-lg max-h-96 overflow-y-auto">
-                      <p className="whitespace-pre-wrap text-sm">
-                        {isShortened && shortenedContent 
-                          ? formatForLinkedIn(shortenedContent)
-                          : formatForLinkedIn(generatedContent.content)}
-                      </p>
+            <div className="relative">
+              {/* LinkedIn Post Preview Container */}
+              <div className="bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 rounded-2xl p-4 sm:p-6 shadow-2xl">
+                {/* POST PREVIEW Header */}
+                <div className="bg-[#0A66C2] dark:bg-[#0A66C2] text-white px-4 py-2.5 rounded-t-xl mb-0 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold tracking-wide">POST PREVIEW</h3>
+                  {/* LinkedIn Logo Icon */}
+                  <div className="w-6 h-6 bg-white rounded flex items-center justify-center shadow-sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#0A66C2" className="flex-shrink-0">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                  </div>
+                </div>
+                
+                {/* LinkedIn Post Card */}
+                <div className="bg-white dark:bg-slate-800 rounded-b-xl border-2 border-purple-300/60 dark:border-purple-700/60 shadow-lg overflow-hidden">
+                  {generatedContent ? (
+                    <div className="p-4 sm:p-5">
+                      {/* Profile Header */}
+                      <div className="mb-4">
+                        <h4 className="font-bold text-gray-900 dark:text-gray-100 text-sm sm:text-base">
+                          {user?.name || "Your Name"}
+                        </h4>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                          2h • Edited
+                        </p>
+                      </div>
+                      
+                      {/* Post Content */}
+                      <div 
+                        className="mt-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar"
+                        style={{
+                          scrollbarWidth: 'thin',
+                          scrollbarColor: 'rgba(147, 51, 234, 0.3) transparent'
+                        }}
+                      >
+                        <style>{`
+                          .custom-scrollbar::-webkit-scrollbar {
+                            width: 6px;
+                          }
+                          .custom-scrollbar::-webkit-scrollbar-track {
+                            background: transparent;
+                          }
+                          .custom-scrollbar::-webkit-scrollbar-thumb {
+                            background: rgba(147, 51, 234, 0.3);
+                            border-radius: 3px;
+                          }
+                          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                            background: rgba(147, 51, 234, 0.5);
+                          }
+                        `}</style>
+                        <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
+                          <p className="whitespace-pre-wrap text-gray-900 dark:text-gray-100 leading-relaxed text-sm sm:text-base break-words font-sans">
+                            {isShortened && shortenedContent 
+                              ? formatForLinkedIn(shortenedContent)
+                              : formatForLinkedIn(generatedContent.content)}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    
+                  ) : (
+                    <div className="p-8 sm:p-12 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-full flex items-center justify-center mb-4">
+                          <Sparkles className="h-8 w-8 text-blue-600 dark:text-blue-400 opacity-50" />
+                        </div>
+                        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 font-medium">
+                          Your generated post will appear here
+                        </p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                          Fill in the form and click "Generate Pulse Post"
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Action Buttons Section - Below Preview */}
+              {generatedContent && (
+                <Card className="mt-6 shadow-lg">
+                  <div className="p-4 sm:p-6 space-y-4">
                     {generatedContent.engagementScore && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <TrendingUp className="h-4 w-4 text-primary" />
                         <span className="text-sm font-medium">Engagement Score:</span>
-                        <Badge variant="default">{generatedContent.engagementScore}/100</Badge>
+                        <Badge variant="default" className="text-sm">{generatedContent.engagementScore}/100</Badge>
                       </div>
                     )}
 
@@ -728,7 +798,7 @@ const PostGenerator = () => {
                       compact={true}
                     />
 
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {/* Regenerate Button */}
                       <Button 
                         variant="outline" 
@@ -913,14 +983,9 @@ const PostGenerator = () => {
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p className="text-sm">Your generated post will appear here</p>
-                  </div>
-                )}
-          </div>
-        </Card>
+                </Card>
+              )}
+            </div>
           </div>
         </div>
       </div>

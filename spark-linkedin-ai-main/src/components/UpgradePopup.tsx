@@ -52,16 +52,16 @@ export const UpgradePopup = ({ open, onOpenChange, limitType = "posts" }: Upgrad
   const plans = [
     {
       name: "Starter",
-      price: "₹249",
+      price: "₹199",
       period: "/month",
-      features: ["15 posts/month", "30 comments/month", "30 ideas/month", "All templates"],
+      features: ["15 posts/month", "30 comments/month", "Unlimited ideas/month", "All templates"],
       highlight: false,
     },
     {
       name: "Pro",
-      price: "₹649",
+      price: "₹449",
       period: "/month",
-      features: ["60 posts/month", "80 comments/month", "80 ideas/month", "Priority support"],
+      features: ["60 posts/month", "80 comments/month", "Unlimited ideas/month", "Priority support"],
       highlight: true,
     },
   ];

@@ -1,17 +1,20 @@
 import { Card } from "@/components/ui/card";
-import { Activity, FileText, MessageSquare, TrendingUp, Loader2, Lightbulb, Users, Gift, Copy, Check } from "lucide-react";
+import { Activity, FileText, MessageSquare, TrendingUp, Loader2, Lightbulb, Users, Gift, Copy, Check, Lock, AlertCircle, Sparkles, ArrowRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useDashboard } from "../hooks/useAnalytics";
 import { useEffect, useState } from "react";
 import { SubscriptionStatus } from "../components/SubscriptionStatus";
 import { CreditTrackingStatus } from "../components/CreditTrackingStatus";
+import { useSubscription } from "../hooks/useSubscription";
 import api from "../services/api";
 import { useToast } from "../hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 const Dashboard = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { dashboardData, isLoading: dashboardLoading } = useDashboard();
+  const { isTrialExpired, isTrialActive, isSubscriptionActive } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [referralData, setReferralData] = useState(null);
@@ -139,6 +142,51 @@ const Dashboard = () => {
 
       {/* Dashboard Content */}
       <div className="p-4 sm:p-6 lg:p-8">
+          {/* Trial Expired Banner - Prominent Alert */}
+          {isTrialExpired && (
+            <Card className="mb-6 border-2 border-orange-300 dark:border-orange-700 bg-gradient-to-r from-orange-50 via-red-50 to-orange-50 dark:from-orange-950/30 dark:via-red-950/30 dark:to-orange-950/30 shadow-xl">
+              <div className="p-6">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div className="flex items-start gap-4 flex-1">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                      <AlertCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                        Your Free Trial Has Ended
+                      </h3>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
+                        Continue creating engaging LinkedIn content and unlock unlimited growth. Choose a plan to keep building your professional presence.
+                      </p>
+                      <div className="flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <Check className="w-3 h-3 text-green-600" />
+                          Unlimited ideas
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Check className="w-3 h-3 text-green-600" />
+                          Advanced AI personas
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Check className="w-3 h-3 text-green-600" />
+                          Priority support
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => navigate('/plan-management')}
+                    className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all h-12 px-6 font-semibold whitespace-nowrap"
+                  >
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Choose Your Plan
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )}
+
           {/* Subscription Status */}
           <div className="mb-6">
             <CreditTrackingStatus />
@@ -208,8 +256,28 @@ const Dashboard = () => {
           {/* Generator Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Idea Generator Card */}
-            <Link to="/idea-generator">
-              <Card className="relative overflow-hidden p-6 hover:shadow-xl transition-all duration-300 group cursor-pointer border-2 hover:border-yellow-400 bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50 dark:from-yellow-950/20 dark:via-orange-950/20 dark:to-amber-950/20">
+            <div className={isTrialExpired ? "relative" : ""}>
+              {isTrialExpired && (
+                <div className="absolute inset-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                  <div className="text-center p-4">
+                    <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Upgrade to Unlock</p>
+                    <Button
+                      size="sm"
+                      onClick={() => navigate('/plan-management')}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    >
+                      Upgrade Now
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <Link to={isTrialExpired ? "#" : "/idea-generator"} onClick={(e) => isTrialExpired && e.preventDefault()}>
+                <Card className={`relative overflow-hidden p-6 transition-all duration-300 group border-2 bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50 dark:from-yellow-950/20 dark:via-orange-950/20 dark:to-amber-950/20 ${
+                  isTrialExpired 
+                    ? "opacity-60 cursor-not-allowed border-gray-300 dark:border-gray-700" 
+                    : "hover:shadow-xl cursor-pointer hover:border-yellow-400"
+                }`}>
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-bl-full" />
                 <div className="relative">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-500 via-orange-500 to-amber-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform duration-300">
@@ -229,10 +297,31 @@ const Dashboard = () => {
                 </div>
               </Card>
             </Link>
+            </div>
 
             {/* Post Generator Card */}
-            <Link to="/post-generator">
-              <Card className="relative overflow-hidden p-6 hover:shadow-xl transition-all duration-300 group cursor-pointer border-2 hover:border-blue-400 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20">
+            <div className={isTrialExpired ? "relative" : ""}>
+              {isTrialExpired && (
+                <div className="absolute inset-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                  <div className="text-center p-4">
+                    <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Upgrade to Unlock</p>
+                    <Button
+                      size="sm"
+                      onClick={() => navigate('/plan-management')}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    >
+                      Upgrade Now
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <Link to={isTrialExpired ? "#" : "/post-generator"} onClick={(e) => isTrialExpired && e.preventDefault()}>
+                <Card className={`relative overflow-hidden p-6 transition-all duration-300 group border-2 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 ${
+                  isTrialExpired 
+                    ? "opacity-60 cursor-not-allowed border-gray-300 dark:border-gray-700" 
+                    : "hover:shadow-xl cursor-pointer hover:border-blue-400"
+                }`}>
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-bl-full" />
                 <div className="relative">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform duration-300">
@@ -252,10 +341,31 @@ const Dashboard = () => {
                 </div>
               </Card>
             </Link>
+            </div>
 
             {/* Comment Generator Card */}
-            <Link to="/comment-generator">
-              <Card className="relative overflow-hidden p-6 hover:shadow-xl transition-all duration-300 group cursor-pointer border-2 hover:border-purple-400 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20">
+            <div className={isTrialExpired ? "relative" : ""}>
+              {isTrialExpired && (
+                <div className="absolute inset-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                  <div className="text-center p-4">
+                    <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Upgrade to Unlock</p>
+                    <Button
+                      size="sm"
+                      onClick={() => navigate('/plan-management')}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    >
+                      Upgrade Now
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <Link to={isTrialExpired ? "#" : "/comment-generator"} onClick={(e) => isTrialExpired && e.preventDefault()}>
+                <Card className={`relative overflow-hidden p-6 transition-all duration-300 group border-2 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20 ${
+                  isTrialExpired 
+                    ? "opacity-60 cursor-not-allowed border-gray-300 dark:border-gray-700" 
+                    : "hover:shadow-xl cursor-pointer hover:border-purple-400"
+                }`}>
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-bl-full" />
                 <div className="relative">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform duration-300">
@@ -275,6 +385,7 @@ const Dashboard = () => {
                 </div>
               </Card>
             </Link>
+            </div>
           </div>
         </div>
       </div>
