@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 const Dashboard = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { dashboardData, isLoading: dashboardLoading } = useDashboard();
-  const { isTrialExpired, isTrialActive, isSubscriptionActive } = useSubscription();
+  const { isTrialExpired, isTrialActive, isSubscriptionActive, loading: subscriptionLoading } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [referralData, setReferralData] = useState(null);
@@ -143,7 +143,7 @@ const Dashboard = () => {
       {/* Dashboard Content */}
       <div className="p-4 sm:p-6 lg:p-8">
           {/* Trial Expired Banner - Prominent Alert */}
-          {isTrialExpired && (
+          {!subscriptionLoading && isTrialExpired && (
             <Card className="mb-6 border-2 border-orange-300 dark:border-orange-700 bg-gradient-to-r from-orange-50 via-red-50 to-orange-50 dark:from-orange-950/30 dark:via-red-950/30 dark:to-orange-950/30 shadow-xl">
               <div className="p-6">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -256,15 +256,19 @@ const Dashboard = () => {
           {/* Generator Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Idea Generator Card */}
-            <div className={isTrialExpired ? "relative" : ""}>
-              {isTrialExpired && (
-                <div className="absolute inset-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-lg flex items-center justify-center">
+            <div className={!subscriptionLoading && isTrialExpired ? "relative" : ""}>
+              {!subscriptionLoading && isTrialExpired && (
+                <div className="absolute inset-0 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg flex items-center justify-center">
                   <div className="text-center p-4">
                     <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Upgrade to Unlock</p>
                     <Button
                       size="sm"
-                      onClick={() => navigate('/plan-management')}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigate('/plan-management');
+                      }}
                       className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                     >
                       Upgrade Now
@@ -272,43 +276,65 @@ const Dashboard = () => {
                   </div>
                 </div>
               )}
-              <Link to={isTrialExpired ? "#" : "/idea-generator"} onClick={(e) => isTrialExpired && e.preventDefault()}>
-                <Card className={`relative overflow-hidden p-6 transition-all duration-300 group border-2 bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50 dark:from-yellow-950/20 dark:via-orange-950/20 dark:to-amber-950/20 ${
-                  isTrialExpired 
-                    ? "opacity-60 cursor-not-allowed border-gray-300 dark:border-gray-700" 
-                    : "hover:shadow-xl cursor-pointer hover:border-yellow-400"
-                }`}>
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-bl-full" />
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-500 via-orange-500 to-amber-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform duration-300">
-                    <Lightbulb className="h-8 w-8 text-white" />
+              {!subscriptionLoading && isTrialExpired ? (
+                <Card className="relative overflow-hidden p-6 transition-all duration-300 border-2 bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50 dark:from-yellow-950/20 dark:via-orange-950/20 dark:to-amber-950/20 opacity-60 cursor-not-allowed border-gray-300 dark:border-gray-700">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-bl-full" />
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-500 via-orange-500 to-amber-600 flex items-center justify-center mb-4 shadow-xl">
+                      <Lightbulb className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="inline-block px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs font-bold rounded-full mb-3">
+                      💡 STRATEGY FIRST
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-50">Idea Generator</h3>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+                      Generate 5-8 viral post ideas with proven frameworks and engagement hooks
+                    </p>
+                    <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400 text-sm font-bold">
+                      <span>Generate Ideas</span>
+                      <span className="text-lg">→</span>
+                    </div>
                   </div>
-                  <div className="inline-block px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs font-bold rounded-full mb-3">
-                    💡 STRATEGY FIRST
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-50">Idea Generator</h3>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
-                    Generate 5-8 viral post ideas with proven frameworks and engagement hooks
-                  </p>
-                  <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400 text-sm font-bold group-hover:gap-4 transition-all">
-                    <span>Generate Ideas</span>
-                    <span className="text-lg">→</span>
-                  </div>
-                </div>
-              </Card>
-            </Link>
+                </Card>
+              ) : (
+                <Link to="/idea-generator">
+                  <Card className={`relative overflow-hidden p-6 transition-all duration-300 group border-2 bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50 dark:from-yellow-950/20 dark:via-orange-950/20 dark:to-amber-950/20 hover:shadow-xl cursor-pointer hover:border-yellow-400`}>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-bl-full" />
+                    <div className="relative">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-500 via-orange-500 to-amber-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform duration-300">
+                        <Lightbulb className="h-8 w-8 text-white" />
+                      </div>
+                      <div className="inline-block px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs font-bold rounded-full mb-3">
+                        💡 STRATEGY FIRST
+                      </div>
+                      <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-50">Idea Generator</h3>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+                        Generate 5-8 viral post ideas with proven frameworks and engagement hooks
+                      </p>
+                      <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400 text-sm font-bold group-hover:gap-4 transition-all">
+                        <span>Generate Ideas</span>
+                        <span className="text-lg">→</span>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              )}
             </div>
 
             {/* Post Generator Card */}
-            <div className={isTrialExpired ? "relative" : ""}>
-              {isTrialExpired && (
-                <div className="absolute inset-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-lg flex items-center justify-center">
+            <div className={!subscriptionLoading && isTrialExpired ? "relative" : ""}>
+              {!subscriptionLoading && isTrialExpired && (
+                <div className="absolute inset-0 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg flex items-center justify-center">
                   <div className="text-center p-4">
                     <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Upgrade to Unlock</p>
                     <Button
                       size="sm"
-                      onClick={() => navigate('/plan-management')}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigate('/plan-management');
+                      }}
                       className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                     >
                       Upgrade Now
@@ -316,43 +342,65 @@ const Dashboard = () => {
                   </div>
                 </div>
               )}
-              <Link to={isTrialExpired ? "#" : "/post-generator"} onClick={(e) => isTrialExpired && e.preventDefault()}>
-                <Card className={`relative overflow-hidden p-6 transition-all duration-300 group border-2 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 ${
-                  isTrialExpired 
-                    ? "opacity-60 cursor-not-allowed border-gray-300 dark:border-gray-700" 
-                    : "hover:shadow-xl cursor-pointer hover:border-blue-400"
-                }`}>
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-bl-full" />
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform duration-300">
-                    <FileText className="h-8 w-8 text-white" />
+              {!subscriptionLoading && isTrialExpired ? (
+                <Card className="relative overflow-hidden p-6 transition-all duration-300 border-2 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 opacity-60 cursor-not-allowed border-gray-300 dark:border-gray-700">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-bl-full" />
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center mb-4 shadow-xl">
+                      <FileText className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold rounded-full mb-3">
+                      ✨ AI-POWERED
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-50">Post Generator</h3>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+                      Create viral-worthy LinkedIn posts with AI that sounds authentically like you
+                    </p>
+                    <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-sm font-bold">
+                      <span>Start Creating</span>
+                      <span className="text-lg">→</span>
+                    </div>
                   </div>
-                  <div className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold rounded-full mb-3">
-                    ✨ AI-POWERED
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-50">Post Generator</h3>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
-                    Create viral-worthy LinkedIn posts with AI that sounds authentically like you
-                  </p>
-                  <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-sm font-bold group-hover:gap-4 transition-all">
-                    <span>Start Creating</span>
-                    <span className="text-lg">→</span>
-                  </div>
-                </div>
-              </Card>
-            </Link>
+                </Card>
+              ) : (
+                <Link to="/post-generator">
+                  <Card className={`relative overflow-hidden p-6 transition-all duration-300 group border-2 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 hover:shadow-xl cursor-pointer hover:border-blue-400`}>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-bl-full" />
+                    <div className="relative">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform duration-300">
+                        <FileText className="h-8 w-8 text-white" />
+                      </div>
+                      <div className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold rounded-full mb-3">
+                        ✨ AI-POWERED
+                      </div>
+                      <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-50">Post Generator</h3>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+                        Create viral-worthy LinkedIn posts with AI that sounds authentically like you
+                      </p>
+                      <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-sm font-bold group-hover:gap-4 transition-all">
+                        <span>Start Creating</span>
+                        <span className="text-lg">→</span>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              )}
             </div>
 
             {/* Comment Generator Card */}
-            <div className={isTrialExpired ? "relative" : ""}>
-              {isTrialExpired && (
-                <div className="absolute inset-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-lg flex items-center justify-center">
+            <div className={!subscriptionLoading && isTrialExpired ? "relative" : ""}>
+              {!subscriptionLoading && isTrialExpired && (
+                <div className="absolute inset-0 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg flex items-center justify-center">
                   <div className="text-center p-4">
                     <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Upgrade to Unlock</p>
                     <Button
                       size="sm"
-                      onClick={() => navigate('/plan-management')}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigate('/plan-management');
+                      }}
                       className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                     >
                       Upgrade Now
@@ -360,31 +408,49 @@ const Dashboard = () => {
                   </div>
                 </div>
               )}
-              <Link to={isTrialExpired ? "#" : "/comment-generator"} onClick={(e) => isTrialExpired && e.preventDefault()}>
-                <Card className={`relative overflow-hidden p-6 transition-all duration-300 group border-2 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20 ${
-                  isTrialExpired 
-                    ? "opacity-60 cursor-not-allowed border-gray-300 dark:border-gray-700" 
-                    : "hover:shadow-xl cursor-pointer hover:border-purple-400"
-                }`}>
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-bl-full" />
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform duration-300">
-                    <MessageSquare className="h-8 w-8 text-white" />
+              {!subscriptionLoading && isTrialExpired ? (
+                <Card className="relative overflow-hidden p-6 transition-all duration-300 border-2 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20 opacity-60 cursor-not-allowed border-gray-300 dark:border-gray-700">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-bl-full" />
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 flex items-center justify-center mb-4 shadow-xl">
+                      <MessageSquare className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="inline-block px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-bold rounded-full mb-3">
+                      💬 ENGAGEMENT BOOST
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-50">Comment Generator</h3>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+                      Generate genuine, human-like comments that build real professional relationships
+                    </p>
+                    <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-sm font-bold">
+                      <span>Generate Comments</span>
+                      <span className="text-lg">→</span>
+                    </div>
                   </div>
-                  <div className="inline-block px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-bold rounded-full mb-3">
-                    💬 ENGAGEMENT BOOST
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-50">Comment Generator</h3>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
-                    Generate genuine, human-like comments that build real professional relationships
-                  </p>
-                  <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-sm font-bold group-hover:gap-4 transition-all">
-                    <span>Generate Comments</span>
-                    <span className="text-lg">→</span>
-                  </div>
-                </div>
-              </Card>
-            </Link>
+                </Card>
+              ) : (
+                <Link to="/comment-generator">
+                  <Card className={`relative overflow-hidden p-6 transition-all duration-300 group border-2 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20 hover:shadow-xl cursor-pointer hover:border-purple-400`}>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-bl-full" />
+                    <div className="relative">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform duration-300">
+                        <MessageSquare className="h-8 w-8 text-white" />
+                      </div>
+                      <div className="inline-block px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-bold rounded-full mb-3">
+                        💬 ENGAGEMENT BOOST
+                      </div>
+                      <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-50">Comment Generator</h3>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+                        Generate genuine, human-like comments that build real professional relationships
+                      </p>
+                      <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-sm font-bold group-hover:gap-4 transition-all">
+                        <span>Generate Comments</span>
+                        <span className="text-lg">→</span>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              )}
             </div>
           </div>
         </div>
