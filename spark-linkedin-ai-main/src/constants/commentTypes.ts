@@ -20,13 +20,6 @@ export const COMMENT_TYPES: CommentType[] = [
     example: "This! We lost 6 months because we couldn't let go of the original vision. Ego is expensive."
   },
   {
-    value: "value_add",
-    label: "Value Add",
-    description: "Provide actionable insight or tip that builds on the post",
-    icon: "VA",
-    example: "Love this framework. We call it 'Strategic Refinement' - same concept, same results."
-  },
-  {
     value: "question",
     label: "Thoughtful Question",
     description: "Ask an engaging question that sparks discussion",
@@ -56,5 +49,5 @@ export const COMMENT_TYPES: CommentType[] = [
   }
 ];
 
-export const DEFAULT_COMMENT_TYPE = "value_add";
+export const DEFAULT_COMMENT_TYPE = "personal_story";
 

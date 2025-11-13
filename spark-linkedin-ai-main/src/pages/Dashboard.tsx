@@ -1,9 +1,9 @@
 import { Card } from "@/components/ui/card";
-import { Activity, FileText, MessageSquare, TrendingUp, Loader2, Lightbulb, Users, Gift, Copy, Check, Lock, AlertCircle, Sparkles, ArrowRight } from "lucide-react";
+import { Activity, FileText, MessageSquare, TrendingUp, Loader2, Lightbulb, Users, Gift, Copy, Check, Lock, AlertCircle, Sparkles, ArrowRight, Clock, Target, Zap } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useDashboard } from "../hooks/useAnalytics";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { SubscriptionStatus } from "../components/SubscriptionStatus";
 import { CreditTrackingStatus } from "../components/CreditTrackingStatus";
 import { useSubscription } from "../hooks/useSubscription";
@@ -12,13 +12,14 @@ import { useToast } from "../hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
 const Dashboard = () => {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const { dashboardData, isLoading: dashboardLoading } = useDashboard();
   const { isTrialExpired, isTrialActive, isSubscriptionActive, loading: subscriptionLoading } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [referralData, setReferralData] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [weeklyStats, setWeeklyStats] = useState({ postsThisWeek: 0, commentsThisWeek: 0 });
 
   const userProfile = dashboardData?.currentUser || {};
 
@@ -40,8 +41,41 @@ const Dashboard = () => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchReferralData();
+      fetchWeeklyStats();
     }
   }, [isAuthenticated]);
+
+  const fetchWeeklyStats = async () => {
+    try {
+      // Get start of current week (Monday)
+      const now = new Date();
+      const dayOfWeek = now.getDay();
+      const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust when day is Sunday
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(diff);
+      startOfWeek.setHours(0, 0, 0, 0);
+
+      // Fetch content history for this week
+      const response = await api.getContentHistory({
+        startDate: startOfWeek.toISOString(),
+        limit: 1000
+      });
+
+      if (response.success && response.data?.content) {
+        const thisWeekContent = response.data.content.filter((item: any) => {
+          const itemDate = new Date(item.createdAt);
+          return itemDate >= startOfWeek;
+        });
+
+        const postsThisWeek = thisWeekContent.filter((item: any) => item.type === 'post').length;
+        const commentsThisWeek = thisWeekContent.filter((item: any) => item.type === 'comment').length;
+
+        setWeeklyStats({ postsThisWeek, commentsThisWeek });
+      }
+    } catch (error) {
+      console.error("Error fetching weekly stats:", error);
+    }
+  };
 
   const fetchReferralData = async () => {
     try {
@@ -66,7 +100,39 @@ const Dashboard = () => {
     }
   };
 
+  // Calculate stats - must be before early returns
+  const stats = dashboardData?.stats || {
+    postsCreated: 0,
+    commentsGenerated: 0,
+    engagementRate: "0%",
+    pulseScore: 0,
+    postsGrowth: "+0%",
+    commentsGrowth: "+0%"
+  };
 
+  // Calculate premium metrics - MUST be before any early returns
+  const timeSaved = useMemo(() => {
+    // Estimate: 15 minutes per post, 3 minutes per comment
+    const minutesSaved = (stats.postsCreated * 15) + (stats.commentsGenerated * 3);
+    if (minutesSaved >= 60) {
+      const hours = Math.floor(minutesSaved / 60);
+      const mins = minutesSaved % 60;
+      return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    }
+    return `${minutesSaved}m`;
+  }, [stats.postsCreated, stats.commentsGenerated]);
+
+  const engagementWon = useMemo(() => {
+    // Calculate engagement points: engagement rate * posts created
+    const engagementRateNum = parseInt(stats.engagementRate) || 0;
+    return Math.round((engagementRateNum * stats.postsCreated) / 100);
+  }, [stats.engagementRate, stats.postsCreated]);
+
+  // Weekly progress calculations
+  const weeklyPostProgress = Math.min(100, (weeklyStats.postsThisWeek / 3) * 100);
+  const weeklyCommentProgress = Math.min(100, (weeklyStats.commentsThisWeek / 10) * 100);
+
+  // Early returns AFTER all hooks
   if (authLoading || dashboardLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -82,68 +148,61 @@ const Dashboard = () => {
     return null;
   }
 
-  const stats = dashboardData?.stats || {
-    postsCreated: 0,
-    commentsGenerated: 0,
-    engagementRate: "0%",
-    pulseScore: 0,
-    postsGrowth: "+0%",
-    commentsGrowth: "+0%"
-  };
-
-  const quickStats = [
+  // Premium stat blocks
+  const premiumStats = [
     { 
       label: "Posts Created", 
       value: stats.postsCreated.toString(), 
       icon: FileText,
-      color: "from-blue-500 to-cyan-500",
-      bgColor: "bg-blue-50",
-      change: stats.postsGrowth 
+      gradient: "from-blue-500 to-cyan-500",
+      bgGradient: "from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20"
     },
     { 
-      label: "Comments Generated", 
-      value: stats.commentsGenerated.toString(), 
-      icon: MessageSquare,
-      color: "from-purple-500 to-pink-500",
-      bgColor: "bg-purple-50",
-      change: stats.commentsGrowth 
-    },
-    { 
-      label: "Engagement Rate", 
-      value: stats.engagementRate, 
+      label: "Engagement Won", 
+      value: engagementWon.toString(), 
       icon: TrendingUp,
-      color: "from-green-500 to-emerald-500",
-      bgColor: "bg-green-50",
-      change: "+0%" 
+      gradient: "from-purple-500 to-pink-500",
+      bgGradient: "from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20"
     },
     { 
-      label: "Pulse Score", 
-      value: stats.pulseScore.toString(), 
-      icon: Activity,
-      color: "from-orange-500 to-red-500",
-      bgColor: "bg-orange-50",
-      change: "+0%" 
+      label: "Time Saved", 
+      value: timeSaved, 
+      icon: Clock,
+      gradient: "from-green-500 to-emerald-500",
+      bgGradient: "from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20"
     },
   ];
 
   return (
-    <div className="w-full bg-gray-50 dark:bg-slate-950 min-h-screen">
-      {/* Page Header */}
-      <header className="sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 hidden lg:block">
-        <div className="px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-50">
-            Dashboard
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Track your LinkedIn growth and create engaging content
-          </p>
+    <div className="w-full bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 min-h-screen">
+      {/* Premium Dashboard Content */}
+      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+        {/* Personalized Greeting & CTAs - Premium Header */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                Welcome back{user?.name ? `, ${user.name.split(' ')[0]}` : ''}!
+              </h1>
+              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
+                Ready to grow your LinkedIn presence?
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <Button
+                onClick={() => navigate('/post-generator')}
+                className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all h-11 px-6 font-semibold"
+                disabled={!subscriptionLoading && isTrialExpired}
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                Create New Post
+              </Button>
+            </div>
+          </div>
         </div>
-      </header>
 
-      {/* Dashboard Content */}
-      <div className="p-4 sm:p-6 lg:p-8">
-          {/* Trial Expired Banner - Prominent Alert */}
-          {!subscriptionLoading && isTrialExpired && (
+        {/* Trial Expired Banner - Prominent Alert */}
+        {!subscriptionLoading && isTrialExpired && (
             <Card className="mb-6 border-2 border-orange-300 dark:border-orange-700 bg-gradient-to-r from-orange-50 via-red-50 to-orange-50 dark:from-orange-950/30 dark:via-red-950/30 dark:to-orange-950/30 shadow-xl">
               <div className="p-6">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -187,41 +246,107 @@ const Dashboard = () => {
             </Card>
           )}
 
-          {/* Subscription Status */}
-          <div className="mb-6">
-            <CreditTrackingStatus />
-          </div>
+        {/* Subscription Status */}
+        <div className="mb-8">
+          <CreditTrackingStatus />
+        </div>
 
-          {/* KPI Cards - Premium Design */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-            {quickStats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <Card 
-                  key={index} 
-                  className="p-6 bg-white dark:bg-slate-900 border-0 shadow-sm hover:shadow-md transition-all duration-300"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}>
-                      <Icon className="h-6 w-6 text-white" />
+        {/* Premium Stat Blocks - Three Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+          {premiumStats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <Card 
+                key={index} 
+                className={`p-6 bg-gradient-to-br ${stat.bgGradient} border-0 shadow-lg hover:shadow-xl transition-all duration-300`}
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg`}>
+                    <Icon className="h-7 w-7 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-3xl sm:text-4xl font-bold mb-1 text-gray-900 dark:text-white">
+                      {stat.value}
                     </div>
-                    <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                      {stat.change}
-                    </span>
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                      {stat.label}
+                    </div>
                   </div>
-                  <div className="text-2xl sm:text-3xl font-bold mb-1 text-gray-900 dark:text-gray-100">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {stat.label}
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
 
-          {/* Referral Section */}
-          {referralData && (
+        {/* Progress Bars - Impact Goals */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Post 3 per week Goal */}
+          <Card className="p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                  <Target className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Post 3 per week</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {weeklyStats.postsThisWeek} of 3 posts this week
+                  </p>
+                </div>
+              </div>
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                {Math.round(weeklyPostProgress)}%
+              </span>
+            </div>
+            <div className="relative mb-3">
+              <div className="h-2.5 w-full bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div 
+                  className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-500 ease-out shadow-sm"
+                  style={{ width: `${weeklyPostProgress}%` }}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+              <Zap className="h-3 w-3" />
+              <span>Try posting on trending topics to boost engagement!</span>
+            </p>
+          </Card>
+
+          {/* Achieve 10 meaningful comments Goal */}
+          <Card className="p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <MessageSquare className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Achieve 10 meaningful comments</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {weeklyStats.commentsThisWeek} of 10 comments
+                  </p>
+                </div>
+              </div>
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                {Math.round(weeklyCommentProgress)}%
+              </span>
+            </div>
+            <div className="relative mb-3">
+              <div className="h-2.5 w-full bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div 
+                  className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500 ease-out shadow-sm"
+                  style={{ width: `${weeklyCommentProgress}%` }}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+              <Zap className="h-3 w-3" />
+              <span>Engage with industry leaders to build your network!</span>
+            </p>
+          </Card>
+        </div>
+
+        {/* Referral Section */}
+        {referralData && (
             <Card className="mb-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 border-purple-200 dark:border-purple-800">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
@@ -253,8 +378,8 @@ const Dashboard = () => {
             </Card>
           )}
 
-          {/* Generator Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Generator Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Idea Generator Card */}
             <div className={!subscriptionLoading && isTrialExpired ? "relative" : ""}>
               {!subscriptionLoading && isTrialExpired && (
@@ -452,9 +577,9 @@ const Dashboard = () => {
                 </Link>
               )}
             </div>
-          </div>
         </div>
       </div>
+    </div>
   );
 };
 
