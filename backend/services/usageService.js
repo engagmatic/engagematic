@@ -72,6 +72,15 @@ class UsageService {
       } else if (type === "ideas") {
         currentUsage = usage.ideasGenerated || 0;
         limit = limits.ideasPerMonth || 0;
+        // -1 means unlimited
+        if (limit === -1) {
+          return {
+            exceeded: false,
+            currentUsage,
+            limit: -1,
+            remaining: -1, // -1 means unlimited
+          };
+        }
       } else {
         currentUsage = 0;
         limit = 0;

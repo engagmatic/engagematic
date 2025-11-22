@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Check, Globe, IndianRupee, Zap, Rocket, Settings, Star, Crown } from "lucide-react";
+import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon } from "@/styles/premiumButtons";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -434,10 +435,13 @@ export const CreditSliderPricing = () => {
               <Button 
                 onClick={handleSubscribe}
                 disabled={isProcessing || !isLoaded}
-                className="w-full mt-6 shadow-pulse hover-pulse"
-                size="lg"
+                className={`${premiumCTAClasses} mt-6 w-full ${(isProcessing || !isLoaded) ? 'pointer-events-none opacity-60' : ''}`}
               >
-                {isProcessing ? 'Processing Payment...' : !isLoaded ? 'Loading Payment System...' : 'Start Free Trial'}
+                <span className={premiumCTAHighlight} />
+                <span className="relative">
+                  {isProcessing ? 'Processing Payment...' : !isLoaded ? 'Loading Payment System...' : 'Start Free Trial'}
+                </span>
+                <ArrowRight className={premiumCTAIcon} />
               </Button>
 
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">

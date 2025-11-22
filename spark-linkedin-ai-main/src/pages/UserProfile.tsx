@@ -66,8 +66,10 @@ export const UserProfile = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [payments, setPayments] = useState<Payment[]>([]);
   const [savedPosts, setSavedPosts] = useState<any[]>([]);
+  const [selectedTrainingPosts, setSelectedTrainingPosts] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingTraining, setIsSavingTraining] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   
@@ -123,10 +125,67 @@ export const UserProfile = () => {
     try {
       const response = await api.getSavedContent();
       if (response.success) {
-        setSavedPosts(response.data.content || []);
+        const posts = response.data.content || [];
+        setSavedPosts(posts);
+        
+        // Load user's current training post selections (premium feature)
+        if (user?.persona?.trainingPostIds) {
+          setSelectedTrainingPosts(user.persona.trainingPostIds.map((id: any) => id.toString()));
+        }
       }
     } catch (error) {
       console.error("Error fetching saved posts:", error);
+    }
+  };
+
+  const handleTrainingPostToggle = (postId: string) => {
+    setSelectedTrainingPosts(prev => 
+      prev.includes(postId) 
+        ? prev.filter(id => id !== postId)
+        : [...prev, postId]
+    );
+  };
+
+  const handleSaveTrainingPosts = async () => {
+    if (subscription?.plan === 'trial') {
+      toast({
+        title: "Premium Feature",
+        description: "This feature is available in our premium plans. Upgrade to continue.",
+        variant: "destructive",
+      });
+      navigate('/#pricing');
+      return;
+    }
+
+    setIsSavingTraining(true);
+    try {
+      const response = await api.updateProfile({
+        persona: {
+          trainingPostIds: selectedTrainingPosts,
+        }
+      });
+
+      if (response.success) {
+        toast({
+          title: "Training posts saved",
+          description: "Your AI will now learn from these posts to match your writing style.",
+        });
+        // Refresh user data
+        if (setUser && response.data?.user) {
+          setUser(response.data.user);
+        }
+      } else {
+        throw new Error(response.message || "Failed to save");
+      }
+    } catch (error: any) {
+      console.error("Error saving training posts:", error);
+      toast({
+        title: "Failed to save",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingTraining(false);
     }
   };
 
@@ -382,7 +441,7 @@ export const UserProfile = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="profile">
               <User className="h-4 w-4 mr-2" />
               Profile
@@ -407,6 +466,12 @@ export const UserProfile = () => {
               <Globe className="h-4 w-4 mr-2" />
               Referrals
             </TabsTrigger>
+            {subscription && subscription.plan !== 'trial' && (
+              <TabsTrigger value="personalization">
+                <Crown className="h-4 w-4 mr-2" />
+                Personalization
+              </TabsTrigger>
+            )}
             <TabsTrigger value="danger">
               <Trash2 className="h-4 w-4 mr-2" />
               Danger
@@ -857,6 +922,132 @@ export const UserProfile = () => {
               </div>
             </Card>
           </TabsContent>
+
+          {/* Personalization Tab - Premium Feature */}
+          {subscription && subscription.plan !== 'trial' && (
+            <TabsContent value="personalization" className="space-y-6">
+              <Card className="p-6 shadow-lg border-2 border-purple-200 bg-gradient-to-br from-purple-50/50 to-blue-50/50">
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg">
+                        <Crown className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900">Your Unique Voice, Powered by AI</h3>
+                        <p className="text-sm text-gray-600 mt-1">Train your AI to write exactly like you</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-3 max-w-2xl">
+                      Select posts from your saved content that represent your best writing style. Our AI will learn from these examples to match your unique voice, tone, and structure in future generations.
+                    </p>
+                  </div>
+                  <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1">
+                    Premium
+                  </Badge>
+                </div>
+
+                {savedPosts.length === 0 ? (
+                  <div className="text-center py-12 bg-white rounded-lg border-2 border-dashed border-gray-300">
+                    <Bookmark className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                    <h4 className="text-lg font-semibold mb-2 text-gray-900">No Saved Posts Yet</h4>
+                    <p className="text-sm text-gray-600 mb-2 max-w-md mx-auto">
+                      Save posts you create to train your AI with your writing style.
+                    </p>
+                    <p className="text-xs text-gray-500 mb-4">
+                      💡 Tip: Generate and save posts that represent your best work, then come back here to select them for training.
+                    </p>
+                    <Button onClick={() => navigate('/post-generator')}>
+                      Create Your First Post
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm text-blue-900 dark:text-blue-100">
+                        <strong>📝 Note:</strong> Only posts you've saved are shown here. If you generated posts but didn't save them, they won't appear. Save your best posts to train your AI!
+                      </p>
+                    </div>
+
+                    <div className="space-y-3 mb-6">
+                      {savedPosts.map((post) => {
+                        const isSelected = selectedTrainingPosts.includes(post._id);
+                        const truncatedContent = post.content?.length > 200
+                          ? post.content.substring(0, 200) + '...'
+                          : post.content;
+
+                        return (
+                          <Card
+                            key={post._id}
+                            className={`p-4 cursor-pointer transition-all ${
+                              isSelected
+                                ? 'border-2 border-purple-500 bg-purple-50 dark:bg-purple-950/20 shadow-md'
+                                : 'border hover:border-purple-300 hover:shadow-sm'
+                            }`}
+                            onClick={() => handleTrainingPostToggle(post._id)}
+                          >
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0 mt-1">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => handleTrainingPostToggle(post._id)}
+                                  className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between mb-2">
+                                  <div className="flex-1">
+                                    <p className="text-sm text-gray-600 mb-2 line-clamp-3">
+                                      {truncatedContent}
+                                    </p>
+                                    {post.topic && (
+                                      <Badge variant="outline" className="text-xs">
+                                        {post.topic}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-4 border-t">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">
+                          {selectedTrainingPosts.length} of {savedPosts.length} posts selected
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Select at least 3-5 posts for best results
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleSaveTrainingPosts}
+                        disabled={isSavingTraining || selectedTrainingPosts.length === 0}
+                        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                      >
+                        {isSavingTraining ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="mr-2 h-4 w-4" />
+                            Save Training Posts
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </Card>
+            </TabsContent>
+          )}
 
           {/* Danger Zone Tab */}
           <TabsContent value="danger" className="space-y-6">

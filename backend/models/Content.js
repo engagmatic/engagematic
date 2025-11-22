@@ -22,7 +22,7 @@ const contentSchema = new mongoose.Schema(
       required: function () {
         return this.type === "post";
       },
-      maxlength: [500, "Topic cannot exceed 500 characters"],
+      maxlength: [1000, "Topic cannot exceed 1000 characters"],
     },
     hookId: {
       type: mongoose.Schema.Types.ObjectId,

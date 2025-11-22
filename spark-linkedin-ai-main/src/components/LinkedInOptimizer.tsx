@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, TrendingUp, Target, Zap, Calendar, BarChart3 } from "lucide-react";
+import apiClient from "@/services/api.js";
 
 interface ViralityData {
   bestTimeToPost: string;
@@ -24,33 +25,54 @@ export const LinkedInOptimizer = ({ content, topic, audience, compact = false }:
   const [viralityData, setViralityData] = useState<ViralityData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Simulate LinkedIn optimization analysis
-  const analyzeContent = async () => {
+  // Real-time LinkedIn optimization analysis using AI
+  const analyzeContent = useCallback(async () => {
+    if (!content || content.length < 50) {
+      return;
+    }
+
     setIsAnalyzing(true);
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Generate realistic virality data based on content
-    const mockData: ViralityData = {
-      bestTimeToPost: "Tuesday 10:00 AM",
-      viralityScore: Math.floor(Math.random() * 40) + 60, // 60-100
-      engagementPrediction: ["High", "Medium", "Very High"][Math.floor(Math.random() * 3)],
-      optimalDay: ["Tuesday", "Wednesday", "Thursday"][Math.floor(Math.random() * 3)],
-      peakHours: ["9:00 AM", "12:00 PM", "5:00 PM"],
-      audienceActivity: audience || "General professionals"
-    };
-    
-    setViralityData(mockData);
-    setIsAnalyzing(false);
-  };
+    try {
+      console.log("🔍 Analyzing content for optimization...");
+      
+      // Call real API endpoint for AI-powered analysis
+      const response = await apiClient.analyzeContentOptimization({
+        content,
+        topic: topic || null,
+        audience: audience || null,
+      });
+
+      if (response.success && response.data) {
+        const analysisData: ViralityData = {
+          bestTimeToPost: response.data.bestTimeToPost || "Tuesday 9:00 AM",
+          viralityScore: response.data.viralityScore || 70,
+          engagementPrediction: response.data.engagementPrediction || "Medium",
+          optimalDay: response.data.optimalDay || "Tuesday",
+          peakHours: response.data.peakHours || ["9:00 AM", "12:00 PM"],
+          audienceActivity: response.data.audienceActivity || (audience || "General professionals"),
+        };
+        
+        setViralityData(analysisData);
+        console.log("✅ Real-time optimization analysis complete:", analysisData);
+      } else {
+        throw new Error(response.message || "Failed to analyze content");
+      }
+    } catch (error) {
+      console.error("❌ Content optimization analysis error:", error);
+      // Show error but don't break the UI
+      // The component will show "Analyzing..." state
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [content, topic, audience]);
 
   // Auto-analyze when content changes
   useEffect(() => {
     if (content && content.length > 50) {
       analyzeContent();
     }
-  }, [content, topic]);
+  }, [content, topic, analyzeContent]);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600 bg-green-100";

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Menu, Home, FileText, MessageSquare, Lightbulb, User, LogOut } from "lucide-react";
+import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon } from "@/styles/premiumButtons";
+import { Menu, Home, FileText, MessageSquare, Lightbulb, User, LogOut, ArrowRight } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useState } from "react";
@@ -9,7 +10,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { UserDropdownMenu } from "../UserDropdownMenu";
-import { Logo } from "../Logo";
+import { LogoWithText } from "../LogoWithText";
 
 export const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -50,139 +51,147 @@ export const Header = () => {
     { path: '/comment-generator', label: 'Comments', icon: MessageSquare },
   ];
 
+  // Check if we're on a dashboard route (hide header navigation for sidebar layout)
+  const isDashboardRoute = ['/dashboard', '/idea-generator', '/post-generator', '/comment-generator'].includes(location.pathname);
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className={`sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ${isDashboardRoute ? 'hidden' : ''}`}>
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <Logo 
-              className="w-8 h-8 sm:w-10 sm:h-10 hover:scale-110 transition-transform duration-200"
-              size={40}
-            />
-            <span className="text-lg sm:text-xl font-bold">LinkedInPulse</span>
-          </Link>
+          <LogoWithText 
+            textSize="md"
+            to="/"
+          />
           
-          {/* Desktop Navigation */}
-          {isAuthenticated ? (
-            <nav className="hidden md:flex items-center gap-1">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-                
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                      isActive
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                    }`}
+          {/* Desktop Navigation - Hidden on dashboard routes */}
+          {!isDashboardRoute && (
+            <>
+              {isAuthenticated ? (
+                <nav className="hidden md:flex items-center gap-1">
+                  {navItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.path;
+                    
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                          isActive
+                            ? 'bg-primary text-primary-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span className="hidden lg:inline">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </nav>
+              ) : (
+                <nav className="hidden md:flex items-center gap-6">
+                  <button 
+                    onClick={() => scrollToSection('features')}
+                    className="text-foreground/80 hover:text-foreground transition-smooth"
                   >
-                    <Icon className="h-4 w-4" />
-                    <span className="hidden lg:inline">{item.label}</span>
+                    Features
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection('pricing')}
+                    className="text-foreground/80 hover:text-foreground transition-smooth"
+                  >
+                    Pricing
+                  </button>
+                  <Link 
+                    to="/blogs"
+                    className="text-foreground/80 hover:text-foreground transition-smooth"
+                  >
+                    Blog
                   </Link>
-                );
-              })}
-            </nav>
-          ) : (
-            <nav className="hidden md:flex items-center gap-6">
-              <button 
-                onClick={() => scrollToSection('features')}
-                className="text-foreground/80 hover:text-foreground transition-smooth"
-              >
-                Features
-              </button>
-              <button 
-                onClick={() => scrollToSection('pricing')}
-                className="text-foreground/80 hover:text-foreground transition-smooth"
-              >
-                Pricing
-              </button>
-              <Link 
-                to="/blogs"
-                className="text-foreground/80 hover:text-foreground transition-smooth"
-              >
-                Blog
-              </Link>
-              <button 
-                onClick={() => scrollToSection('faq')}
-                className="text-foreground/80 hover:text-foreground transition-smooth"
-              >
-                FAQ
-              </button>
-            </nav>
+                  <button 
+                    onClick={() => scrollToSection('faq')}
+                    className="text-foreground/80 hover:text-foreground transition-smooth"
+                  >
+                    FAQ
+                  </button>
+                </nav>
+              )}
+            </>
           )}
           
-          {/* Desktop Actions */}
-          <div className="hidden sm:flex items-center gap-3">
-            {isAuthenticated ? (
-              <UserDropdownMenu />
-            ) : (
-              <>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => navigate('/auth/login')}
-                  size="sm"
-                >
-                  Sign In
-                </Button>
-                <Button 
-                  onClick={handleStartFree}
-                  className="shadow-pulse hover-pulse"
-                  size="sm"
-                >
-                  Start Free
-                </Button>
-              </>
-            )}
-          </div>
+          {/* Desktop Actions - Hidden on dashboard routes */}
+          {!isDashboardRoute && (
+            <div className="hidden sm:flex items-center gap-3">
+              {isAuthenticated ? (
+                <UserDropdownMenu />
+              ) : (
+                <>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => navigate('/auth/login')}
+                    size="sm"
+                  >
+                    Sign In
+                  </Button>
+                  <Button 
+                    onClick={handleStartFree}
+                    className={premiumCTAClasses}
+                  >
+                    <span className={premiumCTAHighlight} />
+                    <span className="relative">Start Free</span>
+                    <ArrowRight className={premiumCTAIcon} />
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
 
-          {/* Mobile Menu */}
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild className="sm:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] sm:w-[350px]">
-              <div className="flex flex-col gap-6 mt-8">
-                {isAuthenticated ? (
-                  <>
-                    {/* User Profile in Mobile */}
-                    <div className="flex items-center gap-3 pb-4 border-b">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                        <User className="h-5 w-5 text-white" />
+          {/* Mobile Menu - Hidden on dashboard routes */}
+          {!isDashboardRoute && (
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild className="sm:hidden">
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px] sm:w-[350px]">
+                <div className="flex flex-col gap-6 mt-8">
+                  {isAuthenticated ? (
+                    <>
+                      {/* User Profile in Mobile */}
+                      <div className="flex items-center gap-3 pb-4 border-b">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                          <User className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{user?.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{user?.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-                      </div>
-                    </div>
 
-                    {/* Navigation Links in Mobile */}
-                    <nav className="flex flex-col gap-2">
-                      {navItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = location.pathname === item.path;
-                        
-                        return (
-                          <Link
-                            key={item.path}
-                            to={item.path}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                              isActive
-                                ? 'bg-primary text-primary-foreground'
-                                : 'text-foreground hover:bg-muted'
-                            }`}
-                          >
-                            <Icon className="h-4 w-4" />
-                            {item.label}
-                          </Link>
-                        );
-                      })}
-                    </nav>
+                      {/* Navigation Links in Mobile */}
+                      <nav className="flex flex-col gap-2">
+                        {navItems.map((item) => {
+                          const Icon = item.icon;
+                          const isActive = location.pathname === item.path;
+                          
+                          return (
+                            <Link
+                              key={item.path}
+                              to={item.path}
+                              onClick={() => setMobileMenuOpen(false)}
+                              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                                isActive
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'text-foreground hover:bg-muted'
+                              }`}
+                            >
+                              <Icon className="h-4 w-4" />
+                              {item.label}
+                            </Link>
+                          );
+                        })}
+                      </nav>
 
                     {/* Logout Button */}
                     <div className="pt-4 border-t mt-auto">
@@ -243,16 +252,19 @@ export const Header = () => {
                           handleStartFree();
                           setMobileMenuOpen(false);
                         }}
-                        className="w-full shadow-pulse hover-pulse"
+                        className={`${premiumCTAClasses} w-full`}
                       >
-                        Start Free Trial
+                        <span className={premiumCTAHighlight} />
+                        <span className="relative">Start Free Trial</span>
+                        <ArrowRight className={premiumCTAIcon} />
                       </Button>
                     </div>
                   </>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
         </div>
       </div>
     </header>

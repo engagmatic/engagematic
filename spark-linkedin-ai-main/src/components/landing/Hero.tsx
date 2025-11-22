@@ -133,64 +133,70 @@ export const Hero = () => {
               <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
               </svg>
-              <span>Up to 300 posts & comments/month • Cancel anytime</span>
+              <span>Here, your words sound like you—every time.</span>
             </div>
           </div>
 
-          {/* Feature cards - Premium UI */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-5xl mx-auto pt-4 sm:pt-6 lg:pt-8">
-              {/* AI Persona */}
-              <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-blue-50/30 to-indigo-50/20 dark:from-slate-900/90 dark:via-blue-950/30 dark:to-indigo-950/20 backdrop-blur-sm shadow-lg hover:shadow-xl p-6 hover-lift text-left transition-all">
-                <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2">Persona</div>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Feature cards - Compact UI - Single line, short, near hero */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 max-w-4xl mx-auto pt-4 sm:pt-5">
+              {/* AI Persona - Compact Single Line */}
+              <div className="rounded-xl border-2 border-blue-100/50 dark:border-blue-900/50 bg-gradient-to-br from-white/95 via-blue-50/30 to-indigo-50/20 dark:from-slate-900/95 dark:via-blue-950/30 dark:to-indigo-950/20 backdrop-blur-sm shadow-lg hover:shadow-xl p-3 sm:p-4 hover-lift transition-all duration-300">
+                <div className="flex flex-col items-center text-center gap-2">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-blue-600 via-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-md">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
-                  <h4 className="text-base font-semibold">Your authentic voice</h4>
-                </div>
-                <p className="text-sm text-muted-foreground">AI learns your unique style and creates content that sounds like YOU, not a robot.</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Authentic</span>
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Voice AI</span>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-[9px] sm:text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Persona</span>
+                    <h4 className="text-xs sm:text-sm font-semibold">Your authentic voice</h4>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight line-clamp-2">AI learns your unique style and creates content that sounds like YOU.</p>
+                    <div className="mt-1 flex flex-wrap gap-1 justify-center">
+                      <span className="px-1.5 py-0.5 text-[9px] rounded-full border bg-muted">Authentic</span>
+                      <span className="px-1.5 py-0.5 text-[9px] rounded-full border bg-muted">Voice AI</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Profile Analyzer */}
-              <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-purple-50/30 to-pink-50/20 dark:from-slate-900/90 dark:via-purple-950/30 dark:to-pink-950/20 backdrop-blur-sm shadow-lg hover:shadow-xl p-6 hover-lift text-left transition-all">
-                <div className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-2">Analyzer</div>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {/* Profile Analyzer - Compact Single Line */}
+              <div className="rounded-xl border-2 border-purple-100/50 dark:border-purple-900/50 bg-gradient-to-br from-white/95 via-purple-50/30 to-pink-50/20 dark:from-slate-900/95 dark:via-purple-950/30 dark:to-pink-950/20 backdrop-blur-sm shadow-lg hover:shadow-xl p-3 sm:p-4 hover-lift transition-all duration-300">
+                <div className="flex flex-col items-center text-center gap-2">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-blue-600 via-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-md">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                   </div>
-                  <h4 className="text-base font-semibold">Profile optimization</h4>
-                </div>
-                <p className="text-sm text-muted-foreground">Get AI-powered score & actionable tips to boost your LinkedIn visibility.</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Score</span>
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Tips</span>
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Insights</span>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-[9px] sm:text-[10px] font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">Analyzer</span>
+                    <h4 className="text-xs sm:text-sm font-semibold">Profile optimization</h4>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight line-clamp-2">Get AI-powered score & actionable tips to boost your LinkedIn visibility.</p>
+                    <div className="mt-1 flex flex-wrap gap-1 justify-center">
+                      <span className="px-1.5 py-0.5 text-[9px] rounded-full border bg-muted">Score</span>
+                      <span className="px-1.5 py-0.5 text-[9px] rounded-full border bg-muted">Tips</span>
+                      <span className="px-1.5 py-0.5 text-[9px] rounded-full border bg-muted">Insights</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Smart Comments */}
-              <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-indigo-50/30 to-purple-50/20 dark:from-slate-900/90 dark:via-indigo-950/30 dark:to-purple-950/20 backdrop-blur-sm shadow-lg hover:shadow-xl p-6 hover-lift text-left transition-all">
-                <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-2">Engagement</div>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {/* Smart Comments - Compact Single Line */}
+              <div className="rounded-xl border-2 border-indigo-100/50 dark:border-indigo-900/50 bg-gradient-to-br from-white/95 via-indigo-50/30 to-purple-50/20 dark:from-slate-900/95 dark:via-indigo-950/30 dark:to-purple-950/20 backdrop-blur-sm shadow-lg hover:shadow-xl p-3 sm:p-4 hover-lift transition-all duration-300">
+                <div className="flex flex-col items-center text-center gap-2">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-blue-600 via-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-md">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
                   </div>
-                  <h4 className="text-base font-semibold">Smart comments</h4>
-                </div>
-                <p className="text-sm text-muted-foreground">Generate genuine comments that build real relationships and conversations.</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Genuine</span>
-                  <span className="px-2 py-1 text-xs rounded-full border bg-muted">Engage</span>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-[9px] sm:text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">Engagement</span>
+                    <h4 className="text-xs sm:text-sm font-semibold">Smart comments</h4>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight line-clamp-2">Generate genuine comments that build real relationships and conversations.</p>
+                    <div className="mt-1 flex flex-wrap gap-1 justify-center">
+                      <span className="px-1.5 py-0.5 text-[9px] rounded-full border bg-muted">Genuine</span>
+                      <span className="px-1.5 py-0.5 text-[9px] rounded-full border bg-muted">Engage</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

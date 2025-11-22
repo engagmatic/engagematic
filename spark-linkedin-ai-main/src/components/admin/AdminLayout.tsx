@@ -13,10 +13,11 @@ import {
   Shield,
   Menu,
   X,
-  Mail
+  Mail,
+  UserPlus
 } from 'lucide-react';
 import { useState } from 'react';
-import { Logo } from '../Logo';
+import { LogoWithText } from '../LogoWithText';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -25,6 +26,7 @@ interface AdminLayoutProps {
 const navigationItems = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/admin/users', label: 'Users', icon: Users },
+  { path: '/admin/affiliates', label: 'Affiliates', icon: UserPlus },
   { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/admin/email-analytics', label: 'Email Analytics', icon: Mail },
   { path: '/admin/blog', label: 'Blog CMS', icon: FileText },
@@ -61,12 +63,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </Button>
             
             <Link to="/admin/dashboard" className="flex items-center gap-2">
-              <Logo 
-                className="w-10 h-10"
-                size={40}
+              <LogoWithText 
+                textSize="sm"
+                showLink={false}
               />
               <div className="hidden sm:block">
-                <div className="text-sm font-bold">LinkedInPulse</div>
                 <div className="text-xs text-muted-foreground">Admin Portal</div>
               </div>
             </Link>

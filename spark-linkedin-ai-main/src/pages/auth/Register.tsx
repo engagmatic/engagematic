@@ -3,260 +3,120 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { 
-  Activity, 
-  Loader2, 
-  Eye, 
-  EyeOff, 
-  ArrowRight, 
-  ArrowLeft, 
-  Check, 
-  User, 
-  Briefcase, 
-  Target, 
+import {
+  Loader2,
+  Eye,
+  EyeOff,
+  Check,
+  User,
   Sparkles,
-  Upload,
-  TrendingUp,
-  Building2,
-  Rocket,
-  Crown,
-  Heart,
-  Music,
-  Film,
-  Code,
-  Palette,
-  Gamepad2,
-  Dumbbell,
-  Globe,
-  Zap,
-  Lightbulb,
-  Bookmark,
-  MessageSquare,
-  Calendar,
-  X
+  Lightbulb
 } from "lucide-react";
+import { LogoWithText } from "@/components/LogoWithText";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { WRITING_STYLES, TONE_OPTIONS, INDUSTRIES, EXPERIENCE_LEVELS } from "@/constants/personaOptions";
-
-const GOALS = [
-  { id: 'sales', label: 'Sales & Lead Generation', icon: TrendingUp, color: 'bg-blue-100 text-blue-700' },
-  { id: 'marketing', label: 'Marketing & Growth', icon: Rocket, color: 'bg-purple-100 text-purple-700' },
-  { id: 'personal', label: 'Personal Branding', icon: Crown, color: 'bg-yellow-100 text-yellow-700' },
-  { id: 'company', label: 'Company Account', icon: Building2, color: 'bg-green-100 text-green-700' },
-  { id: 'founder', label: 'Founder/CEO', icon: Rocket, color: 'bg-pink-100 text-pink-700' },
-  { id: 'startup', label: 'Startup Team', icon: Sparkles, color: 'bg-indigo-100 text-indigo-700' },
-  { id: 'agency', label: 'Agency/Client Work', icon: Briefcase, color: 'bg-orange-100 text-orange-700' },
-];
-
-const TOPICS = [
-  { id: 'business', label: 'Business', icon: Briefcase },
-  { id: 'tech', label: 'Technology', icon: Code },
-  { id: 'marketing', label: 'Marketing', icon: Target },
-  { id: 'design', label: 'Design', icon: Palette },
-  { id: 'startup', label: 'Startups', icon: Rocket },
-  { id: 'leadership', label: 'Leadership', icon: Crown },
-  { id: 'health', label: 'Health & Wellness', icon: Heart },
-  { id: 'fitness', label: 'Fitness', icon: Dumbbell },
-  { id: 'travel', label: 'Travel', icon: Globe },
-  { id: 'food', label: 'Food & Cooking', icon: Heart },
-  { id: 'music', label: 'Music', icon: Music },
-  { id: 'sports', label: 'Sports', icon: Gamepad2 },
-  { id: 'entertainment', label: 'Entertainment', icon: Film },
-  { id: 'education', label: 'Education', icon: Bookmark },
-];
-
-const CONTENT_TYPES = ["Posts", "Comments", "Ideas", "Newsletters", "Polls"];
-const POST_FREQUENCIES = ["Daily", "3-5x/week", "Weekly", "Occasionally"];
-const TOPIC_OPTIONS = [
-  "Leadership", "Technology", "Marketing", "Career Growth", "Sales", "Personal Branding", "HR/Recruitment", "Startups",
-  "Wellness", "Education", "Productivity", "Networking", "Remote Work", "Innovation", "Other"
-];
+import { PERSONA_PRESETS, isPersonaSlug, type PersonaSlug } from "@/constants/personaPresets";
 
 const Register = () => {
-  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
-    avatar: "",
-    personaName: "",
-    writingStyle: "",
-    tone: "",
-    expertise: "",
-    targetAudience: "",
-    jobTitle: "",
-    company: "",
-    industry: "",
-    experience: "",
-    goal: "",
-    contentTypes: [],
-    postingFrequency: "",
-    topics: [],
-    linkedinUrl: ""
+    confirmPassword: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<any>({});
+  const [personaSlug, setPersonaSlug] = useState<PersonaSlug | null>(null);
 
-  const { register, clearError } = useAuth();
+  const { register } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const steps = [
-    { id: 1, title: "Account Setup", icon: User },
-    { id: 2, title: "Your Goals", icon: Target },
-    { id: 3, title: "AI Persona", icon: Sparkles },
-    { id: 4, title: "Preferences", icon: Heart }
-  ];
-
-  // Check for pre-filled data from free post generator
-  useEffect(() => {
-    const prefillData = sessionStorage.getItem("registration_prefill");
-    if (prefillData) {
-      try {
-        const data = JSON.parse(prefillData);
-        // Map persona from free generator to form data
-        if (data.persona) {
-          const personaMap: Record<string, any> = {
-            founder: { name: "Startup Founder", writingStyle: "storyteller", tone: "confident", expertise: "Startups, Entrepreneurship, Business Growth" },
-            marketer: { name: "Digital Marketer", writingStyle: "conversational", tone: "enthusiastic", expertise: "Digital Marketing, SEO, Growth Hacking" },
-            recruiter: { name: "HR Leader", writingStyle: "conversational", tone: "empathetic", expertise: "Talent Acquisition, HR, Recruitment" },
-            consultant: { name: "Management Consultant", writingStyle: "analytical", tone: "strategic", expertise: "Strategy, Business Consulting, Transformation" },
-            "sales-pro": { name: "Sales Leader", writingStyle: "conversational", tone: "enthusiastic", expertise: "Sales, Business Development, Revenue Growth" },
-            student: { name: "Student", writingStyle: "personal", tone: "authentic", expertise: "Learning, Career Development, Education" },
-            creator: { name: "Content Creator", writingStyle: "storyteller", tone: "creative", expertise: "Content Creation, Storytelling, Personal Branding" },
-          };
-          
-          const personaInfo = personaMap[data.persona] || personaMap.founder;
-          setFormData(prev => ({
-            ...prev,
-            personaName: personaInfo.name,
-            writingStyle: personaInfo.writingStyle,
-            tone: personaInfo.tone,
-            expertise: personaInfo.expertise,
-            targetAudience: data.audience || "",
-            primaryGoal: data.goal || "",
-          }));
-          
-          // Show toast about pre-filled data
-          toast({
-            title: "Welcome back! ✨",
-            description: "We've pre-filled your information from your free post. Just complete the remaining steps!",
-          });
-        }
-      } catch (error) {
-        console.error("Failed to parse prefill data", error);
-      }
-    }
-  }, [toast]);
-
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error on change for better UX
     if (errors[field]) {
-      setErrors((prev: any) => ({ ...prev, [field]: null }));
+      setErrors((prev: any) => ({ ...prev, [field]: undefined }));
     }
-    if (error) clearError();
   };
 
-  const handleTopicToggle = (topicId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      topics: prev.topics.includes(topicId)
-        ? prev.topics.filter(t => t !== topicId)
-        : [...prev.topics, topicId]
-    }));
-  };
-
-  const handleContentTypeToggle = (type: string) => {
-    setFormData(prev => ({
-      ...prev,
-      contentTypes: prev.contentTypes.includes(type)
-        ? prev.contentTypes.filter(t => t !== type)
-        : [...prev.contentTypes, type]
-    }));
-  };
-
-  const validateStep = (step: number): boolean => {
+  const validateForm = (): boolean => {
     const newErrors: any = {};
 
-    switch (step) {
-      case 1:
-        if (!formData.name.trim()) newErrors.name = "Name is required";
-        if (!formData.email.trim()) {
-          newErrors.email = "Email is required";
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-          newErrors.email = "Please enter a valid email";
-        }
-        if (!formData.password) {
-          newErrors.password = "Password is required";
-        } else if (formData.password.length < 6) {
-          newErrors.password = "Password must be at least 6 characters";
-        }
-        if (formData.password !== formData.confirmPassword) {
-          newErrors.confirmPassword = "Passwords do not match";
-        }
-        break;
-      case 2:
-        if (!formData.goal) newErrors.goal = "Please select your primary goal";
-        break;
-      case 3:
-        if (!formData.personaName) newErrors.personaName = "Persona name is required";
-        if (!formData.writingStyle) newErrors.writingStyle = "Writing style is required";
-        if (!formData.tone) newErrors.tone = "Tone is required";
-        break;
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
-    if (validateStep(currentStep)) {
-      // If on last step (4), submit instead of going to next step
-      if (currentStep === 4) {
-        handleSubmit();
-      } else {
-        setCurrentStep(prev => Math.min(prev + 1, 4));
-      }
+  // Handle Enter key submission
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !isLoading && validateForm()) {
+      handleSubmit();
     }
   };
 
-  const handlePrevious = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
-  };
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const slugParam = params.get("persona");
 
-  const handleSubmit = async () => {
+    if (isPersonaSlug(slugParam)) {
+      setPersonaSlug(slugParam);
+    } else {
+      setPersonaSlug(null);
+    }
+  }, [location.search]);
+
+  const selectedPersona = personaSlug ? PERSONA_PRESETS[personaSlug] : null;
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      const personaPayload = selectedPersona?.persona;
+      const profilePayload = selectedPersona?.profile;
+
       const result = await register({
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        interests: formData.topics || [], // Send topics as interests
-        persona: {
-          name: formData.personaName,
-          style: formData.writingStyle,
-          tone: formData.tone,
-          expertise: formData.expertise,
-          targetAudience: formData.targetAudience,
-          contentTypes: formData.contentTypes || [],
-        },
+        ...(profilePayload ? { profile: profilePayload } : {}),
+        ...(personaPayload ? { persona: personaPayload } : {})
       });
       
       if (result.success) {
         toast({
           title: "Welcome to LinkedInPulse! 🎉",
-          description: "Your account and AI persona have been created successfully. Complete your profile in the dashboard.",
+          description: "Your account has been created. Complete your profile setup to get started.",
         });
+        
+        // Small delay to ensure auth context is updated before navigation
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         const returnTo = location.state?.returnTo || '/dashboard';
         navigate(returnTo);
@@ -267,10 +127,10 @@ const Register = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Registration failed",
-        description: "An unexpected error occurred",
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
@@ -278,366 +138,176 @@ const Register = () => {
     }
   };
 
-  const progress = (currentStep / 4) * 100;
-  const error = null; // From useAuth
-
-  const allRequired = [
-    formData.name,
-    formData.email,
-    formData.password,
-    formData.goal,
-    formData.personaName,
-    formData.writingStyle,
-    formData.tone,
-  ].every(Boolean);
-
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-primary/5 to-background">
-      <div className="w-full max-w-4xl">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-background via-primary/5 to-background">
+      <div className="w-full max-w-2xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
-              <Activity className="h-7 w-7 text-white animate-pulse" />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              LinkedInPulse
-            </span>
-          </Link>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+        <div className="text-center mb-6 sm:mb-8">
+          <LogoWithText 
+            textSize="lg"
+            className="mb-4 justify-center"
+          />
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
             Create your AI-powered LinkedIn presence
           </h1>
-          <p className="text-muted-foreground">Get started in just 10 seconds – full setup awaits in your dashboard</p>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Get started in seconds – complete your profile setup after signup
+          </p>
         </div>
 
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            {steps.map((step, index) => {
-              const Icon = step.icon;
-              const isCompleted = currentStep > step.id;
-              const isCurrent = currentStep === step.id;
-              
-              return (
-                <div key={step.id} className="flex items-center flex-1">
-                  <div className={`flex flex-col items-center flex-1 ${
-                    index === steps.length - 1 ? 'flex-none' : ''
-                  }`}>
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${
-                      isCompleted
-                        ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg scale-110' 
-                        : isCurrent
-                        ? 'bg-primary text-primary-foreground shadow-md scale-105'
-                        : 'bg-muted text-muted-foreground'
-                    }`}>
-                      {isCompleted ? <Check className="h-6 w-6" /> : <Icon className="h-6 w-6" />}
-                    </div>
-                    <span className={`text-xs mt-2 hidden sm:block text-center ${
-                      isCurrent ? 'font-medium text-primary' : 'text-muted-foreground'
-                    }`}>
-                      {step.title}
-                    </span>
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className={`flex-1 h-1 mx-2 rounded transition-all ${
-                      isCompleted ? 'bg-gradient-to-r from-blue-600 to-purple-600' : 'bg-muted'
-                    }`} />
-                  )}
-                </div>
-              );
-            })}
+        {selectedPersona && (
+          <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-left shadow-sm dark:border-blue-900/60 dark:bg-blue-950/40 animate-in fade-in slide-in-from-top-2">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-blue-700 dark:text-blue-200">
+              {selectedPersona.label}
+            </div>
+            <div className="mt-2 text-sm font-semibold text-blue-900 dark:text-blue-100">
+              {selectedPersona.stat}
+            </div>
+            {selectedPersona.lines.map((line, index) => (
+              <p key={index} className="mt-1 text-sm text-blue-900/80 dark:text-blue-100/80">
+                {line}
+              </p>
+            ))}
+            <p className="mt-3 text-xs font-medium uppercase tracking-[0.26em] text-blue-600/80 dark:text-blue-300/80">
+              We’ll preload this playbook into your workspace.
+            </p>
           </div>
-          <Progress value={progress} className="h-2" />
-        </div>
+        )}
 
         {/* Main Content Card */}
-        <Card className="p-6 md:p-8 shadow-2xl border-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {/* Step 1: Account Setup */}
-          {currentStep === 1 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <User className="h-10 w-10 text-white" />
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">Let's get started</h2>
-                <p className="text-muted-foreground">Create your account in seconds</p>
+        <Card className="p-5 sm:p-6 md:p-8 shadow-2xl border-2 border-blue-100/50 dark:border-blue-900/50 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-5 sm:space-y-6">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-4 shadow-lg animate-in zoom-in duration-300">
+                <User className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+              </div>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Let's get started</h2>
+              <p className="text-sm sm:text-base text-muted-foreground">Create your account in seconds</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  value={formData.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  className={`transition-all ${errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:border-blue-500 focus:ring-blue-500'}`}
+                  disabled={isLoading}
+                  autoComplete="name"
+                  autoFocus
+                />
+                {errors.name && <p className="text-xs text-red-500 animate-in fade-in">{errors.name}</p>}
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={formData.name}
-                    onChange={(e) => handleChange('name', e.target.value)}
-                    className={errors.name ? 'border-red-500' : ''}
-                    disabled={isLoading}
-                  />
-                  {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="john@example.com"
-                    value={formData.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                    className={errors.email ? 'border-red-500' : ''}
-                    disabled={isLoading}
-                  />
-                  {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Create a secure password"
-                      value={formData.password}
-                      onChange={(e) => handleChange('password', e.target.value)}
-                      className={errors.password ? 'border-red-500' : ''}
-                      disabled={isLoading}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3"
-                      onClick={() => setShowPassword(!showPassword)}
-                      disabled={isLoading}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                  {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm your password"
-                      value={formData.confirmPassword}
-                      onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                      className={errors.confirmPassword ? 'border-red-500' : ''}
-                      disabled={isLoading}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      disabled={isLoading}
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                  {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="john@example.com"
+                  value={formData.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  className={`transition-all ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:border-blue-500 focus:ring-blue-500'}`}
+                  disabled={isLoading}
+                  autoComplete="email"
+                />
+                {errors.email && <p className="text-xs text-red-500 animate-in fade-in">{errors.email}</p>}
               </div>
 
-              <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <Check className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-blue-900 dark:text-blue-100">
-                  Your password is encrypted and secure. We'll never store it in plain text.
-                </p>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Create a secure password"
+                    value={formData.password}
+                    onChange={(e) => handleChange('password', e.target.value)}
+                    className={`transition-all ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:border-blue-500 focus:ring-blue-500'}`}
+                    disabled={isLoading}
+                    autoComplete="new-password"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+                {errors.password && <p className="text-xs text-red-500 animate-in fade-in">{errors.password}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                    className={`transition-all ${errors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:border-blue-500 focus:ring-blue-500'}`}
+                    disabled={isLoading}
+                    autoComplete="new-password"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    disabled={isLoading}
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+                {errors.confirmPassword && <p className="text-xs text-red-500 animate-in fade-in">{errors.confirmPassword}</p>}
               </div>
             </div>
-          )}
 
-          {/* Step 2: Your Goals */}
-          {currentStep === 2 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <Target className="h-10 w-10 text-white" />
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">What's your primary goal?</h2>
-                <p className="text-muted-foreground">Help us personalize your experience – more details later</p>
-              </div>
-
-              {/* Goal Selection */}
-              <div>
-                <Label className="text-sm font-medium mb-3 block">Select your goal</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {GOALS.map((goal) => {
-                    const Icon = goal.icon;
-                    return (
-                      <button
-                        key={goal.id}
-                        type="button"
-                        onClick={() => handleChange('goal', goal.id)}
-                        className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${
-                          formData.goal === goal.id
-                            ? 'border-primary bg-primary/10 shadow-md scale-105'
-                            : 'border-border hover:border-primary/50 hover:shadow-md'
-                        }`}
-                        disabled={isLoading}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className={`p-2 rounded-lg ${goal.color}`}>
-                            <Icon className="h-5 w-5" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium">{goal.label}</p>
-                          </div>
-                          {formData.goal === goal.id && (
-                            <Check className="h-5 w-5 text-primary" />
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-                {errors.goal && <p className="text-xs text-red-500 mt-1">{errors.goal}</p>}
-              </div>
-
-              <div className="flex items-start gap-3 p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                <Lightbulb className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-purple-900 dark:text-purple-100">
-                  You'll add job details, industry, and experience in your dashboard after signup.
-                </p>
-              </div>
+            <div className="flex items-start gap-3 p-3 sm:p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800 animate-in fade-in duration-300">
+              <Check className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <p className="text-xs sm:text-sm text-blue-900 dark:text-blue-100">
+                Your password is encrypted and secure. We'll never store it in plain text.
+              </p>
             </div>
-          )}
 
-          {/* Step 3: AI Persona (Minimal) */}
-          {currentStep === 3 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <Sparkles className="h-10 w-10 text-white" />
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">Build your AI persona</h2>
-                <p className="text-muted-foreground">Quick basics now – refine expertise and audience later</p>
-              </div>
-
-              <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl border border-purple-200 dark:border-purple-800">
-                <div className="flex items-start gap-3">
-                  <Lightbulb className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-purple-900 dark:text-purple-100">
-                      Quick Setup
-                    </p>
-                    <p className="text-sm text-purple-700 dark:text-purple-300">
-                      Choose a name and style to get started. Full customization in dashboard.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="personaName" className="text-sm font-medium">Persona Name</Label>
-                  <Input
-                    id="personaName"
-                    type="text"
-                    placeholder="e.g., Professional Sarah"
-                    value={formData.personaName}
-                    onChange={(e) => handleChange('personaName', e.target.value)}
-                    className={errors.personaName ? 'border-red-500' : ''}
-                    disabled={isLoading}
-                  />
-                  {errors.personaName && <p className="text-xs text-red-500">{errors.personaName}</p>}
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="writingStyle" className="text-sm font-medium">Writing Style</Label>
-                    <select
-                      id="writingStyle"
-                      value={formData.writingStyle}
-                      onChange={(e) => handleChange('writingStyle', e.target.value)}
-                      className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ${
-                        errors.writingStyle ? 'border-red-500' : ''
-                      }`}
-                      disabled={isLoading}
-                    >
-                      <option value="">Select style</option>
-                      {WRITING_STYLES.map((style) => (
-                        <option key={style.value} value={style.value}>{style.label}</option>
-                      ))}
-                    </select>
-                    {errors.writingStyle && <p className="text-xs text-red-500">{errors.writingStyle}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="tone" className="text-sm font-medium">Tone</Label>
-                    <select
-                      id="tone"
-                      value={formData.tone}
-                      onChange={(e) => handleChange('tone', e.target.value)}
-                      className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ${
-                        errors.tone ? 'border-red-500' : ''
-                      }`}
-                      disabled={isLoading}
-                    >
-                      <option value="">Select tone</option>
-                      {TONE_OPTIONS.map((tone) => (
-                        <option key={tone.value} value={tone.value}>{tone.label}</option>
-                      ))}
-                    </select>
-                    {errors.tone && <p className="text-xs text-red-500">{errors.tone}</p>}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 bg-pink-50 dark:bg-pink-950/20 rounded-lg border border-pink-200 dark:border-pink-800">
-                <Lightbulb className="h-5 w-5 text-pink-600 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-pink-900 dark:text-pink-100">
-                  Add expertise areas and target audience in your dashboard to supercharge your persona.
-                </p>
-              </div>
+            <div className="flex items-start gap-3 p-3 sm:p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800 animate-in fade-in duration-300 delay-75">
+              <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+              <p className="text-xs sm:text-sm text-purple-900 dark:text-purple-100">
+                After signup, you'll complete your profile setup to personalize your AI experience.
+              </p>
             </div>
-          )}
 
-
-          {/* Navigation Buttons */}
-          <div className="flex justify-between items-center mt-8 pt-6 border-t">
+            {/* Submit Button */}
             <Button
-              type="button"
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentStep === 1 || isLoading}
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Previous
-            </Button>
-
-            <Button
-              type="button"
-              onClick={handleNext}
+              type="submit"
               disabled={isLoading}
-              className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
+              size="lg"
+              className="w-full gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 text-base sm:text-lg font-semibold py-6 sm:py-7"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {currentStep === 4 ? "Creating account..." : "Loading..."}
-                </>
-              ) : currentStep === 4 ? (
-                <>
-                  <Sparkles className="h-4 w-4" />
-                  Complete Setup
+                  <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                  Creating account...
                 </>
               ) : (
                 <>
-                  Next
-                  <ArrowRight className="h-4 w-4" />
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Create Account
                 </>
               )}
             </Button>
-          </div>
+          </form>
         </Card>
 
         {/* Footer */}
@@ -646,7 +316,7 @@ const Register = () => {
             Already have an account?{" "}
             <Link
               to="/auth/login"
-              className="text-primary hover:underline font-medium"
+              className="text-primary hover:underline font-medium transition-colors"
             >
               Sign in
             </Link>

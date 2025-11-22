@@ -1,0 +1,582 @@
+import { useState } from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import { 
+  Target,
+  Sparkles,
+  Heart,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Loader2,
+  Lightbulb,
+  TrendingUp,
+  Rocket,
+  Crown,
+  Building2,
+  Briefcase,
+  User
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { WRITING_STYLES, TONE_OPTIONS, INDUSTRIES, EXPERIENCE_LEVELS } from "@/constants/personaOptions";
+import api from "@/services/api";
+
+const GOALS = [
+  { id: 'sales', label: 'Sales & Leads', icon: TrendingUp, color: 'bg-blue-100 text-blue-700' },
+  { id: 'marketing', label: 'Marketing', icon: Rocket, color: 'bg-purple-100 text-purple-700' },
+  { id: 'personal', label: 'Personal Brand', icon: Crown, color: 'bg-yellow-100 text-yellow-700' },
+  { id: 'company', label: 'Company', icon: Building2, color: 'bg-green-100 text-green-700' },
+  { id: 'founder', label: 'Founder/CEO', icon: Rocket, color: 'bg-pink-100 text-pink-700' },
+  { id: 'startup', label: 'Startup', icon: Sparkles, color: 'bg-indigo-100 text-indigo-700' },
+  { id: 'agency', label: 'Agency', icon: Briefcase, color: 'bg-orange-100 text-orange-700' },
+];
+
+interface OnboardingModalProps {
+  isOpen: boolean;
+  onComplete: () => void;
+}
+
+export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) => {
+  const { updateProfile } = useAuth();
+  const { toast } = useToast();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<any>({});
+  const [formData, setFormData] = useState({
+    // Step 1: Professional Info & Goals
+    primaryGoal: "",
+    jobTitle: "",
+    company: "",
+    industry: "",
+    experience: "",
+    // Step 2: AI Persona
+    personaName: "",
+    writingStyle: "",
+    tone: "",
+    expertise: "",
+    targetAudience: "",
+    // Step 3: Preferences
+    linkedinUrl: "",
+    postFormatting: "plain",
+  });
+
+  const steps = [
+    { id: 1, title: "Profile", icon: User },
+    { id: 2, title: "AI Persona", icon: Sparkles },
+    { id: 3, title: "Preferences", icon: Heart }
+  ];
+
+  const handleChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev: any) => ({ ...prev, [field]: null }));
+    }
+  };
+
+  const validateStep = (step: number): boolean => {
+    const newErrors: any = {};
+
+    switch (step) {
+      case 1:
+        if (!formData.primaryGoal) newErrors.primaryGoal = "Please select your primary goal";
+        break;
+      case 2:
+        if (!formData.writingStyle) newErrors.writingStyle = "Writing style is required";
+        if (!formData.tone) newErrors.tone = "Tone is required";
+        break;
+      case 3:
+        // Step 3 is optional
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const canProceed = (): boolean => {
+    switch (currentStep) {
+      case 1:
+        return !!formData.primaryGoal;
+      case 2:
+        return !!formData.writingStyle && !!formData.tone;
+      case 3:
+        return true; // Step 3 is optional
+      default:
+        return false;
+    }
+  };
+
+  const handleNext = () => {
+    if (validateStep(currentStep)) {
+      if (currentStep === 3) {
+        handleSubmit();
+      } else {
+        setCurrentStep(prev => Math.min(prev + 1, 3));
+      }
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
+
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.updateProfile({
+        profile: {
+          onboardingCompleted: true,
+          jobTitle: formData.jobTitle || null,
+          company: formData.company || null,
+          industry: formData.industry || null,
+          experience: formData.experience || null,
+          linkedinUrl: formData.linkedinUrl || null,
+          postFormatting: formData.postFormatting || "plain",
+        },
+        persona: {
+          name: formData.personaName || `${formData.jobTitle || 'Professional'} Persona`,
+          writingStyle: formData.writingStyle || null,
+          tone: formData.tone || null,
+          expertise: formData.expertise || null,
+          targetAudience: formData.targetAudience || null,
+          goals: formData.primaryGoal || null,
+          contentTypes: [],
+        },
+        interests: [],
+      });
+
+      if (!response.success) {
+        throw new Error(response.message || "Failed to save");
+      }
+
+      if (updateProfile) {
+        await updateProfile({
+          profile: {
+            onboardingCompleted: true,
+          }
+        });
+      }
+
+      toast({
+        title: "🎉 Welcome to LinkedInPulse!",
+        description: "Your personalized experience is ready.",
+      });
+
+      onComplete();
+    } catch (error: any) {
+      console.error("Onboarding save error:", error);
+      toast({
+        title: "Failed to save",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const progress = (currentStep / 3) * 100;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={() => {}}>
+      <DialogContent 
+        className="max-w-2xl max-h-[90vh] sm:max-h-[85vh] w-[95vw] sm:w-full p-0 !grid-cols-1 flex flex-col [&>button]:hidden animate-in fade-in zoom-in duration-300"
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
+        {/* Compact Header */}
+        <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-b px-4 sm:px-6 py-3">
+          <div className="text-center">
+            <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Welcome! 🎉
+            </h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Quick setup to personalize your experience
+            </p>
+          </div>
+        </div>
+        
+        {/* Compact Progress Steps */}
+        <div className="flex-shrink-0 px-4 sm:px-6 py-3 border-b bg-muted/30">
+          <div className="flex justify-between items-center mb-2">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              const isCompleted = currentStep > step.id;
+              const isCurrent = currentStep === step.id;
+              
+              return (
+                <div key={step.id} className="flex items-center flex-1">
+                  <div className="flex flex-col items-center flex-1">
+                    <div className={`relative w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300 ${
+                      isCompleted
+                        ? 'bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 text-white shadow-md scale-105' 
+                        : isCurrent
+                        ? 'bg-gradient-to-br from-blue-500 to-purple-500 text-white shadow-md scale-105'
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {isCompleted ? (
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5" />
+                      ) : (
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                      )}
+                    </div>
+                    <span className={`text-[10px] sm:text-xs mt-1.5 font-medium transition-colors ${
+                      isCurrent ? 'text-primary' : isCompleted ? 'text-primary/70' : 'text-muted-foreground'
+                    }`}>
+                      {step.title}
+                    </span>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className={`flex-1 h-0.5 mx-1 sm:mx-2 rounded-full transition-all duration-300 ${
+                      isCompleted 
+                        ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600' 
+                        : 'bg-muted'
+                    }`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <Progress value={progress} className="h-1.5" />
+        </div>
+
+        {/* Scrollable Content - Fixed */}
+        <div 
+          className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6 py-4 sm:py-5 min-h-0"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(59, 91, 255, 0.3) transparent'
+          }}
+        >
+          {/* Step 1: Professional Info & Goals */}
+          {currentStep === 1 && (
+            <div className="space-y-4 pb-6 animate-in fade-in slide-in-from-right-4 duration-200">
+              <div className="text-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-2 shadow-md">
+                  <Target className="h-6 w-6 text-white" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold mb-1">What's your goal?</h2>
+                <p className="text-xs text-muted-foreground">We'll personalize your experience</p>
+              </div>
+
+              {/* Compact Goal Selection */}
+              <div>
+                <Label className="text-xs font-medium mb-2 block">Primary Goal</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {GOALS.map((goal) => {
+                    const Icon = goal.icon;
+                    return (
+                      <button
+                        key={goal.id}
+                        type="button"
+                        onClick={() => handleChange('primaryGoal', goal.id)}
+                        className={`p-2.5 rounded-lg border-2 text-left transition-all duration-200 ${
+                          formData.primaryGoal === goal.id
+                            ? 'border-primary bg-primary/10 shadow-sm scale-105'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        disabled={isLoading}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className={`p-1 rounded ${goal.color}`}>
+                            <Icon className="h-3.5 w-3.5" />
+                          </div>
+                          <span className="text-xs font-medium">{goal.label}</span>
+                          {formData.primaryGoal === goal.id && (
+                            <Check className="h-3 w-3 text-primary ml-auto" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                {errors.primaryGoal && <p className="text-xs text-red-500 mt-1">{errors.primaryGoal}</p>}
+              </div>
+
+              {/* Compact Professional Info */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="jobTitle" className="text-xs font-medium">Job Title</Label>
+                  <Input
+                    id="jobTitle"
+                    type="text"
+                    placeholder="e.g., Marketing Manager"
+                    value={formData.jobTitle}
+                    onChange={(e) => handleChange('jobTitle', e.target.value)}
+                    className="h-9 text-sm"
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="company" className="text-xs font-medium">Company</Label>
+                  <Input
+                    id="company"
+                    type="text"
+                    placeholder="e.g., Acme Inc."
+                    value={formData.company}
+                    onChange={(e) => handleChange('company', e.target.value)}
+                    className="h-9 text-sm"
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="industry" className="text-xs font-medium">Industry</Label>
+                  <select
+                    id="industry"
+                    value={formData.industry}
+                    onChange={(e) => handleChange('industry', e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs"
+                    disabled={isLoading}
+                  >
+                    <option value="">Select</option>
+                    {INDUSTRIES.slice(0, 10).map((industry) => (
+                      <option key={industry} value={industry}>{industry}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="experience" className="text-xs font-medium">Experience</Label>
+                  <select
+                    id="experience"
+                    value={formData.experience}
+                    onChange={(e) => handleChange('experience', e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs"
+                    disabled={isLoading}
+                  >
+                    <option value="">Select</option>
+                    {EXPERIENCE_LEVELS.map((level) => (
+                      <option key={level} value={level}>{level}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: AI Persona - Compact */}
+          {currentStep === 2 && (
+            <div className="space-y-4 pb-6 animate-in fade-in slide-in-from-right-4 duration-200">
+              <div className="text-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center mx-auto mb-2 shadow-md">
+                  <Sparkles className="h-6 w-6 text-white" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold mb-1">Build your AI persona</h2>
+                <p className="text-xs text-muted-foreground">Create content that sounds like you</p>
+              </div>
+
+              <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="flex items-start gap-2">
+                  <Lightbulb className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-purple-700 dark:text-purple-300">
+                    AI will learn your style to create authentic content
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="personaName" className="text-xs font-medium">Persona Name (Optional)</Label>
+                  <Input
+                    id="personaName"
+                    type="text"
+                    placeholder="e.g., Professional Sarah"
+                    value={formData.personaName}
+                    onChange={(e) => handleChange('personaName', e.target.value)}
+                    className="h-9 text-sm"
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="writingStyle" className="text-xs font-medium">Writing Style *</Label>
+                    <select
+                      id="writingStyle"
+                      value={formData.writingStyle}
+                      onChange={(e) => handleChange('writingStyle', e.target.value)}
+                      className={`flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs ${
+                        errors.writingStyle ? 'border-red-500' : ''
+                      }`}
+                      disabled={isLoading}
+                    >
+                      <option value="">Select</option>
+                      {WRITING_STYLES.map((style) => (
+                        <option key={style.value} value={style.value}>{style.label}</option>
+                      ))}
+                    </select>
+                    {errors.writingStyle && <p className="text-xs text-red-500">{errors.writingStyle}</p>}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="tone" className="text-xs font-medium">Tone *</Label>
+                    <select
+                      id="tone"
+                      value={formData.tone}
+                      onChange={(e) => handleChange('tone', e.target.value)}
+                      className={`flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs ${
+                        errors.tone ? 'border-red-500' : ''
+                      }`}
+                      disabled={isLoading}
+                    >
+                      <option value="">Select</option>
+                      {TONE_OPTIONS.map((tone) => (
+                        <option key={tone.value} value={tone.value}>{tone.label}</option>
+                      ))}
+                    </select>
+                    {errors.tone && <p className="text-xs text-red-500">{errors.tone}</p>}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="expertise" className="text-xs font-medium">Expertise (Optional)</Label>
+                  <Textarea
+                    id="expertise"
+                    placeholder="e.g., Digital marketing, Leadership..."
+                    value={formData.expertise}
+                    onChange={(e) => handleChange('expertise', e.target.value)}
+                    className="text-sm min-h-[60px]"
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="targetAudience" className="text-xs font-medium">Target Audience (Optional)</Label>
+                  <Textarea
+                    id="targetAudience"
+                    placeholder="e.g., Marketing professionals, Startup founders..."
+                    value={formData.targetAudience}
+                    onChange={(e) => handleChange('targetAudience', e.target.value)}
+                    className="text-sm min-h-[60px]"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Preferences - Compact */}
+          {currentStep === 3 && (
+            <div className="space-y-4 pb-6 animate-in fade-in slide-in-from-right-4 duration-200">
+              <div className="text-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center mx-auto mb-2 shadow-md">
+                  <Heart className="h-6 w-6 text-white" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold mb-1">Final touches</h2>
+                <p className="text-xs text-muted-foreground">Almost done!</p>
+              </div>
+
+              {/* Post Formatting Preference */}
+              <div>
+                <Label className="text-xs font-medium mb-2 block">Post Formatting Style</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: "plain", label: "Plain Text", recommended: true },
+                    { value: "bold", label: "Bold", description: "Key points bold" },
+                    { value: "italic", label: "Italic", description: "Emphasis italic" },
+                    { value: "emoji", label: "Emoji", description: "With emojis" },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => handleChange('postFormatting', option.value)}
+                      className={`p-2.5 rounded-lg border-2 text-left transition-all duration-200 ${
+                        formData.postFormatting === option.value
+                          ? 'border-primary bg-primary/10 shadow-sm'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                      disabled={isLoading}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-medium">{option.label}</span>
+                            {option.recommended && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">Rec</span>
+                            )}
+                          </div>
+                          {option.description && (
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{option.description}</p>
+                          )}
+                        </div>
+                        {formData.postFormatting === option.value && (
+                          <Check className="h-3.5 w-3.5 text-primary" />
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="linkedinUrl" className="text-xs font-medium">LinkedIn URL (Optional)</Label>
+                <Input
+                  id="linkedinUrl"
+                  type="url"
+                  placeholder="https://linkedin.com/in/yourprofile"
+                  value={formData.linkedinUrl}
+                  onChange={(e) => handleChange('linkedinUrl', e.target.value)}
+                  className="h-9 text-sm"
+                  disabled={isLoading}
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  💡 Optional: Help us enhance your persona
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Compact Navigation Buttons */}
+        <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t px-4 sm:px-6 py-3">
+          <div className="flex justify-between items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 1 || isLoading}
+              className="gap-1.5 h-9 text-xs"
+              size="sm"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back
+            </Button>
+
+            <Button
+              type="button"
+              onClick={handleNext}
+              disabled={isLoading || !canProceed()}
+              className="gap-1.5 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 h-9 text-xs flex-1 sm:flex-initial sm:px-6"
+              size="sm"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  {currentStep === 3 ? "Saving..." : "Loading..."}
+                </>
+              ) : currentStep === 3 ? (
+                <>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Complete 🚀
+                </>
+              ) : (
+                <>
+                  Next
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};

@@ -26,6 +26,9 @@ import pricingRoutes from "./routes/pricing.js";
 import profileRoutes from "./routes/profile.js";
 import trialRoutes from "./routes/trial.js";
 import referralRoutes from "./routes/referrals.js";
+import affiliateAuthRoutes from "./routes/affiliateAuth.js";
+import affiliateDashboardRoutes from "./routes/affiliateDashboard.js";
+import adminAffiliatesRoutes from "./routes/adminAffiliates.js";
 import linkedinScraperRoutes from "./routes/linkedinScraper.js";
 import offerRoutes from "./routes/offers.js";
 import extensionRoutes from "./routes/extension.js";
@@ -34,6 +37,7 @@ import couponRoutes from "./routes/coupons.js";
 // Import services
 import emailScheduler from "./services/emailScheduler.js";
 import googleAnalyticsService from "./services/googleAnalyticsService.js";
+import affiliateScheduler from "./services/affiliateScheduler.js";
 
 const app = express();
 
@@ -61,7 +65,8 @@ const allowedOrigins = [
   "http://www.engagematic.com",
   "chrome-extension://eofnebjkdholeglegaillijcbbefgmjm", // your Chrome extension origin
   "http://localhost:5173", // if your frontend runs locally
-  "http://localhost:5000", // optional, if your backend talks to itself  "http://localhost:5173", // dev frontend if any
+  "http://localhost:5000", // optional, if your backend talks to itself
+  "http://localhost:8080", // frontend dev server
 ];
 
 const corsOptions = {
@@ -78,20 +83,33 @@ const corsOptions = {
 
     // Check if origin is in allowed list
     if (allowedOrigins.includes(origin)) {
-      console.log("CORS allowed origin:", origin);
+      console.log("✅ CORS allowed origin:", origin);
       return callback(null, true);
     }
 
     // Log rejected origins for debugging
-    console.warn(`CORS blocked origin: ${origin}`);
+    console.warn(`❌ CORS blocked origin: ${origin}`);
     callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: [
+    "Content-Type", 
+    "Authorization", 
+    "X-Requested-With",
+    "Accept",
+    "Origin"
+  ],
+  exposedHeaders: ["Content-Length", "X-Foo"],
+  maxAge: 86400, // 24 hours
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options("*", cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -136,6 +154,8 @@ app.use("/api/pricing", pricingRoutes); // Pricing and credit management
 app.use("/api/profile", profileRoutes); // Profile completion management
 app.use("/api/trial", trialRoutes); // Trial management
 app.use("/api/referrals", referralRoutes); // Referral system
+app.use("/api/affiliate", affiliateAuthRoutes); // Affiliate authentication
+app.use("/api/affiliate/dashboard", affiliateDashboardRoutes); // Affiliate dashboard
 app.use("/api/linkedin-scraper", linkedinScraperRoutes); // LinkedIn Profile Scraper
 app.use("/api/offers", offerRoutes); // Coupons and Offers
 app.use("/api/extension", extensionRoutes); // Chrome Extension API
@@ -144,6 +164,7 @@ app.use("/api/coupons", couponRoutes); // Coupon management and validation
 // Admin routes
 app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication
 app.use("/api/admin", adminRoutes); // Admin-only dashboard routes
+app.use("/api/admin/affiliates", adminAffiliatesRoutes); // Admin affiliate management
 
 // 404 handler
 app.use("*", (req, res) => {
@@ -229,6 +250,13 @@ const startServer = async () => {
       console.warn("⚠️  Google Analytics failed to initialize:", error.message);
     }
 
+    // Start affiliate commission scheduler (graceful failure)
+    try {
+      affiliateScheduler.start();
+    } catch (error) {
+      console.warn("⚠️  Affiliate scheduler failed to start:", error.message);
+    }
+
     app.listen(config.PORT, () => {
       console.log(`🚀 LinkedInPulse API server running on port ${config.PORT}`);
       console.log(`📊 Environment: ${config.NODE_ENV}`);
@@ -244,6 +272,7 @@ const startServer = async () => {
 process.on("SIGTERM", async () => {
   console.log("SIGTERM received, shutting down gracefully");
   emailScheduler.stop();
+  affiliateScheduler.stop();
   await mongoose.connection.close();
   process.exit(0);
 });
@@ -251,6 +280,7 @@ process.on("SIGTERM", async () => {
 process.on("SIGINT", async () => {
   console.log("SIGINT received, shutting down gracefully");
   emailScheduler.stop();
+  affiliateScheduler.stop();
   await mongoose.connection.close();
   process.exit(0);
 });

@@ -52,18 +52,30 @@ export const validatePostGeneration = [
     .trim()
     .notEmpty()
     .withMessage("Topic is required")
-    .isLength({ min: 10, max: 500 })
-    .withMessage("Topic must be between 10 and 500 characters"),
+    .isLength({ min: 10, max: 1000 })
+    .withMessage("Topic must be between 10 and 1000 characters"),
   body("hookId")
     .notEmpty()
     .withMessage("Hook ID is required")
     .custom((value) => {
+      if (!value) return false;
+      
+      // Convert to string for validation
+      const hookIdStr = String(value).trim();
+      
       // Accept both MongoDB ObjectIds and trending hook IDs
       const mongoIdPattern = /^[0-9a-fA-F]{24}$/;
-      const trendingHookPattern = /^trending_\d+_\d+$/;
-      return mongoIdPattern.test(value) || trendingHookPattern.test(value);
+      const trendingHookPattern = /^trending_\d+(_\d+)?$/; // More flexible: trending_123 or trending_123_456
+      
+      const isValid = mongoIdPattern.test(hookIdStr) || trendingHookPattern.test(hookIdStr);
+      
+      if (!isValid) {
+        console.error("Invalid hook ID format:", hookIdStr, "Type:", typeof value);
+      }
+      
+      return isValid;
     })
-    .withMessage("Invalid hook ID format"),
+    .withMessage("Invalid hook ID format. Must be a valid MongoDB ObjectId or trending hook ID."),
   // personaId is now optional (can send persona data directly)
   // Skip validation entirely if personaId is not provided
   body("personaId")
@@ -89,8 +101,8 @@ export const validatePostGenerationWithoutHook = [
     .trim()
     .notEmpty()
     .withMessage("Topic is required")
-    .isLength({ min: 10, max: 500 })
-    .withMessage("Topic must be between 10 and 500 characters"),
+    .isLength({ min: 10, max: 1000 })
+    .withMessage("Topic must be between 10 and 1000 characters"),
   body("title")
     .trim()
     .notEmpty()
@@ -127,7 +139,18 @@ export const validateCommentGeneration = [
     .trim()
     .isLength({ min: 10, max: 2000 })
     .withMessage("Post content must be between 10 and 2000 characters"),
-  body("personaId").optional().isMongoId().withMessage("Invalid persona ID"),
+  // personaId is now optional (can send persona data directly)
+  // Skip validation entirely if personaId is not provided
+  body("personaId")
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      // Only validate if value exists and is not empty
+      if (value && value !== "") {
+        return /^[0-9a-fA-F]{24}$/.test(value);
+      }
+      return true;
+    })
+    .withMessage("Invalid persona ID format"),
   body("persona")
     .optional()
     .isObject()

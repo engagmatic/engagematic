@@ -6,20 +6,24 @@ class PricingService {
     this.pricingConfigs = {
       INR: {
         currency: "INR",
-        postPrice: 5.5,
+        postPrice: 15, // ₹15 per post for bulk pack (after minimum)
+        bulkPackMinPrice: 125, // Minimum ₹125 for 9 posts
+        bulkPackMinPosts: 9, // Minimum posts for bulk pack
         commentPrice: 2.8,
         ideaPrice: 2.8,
-        starterPrice: 249,
-        proPrice: 649,
-        elitePrice: 1299, // Value-driven pricing
+        starterPrice: 199, // Updated to ₹199/month
+        proPrice: 449, // Updated to ₹449/month
+        elitePrice: 1299, // Keep for backward compatibility
       },
       USD: {
         currency: "USD",
-        postPrice: 0.22,
+        postPrice: 0.49, // $0.49 per post (100 posts = $49)
+        bulkPackMinPrice: 4.41, // Minimum $4.41 for 9 posts (9 × $0.49)
+        bulkPackMinPosts: 9, // Minimum posts for bulk pack
         commentPrice: 0.11,
         ideaPrice: 0.11,
-        starterPrice: 10,
-        proPrice: 19,
+        starterPrice: 10, // $10/month
+        proPrice: 19, // $19/month
         elitePrice: 49,
       },
     };
@@ -41,10 +45,13 @@ class PricingService {
       throw new Error("Invalid currency");
     }
 
-    const totalPrice =
-      credits.posts * config.postPrice +
-      credits.comments * config.commentPrice +
-      credits.ideas * config.ideaPrice;
+    // For bulk pack (one-time), calculate based on posts only (minimum based on posts selected)
+    // For regular subscriptions, include all credits
+    const postPrice = credits.posts * config.postPrice;
+    const commentPrice = credits.comments * config.commentPrice;
+    const ideaPrice = credits.ideas * config.ideaPrice;
+
+    const totalPrice = postPrice + commentPrice + ideaPrice;
 
     return Math.round(totalPrice * 100) / 100; // Round to 2 decimal places
   }
@@ -95,6 +102,10 @@ class PricingService {
   // Get pricing breakdown
   getPricingBreakdown(credits, currency = "USD") {
     const config = this.pricingConfigs[currency];
+    const isPreset = this.isStarterPlan(credits) || this.isProPlan(credits) || this.isElitePlan(credits);
+    
+    // For preset plans, use the preset price. For custom plans, calculate from unit prices
+    const totalPrice = isPreset ? this.getDisplayPrice(credits, currency) : this.calculatePrice(credits, currency);
 
     return {
       posts: {
@@ -112,9 +123,9 @@ class PricingService {
         unitPrice: config.ideaPrice,
         total: credits.ideas * config.ideaPrice,
       },
-      total: this.calculatePrice(credits, currency),
+      total: totalPrice,
       currency: currency,
-      isPreset: this.isStarterPlan(credits) || this.isProPlan(credits) || this.isElitePlan(credits),
+      isPreset: isPreset,
     };
   }
 

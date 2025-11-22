@@ -1,10 +1,45 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+// Detect production environment and set appropriate API URL
+const getApiUrl = () => {
+  // If explicitly set in env, use that
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Auto-detect production based on hostname
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    
+    // Production domain
+    if (hostname === 'www.linkedinpulse.com' || hostname === 'linkedinpulse.com') {
+      return 'https://spark-linkedin-ai.onrender.com/api';
+    }
+    
+    // Local development
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:5000/api';
+    }
+  }
+  
+  // Default fallback
+  return 'http://localhost:5000/api';
+};
+
+const API_BASE_URL = getApiUrl();
+
+// Log API URL in development for debugging
+if (import.meta.env.DEV) {
+  console.log('🔗 API Base URL:', API_BASE_URL);
+}
 
 class ApiClient {
   constructor() {
     this.baseURL = API_BASE_URL;
     this.token = localStorage.getItem("token");
+    
+    // Log in production too (helpful for debugging production issues)
+    if (typeof window !== 'undefined' && window.location.hostname.includes('linkedinpulse.com')) {
+      console.log('🔗 API Base URL:', this.baseURL);
+    }
   }
 
   setToken(token) {
@@ -64,9 +99,17 @@ class ApiClient {
           const errorMsg =
             data.details || data.message || "Invalid request data";
           const validationErrors = data.errors
-            ?.map((e) => e.msg || e.message)
+            ?.map((e) => e.msg || e.message || `${e.path}: ${e.msg}`)
             .join(", ");
-          throw new Error(validationErrors || errorMsg);
+          const fullErrorMsg = validationErrors || errorMsg;
+          
+          console.error("Validation errors:", {
+            errors: data.errors,
+            details: data.details,
+            message: data.message,
+          });
+          
+          throw new Error(fullErrorMsg);
         } else if (response.status === 401) {
           throw new Error("Authentication required. Please log in again.");
         } else if (response.status === 403) {
@@ -86,10 +129,40 @@ class ApiClient {
 
       return data;
     } catch (error) {
+      // Handle network errors (CORS, fetch failures) gracefully
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        console.error("Network error (CORS or connection issue):", {
+          endpoint,
+          url,
+          baseURL: this.baseURL,
+          error: error.message,
+        });
+        
+        // Provide more helpful error message based on environment
+        const isProduction = window.location.hostname.includes('linkedinpulse.com');
+        if (isProduction) {
+          throw new Error("Unable to connect to server. The backend may be temporarily unavailable. Please try again in a moment.");
+        } else {
+          throw new Error("Network error: Unable to connect to server. Please check your connection and ensure the backend is running.");
+        }
+      }
+      
+      // Handle CORS errors specifically
+      if (error.message && error.message.includes("CORS")) {
+        console.error("CORS error:", {
+          endpoint,
+          url,
+          baseURL: this.baseURL,
+          origin: window.location.origin,
+        });
+        throw new Error("CORS error: The server is blocking requests from this origin. Please contact support.");
+      }
+      
       console.error("API request failed:", {
         endpoint,
         error: error.message,
         url,
+        baseURL: this.baseURL,
       });
       throw error;
     }
@@ -139,13 +212,6 @@ class ApiClient {
     return this.request("/auth/profile", {
       method: "PUT",
       body: JSON.stringify(profileData),
-    });
-  }
-
-  async updateProfile(data) {
-    return await this.request("/profile/update", {
-      method: "PUT",
-      body: JSON.stringify(data),
     });
   }
 
@@ -203,6 +269,13 @@ class ApiClient {
     return this.request("/content/analyze-linkedin-profile", {
       method: "POST",
       body: JSON.stringify({ profileUrl }),
+    });
+  }
+
+  async analyzeContentOptimization(optimizationData) {
+    return this.request("/content/analyze-optimization", {
+      method: "POST",
+      body: JSON.stringify(optimizationData),
     });
   }
 
@@ -403,6 +476,57 @@ class ApiClient {
       method: "POST",
       body: JSON.stringify(emailData),
     });
+  }
+
+  // Affiliate authentication methods
+  async affiliateRegister(data) {
+    const response = await this.request("/affiliate/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+
+    if (response.success && response.data.token) {
+      this.setToken(response.data.token);
+    }
+
+    return response;
+  }
+
+  async affiliateLogin(credentials) {
+    const response = await this.request("/affiliate/login", {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    });
+
+    if (response.success && response.data.token) {
+      this.setToken(response.data.token);
+    }
+
+    return response;
+  }
+
+  async getAffiliateProfile() {
+    return this.request("/affiliate/me");
+  }
+
+  async updateAffiliateProfile(profileData) {
+    return this.request("/affiliate/profile", {
+      method: "PUT",
+      body: JSON.stringify(profileData),
+    });
+  }
+
+  // Affiliate dashboard methods
+  async getAffiliateDashboardStats() {
+    return this.request("/affiliate/dashboard/stats");
+  }
+
+  async getAffiliateCommissions(page = 1, limit = 50) {
+    return this.request(`/affiliate/dashboard/commissions?page=${page}&limit=${limit}`);
+  }
+
+  async getAffiliateReferrals() {
+    return this.request("/affiliate/dashboard/referrals");
   }
 
   // Testimonial methods

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Star, X, Heart, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import apiClient from "@/services/api";
 
 interface TestimonialPopupProps {
   open: boolean;
@@ -31,19 +32,19 @@ export const TestimonialPopup = ({
 
   const contentTypeMessages = {
     post: {
-      title: "Great job on your first post! 🎉",
-      description: "We'd love to hear about your experience. Your feedback helps us improve!",
-      placeholder: "Tell us what you think about generating your LinkedIn post...",
+      title: "How was your experience?",
+      description: "We'd love to hear your feedback on generating your LinkedIn post.",
+      placeholder: "Share your thoughts...",
     },
     comment: {
-      title: "Awesome! You've generated your first comment! 💬",
-      description: "How was your experience? We value your feedback!",
-      placeholder: "Share your thoughts on the comment generation...",
+      title: "How was your experience?",
+      description: "We'd love to hear your feedback on generating comments.",
+      placeholder: "Share your thoughts...",
     },
     idea: {
-      title: "Fantastic! You've generated your first idea! 💡",
-      description: "What do you think? Your feedback matters to us!",
-      placeholder: "Let us know how you liked the idea generation...",
+      title: "How was your experience?",
+      description: "We'd love to hear your feedback on generating ideas.",
+      placeholder: "Share your thoughts...",
     },
   };
 
@@ -71,21 +72,11 @@ export const TestimonialPopup = ({
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/testimonials`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          content: testimonial.trim(),
-          rating,
-          type: contentType,
-        }),
+      const result = await apiClient.submitTestimonial({
+        comment: testimonial.trim(),
+        rating,
+        triggeredBy: contentType,
       });
-
-      const result = await response.json();
 
       if (result.success) {
         toast({
@@ -120,39 +111,37 @@ export const TestimonialPopup = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[95vw] md:max-w-[500px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="text-center">
-          <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center">
-            <Heart className="h-8 w-8 text-white" />
-          </div>
-          <DialogTitle className="text-xl md:text-2xl font-bold">
+      <DialogContent className="sm:max-w-[400px] p-6">
+        <DialogHeader className="space-y-2 pb-4">
+          <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             {message.title}
           </DialogTitle>
-          <DialogDescription className="text-sm md:text-base pt-2">
+          <DialogDescription className="text-sm text-gray-600 dark:text-gray-400">
             {message.description}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-6">
+        <div className="space-y-4">
           {/* Star Rating */}
           <div>
-            <Label className="text-sm font-medium mb-3 block text-center">
-              How would you rate your experience?
+            <Label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              Rating
             </Label>
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center gap-1.5">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
                   type="button"
                   onClick={() => setRating(star)}
-                  className="transition-transform hover:scale-110 focus:outline-none"
+                  className="focus:outline-none transition-colors"
                   disabled={isSubmitting}
+                  aria-label={`Rate ${star} stars`}
                 >
                   <Star
-                    className={`h-8 w-8 md:h-10 md:w-10 transition-colors ${
+                    className={`h-5 w-5 transition-colors ${
                       star <= rating
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "fill-gray-300 text-gray-300"
+                        ? "fill-amber-400 text-amber-400"
+                        : "fill-gray-200 text-gray-300 dark:fill-gray-700 dark:text-gray-600"
                     }`}
                   />
                 </button>
@@ -162,51 +151,41 @@ export const TestimonialPopup = ({
 
           {/* Testimonial Input */}
           <div>
-            <Label htmlFor="testimonial" className="text-sm font-medium mb-2 block">
-              Your Feedback
+            <Label htmlFor="testimonial" className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              Feedback
             </Label>
             <Textarea
               id="testimonial"
               placeholder={message.placeholder}
               value={testimonial}
               onChange={(e) => setTestimonial(e.target.value)}
-              className="min-h-[100px] resize-none"
+              className="min-h-[80px] text-sm resize-none"
               disabled={isSubmitting}
             />
           </div>
-
-          {/* Info Message */}
-          <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-            <p className="text-xs text-blue-900 dark:text-blue-100 text-center">
-              💡 Your feedback helps us improve and helps other users discover LinkedInPulse!
-            </p>
-          </div>
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+        <DialogFooter className="flex gap-2 pt-4 border-t">
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={handleSkip}
             disabled={isSubmitting}
-            className="w-full sm:w-auto"
+            className="text-sm"
           >
             Skip
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting || rating === 0 || !testimonial.trim()}
-            className="w-full sm:w-auto bg-gradient-to-r from-pink-600 to-orange-600 hover:from-pink-700 hover:to-orange-700"
+            className="text-sm bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-gray-200 dark:text-gray-900"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting...
+                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                Submitting
               </>
             ) : (
-              <>
-                <Heart className="mr-2 h-4 w-4" />
-                Submit Feedback
-              </>
+              "Submit"
             )}
           </Button>
         </DialogFooter>

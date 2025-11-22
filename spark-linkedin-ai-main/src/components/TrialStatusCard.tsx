@@ -54,7 +54,12 @@ export const TrialStatusCard = () => {
   };
 
   const handleUpgrade = () => {
-    navigate("/pricing");
+    if (window.location.pathname === '/') {
+      const pricingSection = document.getElementById('pricing');
+      pricingSection?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/#pricing');
+    }
   };
 
   if (loading) {

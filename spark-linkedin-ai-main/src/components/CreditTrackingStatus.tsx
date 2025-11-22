@@ -47,7 +47,11 @@ export const CreditTrackingStatus = () => {
           setCreditData(response.data);
         }
       } catch (error) {
-        console.error('Failed to fetch credit data:', error);
+        // Silently handle CORS/network errors - don't show alerts
+        const errorMsg = error.message || '';
+        if (!errorMsg.includes("CORS") && !errorMsg.includes("fetch") && !errorMsg.includes("Network error")) {
+          console.error('Failed to fetch credit data:', error);
+        }
       } finally {
         setIsLoadingCredits(false);
       }
@@ -116,7 +120,8 @@ export const CreditTrackingStatus = () => {
 
   const ideasUsed = subscription.usage?.ideasGenerated || 0;
   const ideasLimit = subscription.limits?.ideasPerMonth || 25;
-  const ideasPercentage = ideasLimit > 0 ? (ideasUsed / ideasLimit) * 100 : 0;
+  const isIdeasUnlimited = ideasLimit === -1;
+  const ideasPercentage = isIdeasUnlimited ? 0 : (ideasLimit > 0 ? (ideasUsed / ideasLimit) * 100 : 0);
 
   const getUsageColor = (percentage: number) => {
     if (percentage >= 90) return 'text-red-600';
@@ -261,16 +266,25 @@ export const CreditTrackingStatus = () => {
                 </span>
               </div>
               <span className={`text-lg font-bold ${getUsageColor(ideasPercentage)}`}>
-                {ideasUsed}/{ideasLimit}
+                {isIdeasUnlimited ? `${ideasUsed} (Unlimited)` : `${ideasUsed}/${ideasLimit}`}
               </span>
             </div>
-            <Progress 
-              value={ideasPercentage} 
-              className="h-2 bg-slate-100 dark:bg-slate-800"
-            />
-            <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
-              {ideasLimit - ideasUsed} remaining this month
-            </p>
+            {!isIdeasUnlimited && (
+              <>
+                <Progress 
+                  value={ideasPercentage} 
+                  className="h-2 bg-slate-100 dark:bg-slate-800"
+                />
+                <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
+                  {ideasLimit - ideasUsed} remaining this month
+                </p>
+              </>
+            )}
+            {isIdeasUnlimited && (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 font-medium">
+                Unlimited ideas available
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -288,7 +302,7 @@ export const CreditTrackingStatus = () => {
                 Experience the platform risk-free
               </h4>
               <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                You have <strong>{getTrialDaysRemaining()} days</strong> to explore all features. Generate up to <strong>{postsLimit} posts</strong>, <strong>{commentsLimit} comments</strong>, and <strong>{ideasLimit} content ideas</strong> to discover how LinkedInPulse transforms your content strategy.
+                You have <strong>{getTrialDaysRemaining()} days</strong> to explore all features. Generate up to <strong>{postsLimit} posts</strong>, <strong>{commentsLimit} comments</strong>, and <strong>{isIdeasUnlimited ? 'unlimited' : ideasLimit} content ideas</strong> to discover how LinkedInPulse transforms your content strategy.
               </p>
             </div>
           </div>
@@ -302,7 +316,7 @@ export const CreditTrackingStatus = () => {
             asChild 
             className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all"
           >
-            <Link to="/" className="flex items-center justify-center gap-2">
+            <Link to="/plan-management" className="flex items-center justify-center gap-2">
               <Sparkles className="w-5 h-5" />
               {isTrialExpired ? "Choose Your Plan" : "Upgrade Now"}
               <TrendingUp className="w-5 h-5" />
@@ -317,7 +331,7 @@ export const CreditTrackingStatus = () => {
               variant="outline" 
               className="flex-1 h-12 font-semibold"
             >
-              <Link to="/plan-management" className="flex items-center justify-center gap-2">
+              <Link to="/#pricing" className="flex items-center justify-center gap-2">
                 <Settings className="w-4 h-4" />
                 Modify Plan
               </Link>

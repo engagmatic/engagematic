@@ -119,6 +119,15 @@ const userSchema = new mongoose.Schema(
         type: String,
         default: null,
       },
+      onboardingCompleted: {
+        type: Boolean,
+        default: false,
+      },
+      postFormatting: {
+        type: String,
+        enum: ["plain", "bold", "italic", "emoji"],
+        default: "plain",
+      },
     },
     // User interests/topics
     interests: [
@@ -161,6 +170,12 @@ const userSchema = new mongoose.Schema(
         type: String,
         default: null,
       },
+      trainingPostIds: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Content",
+        },
+      ],
     },
   },
   {
@@ -168,9 +183,11 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Index for better query performance
+// Indexes for better query performance
 // Note: email index is already created by unique: true
 userSchema.index({ subscriptionId: 1 });
+userSchema.index({ email: 1, isActive: 1 }); // Compound index for login queries
+userSchema.index({ isActive: 1 }); // For filtering active users
 
 const User = mongoose.model("User", userSchema);
 

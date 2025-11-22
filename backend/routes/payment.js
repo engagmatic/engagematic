@@ -4,6 +4,7 @@ import { authenticateToken } from "../middleware/auth.js";
 import { requireProfileCompletion } from "../middleware/profileCompletion.js";
 import razorpayService from "../services/razorpay.js";
 import pricingService from "../services/pricingService.js";
+import referralService from "../services/referralService.js";
 import UserSubscription from "../models/UserSubscription.js";
 import { validationResult } from "express-validator";
 import Payment from "../models/Payment.js";
@@ -150,7 +151,7 @@ router.post(
       );
 
       // Save payment record to database
-      await Payment.create({
+      const paymentRecord = await Payment.create({
         userId,
         orderId,
         razorpayOrderId: orderId,
@@ -168,6 +169,35 @@ router.post(
           planType: subscription.planName,
         },
       });
+
+      // Calculate monthly amount (for recurring commissions)
+      // If yearly, divide by 12; if monthly, use as-is
+      const monthlyAmount =
+        billingInterval === "yearly"
+          ? Math.round((orderDetails.amount / 100) / 12)
+          : orderDetails.amount / 100;
+
+      // Create recurring commission for affiliate (10% monthly)
+      // This happens in background, don't block the response
+      referralService
+        .createRecurringCommission(
+          userId,
+          subscription.subscription._id,
+          paymentRecord._id,
+          subscription.planName.toLowerCase().replace(" plan", "") || "custom",
+          monthlyAmount
+        )
+        .then((result) => {
+          if (result.success) {
+            console.log(
+              `✅ Recurring commission created for affiliate after payment`
+            );
+          }
+        })
+        .catch((error) => {
+          console.error("Error creating recurring commission:", error);
+          // Non-blocking - payment still succeeds
+        });
 
       res.json({
         success: true,

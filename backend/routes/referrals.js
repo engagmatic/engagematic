@@ -3,6 +3,7 @@ import { authenticateToken } from "../middleware/auth.js";
 import { body, validationResult } from "express-validator";
 import referralService from "../services/referralService.js";
 import Referral from "../models/Referral.js";
+import AffiliateCommission from "../models/AffiliateCommission.js";
 import User from "../models/User.js";
 
 const router = express.Router();
@@ -248,5 +249,55 @@ router.get("/my-referrals", authenticateToken, async (req, res) => {
     });
   }
 });
+
+/**
+ * @route   GET /api/referrals/commissions
+ * @desc    Get commission history and stats for current affiliate
+ * @access  Private
+ */
+router.get("/commissions", authenticateToken, async (req, res) => {
+  try {
+    const commissions = await AffiliateCommission.find({
+      affiliateId: req.user._id,
+    })
+      .populate("referredUserId", "name email")
+      .populate("subscriptionId", "plan status")
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    // Get summary stats
+    const stats = await AffiliateCommission.aggregate([
+      { $match: { affiliateId: req.user._id } },
+      {
+        $group: {
+          _id: "$status",
+          total: { $sum: "$monthlyCommissionAmount" },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        commissions,
+        summary: stats.reduce(
+          (acc, stat) => {
+            acc[stat._id] = { total: stat.total, count: stat.count };
+            return acc;
+          },
+          {}
+        ),
+      },
+    });
+  } catch (error) {
+    console.error("Error getting commissions:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get commissions",
+    });
+  }
+});
+
 
 export default router;

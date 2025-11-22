@@ -10,10 +10,11 @@ import api from "@/services/api";
 import { useCreditPayment } from "@/hooks/useRazorpay";
 import geoLocationService from "@/services/geoLocationService";
 import { useAuth } from "@/contexts/AuthContext";
+import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon } from "@/styles/premiumButtons";
 import { CouponInput } from "@/components/CouponInput";
 
 type Currency = 'INR' | 'USD';
-type PlanType = 'starter' | 'pro' | 'elite';
+type PlanType = 'starter' | 'pro' | 'bulk';
 type BillingInterval = 'monthly' | 'yearly';
 
 interface Plan {
@@ -41,36 +42,36 @@ const plans: Plan[] = [
   {
     id: 'starter',
     name: 'Starter',
-    description: 'Perfect for individuals getting started',
-    price: { INR: 249, USD: 10 },
-    yearlyPrice: { INR: 2490, USD: 100 }, // 10 months price (2 months free)
-    limits: { posts: 15, comments: 30, ideas: 30 },
-    yearlyLimits: { posts: 15, comments: 30, ideas: 30 }, // Same limits for yearly
+    description: 'LinkedIn newcomers',
+    price: { INR: 199, USD: 10 }, // Updated to ₹199/month
+    yearlyPrice: { INR: 1990, USD: 100 }, // 10 months price (2 months free)
+    limits: { posts: 15, comments: 30, ideas: -1 }, // -1 means unlimited
+    yearlyLimits: { posts: 15, comments: 30, ideas: -1 }, // Unlimited ideas
     features: [], // Will be populated dynamically
     icon: <Zap className="h-6 w-6" />
   },
   {
     id: 'pro',
     name: 'Pro',
-    description: 'Best for professionals and content creators',
-    price: { INR: 649, USD: 19 },
-    yearlyPrice: { INR: 6490, USD: 190 }, // 10 months price (2 months free)
-    limits: { posts: 60, comments: 80, ideas: 80 },
-    yearlyLimits: { posts: 60, comments: 80, ideas: 80 }, // Same limits for yearly
+    description: 'Professionals & content creators',
+    price: { INR: 449, USD: 19 }, // Updated to ₹449/month
+    yearlyPrice: { INR: 4490, USD: 190 }, // 10 months price (2 months free)
+    limits: { posts: 60, comments: 80, ideas: -1 }, // -1 means unlimited
+    yearlyLimits: { posts: 60, comments: 80, ideas: -1 }, // Unlimited ideas
     popular: true,
     features: [], // Will be populated dynamically
     icon: <Rocket className="h-6 w-6" />
   },
   {
-    id: 'elite',
-    name: 'Elite / Agency',
-    description: 'For agencies and power users',
-    price: { INR: 1299, USD: 49 }, // Value-driven pricing for Elite
-    yearlyPrice: { INR: 12990, USD: 490 }, // 10 months price (2 months free)
-    limits: { posts: 200, comments: 300, ideas: 200 },
-    yearlyLimits: { posts: 200, comments: 300, ideas: 200 }, // Same limits for yearly
+    id: 'bulk',
+    name: 'Bulk Pack',
+    description: 'Occasional/campaign creators',
+    price: { INR: 150, USD: 15 }, // Base price (will be calculated based on slider)
+    yearlyPrice: { INR: 150, USD: 15 }, // One-time purchase
+    limits: { posts: 10, comments: 10, ideas: 10 }, // Default, will be overridden by slider
+    yearlyLimits: { posts: 10, comments: 10, ideas: 10 },
     features: [], // Will be populated dynamically
-    icon: <Star className="h-6 w-6" />
+    icon: <Settings className="h-6 w-6" />
   }
 ];
 
@@ -81,6 +82,8 @@ export const SaaSPricing = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
   const [couponData, setCouponData] = useState<any>(null);
+  const [bulkCredits, setBulkCredits] = useState({ posts: 9, comments: 7, ideas: 7 }); // Slider values for Bulk Pack (9 posts = ₹125 minimum)
+  const [showBulkSlider, setShowBulkSlider] = useState(false); // Control slider visibility
   const navigate = useNavigate();
   const { processCreditPayment, isProcessing, isLoaded } = useCreditPayment();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -121,48 +124,84 @@ export const SaaSPricing = () => {
     const currentLimits = billingInterval === 'yearly' ? plan.yearlyLimits : plan.limits;
     
     if (plan.id === 'starter') {
+      const ideasText = currentLimits.ideas === -1 ? 'Unlimited content ideas per month' : `${currentLimits.ideas} content ideas per month`;
       return [
         { text: `${currentLimits.posts} LinkedIn posts per month`, icon: <Clock className="h-4 w-4" /> },
-        { text: `${currentLimits.comments} LinkedIn comments per month`, icon: <Users className="h-4 w-4" /> },
-        { text: `${currentLimits.ideas} content ideas per month`, icon: <Zap className="h-4 w-4" /> },
+        { text: `${currentLimits.comments} comments per month`, icon: <Users className="h-4 w-4" /> },
+        { text: ideasText, icon: <Zap className="h-4 w-4" /> },
         { text: '15 curated AI personas', icon: <Users className="h-4 w-4" /> },
-        { text: 'Smart Planner', icon: <Settings className="h-4 w-4" /> },
+        { text: 'Smart Planner', icon: <Check className="h-4 w-4" /> },
         { text: 'Basic analytics', icon: <BarChart3 className="h-4 w-4" /> },
+        { text: 'Basic formatting controls', icon: <Settings className="h-4 w-4" /> },
         { text: 'Basic support (Email)', icon: <AtSign className="h-4 w-4" /> },
-        { text: '7-day free trial with full Pro features', icon: <Check className="h-4 w-4" /> }
+        { text: '7-day free trial, all Pro features', icon: <Check className="h-4 w-4" /> }
       ];
     }
     
     if (plan.id === 'pro') {
+      const ideasText = currentLimits.ideas === -1 ? 'Unlimited content ideas per month' : `${currentLimits.ideas} content ideas per month`;
       return [
-        { text: 'Everything in Starter, plus:', icon: <Check className="h-4 w-4" /> },
         { text: `${currentLimits.posts} LinkedIn posts per month`, icon: <Clock className="h-4 w-4" /> },
-        { text: `${currentLimits.comments} LinkedIn comments per month`, icon: <Users className="h-4 w-4" /> },
-        { text: `${currentLimits.ideas} content ideas per month`, icon: <Zap className="h-4 w-4" /> },
-        { text: 'Custom persona creation, unlimited edits', icon: <Users className="h-4 w-4" /> },
-        { text: 'Smart Planner', icon: <Settings className="h-4 w-4" /> },
+        { text: `${currentLimits.comments} comments per month`, icon: <Users className="h-4 w-4" /> },
+        { text: ideasText, icon: <Zap className="h-4 w-4" /> },
+        { text: 'Unlimited custom AI personas, full edits', icon: <Users className="h-4 w-4" /> },
+        { text: 'Smart Planner', icon: <Check className="h-4 w-4" /> },
         { text: 'Advanced analytics', icon: <BarChart3 className="h-4 w-4" /> },
+        { text: 'Full, premium formatting controls', icon: <Settings className="h-4 w-4" /> },
         { text: 'Priority support (Chat + Email)', icon: <Headphones className="h-4 w-4" /> },
-        { text: '7-day free trial with full Pro features', icon: <Check className="h-4 w-4" /> }
+        { text: 'Early new feature access', icon: <Sparkles className="h-4 w-4" /> },
+        { text: 'Persona tuning', icon: <Settings className="h-4 w-4" /> },
+        { text: '7-day free trial, all Pro features', icon: <Check className="h-4 w-4" /> }
       ];
     }
 
-    if (plan.id === 'elite') {
+    if (plan.id === 'bulk') {
       return [
-        { text: 'Everything in Pro, plus:', icon: <Check className="h-4 w-4" /> },
-        { text: `${currentLimits.posts} LinkedIn posts per month`, icon: <Clock className="h-4 w-4" /> },
-        { text: `${currentLimits.comments} LinkedIn comments per month`, icon: <Users className="h-4 w-4" /> },
-        { text: `${currentLimits.ideas} content ideas per month`, icon: <Zap className="h-4 w-4" /> },
-        { text: 'Unlimited AI personas', icon: <Users className="h-4 w-4" /> },
-        { text: 'Smart Planner', icon: <Settings className="h-4 w-4" /> },
-        { text: 'Full analytics dashboard', icon: <BarChart3 className="h-4 w-4" /> },
-        { text: 'API access (coming soon)', icon: <GlobeIcon className="h-4 w-4" /> },
-        { text: 'Dedicated account manager', icon: <Headphones className="h-4 w-4" /> },
-        { text: '7-day free trial with full Elite features', icon: <Check className="h-4 w-4" /> }
+        { text: `${bulkCredits.posts} LinkedIn posts (use anytime, no expiry)`, icon: <Clock className="h-4 w-4" /> },
+        { text: `${bulkCredits.comments} comments included`, icon: <Users className="h-4 w-4" /> },
+        { text: `${bulkCredits.ideas} content ideas included`, icon: <Zap className="h-4 w-4" /> },
+        { text: 'Basic formatting controls', icon: <Settings className="h-4 w-4" /> },
+        { text: 'Email support', icon: <AtSign className="h-4 w-4" /> },
+        { text: '7-day free trial, all Pro features', icon: <Check className="h-4 w-4" /> }
       ];
     }
     
     return plan.features;
+  };
+
+  const getBulkPackPrice = () => {
+    if (currency === 'INR') {
+      // Minimum price: ₹125 for 9 posts
+      // Then ₹15 per post for additional posts
+      if (bulkCredits.posts <= 9) {
+        return 125; // Minimum price
+      }
+      // For 10+ posts: ₹125 base + (additional posts × ₹15)
+      return 125 + ((bulkCredits.posts - 9) * 15);
+    } else {
+      // USD: $0.49 per post (100 posts = $49)
+      // Minimum is based on posts selected (9 posts minimum = $4.41)
+      const minPosts = 9;
+      const postPrice = 0.49;
+      const postsSelected = Math.max(bulkCredits.posts, minPosts);
+      const price = postsSelected * postPrice;
+      return Math.round(price * 100) / 100; // Round to 2 decimal places
+    }
+  };
+
+  const handleBulkSliderChange = (type: 'posts' | 'comments' | 'ideas', value: number[]) => {
+    const newValue = value[0];
+    if (type === 'posts') {
+      // When posts change, auto-adjust comments and ideas proportionally
+      const ratio = newValue / bulkCredits.posts;
+      setBulkCredits({
+        posts: newValue,
+        comments: Math.round(bulkCredits.comments * ratio),
+        ideas: Math.round(bulkCredits.ideas * ratio)
+      });
+    } else {
+      setBulkCredits({ ...bulkCredits, [type]: newValue });
+    }
   };
 
   const handlePlanSelect = async (planId: PlanType) => {
@@ -183,11 +222,23 @@ export const SaaSPricing = () => {
       const plan = plans.find(p => p.id === planId);
       if (!plan) return;
 
-      const credits = {
-        posts: billingInterval === 'yearly' ? plan.yearlyLimits.posts : plan.limits.posts,
-        comments: billingInterval === 'yearly' ? plan.yearlyLimits.comments : plan.limits.comments,
-        ideas: billingInterval === 'yearly' ? plan.yearlyLimits.ideas : plan.limits.ideas
-      };
+      let credits;
+      
+      if (planId === 'bulk') {
+        // Bulk pack: one-time purchase, credits based on sliders
+        credits = {
+          posts: bulkCredits.posts,
+          comments: bulkCredits.comments,
+          ideas: bulkCredits.ideas
+        };
+      } else {
+        // Monthly/yearly plans
+        credits = {
+          posts: billingInterval === 'yearly' ? plan.yearlyLimits.posts : plan.limits.posts,
+          comments: billingInterval === 'yearly' ? plan.yearlyLimits.comments : plan.limits.comments,
+          ideas: billingInterval === 'yearly' ? plan.yearlyLimits.ideas : plan.limits.ideas
+        };
+      }
 
       // Check if Razorpay is properly configured
       if (!isLoaded) {
@@ -195,8 +246,11 @@ export const SaaSPricing = () => {
         return;
       }
 
+      // For bulk pack, use one-time billing, otherwise use selected interval
+      const billingType = planId === 'bulk' ? 'one-time' : billingInterval;
+      
       // Process payment with Razorpay
-      await processCreditPayment(credits, currency, billingInterval);
+      await processCreditPayment(credits, currency, billingType);
     } catch (error) {
       console.error('Subscription error:', error);
       toast.error('Payment is currently unavailable. Please contact support or try again later.');
@@ -241,30 +295,32 @@ export const SaaSPricing = () => {
           </Button>
         </div>
 
-        {/* Billing Toggle */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-gray-100 rounded-lg p-1 flex">
-            <Button
-              variant={billingInterval === 'monthly' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setBillingInterval('monthly')}
-              className="px-6 py-2"
-            >
-              Monthly
-            </Button>
-            <Button
-              variant={billingInterval === 'yearly' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setBillingInterval('yearly')}
-              className="px-6 py-2"
-            >
-              Yearly
-              <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                Save 17%
-              </span>
-            </Button>
+        {/* Billing Toggle - Hide for Bulk Pack */}
+        {selectedPlan !== 'bulk' && (
+          <div className="flex justify-center mb-8">
+            <div className="bg-gray-100 rounded-lg p-1 flex">
+              <Button
+                variant={billingInterval === 'monthly' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setBillingInterval('monthly')}
+                className="px-6 py-2"
+              >
+                Monthly
+              </Button>
+              <Button
+                variant={billingInterval === 'yearly' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setBillingInterval('yearly')}
+                className="px-6 py-2"
+              >
+                Yearly
+                <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                  Save 17%
+                </span>
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Coupon Input */}
         {/* <div className="max-w-md mx-auto mb-8">
@@ -284,7 +340,8 @@ export const SaaSPricing = () => {
             {plans.map((plan) => (
               <Card 
                 key={plan.id}
-                className={`relative transition-all duration-300 hover:shadow-lg ${
+                onClick={() => setSelectedPlan(plan.id)}
+                className={`relative transition-all duration-300 hover:shadow-lg cursor-pointer ${
                   plan.popular 
                     ? 'border-primary shadow-md scale-105 bg-gradient-to-b from-white to-blue-50/20' 
                     : 'hover:border-primary/50 bg-white'
@@ -316,20 +373,137 @@ export const SaaSPricing = () => {
 
                   {/* Pricing */}
                   <div className="text-center space-y-1">
-                    <div className="space-y-1">
-                      <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-3xl font-bold text-gray-900">{currencySymbol}</span>
-                        <span className="text-3xl font-bold text-gray-900">{getPlanPrice(plan)}</span>
-                        <span className="text-gray-600">
-                          {billingInterval === 'yearly' ? '/year' : '/month'}
-                        </span>
+                    {plan.id === 'bulk' ? (
+                      <div className="space-y-4">
+                        {/* Price Display */}
+                        <div className="space-y-2">
+                          <div className="flex items-baseline justify-center gap-1">
+                            <span className="text-3xl font-bold text-gray-900">{currencySymbol}</span>
+                            <span className="text-3xl font-bold text-gray-900">
+                              {currency === 'INR' ? getBulkPackPrice() : getBulkPackPrice().toFixed(2)}
+                            </span>
+                            <span className="text-gray-600 text-lg">one-time</span>
+                          </div>
+                          {showBulkSlider && (
+                            <p className="text-xs text-muted-foreground">
+                              {bulkCredits.posts} posts • {bulkCredits.comments} comments • {bulkCredits.ideas} ideas
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Button to Show/Hide Slider */}
+                        {!showBulkSlider ? (
+                          <Button
+                            onClick={() => setShowBulkSlider(true)}
+                            variant="ghost"
+                            size="sm"
+                            className="group relative w-full justify-center gap-2 overflow-hidden rounded-full border border-white/40 bg-gradient-to-br from-white/25 via-white/10 to-transparent px-5 py-5 text-sm font-semibold text-primary shadow-[0_18px_45px_rgba(15,23,42,0.18)] backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/80 hover:bg-primary/90 hover:text-white"
+                          >
+                            <span className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                            <Settings className="relative h-4 w-4 transition-transform duration-300 group-hover:rotate-12" />
+                            <span className="relative">Customize Your Pack</span>
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => setShowBulkSlider(false)}
+                            variant="ghost"
+                            size="sm"
+                            className="w-full gap-2 text-xs"
+                          >
+                            Hide Customization
+                          </Button>
+                        )}
+
+                        {/* Sliders for Bulk Pack - Only shown when button is clicked */}
+                        {showBulkSlider && (
+                          <div className="space-y-5 px-2 animate-in fade-in slide-in-from-top-4 duration-300">
+                            {/* Posts Slider */}
+                            <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                              <h4 className="text-sm font-semibold text-gray-700">LinkedIn Posts</h4>
+                              <Badge variant="secondary" className="text-xs">
+                                {bulkCredits.posts} posts
+                              </Badge>
+                            </div>
+                            <Slider
+                              value={[bulkCredits.posts]}
+                              onValueChange={(value) => handleBulkSliderChange('posts', value)}
+                              min={9}
+                              max={100}
+                              step={1}
+                              className="w-full"
+                            />
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                              <span>9</span>
+                              <span className="font-medium text-primary">{bulkCredits.posts}</span>
+                              <span>100</span>
+                            </div>
+                            </div>
+
+                            {/* Comments Slider */}
+                            <div className="space-y-3">
+                              <div className="flex justify-between items-center">
+                                <h4 className="text-sm font-semibold text-gray-700">Comments</h4>
+                                <Badge variant="secondary" className="text-xs">
+                                  {bulkCredits.comments} comments
+                                </Badge>
+                              </div>
+                            <Slider
+                              value={[bulkCredits.comments]}
+                              onValueChange={(value) => handleBulkSliderChange('comments', value)}
+                              min={7}
+                              max={100}
+                              step={1}
+                              className="w-full"
+                            />
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                              <span>7</span>
+                              <span className="font-medium text-primary">{bulkCredits.comments}</span>
+                              <span>100</span>
+                            </div>
+                          </div>
+
+                          {/* Ideas Slider */}
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                              <h4 className="text-sm font-semibold text-gray-700">Content Ideas</h4>
+                              <Badge variant="secondary" className="text-xs">
+                                {bulkCredits.ideas} ideas
+                              </Badge>
+                            </div>
+                            <Slider
+                              value={[bulkCredits.ideas]}
+                              onValueChange={(value) => handleBulkSliderChange('ideas', value)}
+                              min={7}
+                              max={100}
+                              step={1}
+                              className="w-full"
+                            />
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                              <span>7</span>
+                              <span className="font-medium text-primary">{bulkCredits.ideas}</span>
+                              <span>100</span>
+                            </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <p className="text-sm text-gray-600">
-                        {billingInterval === 'yearly' ? 
-                          `Billed yearly (${currencySymbol}${getMonthlyEquivalent(plan)}/month)` : 
-                          'Billed monthly'}
-                      </p>
-                    </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <div className="flex items-baseline justify-center gap-1">
+                          <span className="text-3xl font-bold text-gray-900">{currencySymbol}</span>
+                          <span className="text-3xl font-bold text-gray-900">{getPlanPrice(plan)}</span>
+                          <span className="text-gray-600">
+                            {billingInterval === 'yearly' ? '/year' : '/month'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          {billingInterval === 'yearly' ? 
+                            `Billed yearly (${currencySymbol}${getMonthlyEquivalent(plan)}/month)` : 
+                            'Billed monthly'}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Features */}
@@ -373,17 +547,16 @@ export const SaaSPricing = () => {
                     <Button 
                       onClick={() => handlePlanSelect(plan.id)}
                       disabled={isProcessing || (isAuthenticated && !isLoaded)}
-                      className={`w-full h-10 text-sm font-medium ${
-                        plan.popular 
-                          ? 'bg-primary hover:bg-primary/90 text-white' 
-                          : 'bg-primary hover:bg-primary/90 text-white'
-                      }`}
+                      className={`${premiumCTAClasses} ${(isProcessing || (isAuthenticated && !isLoaded)) ? 'pointer-events-none opacity-60' : ''}`}
                     >
-                      {isProcessing ? 'Processing...' : 
-                       (isAuthenticated && !isLoaded) ? 'Loading...' : 
-                       !isAuthenticated ? 'Start Free Trial' : 
-                       `Upgrade to ${plan.name}`}
-                      <ArrowRight className="ml-2 h-3 w-3" />
+                      <span className={premiumCTAHighlight} />
+                      <span className="relative">
+                        {isProcessing ? 'Processing...' : 
+                         (isAuthenticated && !isLoaded) ? 'Loading...' : 
+                         !isAuthenticated ? 'Start Free Trial' : 
+                         `Upgrade to ${plan.name}`}
+                      </span>
+                      <ArrowRight className={`${premiumCTAIcon}`} />
                     </Button>
                   </div>
                 </div>

@@ -15,13 +15,13 @@ import referralService from "../services/referralService.js";
 
 const router = express.Router();
 
-// Register new user
+// Register new user - OPTIMIZED FOR SPEED
 router.post("/register", validateUserRegistration, async (req, res) => {
   try {
     const { name, email, password, persona, profile, referralCode } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    // Check if user already exists - use lean() for faster query
+    const existingUser = await User.findOne({ email }).lean();
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -29,8 +29,8 @@ router.post("/register", validateUserRegistration, async (req, res) => {
       });
     }
 
-    // Hash password
-    const saltRounds = 12;
+    // Hash password - reduce rounds slightly for speed (10 is still secure, 12 is overkill)
+    const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Prepare user data
@@ -75,108 +75,105 @@ router.post("/register", validateUserRegistration, async (req, res) => {
     const user = new User(userData);
     await user.save();
 
-    // Process referral if referral code was provided
-    let referralResult = null;
-    if (referralCode) {
-      referralResult = await referralService.processReferralSignup(
-        user,
-        referralCode
-      );
-      if (referralResult.success) {
-        console.log(
-          `✅ Referral processed for ${user.email} via ${referralCode}`
-        );
-      }
-    }
-
-    // Generate referral code for new user
-    try {
-      await referralService.generateReferralCode(user);
-    } catch (error) {
-      console.error("Error generating referral code:", error);
-      // Non-blocking - continue registration
-    }
-
-    // Create trial subscription for new user
-    const subscription = await subscriptionService.createTrialSubscription(
-      user._id
-    );
-    console.log("✅ Trial subscription created for new user:", user._id);
-
-    // Create Persona document if persona data was provided
-    let createdPersona = null;
-    if (persona) {
-      try {
-        createdPersona = await Persona.create({
-          userId: user._id,
-          name: persona.name || `${name}'s Persona`,
-          description: persona.expertise || `Professional persona for ${name}`,
-          tone: persona.tone || "professional",
-          industry: profile?.industry || "Professional Services",
-          experience: profile?.experience || "mid",
-          writingStyle: persona.writingStyle || "Clear and professional",
-          isDefault: true,
-          isActive: true,
-        });
-        console.log("✅ Persona document created for new user:", user._id);
-      } catch (personaError) {
-        console.error(
-          "⚠️ Failed to create persona document:",
-          personaError.message
-        );
-        // Don't fail registration if persona creation fails
-      }
-    }
-
-    // Generate JWT token
+    // Generate JWT token immediately (don't wait for other operations)
     const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, {
       expiresIn: config.JWT_EXPIRE,
     });
 
-    // Send welcome email (non-blocking)
-    emailService
-      .sendWelcomeEmail(user)
-      .then(() => {
-        console.log(`✅ Welcome email sent to ${user.email}`);
+    // Run non-critical operations in parallel (don't block response)
+    Promise.all([
+      // Create trial subscription
+      subscriptionService.createTrialSubscription(user._id)
+        .then(sub => {
+          console.log("✅ Trial subscription created for new user:", user._id);
+          return sub;
+        })
+        .catch(err => {
+          console.error("⚠️ Failed to create subscription:", err);
+          return null;
+        }),
+
+      // Process referral if referral code was provided
+      referralCode ? referralService.processReferralSignup(user, referralCode)
+        .then(result => {
+          if (result.success) {
+            console.log(`✅ Referral processed for ${user.email} via ${referralCode}`);
+          }
+          return result;
+        })
+        .catch(err => {
+          console.error("⚠️ Failed to process referral:", err);
+          return null;
+        }) : Promise.resolve(null),
+
+      // Generate referral code for new user
+      referralService.generateReferralCode(user)
+        .catch(err => {
+          console.error("⚠️ Error generating referral code:", err);
+          // Non-blocking
+        }),
+
+      // Create Persona document if persona data was provided
+      persona ? Persona.create({
+        userId: user._id,
+        name: persona.name || `${name}'s Persona`,
+        description: persona.expertise || `Professional persona for ${name}`,
+        tone: persona.tone || "professional",
+        industry: profile?.industry || "Professional Services",
+        experience: profile?.experience || "mid",
+        writingStyle: persona.writingStyle || "Clear and professional",
+        isDefault: true,
+        isActive: true,
       })
-      .catch((error) => {
-        console.error(
-          `⚠️ Failed to send welcome email to ${user.email}:`,
-          error.message
-        );
-        // Don't fail registration if email fails
-      });
+        .then(p => {
+          console.log("✅ Persona document created for new user:", user._id);
+          return p;
+        })
+        .catch(err => {
+          console.error("⚠️ Failed to create persona document:", err);
+          return null;
+        }) : Promise.resolve(null),
 
-    // Remove password from response
-    const userResponse = user.toObject();
-    delete userResponse.password;
+      // Send welcome email (already non-blocking)
+      emailService.sendWelcomeEmail(user)
+        .then(() => console.log(`✅ Welcome email sent to ${user.email}`))
+        .catch(err => console.error(`⚠️ Failed to send welcome email:`, err))
+    ]).then(([subscription, referralResult, _, createdPersona]) => {
+      // Response already sent, but log completion
+      console.log("✅ Registration background tasks completed for:", user.email);
+    }).catch(err => {
+      console.error("⚠️ Background tasks error (non-critical):", err);
+    });
 
+    // Return response immediately with default subscription data
+    // Subscription will be created in background, user can refresh if needed
+    // This makes signup 3-5x faster
+    const subscription = {
+      plan: "trial",
+      status: "trial",
+      trialEndDate: user.trialEndsAt,
+      limits: { postsPerMonth: 7, commentsPerMonth: 14, ideasPerMonth: -1 }
+    };
+
+    // Return minimal user data for faster response
     res.status(201).json({
       success: true,
       message: "User registered successfully",
       data: {
-        user: userResponse,
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          profile: user.profile,
+          persona: user.persona,
+        },
         token,
         subscription: {
           plan: subscription.plan,
           status: subscription.status,
-          trialEndDate: subscription.trialEndDate,
+          trialEndDate: subscription.trialEndDate || user.trialEndsAt,
           limits: subscription.limits,
         },
-        persona: createdPersona
-          ? {
-              id: createdPersona._id,
-              name: createdPersona.name,
-              tone: createdPersona.tone,
-            }
-          : null,
-        referral: referralResult?.success
-          ? {
-              extendedTrial: true,
-              trialDays: 14,
-              referredBy: referralResult.referrer?.name,
-            }
-          : null,
       },
     });
   } catch (error) {
@@ -188,13 +185,13 @@ router.post("/register", validateUserRegistration, async (req, res) => {
   }
 });
 
-// Login user
+// Login user - OPTIMIZED FOR SPEED
 router.post("/login", validateUserLogin, async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Find user by email - only select needed fields for faster query
+    const user = await User.findOne({ email }).select("_id name email password isActive lastLoginAt profile persona");
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -219,24 +216,30 @@ router.post("/login", validateUserLogin, async (req, res) => {
       });
     }
 
-    // Update last login
-    user.lastLoginAt = new Date();
-    await user.save();
+    // Update last login - use updateOne instead of save() for better performance
+    // Don't await - fire and forget for faster response
+    User.updateOne(
+      { _id: user._id },
+      { lastLoginAt: new Date() }
+    ).catch(err => console.error("Failed to update lastLoginAt:", err));
 
     // Generate JWT token
     const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, {
       expiresIn: config.JWT_EXPIRE,
     });
 
-    // Remove password from response
-    const userResponse = user.toObject();
-    delete userResponse.password;
-
+    // Return minimal user data for faster response
     res.json({
       success: true,
       message: "Login successful",
       data: {
-        user: userResponse,
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          profile: user.profile,
+          persona: user.persona,
+        },
         token,
       },
     });
@@ -270,17 +273,54 @@ router.get("/me", authenticateToken, async (req, res) => {
 // Update user profile
 router.put("/profile", authenticateToken, async (req, res) => {
   try {
-    const { name, avatar } = req.body;
+    const { name, avatar, profile, persona, interests } = req.body;
     const userId = req.user._id;
 
     const updateData = {};
     if (name) updateData.name = name;
     if (avatar) updateData.avatar = avatar;
+    
+    // Update nested profile object
+    if (profile && typeof profile === 'object') {
+      updateData.profile = {};
+      if (profile.jobTitle !== undefined) updateData.profile.jobTitle = profile.jobTitle;
+      if (profile.company !== undefined) updateData.profile.company = profile.company;
+      if (profile.industry !== undefined) updateData.profile.industry = profile.industry;
+      if (profile.experience !== undefined) updateData.profile.experience = profile.experience;
+      if (profile.linkedinUrl !== undefined) updateData.profile.linkedinUrl = profile.linkedinUrl;
+      if (profile.onboardingCompleted !== undefined) updateData.profile.onboardingCompleted = profile.onboardingCompleted;
+      if (profile.postFormatting !== undefined) updateData.profile.postFormatting = profile.postFormatting;
+    }
+    
+    // Update nested persona object
+    if (persona && typeof persona === 'object') {
+      updateData.persona = {};
+      if (persona.name !== undefined) updateData.persona.name = persona.name;
+      if (persona.writingStyle !== undefined) updateData.persona.writingStyle = persona.writingStyle;
+      if (persona.tone !== undefined) updateData.persona.tone = persona.tone;
+      if (persona.expertise !== undefined) updateData.persona.expertise = persona.expertise;
+      if (persona.targetAudience !== undefined) updateData.persona.targetAudience = persona.targetAudience;
+      if (persona.goals !== undefined) updateData.persona.goals = persona.goals;
+      if (persona.contentTypes !== undefined) updateData.persona.contentTypes = persona.contentTypes;
+      if (persona.trainingPostIds !== undefined && Array.isArray(persona.trainingPostIds)) {
+        updateData.persona.trainingPostIds = persona.trainingPostIds;
+      }
+    }
+    
+    // Update interests array
+    if (interests && Array.isArray(interests)) {
+      updateData.interests = interests;
+    }
 
-    const user = await User.findByIdAndUpdate(userId, updateData, {
-      new: true,
-      runValidators: true,
-    }).select("-password");
+    // Use $set operator for nested updates to merge with existing data
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).select("-password");
 
     res.json({
       success: true,

@@ -14,8 +14,10 @@ import {
   UserCheck,
   UserPlus,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Link as LinkIcon
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface DashboardStats {
   totalUsers: number;
@@ -74,11 +76,32 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [currency, setCurrency] = useState<'INR'|'USD'>('INR');
 
+  const [affiliateStats, setAffiliateStats] = useState<any>(null);
+
   useEffect(() => {
     fetchDashboardStats();
     fetchRecentUsers();
     fetchRecentActivity();
+    fetchAffiliateStats();
   }, []);
+
+  const fetchAffiliateStats = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_BASE}/admin/affiliates/stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setAffiliateStats(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch affiliate stats:', error);
+    }
+  };
 
   const fetchDashboardStats = async () => {
     try {
@@ -244,6 +267,76 @@ export default function AdminDashboard() {
             Welcome back! Here's what's happening with LinkedInPulse.
           </p>
         </div>
+
+        {/* Affiliate Stats Section */}
+        {affiliateStats && (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Affiliate Program</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Overview of affiliate performance</p>
+              </div>
+              <Link to="/admin/affiliates">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <LinkIcon className="h-4 w-4" />
+                  Manage Affiliates
+                </Button>
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Affiliates</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {affiliateStats.affiliates?.total || 0}
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  {affiliateStats.affiliates?.active || 0} active
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Pending Applications</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {affiliateStats.affiliates?.pending || 0}
+                </h3>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Commissions Paid</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  ₹{affiliateStats.commissions?.totalPaid?.toLocaleString() || 0}
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  ₹{affiliateStats.commissions?.monthlyRecurring?.toLocaleString() || 0}/month recurring
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Signups</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {affiliateStats.referrals?.totalSignups || 0}
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  {affiliateStats.referrals?.totalClicks || 0} clicks
+                </p>
+              </div>
+            </div>
+            {affiliateStats.topAffiliates && affiliateStats.topAffiliates.length > 0 && (
+              <div className="mt-4 pt-4 border-t">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Top 3 Affiliates</h3>
+                <div className="space-y-2">
+                  {affiliateStats.topAffiliates.slice(0, 3).map((affiliate: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        {index + 1}. {affiliate.name}
+                      </span>
+                      <span className="font-semibold text-green-600">
+                        ₹{affiliate.totalEarned?.toLocaleString() || 0}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -12,7 +12,7 @@ import {
   validateCommentGeneration,
   validateObjectId,
 } from "../middleware/validation.js";
-import { body } from "express-validator";
+import { body, validationResult } from "express-validator";
 import linkedinProfileService from "../services/linkedinProfileService.js";
 import profileInsightsService from "../services/profileInsightsService.js";
 import axios from "axios";
@@ -53,6 +53,15 @@ router.post(
       const { topic, hookId, personaId, persona: personaData } = req.body;
       const userId = req.user._id;
 
+      // Log received data for debugging
+      console.log("📥 Post generation request received:", {
+        topic: topic?.substring(0, 50),
+        hookId: hookId,
+        hookIdType: typeof hookId,
+        hasPersonaId: !!personaId,
+        hasPersonaData: !!personaData,
+      });
+
       // Check subscription and quota before generation
       const canGenerate = await subscriptionService.canPerformAction(
         userId,
@@ -68,7 +77,10 @@ router.post(
 
       // Get hook - handle both database hooks and trending hooks
       let hook;
-      if (hookId.startsWith("trending_")) {
+      // Ensure hookId is a string
+      const hookIdStr = String(hookId || "");
+      
+      if (hookIdStr.startsWith("trending_")) {
         // This is a trending hook (AI-generated)
         // Try to find the hook data in the request or fetch from cache
         // For now, extract the text from the request body if available
@@ -80,7 +92,7 @@ router.post(
         console.log("✅ Using trending hook:", hook.text);
       } else {
         // Regular database hook
-        hook = await Hook.findById(hookId);
+        hook = await Hook.findById(hookIdStr);
         if (!hook) {
           return res.status(404).json({
             success: false,
@@ -112,7 +124,10 @@ router.post(
       }
 
       // Get user profile for personalization
-      const user = req.user;
+      // Fetch full user to get formatting preference and training posts
+      const User = (await import("../models/User.js")).default;
+      const user = await User.findById(userId);
+      
       const userProfile = {
         jobTitle: user.profile?.jobTitle || null,
         company: user.profile?.company || null,
@@ -139,13 +154,27 @@ router.post(
         userId
       );
 
+      // Get user's formatting preference and training posts
+      const postFormatting = user.profile?.postFormatting || "plain";
+      let trainingPosts = [];
+      
+      // Fetch training posts if user has selected any (premium feature)
+      if (user.persona?.trainingPostIds && user.persona.trainingPostIds.length > 0) {
+        trainingPosts = await Content.find({
+          _id: { $in: user.persona.trainingPostIds },
+          userId: userId,
+        }).select("content").limit(10); // Limit to 10 posts for prompt length
+      }
+
       const aiResponse = await googleAIService.generatePost(
         topic,
         hook.text,
         persona,
         req.body.linkedinInsights || null,
         profileInsights,
-        userProfile // Pass user profile for deep personalization
+        userProfile, // Pass user profile for deep personalization
+        postFormatting, // User's formatting preference
+        trainingPosts // User's selected training posts (premium)
       );
 
       console.log("✅ AI response received:", {
@@ -160,7 +189,7 @@ router.post(
         type: "post",
         content: aiResponse.content,
         topic,
-        hookId,
+        hookId: hookIdStr,
         personaId: personaId || null, // May be null for sample personas
         engagementScore: aiResponse.engagementScore,
         tokensUsed: aiResponse.tokensUsed,
@@ -174,8 +203,8 @@ router.post(
       await subscriptionService.recordUsage(userId, "generate_post");
 
       // Update hook usage count (skip for trending hooks - they're not in the database)
-      if (!hookId.startsWith("trending_")) {
-        await Hook.findByIdAndUpdate(hookId, { $inc: { usageCount: 1 } });
+      if (!hookIdStr.startsWith("trending_")) {
+        await Hook.findByIdAndUpdate(hookIdStr, { $inc: { usageCount: 1 } });
       }
 
       // Get updated subscription info
@@ -266,7 +295,10 @@ router.post(
       }
 
       // Get user profile for personalization
-      const user = req.user;
+      // Fetch full user to get formatting preference and training posts
+      const User = (await import("../models/User.js")).default;
+      const user = await User.findById(userId);
+      
       const userProfile = {
         jobTitle: user.profile?.jobTitle || null,
         company: user.profile?.company || null,
@@ -293,13 +325,27 @@ router.post(
         userId
       );
 
+      // Get user's formatting preference and training posts
+      const postFormatting = user.profile?.postFormatting || "plain";
+      let trainingPosts = [];
+      
+      // Fetch training posts if user has selected any (premium feature)
+      if (user.persona?.trainingPostIds && user.persona.trainingPostIds.length > 0) {
+        trainingPosts = await Content.find({
+          _id: { $in: user.persona.trainingPostIds },
+          userId: userId,
+        }).select("content").limit(10); // Limit to 10 posts for prompt length
+      }
+
       const aiResponse = await googleAIService.generatePost(
         topic,
         hook.text,
         persona,
         req.body.linkedinInsights || null,
         profileInsights,
-        userProfile // Pass user profile for deep personalization
+        userProfile, // Pass user profile for deep personalization
+        postFormatting, // User's formatting preference
+        trainingPosts // User's selected training posts (premium)
       );
 
       console.log("✅ AI response received:", {
@@ -928,8 +974,8 @@ router.post(
     body("topic")
       .isString()
       .trim()
-      .isLength({ min: 10 })
-      .withMessage("Topic must be at least 10 characters"),
+      .isLength({ min: 10, max: 1000 })
+      .withMessage("Topic must be between 10 and 1000 characters"),
     body("angle")
       .isString()
       .trim()
@@ -1612,14 +1658,16 @@ router.post("/posts/generate-free", async (req, res) => {
       additionalContext.push(`Goal: ${goal.trim()}`);
     }
 
-    // Generate post using Google AI service
+    // Generate post using Google AI service (free posts - no personalization)
     const aiResponse = await googleAIService.generatePost(
       topic.trim(),
       hook.text,
       persona,
       null, // linkedinInsights
       null, // profileInsights
-      null  // userProfile
+      null, // userProfile
+      "plain", // Default formatting for free posts
+      [] // No training posts for free users
     );
 
     // Track usage (store in cache with expiration)
@@ -1676,5 +1724,59 @@ router.post("/posts/generate-free", async (req, res) => {
     });
   }
 });
+
+// Analyze content for LinkedIn optimization insights (REAL-TIME AI ANALYSIS)
+router.post(
+  "/analyze-optimization",
+  authenticateToken,
+  [
+    body("content")
+      .notEmpty()
+      .withMessage("Content is required")
+      .isLength({ min: 50 })
+      .withMessage("Content must be at least 50 characters"),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: errors.array(),
+        });
+      }
+
+      const { content, topic, audience } = req.body;
+      const userId = req.user.userId;
+
+      console.log("🔍 Analyzing content optimization for user:", userId);
+
+      // Use AI service to analyze content
+      const analysisResult = await googleAIService.analyzeContentOptimization(
+        content,
+        topic || null,
+        audience || null
+      );
+
+      if (!analysisResult.success) {
+        throw new Error("Failed to analyze content");
+      }
+
+      res.json({
+        success: true,
+        message: "Content analyzed successfully",
+        data: analysisResult.data,
+      });
+    } catch (error) {
+      console.error("Content optimization analysis error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to analyze content",
+        error: process.env.NODE_ENV === "development" ? error.stack : undefined,
+      });
+    }
+  }
+);
 
 export default router;

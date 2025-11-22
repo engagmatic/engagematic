@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AdminProvider } from "./contexts/AdminContext";
@@ -10,6 +10,7 @@ import { Suspense, lazy } from "react";
 import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
 import AppLayout from "./components/layout/AppLayout";
+import { DashboardLayout } from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -26,16 +27,22 @@ const ContactPage = lazy(() => import("./pages/ContactPage"));
 const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
 const TemplatesPage = lazy(() => import("./pages/TemplatesPage"));
 const Referrals = lazy(() => import("./pages/Referrals"));
+const AffiliateProgram = lazy(() => import("./pages/AffiliateProgram"));
+const AffiliateRegister = lazy(() => import("./pages/affiliate/AffiliateRegister"));
+const AffiliateLogin = lazy(() => import("./pages/affiliate/AffiliateLogin"));
+const AffiliateDashboard = lazy(() => import("./pages/affiliate/AffiliateDashboard"));
 const TestimonialCollection = lazy(() => import("./pages/TestimonialCollection"));
-const PlanManagement = lazy(() => import("./pages/PlanManagement").then(module => ({ default: module.default })));
+// PlanManagement page removed - redirects to pricing section
 const BlogListingPage = lazy(() => import("./pages/BlogListingPage"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const PostDetailPage = lazy(() => import("./pages/PostDetailPage"));
+const PricingRedirect = lazy(() => import("./pages/PricingRedirect"));
 // Admin Pages
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
+import AffiliateManagement from "./pages/admin/AffiliateManagement";
 import TestimonialsManagement from "./pages/admin/TestimonialsManagement";
 import BlogManagement from "./pages/admin/BlogManagement";
 import Analytics from "./pages/admin/Analytics";
@@ -93,6 +100,14 @@ const App = () => (
                   } 
                 />
                 <Route 
+                  path="/admin/affiliates" 
+                  element={
+                    <ProtectedAdminRoute>
+                      <AffiliateManagement />
+                    </ProtectedAdminRoute>
+                  } 
+                />
+                <Route 
                   path="/admin/testimonials" 
                   element={
                     <ProtectedAdminRoute>
@@ -130,10 +145,14 @@ const App = () => (
                 {/* All other pages share header/footer */}
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<Index />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/idea-generator" element={<IdeaGenerator />} />
-                  <Route path="/post-generator" element={<PostGenerator />} />
-                  <Route path="/comment-generator" element={<CommentGenerator />} />
+                  
+                  {/* Dashboard routes with onboarding modal */}
+                  <Route element={<DashboardLayout />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/idea-generator" element={<IdeaGenerator />} />
+                    <Route path="/post-generator" element={<PostGenerator />} />
+                    <Route path="/comment-generator" element={<CommentGenerator />} />
+                  </Route>
                   {/* Blog Routes */}
                   {/* Static Pages */}
                   <Route path="/about" element={<AboutPage />} />
@@ -143,11 +162,16 @@ const App = () => (
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/resources" element={<HelpCenterPage />} />
                   <Route path="/templates" element={<TemplatesPage />} />
-                  <Route path="/plan-management" element={<PlanManagement />} />
+                  {/* Plan Management route removed - redirects to pricing section */}
+                  <Route path="/plan-management" element={<PricingRedirect />} />
                   <Route path="/profile" element={<UserProfile />} />
                   <Route path="/post/:postId" element={<PostDetailPage />} />
-                  <Route path="/referral" element={<Referrals />} />
-                  <Route path="/blogs" element={<BlogListingPage />} />
+                <Route path="/referral" element={<Referrals />} />
+                <Route path="/affiliate" element={<AffiliateProgram />} />
+                <Route path="/affiliate/register" element={<AffiliateRegister />} />
+                <Route path="/affiliate/login" element={<AffiliateLogin />} />
+                <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
+                <Route path="/blogs" element={<BlogListingPage />} />
                   <Route path="/blogs/:slug" element={<BlogPage />} />
                 </Route>
 

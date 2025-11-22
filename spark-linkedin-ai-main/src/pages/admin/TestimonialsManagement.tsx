@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,18 +12,11 @@ import {
   X,
   Sparkles,
   MessageSquare,
-  Filter,
-  Download,
-  Plus
+  Plus,
+  Loader2,
+  Search,
+  RefreshCw
 } from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -33,9 +26,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const API_BASE = `${API_URL}`;
+// Get API URL - handle both cases where it includes /api or not
+const getApiBase = () => {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  // If URL already ends with /api, use it as is, otherwise add /api
+  return apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
+};
+const API_BASE = getApiBase();
 
 interface Testimonial {
   _id: string;
@@ -65,11 +64,16 @@ interface Stats {
 export default function TestimonialsManagement() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string>('pending');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
+  const [actionTarget, setActionTarget] = useState<Testimonial | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [ratingFilter, setRatingFilter] = useState<'all' | '5' | '4' | '3' | '2' | '1'>('all');
+  const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
   
   // Add Testimonial State
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -87,6 +91,106 @@ export default function TestimonialsManagement() {
   
   const { toast } = useToast();
 
+  const statusDefinitions: Record<string, { label: string; count: number }> = useMemo(() => {
+    return {
+      all: { label: 'All', count: stats?.total ?? 0 },
+      pending: { label: 'Pending Review', count: stats?.pending ?? 0 },
+      approved: { label: 'Approved', count: stats?.approved ?? 0 },
+      rejected: { label: 'Rejected', count: stats?.rejected ?? 0 },
+    };
+  }, [stats]);
+
+  const statusBadgeStyles: Record<Testimonial['status'], string> = {
+    pending: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    approved: 'bg-green-50 text-green-700 border-green-200',
+    rejected: 'bg-red-50 text-red-600 border-red-200',
+  };
+
+  const filteredTestimonials = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    let data = [...testimonials];
+
+    if (ratingFilter !== 'all') {
+      data = data.filter((item) => Math.round(item.rating) === Number(ratingFilter));
+    }
+
+    if (normalizedSearch) {
+      data = data.filter((item) => {
+        return (
+          item.displayName?.toLowerCase().includes(normalizedSearch) ||
+          item.userEmail?.toLowerCase().includes(normalizedSearch) ||
+          item.comment?.toLowerCase().includes(normalizedSearch) ||
+          item.company?.toLowerCase().includes(normalizedSearch) ||
+          item.jobTitle?.toLowerCase().includes(normalizedSearch)
+        );
+      });
+    }
+
+    switch (sortOption) {
+      case 'oldest':
+        data.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        break;
+      case 'highest':
+        data.sort((a, b) => b.rating - a.rating);
+        break;
+      case 'lowest':
+        data.sort((a, b) => a.rating - b.rating);
+        break;
+      default:
+        data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+
+    return data;
+  }, [testimonials, ratingFilter, searchTerm, sortOption]);
+
+  useEffect(() => {
+    if (!filteredTestimonials.length) {
+      setSelectedTestimonial(null);
+      return;
+    }
+
+    if (!selectedTestimonial) {
+      setSelectedTestimonial(filteredTestimonials[0]);
+      return;
+    }
+
+    const stillVisible = filteredTestimonials.some((item) => item._id === selectedTestimonial._id);
+    if (!stillVisible) {
+      setSelectedTestimonial(filteredTestimonials[0]);
+    }
+  }, [filteredTestimonials, selectedTestimonial?._id]);
+
+  const formatDate = (date: string) => {
+    try {
+      return new Date(date).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    } catch (error) {
+      return date;
+    }
+  };
+
+  const renderRatingStars = (rating: number, size: 'sm' | 'md' = 'md') => {
+    const baseClass = size === 'sm' ? 'h-3 w-3' : 'h-4 w-4';
+    return (
+      <div className="flex items-center gap-1">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <Star
+            key={index}
+            className={`${baseClass} ${
+              index < Math.round(rating)
+                ? 'fill-yellow-400 text-yellow-400'
+                : 'text-muted-foreground/40'
+            }`}
+          />
+        ))}
+      </div>
+    );
+  };
+
   useEffect(() => {
     fetchStats();
     fetchTestimonials();
@@ -95,18 +199,53 @@ export default function TestimonialsManagement() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/testimonials/admin/stats`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
       if (response.ok) {
         const result = await response.json();
-        setStats(result.data);
+        if (result.success) {
+          setStats(result.data);
+        } else {
+          console.error('Failed to fetch stats:', result.message);
+          toast({
+            title: 'Error',
+            description: result.message || 'Failed to fetch testimonial statistics',
+            variant: 'destructive'
+          });
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to fetch stats:', response.status, errorData);
+        if (response.status === 404) {
+          toast({
+            title: 'Error',
+            description: 'API endpoint not found. Please check server configuration.',
+            variant: 'destructive'
+          });
+        } else {
+          toast({
+            title: 'Error',
+            description: errorData.message || `Failed to fetch stats (${response.status})`,
+            variant: 'destructive'
+          });
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch stats:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to fetch testimonial statistics. Please refresh the page.',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -114,41 +253,98 @@ export default function TestimonialsManagement() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        console.error('No admin token found');
+        return;
+      }
+
       const url = filterStatus === 'all'
         ? `${API_BASE}/testimonials/admin/all`
         : `${API_BASE}/testimonials/admin/all?status=${filterStatus}`;
       
       const response = await fetch(url, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
       if (response.ok) {
         const result = await response.json();
-        setTestimonials(result.data);
+        if (result.success) {
+          const fetched = result.data || [];
+          setTestimonials(fetched);
+          setSelectedTestimonial((prev) => {
+            if (!fetched.length) {
+              return null;
+            }
+            if (prev) {
+              const match = fetched.find((item: Testimonial) => item._id === prev._id);
+              if (match) return match;
+            }
+            return fetched[0];
+          });
+        } else {
+          console.error('Failed to fetch testimonials:', result.message);
+          toast({
+            title: 'Error',
+            description: result.message || 'Failed to fetch testimonials',
+            variant: 'destructive'
+          });
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to fetch testimonials:', response.status, errorData);
+        if (response.status === 404) {
+          toast({
+            title: 'Error',
+            description: 'API endpoint not found. Please check server configuration.',
+            variant: 'destructive'
+          });
+        } else {
+          toast({
+            title: 'Error',
+            description: errorData.message || `Failed to fetch testimonials (${response.status})`,
+            variant: 'destructive'
+          });
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch testimonials:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to fetch testimonials. Please refresh the page.',
+        variant: 'destructive'
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleAction = async (testimonial: Testimonial, action: 'approve' | 'reject') => {
-    setSelectedTestimonial(testimonial);
+    setActionTarget(testimonial);
     setActionType(action);
   };
 
   const confirmAction = async () => {
-    if (!selectedTestimonial || !actionType) return;
+    if (!actionTarget || !actionType) return;
 
+    setIsActionLoading(true);
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        toast({
+          title: 'Authentication Error',
+          description: 'Please login again',
+          variant: 'destructive'
+        });
+        return;
+      }
+
       const endpoint = actionType === 'approve' ? 'approve' : 'reject';
       
       const response = await fetch(
-        `${API_BASE}/testimonials/admin/${selectedTestimonial._id}/${endpoint}`,
+        `${API_BASE}/testimonials/admin/${actionTarget._id}/${endpoint}`,
         {
           method: 'PATCH',
           headers: {
@@ -159,51 +355,84 @@ export default function TestimonialsManagement() {
         }
       );
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         toast({
           title: `Testimonial ${actionType}d`,
-          description: `Successfully ${actionType}d the testimonial.`,
+          description: data.message || `Successfully ${actionType}d the testimonial.`,
         });
         
-        fetchTestimonials();
-        fetchStats();
-        setSelectedTestimonial(null);
+        await fetchTestimonials();
+        await fetchStats();
         setReviewNotes('');
+        setActionTarget(null);
         setActionType(null);
+      } else {
+        toast({
+          title: 'Action failed',
+          description: data.message || `Failed to ${actionType} testimonial`,
+          variant: 'destructive'
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Failed to ${actionType}:`, error);
       toast({
         title: 'Action failed',
-        description: `Failed to ${actionType} testimonial`,
+        description: error.message || `Failed to ${actionType} testimonial. Please try again.`,
         variant: 'destructive'
       });
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
   const toggleFeatured = async (testimonial: Testimonial) => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        toast({
+          title: 'Authentication Error',
+          description: 'Please login again',
+          variant: 'destructive'
+        });
+        return;
+      }
+
       const response = await fetch(
         `${API_BASE}/testimonials/admin/${testimonial._id}/toggle-featured`,
         {
           method: 'PATCH',
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           }
         }
       );
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         toast({
           title: testimonial.isFeatured ? 'Unfeatured' : 'Featured',
-          description: `Testimonial ${testimonial.isFeatured ? 'removed from' : 'added to'} featured list.`,
+          description: data.message || `Testimonial ${testimonial.isFeatured ? 'removed from' : 'added to'} featured list.`,
         });
         fetchTestimonials();
         fetchStats();
+      } else {
+        toast({
+          title: 'Action failed',
+          description: data.message || 'Failed to toggle featured status',
+          variant: 'destructive'
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to toggle featured:', error);
+      toast({
+        title: 'Action failed',
+        description: error.message || 'Failed to toggle featured status',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -335,167 +564,316 @@ export default function TestimonialsManagement() {
           </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Experience Metrics */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <Card className="p-4">
-              <div className="text-sm text-gray-600 dark:text-gray-400">Total</div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</div>
+          <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
+            <Card className="relative overflow-hidden border border-primary/20 bg-primary/5 p-4">
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">All testimonials</div>
+              <div className="mt-2 text-3xl font-semibold text-primary">{stats.total}</div>
+              <p className="mt-2 text-xs text-muted-foreground">Across every channel</p>
+            </Card>
+            <Card className={`p-4 ${stats.pending > 0 ? 'border-yellow-400/70 bg-yellow-50 dark:bg-yellow-900/20' : ''}`}>
+              <div className="text-xs uppercase tracking-wide text-yellow-700">Pending review</div>
+              <div className="mt-2 text-3xl font-semibold text-yellow-600">{stats.pending}</div>
+              <p className="mt-2 text-xs text-yellow-700">
+                {stats.pending > 0 ? 'Queued for approval' : 'All caught up'}
+              </p>
             </Card>
             <Card className="p-4">
-              <div className="text-sm text-yellow-600">Pending</div>
-              <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+              <div className="text-xs uppercase tracking-wide text-green-700">Approved</div>
+              <div className="mt-2 text-3xl font-semibold text-green-600">{stats.approved}</div>
+              <p className="mt-2 text-xs text-muted-foreground">Ready for distribution</p>
             </Card>
             <Card className="p-4">
-              <div className="text-sm text-green-600">Approved</div>
-              <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
+              <div className="text-xs uppercase tracking-wide text-red-700">Rejected</div>
+              <div className="mt-2 text-3xl font-semibold text-red-500">{stats.rejected}</div>
+              <p className="mt-2 text-xs text-muted-foreground">Need follow-up or edits</p>
             </Card>
             <Card className="p-4">
-              <div className="text-sm text-red-600">Rejected</div>
-              <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
-            </Card>
-            <Card className="p-4">
-              <div className="text-sm text-purple-600">Featured</div>
-              <div className="text-2xl font-bold text-purple-600">{stats.featured}</div>
-            </Card>
-            <Card className="p-4">
-              <div className="text-sm text-gray-600 dark:text-gray-400">Avg Rating</div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-1">
-                {stats.avgRating} <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+              <div className="text-xs uppercase tracking-wide text-purple-700">Featured</div>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-3xl font-semibold text-purple-600">{stats.featured}</span>
+                <Badge variant="outline" className="border-purple-200 bg-purple-50 text-purple-600">
+                  Hero ready
+                </Badge>
               </div>
+              <p className="mt-2 text-xs text-muted-foreground">Highlighted on marketing touchpoints</p>
+            </Card>
+            <Card className="p-4">
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">Average rating</div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-3xl font-semibold text-foreground">{stats.avgRating.toFixed(1)}</span>
+                {renderRatingStars(stats.avgRating, 'sm')}
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">Weighted across all submissions</p>
             </Card>
           </div>
         )}
 
-        {/* Filters */}
-        <Card className="p-4">
-          <div className="flex items-center gap-2">
-            <Filter className="h-5 w-5 text-gray-400" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter:</span>
-            <div className="flex gap-2">
-              {['all', 'pending', 'approved', 'rejected'].map((status) => (
+        {/* Command Center */}
+        <Card className="p-4 space-y-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              {Object.entries(statusDefinitions).map(([status, info]) => (
                 <Button
                   key={status}
                   variant={filterStatus === status ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setFilterStatus(status)}
+                  className="flex items-center gap-2"
                 >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {info.label}
+                  <span className="rounded-full bg-background/70 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                    {info.count}
+                  </span>
                 </Button>
               ))}
+            </div>
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 lg:w-auto">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Search name, email, company, or keyword"
+                  className="pl-9"
+                />
+              </div>
+              <Select value={ratingFilter} onValueChange={(value) => setRatingFilter(value as typeof ratingFilter)}>
+                <SelectTrigger className="sm:w-40">
+                  <SelectValue placeholder="Filter by rating" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All ratings</SelectItem>
+                  <SelectItem value="5">5 stars</SelectItem>
+                  <SelectItem value="4">4 stars</SelectItem>
+                  <SelectItem value="3">3 stars</SelectItem>
+                  <SelectItem value="2">2 stars</SelectItem>
+                  <SelectItem value="1">1 star</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortOption} onValueChange={(value) => setSortOption(value as typeof sortOption)}>
+                <SelectTrigger className="sm:w-44">
+                  <SelectValue placeholder="Sort testimonials" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest first</SelectItem>
+                  <SelectItem value="oldest">Oldest first</SelectItem>
+                  <SelectItem value="highest">Highest rating</SelectItem>
+                  <SelectItem value="lowest">Lowest rating</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </Card>
 
-        {/* Testimonials Table */}
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Comment</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Featured</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+        {/* Workspace */}
+        <div className="grid gap-6 xl:grid-cols-[360px,1fr]">
+          <Card className="overflow-hidden border-border/60">
+            <div className="flex items-center justify-between border-b px-4 py-3">
+              <div>
+                <h2 className="text-sm font-semibold text-foreground">Review queue</h2>
+                <p className="text-xs text-muted-foreground">
+                  {isLoading ? 'Loading…' : `${filteredTestimonials.length} testimonials in view`}
+                </p>
+              </div>
+              <Button variant="ghost" size="sm" onClick={fetchTestimonials} className="gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Refresh
+              </Button>
+            </div>
+            <div className="max-h-[640px] space-y-3 overflow-y-auto px-4 py-4">
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                    Loading testimonials...
-                  </TableCell>
-                </TableRow>
-              ) : testimonials.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                    No testimonials found
-                  </TableCell>
-                </TableRow>
+                <div className="flex h-40 items-center justify-center text-muted-foreground">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Loading testimonials…
+                </div>
+              ) : !filteredTestimonials.length ? (
+                <div className="flex h-40 flex-col items-center justify-center text-center text-sm text-muted-foreground">
+                  <MessageSquare className="mb-2 h-5 w-5" />
+                  <span>No testimonials match your filters yet.</span>
+                </div>
               ) : (
-                testimonials.map((testimonial) => (
-                  <TableRow key={testimonial._id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {testimonial.displayName}
-                        </p>
-                        <p className="text-sm text-gray-500">{testimonial.userEmail}</p>
-                        {testimonial.jobTitle && (
-                          <p className="text-xs text-gray-400">
-                            {testimonial.jobTitle}
-                            {testimonial.company && ` at ${testimonial.company}`}
-                          </p>
+                filteredTestimonials.map((testimonial) => {
+                  const isActive = selectedTestimonial?._id === testimonial._id;
+                  return (
+                    <button
+                      key={testimonial._id}
+                      onClick={() => setSelectedTestimonial(testimonial)}
+                      className={`w-full rounded-xl border px-4 py-3 text-left transition-all ${
+                        isActive
+                          ? 'border-primary bg-primary/5 shadow-sm'
+                          : 'border-border hover:border-primary/40 hover:bg-muted/60'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-foreground">{testimonial.displayName || 'Anonymous'}</p>
+                          <p className="text-xs text-muted-foreground">{testimonial.userEmail}</p>
+                        </div>
+                        <Badge className={`border ${statusBadgeStyles[testimonial.status]}`}>
+                          {testimonial.status.charAt(0).toUpperCase() + testimonial.status.slice(1)}
+                        </Badge>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between gap-2">
+                        {renderRatingStars(testimonial.rating, 'sm')}
+                        {testimonial.isFeatured && (
+                          <Badge variant="outline" className="border-purple-200 bg-purple-50 text-purple-600">
+                            <Sparkles className="mr-1 h-3 w-3 text-purple-500" /> Featured
+                          </Badge>
                         )}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        {getRatingStars(testimonial.rating)}
+                      <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{testimonial.comment}</p>
+                      <div className="mt-3 flex flex-wrap items-center justify-between text-xs text-muted-foreground">
+                        <span>
+                          {testimonial.company ? testimonial.company : 'Independent'}{' '}
+                          {testimonial.jobTitle && `• ${testimonial.jobTitle}`}
+                        </span>
+                        <span>{formatDate(testimonial.createdAt)}</span>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <p className="max-w-md truncate text-sm text-gray-600 dark:text-gray-400">
-                        {testimonial.comment}
-                      </p>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(testimonial.status)}</TableCell>
-                    <TableCell>
-                      {testimonial.status === 'approved' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleFeatured(testimonial)}
-                        >
-                          {testimonial.isFeatured ? (
-                            <Sparkles className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          ) : (
-                            <Sparkles className="h-4 w-4 text-gray-400" />
-                          )}
-                        </Button>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <p className="text-sm text-gray-600">
-                        {new Date(testimonial.createdAt).toLocaleDateString()}
-                      </p>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {testimonial.status === 'pending' && (
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-green-600 hover:text-green-700"
-                            onClick={() => handleAction(testimonial, 'approve')}
-                          >
-                            <Check className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-red-600 hover:text-red-700"
-                            onClick={() => handleAction(testimonial, 'reject')}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
+                    </button>
+                  );
+                })
               )}
-            </TableBody>
-          </Table>
-        </Card>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            {!selectedTestimonial ? (
+              <div className="flex h-[360px] flex-col items-center justify-center gap-2 text-center text-muted-foreground">
+                <Sparkles className="h-6 w-6 text-primary" />
+                <p className="text-sm font-medium">Select a testimonial to review</p>
+                <p className="text-xs">Choose a testimonial from the queue to see full context, notes, and actions.</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h2 className="text-2xl font-semibold text-foreground">
+                        {selectedTestimonial.displayName || 'Anonymous'}</h2>
+                      <Badge className={`border ${statusBadgeStyles[selectedTestimonial.status]}`}>
+                        {selectedTestimonial.status.charAt(0).toUpperCase() + selectedTestimonial.status.slice(1)}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{selectedTestimonial.userEmail}</p>
+                    {(selectedTestimonial.jobTitle || selectedTestimonial.company) && (
+                      <p className="text-xs text-muted-foreground">
+                        {[selectedTestimonial.jobTitle, selectedTestimonial.company].filter(Boolean).join(' • ')}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    {selectedTestimonial.isFeatured && (
+                      <Badge variant="outline" className="border-purple-200 bg-purple-50 text-purple-600">
+                        <Sparkles className="mr-1 h-3 w-3 text-purple-500" /> Featured hero
+                      </Badge>
+                    )}
+                    {selectedTestimonial.status === 'approved' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleFeatured(selectedTestimonial)}
+                        className="gap-2"
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        {selectedTestimonial.isFeatured ? 'Remove featured' : 'Mark as featured'}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  {renderRatingStars(selectedTestimonial.rating)}
+                  <Badge variant="outline" className="rounded-full border-border/60">
+                    {selectedTestimonial.rating.toFixed(1)} / 5 rating
+                  </Badge>
+                  <Badge variant="outline" className="rounded-full border-border/60 capitalize">
+                    {selectedTestimonial.triggeredBy?.replaceAll('_', ' ') || 'web form'}
+                  </Badge>
+                  <Badge variant="outline" className="rounded-full border-border/60">
+                    {selectedTestimonial.actionCount ?? 0} review actions
+                  </Badge>
+                </div>
+
+                <blockquote className="rounded-lg border-l-4 border-primary/60 bg-muted/60 p-4 text-lg italic leading-relaxed text-foreground">
+                  “{selectedTestimonial.comment}”
+                </blockquote>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Card className="border-dashed border-border/60 bg-background p-4">
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Submission details</div>
+                    <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                      <li>
+                        <span className="font-medium text-foreground">Submitted on:</span>{' '}
+                        {formatDate(selectedTestimonial.createdAt)}
+                      </li>
+                      <li>
+                        <span className="font-medium text-foreground">Channel:</span>{' '}
+                        {selectedTestimonial.triggeredBy || 'public form'}
+                      </li>
+                      <li>
+                        <span className="font-medium text-foreground">Featured:</span>{' '}
+                        {selectedTestimonial.isFeatured ? 'Yes' : 'No'}
+                      </li>
+                    </ul>
+                  </Card>
+                  <Card className="border-dashed border-border/60 bg-background p-4">
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Next steps</div>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Add internal notes, approve or reject, and optionally feature this testimonial across your assets.
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Notes are stored with the review history for future audits.
+                    </p>
+                  </Card>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="reviewNotes">Internal notes (optional)</Label>
+                  <Textarea
+                    id="reviewNotes"
+                    value={reviewNotes}
+                    onChange={(event) => setReviewNotes(event.target.value)}
+                    rows={4}
+                    placeholder="Summarize the tone, where you plan to use it, or why you’re approving/rejecting."
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  {selectedTestimonial.status !== 'approved' && (
+                    <Button
+                      className="gap-2 bg-green-600 hover:bg-green-700"
+                      onClick={() => handleAction(selectedTestimonial, 'approve')}
+                    >
+                      <Check className="h-4 w-4" />
+                      Approve & publish
+                    </Button>
+                  )}
+                  {selectedTestimonial.status !== 'rejected' && (
+                    <Button
+                      variant="destructive"
+                      className="gap-2"
+                      onClick={() => handleAction(selectedTestimonial, 'reject')}
+                    >
+                      <X className="h-4 w-4" />
+                      Reject
+                    </Button>
+                  )}
+                  <Button variant="outline" onClick={() => setShowAddDialog(true)} className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add manual testimonial
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Card>
+        </div>
       </div>
 
       {/* Review Dialog */}
-      <Dialog open={!!selectedTestimonial} onOpenChange={() => {
-        setSelectedTestimonial(null);
-        setReviewNotes('');
+      <Dialog open={!!actionTarget} onOpenChange={() => {
+        setActionTarget(null);
         setActionType(null);
       }}>
         <DialogContent>
@@ -504,16 +882,16 @@ export default function TestimonialsManagement() {
               {actionType === 'approve' ? 'Approve' : 'Reject'} Testimonial
             </DialogTitle>
             <DialogDescription>
-              {selectedTestimonial && (
+              {actionTarget && (
                 <div className="space-y-3 mt-4">
                   <div>
-                    <strong>{selectedTestimonial.displayName}</strong>
+                    <strong>{actionTarget.displayName}</strong>
                     <div className="flex items-center gap-1 mt-1">
-                      {getRatingStars(selectedTestimonial.rating)}
+                      {renderRatingStars(actionTarget.rating, 'md')}
                     </div>
                   </div>
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    "{selectedTestimonial.comment}"
+                    "{actionTarget.comment}"
                   </p>
                   <Textarea
                     placeholder="Add review notes (optional)..."
@@ -527,17 +905,24 @@ export default function TestimonialsManagement() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => {
-              setSelectedTestimonial(null);
-              setReviewNotes('');
+              setActionTarget(null);
               setActionType(null);
             }}>
               Cancel
             </Button>
             <Button
               onClick={confirmAction}
+              disabled={isActionLoading}
               className={actionType === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
             >
-              {actionType === 'approve' ? 'Approve' : 'Reject'}
+              {isActionLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                actionType === 'approve' ? 'Approve' : 'Reject'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

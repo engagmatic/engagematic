@@ -55,7 +55,7 @@ const CommentGenerator = () => {
 
   // Use user's personas first, fall back to expanded personas
   useEffect(() => {
-    if (selectedPersona) return; // Already have a persona
+    if (selectedPersona || personasLoading) return; // Already have a persona or still loading
 
     // Prioritize user's personas
     if (personas.length > 0) {
@@ -65,7 +65,7 @@ const CommentGenerator = () => {
       setSelectedPersona(EXPANDED_PERSONAS[0]);
       console.log('✅ Expanded persona selected for comments:', EXPANDED_PERSONAS[0].name);
     }
-  }, [personas, selectedPersona]);
+  }, [personas, personasLoading]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -241,21 +241,27 @@ const CommentGenerator = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="w-full bg-gray-50 dark:bg-slate-950 min-h-screen">
       <SEO {...PAGE_SEO.commentGenerator} />
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">
+      
+      {/* Page Header */}
+      <header className="sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 hidden lg:block">
+        <div className="px-4 sm:px-6 lg:px-8 py-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-50">
             Comment{" "}
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               Generator
             </span>
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Create genuine, AI-powered comments that build real relationships</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Create genuine, AI-powered comments that build real relationships
+          </p>
         </div>
+      </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-11 gap-6">
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-11 gap-6">
           {/* Left Column - Input */}
           <div className="lg:col-span-6 space-y-6">
             {/* Input Method Selection */}
@@ -323,12 +329,15 @@ const CommentGenerator = () => {
                   Choose Your Persona *
                 </label>
                 <Select 
-                  value={selectedPersona?.name || selectedPersona?._id || selectedPersona?.id} 
+                  value={selectedPersona?._id || selectedPersona?.id || ""} 
                   onValueChange={(value) => {
                     // Find persona from either user personas or expanded personas
                     const allPersonas = [...personas, ...EXPANDED_PERSONAS];
-                    const found = allPersonas.find(p => p.name === value || p._id === value || p.id === value);
-                    if (found) setSelectedPersona(found);
+                    const found = allPersonas.find(p => p._id === value || p.id === value);
+                    if (found) {
+                      setSelectedPersona(found);
+                      console.log('✅ Persona selected:', found.name);
+                    }
                   }}
                 >
                   <SelectTrigger className="w-full">
@@ -342,7 +351,7 @@ const CommentGenerator = () => {
                           Your Personas
                         </div>
                         {personas.map((persona) => (
-                          <SelectItem key={persona._id} value={persona._id}>
+                          <SelectItem key={persona._id} value={persona._id || persona.id}>
                             {persona.name} {persona.industry && `- ${persona.industry}`}
                             {persona.source === 'onboarding' && ' ✨'}
                           </SelectItem>
@@ -541,6 +550,7 @@ const CommentGenerator = () => {
             {/* Creative Engagement Ideas removed as requested */}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

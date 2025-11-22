@@ -45,20 +45,15 @@ export const ToolsShowcase = () => {
               key={index}
               className="group relative p-4 sm:p-5 border border-border/50 hover:border-primary/30 bg-gradient-to-br from-white via-white to-slate-50/50 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-800/80 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
             >
-              {/* Subtle gradient overlay on hover */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/3 group-hover:to-primary/5 transition-all duration-300 pointer-events-none" />
-              
+
               <div className="relative flex items-start gap-4">
-                {/* Premium Icon Container */}
                 <div className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${tool.color} flex items-center justify-center flex-shrink-0 shadow-lg ${tool.shadowColor} group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}>
-                  {/* Inner glow effect */}
                   <div className="absolute inset-0 rounded-2xl bg-white/20 blur-sm group-hover:bg-white/30 transition-all duration-300" />
-                  {/* Icon */}
                   <Icon className="relative w-7 h-7 sm:w-8 sm:h-8 text-white drop-shadow-sm z-10" strokeWidth={2.5} />
-                  {/* Shine effect on hover */}
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out" />
                 </div>
-                
+
                 <div className="flex-1 min-w-0 pt-0.5">
                   <h4 className="text-base sm:text-lg font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors">
                     {tool.title}

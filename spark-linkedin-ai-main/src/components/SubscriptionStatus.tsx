@@ -39,16 +39,25 @@ export const SubscriptionStatus = () => {
     getTokensTotal,
     upgradePlan
   } = useSubscription();
-  
+
   const handleUpgrade = async () => {
     setIsNavigating(true);
-    
+
     try {
-      // Navigate to pricing section
-      window.location.href = "/#pricing";
+      // Navigate to pricing section on home page
+      if (window.location.pathname === '/') {
+        const pricingSection = document.getElementById('pricing');
+        pricingSection?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        navigate('/#pricing');
+      }
     } catch (error) {
       console.error('Navigation error:', error);
-      toast.error('Please try again');
+      toast({
+        title: "Navigation Error",
+        description: "Please try again",
+        variant: "destructive",
+      });
     } finally {
       setIsNavigating(false);
     }
@@ -115,7 +124,8 @@ export const SubscriptionStatus = () => {
 
   const ideasUsed = subscription.usage?.ideasGenerated || 0;
   const ideasLimit = subscription.limits?.ideasPerMonth || 25;
-  const ideasPercentage = (ideasUsed / ideasLimit) * 100;
+  const isIdeasUnlimited = ideasLimit === -1;
+  const ideasPercentage = isIdeasUnlimited ? 0 : (ideasLimit > 0 ? (ideasUsed / ideasLimit) * 100 : 0);
 
   const getUsageColor = (percentage: number) => {
     if (percentage >= 90) return 'text-red-600';
@@ -228,16 +238,25 @@ export const SubscriptionStatus = () => {
                 </span>
               </div>
               <span className={`text-lg font-bold ${getUsageColor(ideasPercentage)}`}>
-                {ideasUsed}/{ideasLimit}
+                {isIdeasUnlimited ? `${ideasUsed} (Unlimited)` : `${ideasUsed}/${ideasLimit}`}
               </span>
             </div>
-            <Progress 
-              value={ideasPercentage} 
-              className="h-2 bg-slate-100 dark:bg-slate-800"
-            />
-            <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
-              {ideasLimit - ideasUsed} remaining this month
-            </p>
+            {!isIdeasUnlimited && (
+              <>
+                <Progress 
+                  value={ideasPercentage} 
+                  className="h-2 bg-slate-100 dark:bg-slate-800"
+                />
+                <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
+                  {ideasLimit - ideasUsed} remaining this month
+                </p>
+              </>
+            )}
+            {isIdeasUnlimited && (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 font-medium">
+                Unlimited ideas available
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -285,18 +304,23 @@ export const SubscriptionStatus = () => {
         </Button>
       )}
 
-      {isSubscriptionActive && (
-        <Button 
-          asChild
-          variant="outline" 
-          className="w-full h-12 font-semibold"
-        >
-          <Link to="/plan-management">
-            <Crown className="w-4 h-4 mr-2" />
-            Manage Subscription
-          </Link>
-        </Button>
-      )}
+            {isSubscriptionActive && (
+              <Button
+                variant="outline"
+                className="w-full h-12 font-semibold"
+                onClick={() => {
+                  if (window.location.pathname === '/') {
+                    const pricingSection = document.getElementById('pricing');
+                    pricingSection?.scrollIntoView({ behavior: 'smooth' });
+                  } else {
+                    navigate('/#pricing');
+                  }
+                }}
+              >
+                <Crown className="w-4 h-4 mr-2" />
+                View Plans
+              </Button>
+            )}
     </Card>
   );
 };

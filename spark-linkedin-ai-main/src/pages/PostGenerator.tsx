@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb, Crown, Lock, Share2, Download, ExternalLink } from "lucide-react";
+import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb, Crown, Lock, Share2, ExternalLink, Minimize2, ArrowRight, Scissors, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useContentGeneration } from "../hooks/useContentGeneration";
@@ -20,6 +20,7 @@ import { LinkedInOptimizer } from "@/components/LinkedInOptimizer";
 import { PremiumWaitlistModal } from "@/components/PremiumWaitlistModal";
 import { UpgradePopup } from "@/components/UpgradePopup";
 import { TestimonialPopup } from "@/components/TestimonialPopup";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const hookIcons = {
   story: Heart,
@@ -49,26 +50,113 @@ const PostGenerator = () => {
   const [selectedHook, setSelectedHook] = useState(null);
   const [hooks, setHooks] = useState(DEFAULT_HOOKS);
   const [isLoadingHooks, setIsLoadingHooks] = useState(false);
-  const [creativeSuggestions, setCreativeSuggestions] = useState([]);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [waitlistSource, setWaitlistSource] = useState("post-generator");
   const [showUpgradePopup, setShowUpgradePopup] = useState(false);
   const [showTestimonialPopup, setShowTestimonialPopup] = useState(false);
   const testimonialTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isShortened, setIsShortened] = useState(false);
+  const [shortenedContent, setShortenedContent] = useState("");
   
   // SIMPLIFIED: Just use sample personas directly, no complex creation logic
   const { personas, samplePersonas, isLoading: personasLoading } = usePersonas();
   const [selectedPersona, setSelectedPersona] = useState(null);
   
   const { toast } = useToast();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const navigate = useNavigate();
   const { isGenerating, generatedContent, generatePost, generatePostCustom, copyToClipboard, saveContent } = useContentGeneration();
   const { subscription, canPerformAction, fetchSubscription } = useSubscription();
 
-  const handleUpgradeClick = (source: string) => {
-    setWaitlistSource(source);
-    setShowWaitlistModal(true);
+  // Reset shortened state when new content is generated
+  useEffect(() => {
+    if (generatedContent) {
+      setIsShortened(false);
+      setShortenedContent("");
+    }
+  }, [generatedContent]);
+
+  // Intelligent content shortening function
+  const shortenContent = (content: string): string => {
+    if (!content) return content;
+    
+    const originalLength = content.length;
+    const targetLength = Math.floor(originalLength * 0.4); // 60% reduction (40% of original)
+    
+    // Split into sentences
+    const sentences = content.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+    
+    if (sentences.length <= 2) {
+      // If already short, just trim words
+      const words = content.split(/\s+/);
+      const targetWords = Math.floor(words.length * 0.5);
+      return words.slice(0, targetWords).join(' ') + (words.length > targetWords ? '...' : '');
+    }
+    
+    // Keep first sentence (hook/opening)
+    let shortened = sentences[0];
+    
+    // Keep key sentences (those with important words, questions, or numbers)
+    const importantSentences = sentences.slice(1).filter(s => {
+      const lower = s.toLowerCase();
+      return /[?!]/.test(s) || // Questions or exclamations
+             /\d+/.test(s) || // Numbers
+             /(because|why|how|what|when|where|key|important|essential|critical)/i.test(lower);
+    });
+    
+    // Add 1-2 important sentences
+    if (importantSentences.length > 0) {
+      shortened += ' ' + importantSentences.slice(0, 2).join(' ');
+    }
+    
+    // Add last sentence if it's a call to action or conclusion
+    const lastSentence = sentences[sentences.length - 1];
+    if (/[?!]/.test(lastSentence) || /(share|comment|thought|idea|experience|let|think)/i.test(lastSentence.toLowerCase())) {
+      if (!shortened.includes(lastSentence)) {
+        shortened += ' ' + lastSentence;
+      }
+    }
+    
+    // If still too long, trim to target length
+    if (shortened.length > targetLength) {
+      const words = shortened.split(/\s+/);
+      const targetWords = Math.floor(words.length * 0.7);
+      shortened = words.slice(0, targetWords).join(' ') + '...';
+    }
+    
+    return shortened.trim();
+  };
+
+  const handleShorten = () => {
+    if (!generatedContent?.content) return;
+    
+    const shortened = shortenContent(generatedContent.content);
+    setShortenedContent(shortened);
+    setIsShortened(true);
+    
+    toast({
+      title: "✨ Content Shortened!",
+      description: "Post optimized for busy feeds - crisp and engaging",
+    });
+  };
+
+  const handleRestore = () => {
+    setIsShortened(false);
+    setShortenedContent("");
+  };
+
+      const handleUpgradeClick = (source: string) => {
+        // Redirect to pricing section for premium features
+        if (window.location.pathname === '/') {
+          const pricingSection = document.getElementById('pricing');
+          pricingSection?.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          navigate('/#pricing');
+        }
+    toast({
+      title: "Upgrade Required",
+      description: "This feature is available in our premium plans. Choose a plan to continue.",
+    });
   };
 
   // Handle pre-filled content from Idea Generator
@@ -160,33 +248,7 @@ const PostGenerator = () => {
     };
   }, []); // Empty dependency array - run once on mount
 
-  const generateCreativeSuggestions = (topic) => {
-    // Generate creative format suggestions for LinkedIn posts
-    const suggestions = [
-      {
-        type: "Carousel",
-        title: "Carousel Post",
-        description: `Break down "${topic}" into 5-7 engaging slides with key insights and visuals`,
-        icon: "📊",
-        tips: "Use Canva or Figma. Keep each slide focused on 1 main point. Add your logo for branding."
-      },
-      {
-        type: "Video",
-        title: "Short Video",
-        description: `Record a 60-90 second authentic video sharing your perspective on "${topic}"`,
-        icon: "🎥",
-        tips: "Hook viewers in first 3 seconds. Be genuine and conversational. End with a clear CTA."
-      },
-      {
-        type: "Document",
-        title: "PDF Guide",
-        description: `Create a valuable 2-3 page PDF guide or checklist about "${topic}"`,
-        icon: "📄",
-        tips: "Include actionable steps, visuals, and your contact info. Make it downloadable."
-      }
-    ];
-    setCreativeSuggestions(suggestions);
-  };
+  // Creative suggestions removed - replaced with formatting preferences and persona customization
 
   const handleGeneratePost = async () => {
     // Validation
@@ -217,6 +279,16 @@ const PostGenerator = () => {
       return;
     }
 
+    // Validate hook ID exists
+    if (!selectedHook._id) {
+      toast({
+        title: "Invalid Hook",
+        description: "The selected hook is invalid. Please select another hook.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!selectedPersona) {
       toast({
         title: "Persona required",
@@ -238,10 +310,14 @@ const PostGenerator = () => {
       return;
     }
 
-    // SIMPLIFIED: Send persona data directly if it's a sample (no _id)
-    const personaData = selectedPersona._id 
-      ? { personaId: selectedPersona._id } // Real persona with ID
-      : { persona: selectedPersona }; // Sample persona, send full data
+    // SIMPLIFIED: Send persona data directly if it's a sample or onboarding persona
+    // Check if it's a valid MongoDB ObjectId (24 hex characters)
+    const isValidMongoId = selectedPersona._id && /^[0-9a-fA-F]{24}$/.test(selectedPersona._id);
+    const isOnboardingPersona = selectedPersona._id?.toString().startsWith('user-persona-') || selectedPersona.source === 'onboarding';
+    
+    const personaData = (isValidMongoId && !isOnboardingPersona)
+      ? { personaId: selectedPersona._id } // Real persona with valid MongoDB ObjectId
+      : { persona: selectedPersona }; // Sample persona or onboarding persona, send full data
 
     console.log('🚀 Generating post with data:', {
       topic,
@@ -253,35 +329,53 @@ const PostGenerator = () => {
 
     // Check if user is pro and using a trending hook
     const isProUser = subscription?.plan === 'pro';
-    const isTrendingHook = selectedHook._id && selectedHook._id.startsWith('trending_');
+    const isTrendingHook = selectedHook._id && selectedHook._id.toString().startsWith('trending_');
     
     let result;
     
-    // Use custom API for pro users with trending hooks
-    if (isProUser && isTrendingHook) {
-      const postData: any = {
-        topic,
-        title: selectedHook.text,
-        category: selectedHook.category,
-        ...personaData
-      };
-      
-      console.log('🔥 Using custom API for pro user with trending hook:', postData);
-      result = await generatePostCustom(postData);
-    } else {
-      // Use standard API for regular hooks
-      const postData: any = {
-        topic,
-        hookId: selectedHook._id,
-        ...personaData
-      };
-      
-      // If it's a trending hook (but not pro), include the hook text
-      if (isTrendingHook) {
-        postData.hookText = selectedHook.text;
+    try {
+      // Use custom API for pro users with trending hooks
+      if (isProUser && isTrendingHook) {
+        const postData: any = {
+          topic,
+          title: selectedHook.text || selectedHook.title,
+          category: selectedHook.category || 'story',
+          ...personaData
+        };
+        
+        console.log('🔥 Using custom API for pro user with trending hook:', postData);
+        result = await generatePostCustom(postData);
+      } else {
+        // Use standard API for regular hooks
+        // Ensure hookId is a valid string
+        const hookId = selectedHook._id?.toString() || selectedHook._id;
+        
+        if (!hookId) {
+          throw new Error("Hook ID is required");
+        }
+        
+        const postData: any = {
+          topic: topic.trim(),
+          hookId: hookId,
+          ...personaData
+        };
+        
+        // If it's a trending hook (but not pro), include the hook text
+        if (isTrendingHook) {
+          postData.hookText = selectedHook.text || selectedHook.title;
+        }
+        
+        console.log('📤 Sending post generation request:', { ...postData, persona: '...' });
+        result = await generatePost(postData);
       }
-      
-      result = await generatePost(postData);
+    } catch (error: any) {
+      console.error('❌ Post generation error:', error);
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate post. Please try again.",
+        variant: "destructive",
+      });
+      return;
     }
 
     if (result.success) {
@@ -348,21 +442,27 @@ const PostGenerator = () => {
   // REMOVED: Complex persona creation screen - we now use samples directly
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="w-full bg-gray-50 dark:bg-slate-950 min-h-screen">
       <SEO {...PAGE_SEO.postGenerator} />
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">
+      
+      {/* Page Header */}
+      <header className="sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 hidden lg:block">
+        <div className="px-4 sm:px-6 lg:px-8 py-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-50">
             Post{" "}
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               Generator
             </span>
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Create viral-worthy LinkedIn posts in seconds with AI-powered content generation</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Create viral-worthy LinkedIn posts in seconds with AI-powered content generation
+          </p>
         </div>
+      </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-11 gap-6">
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-11 gap-6">
           {/* Left Column - Input */}
           <div className="lg:col-span-6 space-y-6">
             {/* Topic Input */}
@@ -376,7 +476,13 @@ const PostGenerator = () => {
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                   className="min-h-[120px] resize-none"
+                  maxLength={1000}
               />
+              <div className="flex justify-end mt-1">
+                <span className={`text-xs ${topic.length > 950 ? 'text-orange-500' : topic.length > 900 ? 'text-yellow-600' : 'text-muted-foreground'}`}>
+                  {topic.length}/1000 characters
+                </span>
+              </div>
             </div>
             </Card>
 
@@ -390,9 +496,13 @@ const PostGenerator = () => {
               </label>
                   <div className="flex items-center gap-2">
                     {subscription?.plan === 'trial' && (
-                      <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border bg-muted">
+                      <button
+                        type="button"
+                        onClick={() => handleUpgradeClick('premium-badge')}
+                        className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border bg-muted hover:bg-muted/80 transition cursor-pointer"
+                      >
                         <Lock className="h-3 w-3" /> Premium
-                      </span>
+                      </button>
                     )}
                     <button
                       type="button"
@@ -476,7 +586,7 @@ const PostGenerator = () => {
                       className="gap-2 text-xs"
                     >
                       <Crown className="h-3 w-3" />
-                      Edit Personas
+                      Edit Personas (Premium)
                     </Button>
                   )}
                 </div>
@@ -590,19 +700,93 @@ const PostGenerator = () => {
 
           {/* Right Column - Generated Content */}
           <div className="lg:col-span-5 space-y-6">
-            <Card className="shadow-lg">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Generated Post</h3>
-                {generatedContent ? (
-                  <div className="space-y-4">
-                    <div className="p-4 bg-muted rounded-lg max-h-96 overflow-y-auto">
-                      <p className="whitespace-pre-wrap text-sm">{formatForLinkedIn(generatedContent.content)}</p>
+            <div className="relative">
+              {/* LinkedIn Post Preview Container */}
+              <div className="bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 rounded-2xl p-4 sm:p-6 shadow-2xl">
+                {/* POST PREVIEW Header */}
+                <div className="bg-[#0A66C2] dark:bg-[#0A66C2] text-white px-4 py-2.5 rounded-t-xl mb-0 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold tracking-wide">POST PREVIEW</h3>
+                  {/* LinkedIn Logo Icon */}
+                  <div className="w-6 h-6 bg-white rounded flex items-center justify-center shadow-sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#0A66C2" className="flex-shrink-0">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                  </div>
+                </div>
+                
+                {/* LinkedIn Post Card */}
+                <div className="bg-white dark:bg-slate-800 rounded-b-xl border-2 border-purple-300/60 dark:border-purple-700/60 shadow-lg overflow-hidden">
+                  {generatedContent ? (
+                    <div className="p-4 sm:p-5">
+                      {/* Profile Header */}
+                      <div className="mb-4">
+                        <h4 className="font-bold text-gray-900 dark:text-gray-100 text-sm sm:text-base">
+                          {user?.name || "Your Name"}
+                        </h4>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                          2h • Edited
+                        </p>
+                      </div>
+                      
+                      {/* Post Content */}
+                      <div 
+                        className="mt-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar"
+                        style={{
+                          scrollbarWidth: 'thin',
+                          scrollbarColor: 'rgba(147, 51, 234, 0.3) transparent'
+                        }}
+                      >
+                        <style>{`
+                          .custom-scrollbar::-webkit-scrollbar {
+                            width: 6px;
+                          }
+                          .custom-scrollbar::-webkit-scrollbar-track {
+                            background: transparent;
+                          }
+                          .custom-scrollbar::-webkit-scrollbar-thumb {
+                            background: rgba(147, 51, 234, 0.3);
+                            border-radius: 3px;
+                          }
+                          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                            background: rgba(147, 51, 234, 0.5);
+                          }
+                        `}</style>
+                        <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
+                          <p className="whitespace-pre-wrap text-gray-900 dark:text-gray-100 leading-relaxed text-sm sm:text-base break-words font-sans">
+                            {isShortened && shortenedContent 
+                              ? formatForLinkedIn(shortenedContent)
+                              : formatForLinkedIn(generatedContent.content)}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    
+                  ) : (
+                    <div className="p-8 sm:p-12 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-full flex items-center justify-center mb-4">
+                          <Sparkles className="h-8 w-8 text-blue-600 dark:text-blue-400 opacity-50" />
+                        </div>
+                        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 font-medium">
+                          Your generated post will appear here
+                        </p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                          Fill in the form and click "Generate Pulse Post"
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Action Buttons Section - Below Preview */}
+              {generatedContent && (
+                <Card className="mt-6 shadow-lg">
+                  <div className="p-4 sm:p-6 space-y-4">
                     {generatedContent.engagementScore && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <TrendingUp className="h-4 w-4 text-primary" />
                         <span className="text-sm font-medium">Engagement Score:</span>
-                        <Badge variant="default">{generatedContent.engagementScore}/100</Badge>
+                        <Badge variant="default" className="text-sm">{generatedContent.engagementScore}/100</Badge>
                       </div>
                     )}
 
@@ -614,7 +798,7 @@ const PostGenerator = () => {
                       compact={true}
                     />
 
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {/* Regenerate Button */}
                       <Button 
                         variant="outline" 
@@ -636,54 +820,92 @@ const PostGenerator = () => {
                         )}
                       </Button>
                       
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        {/* Shorten Content Button - Premium Styling */}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant={isShortened ? "outline" : "default"}
+                                size="sm" 
+                                className={`flex-1 sm:flex-initial ${
+                                  !isShortened 
+                                    ? "bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all" 
+                                    : ""
+                                }`}
+                                onClick={isShortened ? handleRestore : handleShorten}
+                              >
+                                {isShortened ? (
+                                  <>
+                                    <RotateCcw className="mr-2 h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Restore</span>
+                                    <span className="sm:hidden">Restore</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Scissors className="mr-2 h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Shorten</span>
+                                    <span className="sm:hidden">Shorten</span>
+                                  </>
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{isShortened ? "Restore original content" : "Make it crisp—perfect for busy feeds!"}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
                         <Button 
                           variant="outline" 
                           size="sm" 
                           className="flex-1"
-                          onClick={handleCopy}
+                          onClick={async () => {
+                            const contentToCopy = isShortened && shortenedContent 
+                              ? shortenedContent 
+                              : generatedContent.content;
+                            const formattedContent = formatForLinkedIn(contentToCopy);
+                            await copyToClipboard(formattedContent);
+                          }}
                         >
-                          <Copy className="mr-2 h-4 w-4" />
-                          Copy
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1"
-                          onClick={handleSave}
-                        >
-                          <Save className="mr-2 h-4 w-4" />
-                          Save
+                          <Copy className="mr-2 h-4 w-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Copy</span>
+                          <span className="sm:hidden">Copy</span>
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm" 
                           className="flex-1"
                           onClick={async () => {
-                            const formattedText = formatForLinkedIn(generatedContent.content);
-                            const blob = new Blob([formattedText], { type: 'text/plain' });
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = `linkedin-post-${Date.now()}.txt`;
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                            toast({ title: "Downloaded successfully!" });
+                            // Save the original generated content (by ID)
+                            if (generatedContent._id) {
+                              await saveContent(generatedContent._id);
+                            } else {
+                              toast({
+                                title: "Cannot save",
+                                description: "Content must be generated first",
+                                variant: "destructive"
+                              });
+                            }
                           }}
                         >
-                          <Download className="mr-2 h-4 w-4" />
-                          Download
+                          <Save className="mr-2 h-4 w-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Save</span>
+                          <span className="sm:hidden">Save</span>
                         </Button>
                       </div>
                       
                       {/* Share on LinkedIn Button */}
                       <Button 
                         size="sm" 
-                        className="w-full bg-[#0077B5] hover:bg-[#006396] text-white"
+                        className="w-full bg-[#0077B5] hover:bg-[#006396] text-white shadow-lg hover:shadow-xl transition-all"
                         onClick={async () => {
                           try {
                             // Step 1: Copy post to clipboard with LinkedIn formatting
-                            const formattedPost = formatForLinkedIn(generatedContent.content);
+                            const contentToShare = isShortened && shortenedContent 
+                              ? shortenedContent 
+                              : generatedContent.content;
+                            const formattedPost = formatForLinkedIn(contentToShare);
                             await navigator.clipboard.writeText(formattedPost);
                             
                             // Step 2: Show success message
@@ -731,91 +953,42 @@ const PostGenerator = () => {
                         }}
                       >
                         <Share2 className="mr-2 h-4 w-4" />
-                        Publish with LinkedIn
+                        <span className="hidden sm:inline">Publish with LinkedIn</span>
+                        <span className="sm:hidden">Publish</span>
                         <ExternalLink className="ml-2 h-3 w-3" />
                       </Button>
-                      <div className="space-y-1 text-center">
-                        <p className="text-xs text-muted-foreground font-medium">
-                          📋 Step 1: Click button → 📋 Step 2: Paste in LinkedIn (Ctrl+V) → 📤 Step 3: Publish!
-                        </p>
-                        <p className="text-xs text-muted-foreground opacity-70">
+                      
+                      {/* Premium Steps Guide */}
+                      <div className="bg-gradient-to-r from-blue-50/50 via-purple-50/50 to-pink-50/50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 rounded-lg p-3 sm:p-4 border border-blue-100/50 dark:border-blue-900/50">
+                        <div className="flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">1</div>
+                            <span className="text-muted-foreground font-medium hidden sm:inline">Click</span>
+                          </div>
+                          <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center text-[10px] font-bold">2</div>
+                            <span className="text-muted-foreground font-medium hidden sm:inline">Paste</span>
+                            <span className="text-muted-foreground font-medium sm:hidden">Ctrl+V</span>
+                          </div>
+                          <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded-full bg-pink-600 text-white flex items-center justify-center text-[10px] font-bold">3</div>
+                            <span className="text-muted-foreground font-medium">Publish</span>
+                          </div>
+                        </div>
+                        <p className="text-center text-[10px] sm:text-xs text-muted-foreground mt-2 opacity-70">
                           Powered by LinkedInPulse
                         </p>
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p className="text-sm">Your generated post will appear here</p>
-                  </div>
-                )}
-          </div>
-        </Card>
-
-            {/* Creative Suggestions - World-Class Design */}
-            {creativeSuggestions.length > 0 && (
-              <Card className="shadow-xl border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50">
-                <div className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-yellow-500 rounded-lg">
-                      <Lightbulb className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900">
-                        Creative Format Suggestions
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Boost engagement with these LinkedIn formats
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 gap-4">
-                    {creativeSuggestions.map((suggestion, idx) => (
-                      <div
-                        key={idx}
-                        className="group relative bg-white border-2 border-gray-200 rounded-xl p-5 hover:border-yellow-400 hover:shadow-lg transition-all duration-300 cursor-pointer"
-                      >
-                        {/* Number Badge */}
-                        <div className="absolute -top-3 -right-3 bg-gradient-to-br from-yellow-400 to-orange-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-sm shadow-lg group-hover:scale-110 transition-transform">
-                          {idx + 1}
-                        </div>
-                        
-                        {/* Header */}
-                        <div className="mb-3">
-                          <h4 className="font-bold text-lg text-gray-900 mb-1 flex items-center gap-2">
-                            <span className="text-2xl">{suggestion.icon}</span>
-                            {suggestion.title}
-                          </h4>
-                          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
-                            High Engagement Format
-                          </p>
-                        </div>
-                        
-                        {/* Description */}
-                        <p className="text-sm text-gray-700 mb-3 leading-relaxed">
-                          {suggestion.description}
-                        </p>
-                        
-                        {/* Quick Tip */}
-                        <div className="flex items-start gap-2.5 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                          <span className="flex-shrink-0 text-lg">💡</span>
-                          <div>
-                            <p className="text-xs font-semibold text-yellow-900 mb-1">Pro Tip:</p>
-                            <p className="text-xs text-gray-700 leading-relaxed">{suggestion.tips}</p>
-                          </div>
-                        </div>
-                        
-                        {/* Hover Effect */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 to-orange-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Card>
-            )}
+                </Card>
+              )}
+            </div>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Premium Waitlist Modal */}

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { X, Gift, Users, Star } from "lucide-react";
-import { Logo } from "../Logo";
+import { LogoWithText } from "../LogoWithText";
 
 export const Footer = () => {
   const navigate = useNavigate();
@@ -65,13 +65,11 @@ export const Footer = () => {
         <div className="container mx-auto px-4 py-8 sm:py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8">
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Logo 
-                  className="w-10 h-10"
-                  size={40}
-                />
-                <span className="text-xl font-bold">LinkedInPulse</span>
-              </div>
+              <LogoWithText 
+                textSize="md"
+                showLink={true}
+                to="/"
+              />
               <p className="text-sm text-muted-foreground">
                 Amplify your LinkedIn presence with AI-powered content that feels authentically you.
               </p>
@@ -93,6 +91,7 @@ export const Footer = () => {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/about" className="hover:text-foreground transition-smooth">About</Link></li>
                 <li><Link to="/contact" className="hover:text-foreground transition-smooth">Contact</Link></li>
+                <li><Link to="/affiliate" className="hover:text-foreground transition-smooth">Affiliate Program</Link></li>
                 <li><Link to="/privacy" className="hover:text-foreground transition-smooth">Privacy Policy</Link></li>
                 <li><Link to="/terms" className="hover:text-foreground transition-smooth">Terms of Service</Link></li>
               </ul>

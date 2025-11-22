@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Activity, Users, Target, Heart, ArrowRight, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon, premiumOutlineCTAClasses } from "@/styles/premiumButtons";
 
 const AboutPage = () => {
   return (
@@ -183,14 +184,17 @@ const AboutPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
               <Link to="/auth/register" className="w-full sm:w-auto">
-                <Button size="lg" className="gap-2 w-full sm:w-auto">
-                  Start Free Trial
-                  <ArrowRight className="h-4 w-4" />
+                <Button className={`${premiumCTAClasses} w-full sm:w-auto`}>
+                  <span className={premiumCTAHighlight} />
+                  <span className="relative">Start Free Trial</span>
+                  <ArrowRight className={premiumCTAIcon} />
                 </Button>
               </Link>
               <Link to="/contact" className="w-full sm:w-auto">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                  Contact Us
+                <Button variant="ghost" className={`${premiumOutlineCTAClasses} w-full sm:w-auto`}>
+                  <span className={premiumCTAHighlight} />
+                  <span className="relative">Contact Us</span>
+                  <ArrowRight className={premiumCTAIcon} />
                 </Button>
               </Link>
             </div>
