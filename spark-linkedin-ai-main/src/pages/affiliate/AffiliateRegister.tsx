@@ -116,10 +116,10 @@ export default function AffiliateRegister() {
   return (
     <>
       <Helmet>
-        <title>Apply for Affiliate Program | LinkedInPulse</title>
+        <title>Apply for Affiliate Program | Engagematic</title>
         <meta
           name="description"
-          content="Apply to become a LinkedInPulse affiliate. Earn 10% recurring commissions monthly."
+          content="Apply to become a Engagematic affiliate. Earn 10% recurring commissions monthly."
         />
       </Helmet>
 

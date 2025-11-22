@@ -273,7 +273,7 @@ export const SubscriptionStatus = () => {
                 Experience the platform risk-free
               </h4>
               <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                You have <strong>{getTrialDaysRemaining()} days</strong> to explore all features. Generate up to <strong>10 posts</strong>, <strong>25 comments</strong>, and <strong>25 content ideas</strong> to discover how LinkedInPulse transforms your content strategy.
+                You have <strong>{getTrialDaysRemaining()} days</strong> to explore all features. Generate up to <strong>10 posts</strong>, <strong>25 comments</strong>, and <strong>25 content ideas</strong> to discover how Engagematic transforms your content strategy.
               </p>
             </div>
           </div>

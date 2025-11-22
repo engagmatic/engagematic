@@ -15,15 +15,15 @@ const FAQPage = () => {
       icon: "🚀",
       questions: [
         {
-          question: "How do I get started with LinkedInPulse?",
+          question: "How do I get started with Engagematic?",
           answer: "Getting started is easy! Simply sign up for a free account, complete your profile, and create your first AI persona. Then you can start generating LinkedIn posts and comments right away. We recommend starting with our onboarding tutorial to get the most out of the platform."
         },
         {
-          question: "Do I need any technical knowledge to use LinkedInPulse?",
-          answer: "Not at all! LinkedInPulse is designed to be user-friendly for professionals of all technical levels. Our intuitive interface guides you through each step, and our AI handles the complex content generation for you."
+          question: "Do I need any technical knowledge to use Engagematic?",
+          answer: "Not at all! Engagematic is designed to be user-friendly for professionals of all technical levels. Our intuitive interface guides you through each step, and our AI handles the complex content generation for you."
         },
         {
-          question: "Can I try LinkedInPulse before subscribing?",
+          question: "Can I try Engagematic before subscribing?",
           answer: "Yes! We offer a free trial that includes 5 posts and 10 comments per month. This gives you a chance to experience the full power of our AI content generation before committing to a paid plan."
         },
         {
@@ -89,7 +89,7 @@ const FAQPage = () => {
       icon: "🔒",
       questions: [
         {
-          question: "Is my data secure with LinkedInPulse?",
+          question: "Is my data secure with Engagematic?",
           answer: "Absolutely! We use bank-grade security measures including SSL encryption, secure data centers, and regular security audits. Your data is encrypted both in transit and at rest, and we never share your personal information with third parties."
         },
         {
@@ -119,12 +119,12 @@ const FAQPage = () => {
           answer: "Yes! We provide comprehensive onboarding tutorials, video guides, and webinars. Pro plan customers also receive priority support with 24-hour response times."
         },
         {
-          question: "Can I integrate LinkedInPulse with other tools?",
+          question: "Can I integrate Engagematic with other tools?",
           answer: "Currently, we offer direct LinkedIn integration and export features. We're working on integrations with popular CRM and marketing tools. Contact us if you have specific integration needs."
         },
         {
           question: "What browsers and devices are supported?",
-          answer: "LinkedInPulse works on all modern browsers (Chrome, Firefox, Safari, Edge) and is fully responsive for mobile and tablet devices. We recommend using the latest browser versions for the best experience."
+          answer: "Engagematic works on all modern browsers (Chrome, Firefox, Safari, Edge) and is fully responsive for mobile and tablet devices. We recommend using the latest browser versions for the best experience."
         }
       ]
     },
@@ -134,19 +134,19 @@ const FAQPage = () => {
       questions: [
         {
           question: "How does LinkedIn integration work?",
-          answer: "You can connect your LinkedIn profile to LinkedInPulse to get personalized content suggestions and seamless posting. The integration is secure and only accesses the information you explicitly grant permission for."
+          answer: "You can connect your LinkedIn profile to Engagematic to get personalized content suggestions and seamless posting. The integration is secure and only accesses the information you explicitly grant permission for."
         },
         {
-          question: "Can I post directly to LinkedIn from LinkedInPulse?",
-          answer: "Yes! Once you connect your LinkedIn account, you can post content directly from LinkedInPulse. You can also schedule posts for optimal timing and review them before publishing."
+          question: "Can I post directly to LinkedIn from Engagematic?",
+          answer: "Yes! Once you connect your LinkedIn account, you can post content directly from Engagematic. You can also schedule posts for optimal timing and review them before publishing."
         },
         {
           question: "Will LinkedIn know I'm using AI-generated content?",
           answer: "LinkedIn doesn't specifically detect AI-generated content, but we always recommend personalizing and customizing the content to make it authentically yours. Our AI is designed to create content that sounds natural and human."
         },
         {
-          question: "Can I use LinkedInPulse for multiple LinkedIn accounts?",
-          answer: "Yes! You can connect multiple LinkedIn accounts and manage them from a single LinkedInPulse account. This is especially useful for agencies or professionals managing multiple brands."
+          question: "Can I use Engagematic for multiple LinkedIn accounts?",
+          answer: "Yes! You can connect multiple LinkedIn accounts and manage them from a single Engagematic account. This is especially useful for agencies or professionals managing multiple brands."
         }
       ]
     }
@@ -175,7 +175,7 @@ const FAQPage = () => {
             </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Find answers to common questions about LinkedInPulse. Can't find what you're looking for? Contact our support team.
+            Find answers to common questions about Engagematic. Can't find what you're looking for? Contact our support team.
           </p>
         </div>
 
@@ -275,7 +275,7 @@ const FAQPage = () => {
             </div>
             <h2 className="text-2xl font-bold mb-4">Still Need Help?</h2>
             <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Our support team is here to help you succeed with LinkedInPulse. Get in touch and we'll respond within 24 hours.
+              Our support team is here to help you succeed with Engagematic. Get in touch and we'll respond within 24 hours.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/contact">

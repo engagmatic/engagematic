@@ -1,4 +1,4 @@
-# Testing Guide - LinkedInPulse Spark AI
+# Testing Guide - Engagematic Spark AI
 
 ## Quick Start Testing
 
@@ -21,7 +21,7 @@ node server.js
 ```
 ✅ MongoDB connected successfully
 ✅ Default hooks initialized
-🚀 LinkedInPulse API server running on port 5000
+🚀 Engagematic API server running on port 5000
 📊 Environment: development
 🌐 Frontend URL: http://localhost:5173
 ```

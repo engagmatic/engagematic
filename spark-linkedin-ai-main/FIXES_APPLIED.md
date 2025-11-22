@@ -1,4 +1,4 @@
-# Fixes Applied to LinkedInPulse Spark AI
+# Fixes Applied to Engagematic Spark AI
 
 ## Date: October 20, 2025
 

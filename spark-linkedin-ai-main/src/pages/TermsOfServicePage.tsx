@@ -19,7 +19,7 @@ const TermsOfServicePage = () => {
             </span>
           </h1>
           <p className="text-xl text-muted-foreground">
-            Please read these terms carefully before using LinkedInPulse services.
+            Please read these terms carefully before using Engagematic services.
           </p>
           <p className="text-sm text-muted-foreground mt-2">
             Last updated: January 15, 2025
@@ -33,7 +33,7 @@ const TermsOfServicePage = () => {
             <div>
               <h2 className="text-2xl font-bold mb-4">Agreement to Terms</h2>
               <p className="text-muted-foreground mb-4">
-                These Terms of Service ("Terms") govern your use of LinkedInPulse's website, mobile application, and services (collectively, the "Service") operated by LinkedInPulse ("us," "we," or "our").
+                These Terms of Service ("Terms") govern your use of Engagematic's website, mobile application, and services (collectively, the "Service") operated by Engagematic ("us," "we," or "our").
               </p>
               <p className="text-muted-foreground mb-4">
                 By accessing or using our Service, you agree to be bound by these Terms. If you disagree with any part of these terms, then you may not access the Service.
@@ -52,7 +52,7 @@ const TermsOfServicePage = () => {
             <div>
               <h2 className="text-2xl font-bold mb-4">Service Description</h2>
               <p className="text-muted-foreground mb-4">
-                LinkedInPulse provides AI-powered content creation tools and services to help professionals build their LinkedIn presence. Our Service includes:
+                Engagematic provides AI-powered content creation tools and services to help professionals build their LinkedIn presence. Our Service includes:
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                 <li>AI-generated LinkedIn posts and comments</li>
@@ -197,7 +197,7 @@ const TermsOfServicePage = () => {
                 <div>
                   <h3 className="text-xl font-semibold mb-3">Our Intellectual Property</h3>
                   <p className="text-muted-foreground mb-3">
-                    The Service and its original content, features, and functionality are owned by LinkedInPulse and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
+                    The Service and its original content, features, and functionality are owned by Engagematic and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
                   </p>
                 </div>
 
@@ -288,7 +288,7 @@ const TermsOfServicePage = () => {
             <div>
               <h2 className="text-2xl font-bold mb-4">Limitation of Liability</h2>
               <p className="text-muted-foreground mb-4">
-                To the maximum extent permitted by law, LinkedInPulse shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to:
+                To the maximum extent permitted by law, Engagematic shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to:
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4 mb-4">
                 <li>Loss of profits, data, or business opportunities</li>
@@ -385,7 +385,7 @@ const TermsOfServicePage = () => {
               <div>
                 <h3 className="font-semibold">Address</h3>
                 <p className="text-muted-foreground">
-                  LinkedInPulse Legal Team<br />
+                  Engagematic Legal Team<br />
                   123 Innovation Drive<br />
                   San Francisco, CA 94105
                 </p>
@@ -405,7 +405,7 @@ const TermsOfServicePage = () => {
         <Card className="p-6 shadow-card">
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              LinkedInPulse© is not affiliated, associated, authorized, endorsed by, or in any way officially connected with LinkedIn Corporation. LinkedIn is a registered trademark of LinkedIn Corporation in the U.S. and other countries.
+              Engagematic© is not affiliated, associated, authorized, endorsed by, or in any way officially connected with LinkedIn Corporation. LinkedIn is a registered trademark of LinkedIn Corporation in the U.S. and other countries.
             </p>
           </div>
         </Card>

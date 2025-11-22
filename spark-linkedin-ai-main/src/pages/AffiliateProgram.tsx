@@ -55,29 +55,29 @@ export default function AffiliateProgram() {
     whatsapp: (link: string, text: string) =>
       `https://wa.me/?text=${encodeURIComponent(text + " " + link)}`,
     email: (link: string, text: string) =>
-      `mailto:?subject=${encodeURIComponent("Join LinkedInPulse!")}&body=${encodeURIComponent(text + " " + link)}`,
+      `mailto:?subject=${encodeURIComponent("Join Engagematic!")}&body=${encodeURIComponent(text + " " + link)}`,
   };
 
   const referralLink = isAuthenticated && user?.referralCode
     ? `${window.location.origin}/signup?ref=${user.referralCode}`
     : `${window.location.origin}/signup?ref=affiliate`;
 
-  const shareText = "Earn 10% recurring commissions every month when your referrals subscribe to LinkedInPulse! 🚀";
+  const shareText = "Earn 10% recurring commissions every month when your referrals subscribe to Engagematic! 🚀";
 
   return (
     <>
       <Helmet>
-        <title>Affiliate Program - Earn 10% Recurring Commissions | LinkedInPulse</title>
+        <title>Affiliate Program - Earn 10% Recurring Commissions | Engagematic</title>
         <meta
           name="description"
-          content="Join LinkedInPulse Affiliate Program. Earn 10% recurring monthly commissions for every subscription. Share with students, creators, and professionals. Transparent tracking, instant payouts."
+          content="Join Engagematic Affiliate Program. Earn 10% recurring monthly commissions for every subscription. Share with students, creators, and professionals. Transparent tracking, instant payouts."
         />
         <meta
           name="keywords"
           content="affiliate program, LinkedIn tools referral, student affiliate, creator rewards, SaaS commission, referral program, earn money online"
         />
-        <meta property="og:title" content="LinkedInPulse Affiliate Program - Earn 10% Monthly" />
-        <meta property="og:description" content="Share LinkedInPulse and earn 10% recurring commissions every month. Perfect for students, creators, and LinkedIn professionals." />
+        <meta property="og:title" content="Engagematic Affiliate Program - Earn 10% Monthly" />
+        <meta property="og:description" content="Share Engagematic and earn 10% recurring commissions every month. Perfect for students, creators, and LinkedIn professionals." />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <link rel="canonical" href={`${window.location.origin}/affiliate`} />
@@ -95,14 +95,14 @@ export default function AffiliateProgram() {
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full mb-6">
                 <Gift className="w-5 h-5 text-purple-600" />
                 <span className="text-sm font-semibold text-purple-700">
-                  LinkedInPulse Affiliate Program
+                  Engagematic Affiliate Program
                 </span>
               </div>
               
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
                 Earn Rewards for Sharing{" "}
                 <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  LinkedInPulse!
+                  Engagematic!
                 </span>
               </h1>
               
@@ -413,7 +413,7 @@ export default function AffiliateProgram() {
                   Ready to Start Earning?
                 </h2>
                 <p className="text-xl mb-8 text-purple-100">
-                  Join thousands of affiliates earning recurring commissions with LinkedInPulse
+                  Join thousands of affiliates earning recurring commissions with Engagematic
                 </p>
                 <Button
                   onClick={handleJoinProgram}

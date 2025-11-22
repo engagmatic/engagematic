@@ -18,8 +18,8 @@ interface BlogPost {
 const featuredBlogs: BlogPost[] = [
   {
     id: "linkedinpulse-vs-chatgpt",
-    title: "LinkedInPulse vs ChatGPT: Why LinkedInPulse Wins for Professional Content",
-    excerpt: "Discover why LinkedInPulse outperforms ChatGPT for LinkedIn content creation with specialized AI, industry expertise, and professional optimization.",
+    title: "Engagematic vs ChatGPT: Why Engagematic Wins for Professional Content",
+    excerpt: "Discover why Engagematic outperforms ChatGPT for LinkedIn content creation with specialized AI, industry expertise, and professional optimization.",
     category: "comparison",
     readTime: "8 min read",
     publishDate: "1/15/2025",
@@ -28,8 +28,8 @@ const featuredBlogs: BlogPost[] = [
   },
   {
     id: "linkedinpulse-vs-taplio",
-    title: "LinkedInPulse vs Taplio: The Ultimate LinkedIn Content Tool Comparison",
-    excerpt: "Compare LinkedInPulse and Taplio side-by-side. See why LinkedInPulse offers better AI, more features, and superior value for LinkedIn creators.",
+    title: "Engagematic vs Taplio: The Ultimate LinkedIn Content Tool Comparison",
+    excerpt: "Compare Engagematic and Taplio side-by-side. See why Engagematic offers better AI, more features, and superior value for LinkedIn creators.",
     category: "comparison",
     readTime: "7 min read",
     publishDate: "1/15/2025",
@@ -38,8 +38,8 @@ const featuredBlogs: BlogPost[] = [
   },
   {
     id: "linkedinpulse-vs-hootsuite",
-    title: "LinkedInPulse vs Hootsuite: AI Content Creation vs Social Media Management",
-    excerpt: "Learn why LinkedInPulse's AI-powered content creation beats Hootsuite's generic scheduling tools for LinkedIn success.",
+    title: "Engagematic vs Hootsuite: AI Content Creation vs Social Media Management",
+    excerpt: "Learn why Engagematic's AI-powered content creation beats Hootsuite's generic scheduling tools for LinkedIn success.",
     category: "comparison",
     readTime: "6 min read",
     publishDate: "1/15/2025",
@@ -66,7 +66,7 @@ export const BlogSection = () => {
             </h2>
           </div>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Learn why LinkedInPulse outperforms other tools and discover strategies for LinkedIn success
+            Learn why Engagematic outperforms other tools and discover strategies for LinkedIn success
           </p>
         </div>
 

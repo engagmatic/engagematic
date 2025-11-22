@@ -258,7 +258,7 @@ const IdeaGenerator = () => {
   return (
     <div className="w-full bg-gray-50 dark:bg-slate-950 min-h-screen">
       <SEO 
-        title="LinkedIn Post Idea Generator | LinkedInPulse"
+        title="LinkedIn Post Idea Generator | Engagematic"
         description="Generate viral-worthy LinkedIn post ideas with AI. Get specific, actionable content angles ready to develop into full posts."
         keywords="linkedin ideas, content ideas, post ideas, linkedin content strategy"
       />

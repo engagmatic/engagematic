@@ -641,7 +641,7 @@ export const UserProfile = () => {
                   <div className="space-y-0.5">
                     <Label>Product Updates</Label>
                     <p className="text-sm text-muted-foreground">
-                      Updates about LinkedInPulse features and improvements
+                      Updates about Engagematic features and improvements
                     </p>
                   </div>
                   <Switch
@@ -667,7 +667,7 @@ export const UserProfile = () => {
                   <div className="space-y-0.5">
                     <Label>Company Updates</Label>
                     <p className="text-sm text-muted-foreground">
-                      News and announcements from LinkedInPulse
+                      News and announcements from Engagematic
                     </p>
                   </div>
                   <Switch

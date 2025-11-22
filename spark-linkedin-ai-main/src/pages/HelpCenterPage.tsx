@@ -9,7 +9,7 @@ const HelpCenterPage = () => {
     {
       title: "Getting Started",
       icon: "🚀",
-      description: "Learn the basics of LinkedInPulse and get up and running quickly",
+      description: "Learn the basics of Engagematic and get up and running quickly",
       articles: [
         "Creating Your First Account",
         "Setting Up Your Profile",
@@ -69,7 +69,7 @@ const HelpCenterPage = () => {
     {
       title: "Advanced Features",
       icon: "⭐",
-      description: "Unlock the full potential of LinkedInPulse",
+      description: "Unlock the full potential of Engagematic",
       articles: [
         "Advanced Persona Settings",
         "Analytics and Insights",
@@ -132,7 +132,7 @@ const HelpCenterPage = () => {
             Resources
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Guides, templates, tutorials and best practices to master LinkedIn content with LinkedInPulse.
+            Guides, templates, tutorials and best practices to master LinkedIn content with Engagematic.
           </p>
         </div>
 
@@ -234,8 +234,8 @@ const HelpCenterPage = () => {
               <div className="w-16 h-16 rounded-xl gradient-pulse flex items-center justify-center mx-auto mb-4 shadow-pulse">
                 <Download className="h-8 w-8 text-white" />
               </div>
-              <h3 className="font-bold mb-2">LinkedInPulse User Guide</h3>
-              <p className="text-sm text-muted-foreground mb-4">Complete guide to using all LinkedInPulse features</p>
+              <h3 className="font-bold mb-2">Engagematic User Guide</h3>
+              <p className="text-sm text-muted-foreground mb-4">Complete guide to using all Engagematic features</p>
               <Button variant="outline" size="sm" className="gap-2">
                 <Download className="h-4 w-4" />
                 Download PDF
@@ -285,7 +285,7 @@ const HelpCenterPage = () => {
             </div>
             <h2 className="text-2xl font-bold mb-4">Still Need Help?</h2>
             <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Can't find what you're looking for? Our support team is here to help you succeed with LinkedInPulse.
+              Can't find what you're looking for? Our support team is here to help you succeed with Engagematic.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/contact">

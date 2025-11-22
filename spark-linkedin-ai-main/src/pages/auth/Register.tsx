@@ -111,7 +111,7 @@ const Register = () => {
       
       if (result.success) {
         toast({
-          title: "Welcome to LinkedInPulse! 🎉",
+          title: "Welcome to Engagematic! 🎉",
           description: "Your account has been created. Complete your profile setup to get started.",
         });
         

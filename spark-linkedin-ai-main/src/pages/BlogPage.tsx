@@ -24,35 +24,35 @@ interface BlogContent {
 const blogContents: Record<string, BlogContent> = {
   "linkedinpulse-vs-chatgpt": {
     id: "linkedinpulse-vs-chatgpt",
-    title: "LinkedInPulse vs ChatGPT: Why LinkedInPulse Wins for Professional Content",
-    excerpt: "Discover why LinkedInPulse outperforms ChatGPT for LinkedIn content creation with specialized AI, industry expertise, and professional optimization.",
-    content: `# LinkedInPulse vs ChatGPT: Why LinkedInPulse Wins for Professional Content
+    title: "Engagematic vs ChatGPT: Why Engagematic Wins for Professional Content",
+    excerpt: "Discover why Engagematic outperforms ChatGPT for LinkedIn content creation with specialized AI, industry expertise, and professional optimization.",
+    content: `# Engagematic vs ChatGPT: Why Engagematic Wins for Professional Content
 
-In the world of AI-powered content creation, two names dominate the conversation: ChatGPT and LinkedInPulse. While ChatGPT has revolutionized general AI assistance, LinkedInPulse has emerged as the specialized solution for LinkedIn content creation. But which one truly delivers better results for professional content?
+In the world of AI-powered content creation, two names dominate the conversation: ChatGPT and Engagematic. While ChatGPT has revolutionized general AI assistance, Engagematic has emerged as the specialized solution for LinkedIn content creation. But which one truly delivers better results for professional content?
 
 ## The Fundamental Difference
 
-**ChatGPT** is a general-purpose AI that excels at answering questions and generating various types of content. However, when it comes to LinkedIn-specific content, it lacks the specialized knowledge and optimization that LinkedInPulse provides.
+**ChatGPT** is a general-purpose AI that excels at answering questions and generating various types of content. However, when it comes to LinkedIn-specific content, it lacks the specialized knowledge and optimization that Engagematic provides.
 
-**LinkedInPulse** is purpose-built for LinkedIn content creation, with AI models trained specifically on viral LinkedIn posts, professional networking patterns, and industry-specific content strategies.
+**Engagematic** is purpose-built for LinkedIn content creation, with AI models trained specifically on viral LinkedIn posts, professional networking patterns, and industry-specific content strategies.
 
-## Why LinkedInPulse Outperforms ChatGPT for LinkedIn Content
+## Why Engagematic Outperforms ChatGPT for LinkedIn Content
 
 ### 1. LinkedIn-Specific Training
-LinkedInPulse's AI is trained on over 50,000 viral LinkedIn posts, understanding the nuances of professional networking, industry-specific language, and engagement patterns that work on LinkedIn.
+Engagematic's AI is trained on over 50,000 viral LinkedIn posts, understanding the nuances of professional networking, industry-specific language, and engagement patterns that work on LinkedIn.
 
 ### 2. Industry Expertise
-Unlike ChatGPT's generic approach, LinkedInPulse offers 15+ specialized personas for different industries, ensuring content resonates with your specific professional audience.
+Unlike ChatGPT's generic approach, Engagematic offers 15+ specialized personas for different industries, ensuring content resonates with your specific professional audience.
 
 ### 3. Professional Optimization
-LinkedInPulse includes built-in features like:
+Engagematic includes built-in features like:
 - Optimal posting time suggestions
 - Virality score analysis
 - Engagement prediction
 - Professional tone optimization
 
 ### 4. Content Variety
-While ChatGPT generates text, LinkedInPulse creates:
+While ChatGPT generates text, Engagematic creates:
 - LinkedIn posts with hooks
 - Professional comments
 - Industry-specific content ideas
@@ -62,26 +62,26 @@ While ChatGPT generates text, LinkedInPulse creates:
 
 ### Content Quality
 - **ChatGPT**: Generic, often sounds AI-generated
-- **LinkedInPulse**: Human-like, industry-specific, optimized for LinkedIn
+- **Engagematic**: Human-like, industry-specific, optimized for LinkedIn
 
 ### Engagement Rates
 - **ChatGPT**: Average engagement, generic appeal
-- **LinkedInPulse**: Higher engagement due to LinkedIn optimization
+- **Engagematic**: Higher engagement due to LinkedIn optimization
 
 ### Time Efficiency
 - **ChatGPT**: Requires extensive prompting and editing
-- **LinkedInPulse**: One-click generation with professional optimization
+- **Engagematic**: One-click generation with professional optimization
 
 ## The Verdict
 
-While ChatGPT is excellent for general AI tasks, LinkedInPulse is the clear winner for LinkedIn content creation. Its specialized training, industry expertise, and LinkedIn optimization features make it the superior choice for professionals looking to build their LinkedIn presence.
+While ChatGPT is excellent for general AI tasks, Engagematic is the clear winner for LinkedIn content creation. Its specialized training, industry expertise, and LinkedIn optimization features make it the superior choice for professionals looking to build their LinkedIn presence.
 
 ## Ready to Experience the Difference?
 
-Try LinkedInPulse's free trial and see how specialized AI can transform your LinkedIn content strategy.
+Try Engagematic's free trial and see how specialized AI can transform your LinkedIn content strategy.
 
 **Related Articles:**
-- [LinkedInPulse vs Taplio: The Ultimate LinkedIn Content Tool Comparison](/blogs/linkedinpulse-vs-taplio)
+- [Engagematic vs Taplio: The Ultimate LinkedIn Content Tool Comparison](/blogs/linkedinpulse-vs-taplio)
 - [The Complete Guide to LinkedIn Content Creation for Creators](/blogs/linkedin-creators-guide)
 - [LinkedIn Profile Analyzer - Free Profile Score & Optimization](/profile-analyzer)`,
     category: "comparison",
@@ -93,47 +93,47 @@ Try LinkedInPulse's free trial and see how specialized AI can transform your Lin
   },
   "linkedinpulse-vs-taplio": {
     id: "linkedinpulse-vs-taplio",
-    title: "LinkedInPulse vs Taplio: The Ultimate LinkedIn Content Tool Comparison",
-    excerpt: "Compare LinkedInPulse and Taplio side-by-side. See why LinkedInPulse offers better AI, more features, and superior value for LinkedIn creators.",
-    content: `# LinkedInPulse vs Taplio: The Ultimate LinkedIn Content Tool Comparison
+    title: "Engagematic vs Taplio: The Ultimate LinkedIn Content Tool Comparison",
+    excerpt: "Compare Engagematic and Taplio side-by-side. See why Engagematic offers better AI, more features, and superior value for LinkedIn creators.",
+    content: `# Engagematic vs Taplio: The Ultimate LinkedIn Content Tool Comparison
 
-When it comes to LinkedIn content creation tools, LinkedInPulse and Taplio are two of the most popular options. But which one delivers better results for your professional content strategy?
+When it comes to LinkedIn content creation tools, Engagematic and Taplio are two of the most popular options. But which one delivers better results for your professional content strategy?
 
 ## Feature Comparison
 
 ### AI Content Generation
-**LinkedInPulse**: Advanced AI trained on 50,000+ viral LinkedIn posts
+**Engagematic**: Advanced AI trained on 50,000+ viral LinkedIn posts
 **Taplio**: Basic AI with limited LinkedIn-specific training
 
 ### Content Types
-**LinkedInPulse**: Posts, comments, ideas, templates, hooks
+**Engagematic**: Posts, comments, ideas, templates, hooks
 **Taplio**: Primarily posts and basic scheduling
 
 ### Industry Specialization
-**LinkedInPulse**: 15+ industry-specific personas
+**Engagematic**: 15+ industry-specific personas
 **Taplio**: Limited industry customization
 
 ### Pricing
-**LinkedInPulse**: More affordable with better value
+**Engagematic**: More affordable with better value
 **Taplio**: Higher pricing for fewer features
 
-## Why LinkedInPulse Wins
+## Why Engagematic Wins
 
 ### 1. Superior AI Technology
-LinkedInPulse's AI is specifically trained for LinkedIn content, resulting in more engaging and professional posts.
+Engagematic's AI is specifically trained for LinkedIn content, resulting in more engaging and professional posts.
 
 ### 2. Comprehensive Feature Set
-From content generation to optimization, LinkedInPulse offers everything you need in one platform.
+From content generation to optimization, Engagematic offers everything you need in one platform.
 
 ### 3. Better Value Proposition
-More features at a lower price point makes LinkedInPulse the smarter choice.
+More features at a lower price point makes Engagematic the smarter choice.
 
 ### 4. Continuous Innovation
-LinkedInPulse regularly updates with new features and improvements.
+Engagematic regularly updates with new features and improvements.
 
 ## The Bottom Line
 
-While Taplio is a decent tool, LinkedInPulse offers superior AI, more features, and better value for LinkedIn content creators.`,
+While Taplio is a decent tool, Engagematic offers superior AI, more features, and better value for LinkedIn content creators.`,
     category: "comparison",
     readTime: "7 min read",
     publishDate: "2025-01-15",
@@ -144,7 +144,7 @@ While Taplio is a decent tool, LinkedInPulse offers superior AI, more features, 
   "linkedin-creators-guide": {
     id: "linkedin-creators-guide",
     title: "The Complete Guide to LinkedIn Content Creation for Creators",
-    excerpt: "Master LinkedIn content creation with LinkedInPulse. Learn strategies, tools, and techniques used by top LinkedIn creators to build engaged audiences.",
+    excerpt: "Master LinkedIn content creation with Engagematic. Learn strategies, tools, and techniques used by top LinkedIn creators to build engaged audiences.",
     content: `# The Complete Guide to LinkedIn Content Creation for Creators
 
 LinkedIn has become the go-to platform for professional content creators. With over 900 million users, it offers unparalleled opportunities to build authority, grow your network, and establish thought leadership in your industry.
@@ -160,10 +160,10 @@ Professional content on LinkedIn often receives higher engagement rates than oth
 ### Authority Building
 Consistent, valuable content on LinkedIn helps establish you as a thought leader in your field.
 
-## LinkedInPulse: The Creator's Secret Weapon
+## Engagematic: The Creator's Secret Weapon
 
 ### AI-Powered Content Generation
-LinkedInPulse uses advanced AI trained on 50,000+ viral LinkedIn posts to help you create engaging content that resonates with your audience.
+Engagematic uses advanced AI trained on 50,000+ viral LinkedIn posts to help you create engaging content that resonates with your audience.
 
 ### Industry-Specific Personas
 Choose from 15+ specialized personas to ensure your content speaks directly to your target audience.
@@ -210,13 +210,13 @@ Track key metrics like:
 
 ## Getting Started
 
-Ready to become a LinkedIn content creator? Start with LinkedInPulse's free trial and begin building your professional presence today.
+Ready to become a LinkedIn content creator? Start with Engagematic's free trial and begin building your professional presence today.
 
 **Related Articles:**
-- [LinkedInPulse vs ChatGPT: Why LinkedInPulse Wins for Professional Content](/blogs/linkedinpulse-vs-chatgpt)
+- [Engagematic vs ChatGPT: Why Engagematic Wins for Professional Content](/blogs/linkedinpulse-vs-chatgpt)
 - [LinkedIn Content Strategy for Founders & CEOs](/blogs/founders-ceos-guide)
 - [LinkedIn Marketing for Freelancers](/blogs/freelancers-guide)
-- [Try LinkedInPulse Free Trial](/auth/register)`,
+- [Try Engagematic Free Trial](/auth/register)`,
     category: "usecase",
     targetAudience: "LinkedIn Creators",
     readTime: "12 min read",
@@ -227,39 +227,39 @@ Ready to become a LinkedIn content creator? Start with LinkedInPulse's free tria
   },
   "linkedinpulse-vs-hootsuite": {
     id: "linkedinpulse-vs-hootsuite",
-    title: "LinkedInPulse vs Hootsuite: AI Content Creation vs Social Media Management",
-    excerpt: "Learn why LinkedInPulse's AI-powered content creation beats Hootsuite's generic scheduling tools for LinkedIn success.",
-    content: `# LinkedInPulse vs Hootsuite: AI Content Creation vs Social Media Management
+    title: "Engagematic vs Hootsuite: AI Content Creation vs Social Media Management",
+    excerpt: "Learn why Engagematic's AI-powered content creation beats Hootsuite's generic scheduling tools for LinkedIn success.",
+    content: `# Engagematic vs Hootsuite: AI Content Creation vs Social Media Management
 
-When it comes to LinkedIn success, the choice between LinkedInPulse and Hootsuite represents two fundamentally different approaches: AI-powered content creation versus social media management.
+When it comes to LinkedIn success, the choice between Engagematic and Hootsuite represents two fundamentally different approaches: AI-powered content creation versus social media management.
 
 ## The Core Difference
 
 **Hootsuite** is a social media management platform that excels at scheduling and managing posts across multiple platforms. However, it doesn't create content - it just distributes what you already have.
 
-**LinkedInPulse** is an AI-powered content creation platform specifically designed for LinkedIn, focusing on generating high-quality, engaging content that drives results.
+**Engagematic** is an AI-powered content creation platform specifically designed for LinkedIn, focusing on generating high-quality, engaging content that drives results.
 
-## Why LinkedInPulse Wins for LinkedIn Content
+## Why Engagematic Wins for LinkedIn Content
 
 ### 1. Content Creation vs. Content Distribution
 - **Hootsuite**: Only schedules existing content
-- **LinkedInPulse**: Creates original, optimized LinkedIn content
+- **Engagematic**: Creates original, optimized LinkedIn content
 
 ### 2. LinkedIn Specialization
 - **Hootsuite**: Generic social media tool
-- **LinkedInPulse**: Purpose-built for LinkedIn with specialized AI
+- **Engagematic**: Purpose-built for LinkedIn with specialized AI
 
 ### 3. AI-Powered Optimization
 - **Hootsuite**: No AI content generation
-- **LinkedInPulse**: AI trained on 50,000+ viral LinkedIn posts
+- **Engagematic**: AI trained on 50,000+ viral LinkedIn posts
 
 ### 4. Professional Focus
 - **Hootsuite**: Mixed audience across platforms
-- **LinkedInPulse**: Professional audience optimization
+- **Engagematic**: Professional audience optimization
 
 ## Feature Comparison
 
-| Feature | LinkedInPulse | Hootsuite |
+| Feature | Engagematic | Hootsuite |
 |---------|---------------|-----------|
 | Content Creation | ✅ AI-powered | ❌ None |
 | LinkedIn Optimization | ✅ Specialized | ❌ Generic |
@@ -270,14 +270,14 @@ When it comes to LinkedIn success, the choice between LinkedInPulse and Hootsuit
 
 ## The Verdict
 
-While Hootsuite is excellent for managing multiple social media accounts, LinkedInPulse is the clear winner for LinkedIn content creation. If LinkedIn is your primary professional platform, LinkedInPulse delivers superior results through AI-powered content generation and optimization.
+While Hootsuite is excellent for managing multiple social media accounts, Engagematic is the clear winner for LinkedIn content creation. If LinkedIn is your primary professional platform, Engagematic delivers superior results through AI-powered content generation and optimization.
 
 ## Ready to Experience the Difference?
 
-Try LinkedInPulse's free trial and see how AI-powered content creation can transform your LinkedIn presence.
+Try Engagematic's free trial and see how AI-powered content creation can transform your LinkedIn presence.
 
 **Related Articles:**
-- [LinkedInPulse vs ChatGPT: Why LinkedInPulse Wins for Professional Content](/blogs/linkedinpulse-vs-chatgpt)
+- [Engagematic vs ChatGPT: Why Engagematic Wins for Professional Content](/blogs/linkedinpulse-vs-chatgpt)
 - [LinkedIn Content Strategy for Founders & CEOs](/blogs/founders-ceos-guide)
 - [LinkedIn Marketing for Freelancers](/blogs/freelancers-guide)`,
     category: "comparison",
@@ -289,39 +289,39 @@ Try LinkedInPulse's free trial and see how AI-powered content creation can trans
   },
   "linkedinpulse-vs-authoredup": {
     id: "linkedinpulse-vs-authoredup",
-    title: "LinkedInPulse vs AuthoredUp: Advanced AI vs Basic Content Tools",
-    excerpt: "See how LinkedInPulse's advanced AI and LinkedIn specialization outperforms AuthoredUp's basic content generation features.",
-    content: `# LinkedInPulse vs AuthoredUp: Advanced AI vs Basic Content Tools
+    title: "Engagematic vs AuthoredUp: Advanced AI vs Basic Content Tools",
+    excerpt: "See how Engagematic's advanced AI and LinkedIn specialization outperforms AuthoredUp's basic content generation features.",
+    content: `# Engagematic vs AuthoredUp: Advanced AI vs Basic Content Tools
 
-In the world of AI content creation, LinkedInPulse and AuthoredUp represent different levels of sophistication and specialization. Let's compare these two platforms to see which delivers better results for LinkedIn content.
+In the world of AI content creation, Engagematic and AuthoredUp represent different levels of sophistication and specialization. Let's compare these two platforms to see which delivers better results for LinkedIn content.
 
 ## Platform Overview
 
 **AuthoredUp** is a general AI writing assistant that helps create various types of content across different platforms.
 
-**LinkedInPulse** is a specialized AI platform designed exclusively for LinkedIn content creation, with advanced features and LinkedIn-specific optimization.
+**Engagematic** is a specialized AI platform designed exclusively for LinkedIn content creation, with advanced features and LinkedIn-specific optimization.
 
 ## Key Differences
 
 ### 1. LinkedIn Specialization
 - **AuthoredUp**: Generic content creation
-- **LinkedInPulse**: LinkedIn-specific AI training and optimization
+- **Engagematic**: LinkedIn-specific AI training and optimization
 
 ### 2. AI Sophistication
 - **AuthoredUp**: Basic AI content generation
-- **LinkedInPulse**: Advanced AI trained on 50,000+ viral LinkedIn posts
+- **Engagematic**: Advanced AI trained on 50,000+ viral LinkedIn posts
 
 ### 3. Industry Expertise
 - **AuthoredUp**: Limited industry customization
-- **LinkedInPulse**: 15+ specialized industry personas
+- **Engagematic**: 15+ specialized industry personas
 
 ### 4. Content Optimization
 - **AuthoredUp**: Basic content generation
-- **LinkedInPulse**: Virality scoring, optimal timing, engagement prediction
+- **Engagematic**: Virality scoring, optimal timing, engagement prediction
 
 ## Feature Comparison
 
-| Feature | LinkedInPulse | AuthoredUp |
+| Feature | Engagematic | AuthoredUp |
 |---------|---------------|------------|
 | LinkedIn Training | ✅ 50,000+ posts | ❌ Generic training |
 | Industry Personas | ✅ 15+ specialized | ❌ Basic customization |
@@ -330,10 +330,10 @@ In the world of AI content creation, LinkedInPulse and AuthoredUp represent diff
 | Content Types | ✅ Posts, comments, ideas | ✅ Various formats |
 | LinkedIn Focus | ✅ Exclusive | ❌ Multi-platform |
 
-## Why LinkedInPulse Wins
+## Why Engagematic Wins
 
 ### 1. Superior AI Training
-LinkedInPulse's AI is specifically trained on viral LinkedIn content, resulting in more engaging and professional posts.
+Engagematic's AI is specifically trained on viral LinkedIn content, resulting in more engaging and professional posts.
 
 ### 2. LinkedIn Optimization
 Every feature is designed for LinkedIn success, from content structure to posting timing.
@@ -346,11 +346,11 @@ Built-in analytics, virality scoring, and engagement prediction give you insight
 
 ## The Bottom Line
 
-While AuthoredUp is a decent general-purpose AI writing tool, LinkedInPulse is the superior choice for LinkedIn content creation. Its specialized training, LinkedIn optimization, and advanced features make it the clear winner for professionals looking to build their LinkedIn presence.
+While AuthoredUp is a decent general-purpose AI writing tool, Engagematic is the superior choice for LinkedIn content creation. Its specialized training, LinkedIn optimization, and advanced features make it the clear winner for professionals looking to build their LinkedIn presence.
 
 ## Ready to Upgrade?
 
-Experience the difference with LinkedInPulse's free trial and see how specialized AI can transform your LinkedIn content strategy.`,
+Experience the difference with Engagematic's free trial and see how specialized AI can transform your LinkedIn content strategy.`,
     category: "comparison",
     readTime: "7 min read",
     publishDate: "2025-01-15",
@@ -360,39 +360,39 @@ Experience the difference with LinkedInPulse's free trial and see how specialize
   },
   "linkedinpulse-vs-kleo": {
     id: "linkedinpulse-vs-kleo",
-    title: "LinkedInPulse vs Kleo: Professional Content AI vs Generic Automation",
-    excerpt: "Compare LinkedInPulse's professional-grade AI with Kleo's generic automation. Discover why LinkedInPulse delivers superior LinkedIn content.",
-    content: `# LinkedInPulse vs Kleo: Professional Content AI vs Generic Automation
+    title: "Engagematic vs Kleo: Professional Content AI vs Generic Automation",
+    excerpt: "Compare Engagematic's professional-grade AI with Kleo's generic automation. Discover why Engagematic delivers superior LinkedIn content.",
+    content: `# Engagematic vs Kleo: Professional Content AI vs Generic Automation
 
-When choosing an AI content platform, the difference between professional-grade AI and generic automation can make or break your LinkedIn success. Let's compare LinkedInPulse and Kleo to see which delivers superior results.
+When choosing an AI content platform, the difference between professional-grade AI and generic automation can make or break your LinkedIn success. Let's compare Engagematic and Kleo to see which delivers superior results.
 
 ## Platform Philosophy
 
 **Kleo** focuses on automation and generic content generation across multiple platforms, emphasizing speed over quality.
 
-**LinkedInPulse** prioritizes professional-grade AI content creation specifically for LinkedIn, emphasizing quality and engagement over quantity.
+**Engagematic** prioritizes professional-grade AI content creation specifically for LinkedIn, emphasizing quality and engagement over quantity.
 
 ## Core Differences
 
 ### 1. Content Quality
 - **Kleo**: Generic, automated content
-- **LinkedInPulse**: Professional, human-like content
+- **Engagematic**: Professional, human-like content
 
 ### 2. Platform Focus
 - **Kleo**: Multi-platform automation
-- **LinkedInPulse**: LinkedIn specialization
+- **Engagematic**: LinkedIn specialization
 
 ### 3. AI Sophistication
 - **Kleo**: Basic automation
-- **LinkedInPulse**: Advanced AI with LinkedIn training
+- **Engagematic**: Advanced AI with LinkedIn training
 
 ### 4. Professional Optimization
 - **Kleo**: Generic templates
-- **LinkedInPulse**: Industry-specific optimization
+- **Engagematic**: Industry-specific optimization
 
 ## Feature Comparison
 
-| Feature | LinkedInPulse | Kleo |
+| Feature | Engagematic | Kleo |
 |---------|---------------|------|
 | LinkedIn Training | ✅ 50,000+ viral posts | ❌ Generic training |
 | Industry Specialization | ✅ 15+ personas | ❌ Basic templates |
@@ -401,31 +401,31 @@ When choosing an AI content platform, the difference between professional-grade 
 | Professional Focus | ✅ Business networking | ❌ Generic audience |
 | Engagement Optimization | ✅ AI-powered | ❌ Basic automation |
 
-## Why LinkedInPulse Wins
+## Why Engagematic Wins
 
 ### 1. Professional-Grade AI
-LinkedInPulse's AI creates content that sounds authentically human and professional, while Kleo's automation often feels robotic.
+Engagematic's AI creates content that sounds authentically human and professional, while Kleo's automation often feels robotic.
 
 ### 2. LinkedIn Expertise
 Every feature is designed specifically for LinkedIn success, from content structure to audience targeting.
 
 ### 3. Quality Over Quantity
-LinkedInPulse focuses on creating fewer, higher-quality posts that drive engagement, rather than mass-producing generic content.
+Engagematic focuses on creating fewer, higher-quality posts that drive engagement, rather than mass-producing generic content.
 
 ### 4. Industry Intelligence
 The platform understands different industries and creates content that resonates with specific professional audiences.
 
 ## Real-World Results
 
-Users report significantly higher engagement rates with LinkedInPulse compared to Kleo, thanks to the platform's professional optimization and LinkedIn-specific training.
+Users report significantly higher engagement rates with Engagematic compared to Kleo, thanks to the platform's professional optimization and LinkedIn-specific training.
 
 ## The Verdict
 
-While Kleo offers automation across multiple platforms, LinkedInPulse delivers superior results for LinkedIn through professional-grade AI and specialized optimization. For professionals serious about LinkedIn success, LinkedInPulse is the clear choice.
+While Kleo offers automation across multiple platforms, Engagematic delivers superior results for LinkedIn through professional-grade AI and specialized optimization. For professionals serious about LinkedIn success, Engagematic is the clear choice.
 
 ## Experience the Difference
 
-Try LinkedInPulse's free trial and see how professional-grade AI can transform your LinkedIn content strategy.`,
+Try Engagematic's free trial and see how professional-grade AI can transform your LinkedIn content strategy.`,
     category: "comparison",
     readTime: "6 min read",
     publishDate: "2025-01-15",
@@ -436,10 +436,10 @@ Try LinkedInPulse's free trial and see how professional-grade AI can transform y
   "founders-ceos-guide": {
     id: "founders-ceos-guide",
     title: "LinkedIn Content Strategy for Founders & CEOs: Build Authority and Drive Growth",
-    excerpt: "Elevate your executive presence on LinkedIn with LinkedInPulse. Learn how founders and CEOs use strategic content to build authority and drive business growth.",
+    excerpt: "Elevate your executive presence on LinkedIn with Engagematic. Learn how founders and CEOs use strategic content to build authority and drive business growth.",
     content: `# LinkedIn Content Strategy for Founders & CEOs: Build Authority and Drive Growth
 
-As a founder or CEO, your LinkedIn presence is crucial for building authority, attracting talent, and driving business growth. LinkedInPulse provides the tools and strategies you need to establish thought leadership and connect with your target audience.
+As a founder or CEO, your LinkedIn presence is crucial for building authority, attracting talent, and driving business growth. Engagematic provides the tools and strategies you need to establish thought leadership and connect with your target audience.
 
 ## Why LinkedIn Matters for Founders & CEOs
 
@@ -455,7 +455,7 @@ Decision-makers use LinkedIn to research potential partners and vendors.
 ### 4. Investor Relations
 Investors and stakeholders follow leadership content to gauge company direction.
 
-## LinkedInPulse Features for Executives
+## Engagematic Features for Executives
 
 ### 1. Executive Personas
 Choose from specialized personas designed for different types of executives and industries.
@@ -534,7 +534,7 @@ Focus on providing value to your audience rather than self-promotion.
 
 ## Getting Started
 
-Ready to elevate your executive presence on LinkedIn? Start with LinkedInPulse's free trial and begin building your thought leadership today.`,
+Ready to elevate your executive presence on LinkedIn? Start with Engagematic's free trial and begin building your thought leadership today.`,
     category: "usecase",
     targetAudience: "Founders & CEOs",
     readTime: "10 min read",
@@ -546,10 +546,10 @@ Ready to elevate your executive presence on LinkedIn? Start with LinkedInPulse's
   "freelancers-guide": {
     id: "freelancers-guide",
     title: "LinkedIn Marketing for Freelancers: Attract Clients and Build Your Brand",
-    excerpt: "Transform your LinkedIn presence into a client magnet with LinkedInPulse. Discover proven strategies freelancers use to attract high-quality clients.",
+    excerpt: "Transform your LinkedIn presence into a client magnet with Engagematic. Discover proven strategies freelancers use to attract high-quality clients.",
     content: `# LinkedIn Marketing for Freelancers: Attract Clients and Build Your Brand
 
-For freelancers, LinkedIn is more than a professional network—it's a powerful client acquisition tool. LinkedInPulse helps you create content that attracts high-quality clients and builds your freelance brand.
+For freelancers, LinkedIn is more than a professional network—it's a powerful client acquisition tool. Engagematic helps you create content that attracts high-quality clients and builds your freelance brand.
 
 ## Why LinkedIn Works for Freelancers
 
@@ -565,7 +565,7 @@ Connect with potential clients and referral sources.
 ### 4. Portfolio Showcase
 Demonstrate your expertise through content and case studies.
 
-## LinkedInPulse Features for Freelancers
+## Engagematic Features for Freelancers
 
 ### 1. Service-Specific Personas
 Choose personas tailored to your freelance services and industry.
@@ -658,7 +658,7 @@ Always consider what value you're providing to potential clients.
 
 ## Getting Started
 
-Ready to transform your LinkedIn presence into a client magnet? Start with LinkedInPulse's free trial and begin attracting high-quality clients today.`,
+Ready to transform your LinkedIn presence into a client magnet? Start with Engagematic's free trial and begin attracting high-quality clients today.`,
     category: "usecase",
     targetAudience: "Freelancers",
     readTime: "9 min read",
@@ -670,10 +670,10 @@ Ready to transform your LinkedIn presence into a client magnet? Start with Linke
   "recruiters-guide": {
     id: "recruiters-guide",
     title: "LinkedIn Recruiting Strategies: Find and Engage Top Talent",
-    excerpt: "Master LinkedIn recruiting with LinkedInPulse. Learn how top recruiters use content marketing to attract and engage the best candidates.",
+    excerpt: "Master LinkedIn recruiting with Engagematic. Learn how top recruiters use content marketing to attract and engage the best candidates.",
     content: `# LinkedIn Recruiting Strategies: Find and Engage Top Talent
 
-LinkedIn has revolutionized recruiting, and LinkedInPulse helps you create content that attracts top talent and builds meaningful relationships with candidates. Learn the strategies that successful recruiters use to find and engage the best candidates.
+LinkedIn has revolutionized recruiting, and Engagematic helps you create content that attracts top talent and builds meaningful relationships with candidates. Learn the strategies that successful recruiters use to find and engage the best candidates.
 
 ## Why Content Marketing Works for Recruiters
 
@@ -689,7 +689,7 @@ Build relationships with candidates before you need to hire.
 ### 4. Industry Authority
 Position yourself as a knowledgeable recruiter in your field.
 
-## LinkedInPulse Features for Recruiters
+## Engagematic Features for Recruiters
 
 ### 1. Recruiting-Specific Personas
 Choose personas designed for different types of recruiting roles and industries.
@@ -782,7 +782,7 @@ Demonstrate your knowledge of the industries you recruit for.
 
 ## Getting Started
 
-Ready to transform your LinkedIn recruiting strategy? Start with LinkedInPulse's free trial and begin attracting top talent today.`,
+Ready to transform your LinkedIn recruiting strategy? Start with Engagematic's free trial and begin attracting top talent today.`,
     category: "usecase",
     targetAudience: "Recruiters",
     readTime: "11 min read",
@@ -794,10 +794,10 @@ Ready to transform your LinkedIn recruiting strategy? Start with LinkedInPulse's
   "sales-reps-guide": {
     id: "sales-reps-guide",
     title: "LinkedIn Sales Prospecting: Generate Leads and Close Deals",
-    excerpt: "Boost your sales performance with LinkedInPulse. Learn how sales professionals use LinkedIn content to generate leads and build relationships.",
+    excerpt: "Boost your sales performance with Engagematic. Learn how sales professionals use LinkedIn content to generate leads and build relationships.",
     content: `# LinkedIn Sales Prospecting: Generate Leads and Close Deals
 
-LinkedIn is the ultimate platform for B2B sales professionals, and LinkedInPulse helps you create content that generates leads and builds relationships with prospects. Learn the strategies that top sales professionals use to close more deals.
+LinkedIn is the ultimate platform for B2B sales professionals, and Engagematic helps you create content that generates leads and builds relationships with prospects. Learn the strategies that top sales professionals use to close more deals.
 
 ## Why LinkedIn Works for Sales
 
@@ -813,7 +813,7 @@ Demonstrate your expertise and build trust with prospects.
 ### 4. Lead Generation
 Content attracts prospects who are interested in your solutions.
 
-## LinkedInPulse Features for Sales Professionals
+## Engagematic Features for Sales Professionals
 
 ### 1. Sales-Specific Personas
 Choose personas designed for different types of sales roles and industries.
@@ -906,7 +906,7 @@ Always consider what value you're providing to prospects.
 
 ## Getting Started
 
-Ready to transform your LinkedIn sales strategy? Start with LinkedInPulse's free trial and begin generating more leads today.`,
+Ready to transform your LinkedIn sales strategy? Start with Engagematic's free trial and begin generating more leads today.`,
     category: "usecase",
     targetAudience: "Sales Reps",
     readTime: "10 min read",
@@ -1118,7 +1118,7 @@ const BlogPage = () => {
                 Ready to Transform Your LinkedIn Content?
               </h3>
               <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                Join thousands of professionals using LinkedInPulse to create engaging content that drives results.
+                Join thousands of professionals using Engagematic to create engaging content that drives results.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/auth/register" className="w-full sm:w-auto">

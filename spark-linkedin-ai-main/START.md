@@ -1,4 +1,4 @@
-# 🚀 LinkedInPulse Spark AI - Complete Startup Guide
+# 🚀 Engagematic Spark AI - Complete Startup Guide
 
 ## Quick Start (2 Commands)
 
@@ -12,7 +12,7 @@ node server.js
 ```
 ✅ MongoDB connected successfully
 ✅ Default hooks initialized
-🚀 LinkedInPulse API server running on port 5000
+🚀 Engagematic API server running on port 5000
 ```
 
 ### Terminal 2 - Frontend
@@ -130,7 +130,7 @@ taskkill /PID <PID> /F
 ### Login/Register Not Working
 1. **Check Backend is Running**
    - Open http://localhost:5000/health
-   - Should see: `{"success":true,"message":"LinkedInPulse API is running"}`
+   - Should see: `{"success":true,"message":"Engagematic API is running"}`
 
 2. **Check Console for Errors**
    - Open Browser DevTools (F12)
@@ -282,7 +282,7 @@ When everything is working correctly, you should see:
 ```
 ✅ MongoDB connected successfully
 ✅ Default hooks initialized
-🚀 LinkedInPulse API server running on port 5000
+🚀 Engagematic API server running on port 5000
 📊 Environment: development
 🌐 Frontend URL: http://localhost:5173
 ```

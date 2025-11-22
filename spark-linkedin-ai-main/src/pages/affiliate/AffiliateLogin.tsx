@@ -60,10 +60,10 @@ export default function AffiliateLogin() {
   return (
     <>
       <Helmet>
-        <title>Affiliate Login | LinkedInPulse</title>
+        <title>Affiliate Login | Engagematic</title>
         <meta
           name="description"
-          content="Login to your LinkedInPulse affiliate account"
+          content="Login to your Engagematic affiliate account"
         />
       </Helmet>
 

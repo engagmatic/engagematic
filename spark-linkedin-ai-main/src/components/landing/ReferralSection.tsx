@@ -64,7 +64,7 @@ export default function ReferralSection() {
 
             {/* Description */}
             <p className="text-base sm:text-lg text-gray-600 mb-6 max-w-xl mx-auto lg:mx-0">
-              Share LinkedInPulse with your network and earn 1 month FREE for every friend who becomes a paying customer.
+              Share Engagematic with your network and earn 1 month FREE for every friend who becomes a paying customer.
             </p>
 
             {/* Quick Benefits */}

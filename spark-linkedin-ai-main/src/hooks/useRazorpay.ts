@@ -140,7 +140,7 @@ export const useCreditPayment = () => {
       openRazorpay({
         amount: razorpayAmount,
         currency: orderData.currency,
-        name: 'LinkedInPulse',
+        name: 'Engagematic',
         description: `${orderData.planType} Plan - ${credits.posts} posts, ${credits.comments} comments, ${credits.ideas} ideas`,
         order_id: orderData.orderId,
         notes: {
@@ -218,7 +218,7 @@ export const usePlanPayment = () => {
       openRazorpay({
         amount: Math.round(orderData.amount * 100),
         currency: orderData.currency,
-        name: 'LinkedInPulse',
+        name: 'Engagematic',
         description: `${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan - Monthly`,
         order_id: orderData.subscriptionId, // Using subscription ID as order ID for now
         notes: {

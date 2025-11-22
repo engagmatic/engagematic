@@ -118,7 +118,7 @@ export default function Referrals() {
       setIsSending(true);
       await api.sendReferralInvites({
         emails: [email],
-        message: "Check out LinkedInPulse - it's helping me create amazing LinkedIn content!",
+        message: "Check out Engagematic - it's helping me create amazing LinkedIn content!",
       });
 
       toast({
@@ -139,7 +139,7 @@ export default function Referrals() {
 
   const shareOnSocial = (platform) => {
     const url = referralData?.referralLink || "";
-    const text = "Join me on LinkedInPulse and get a 14-day extended trial! 🚀";
+    const text = "Join me on Engagematic and get a 14-day extended trial! 🚀";
 
     const urls = {
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,

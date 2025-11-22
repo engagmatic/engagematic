@@ -978,7 +978,7 @@ const PostGenerator = () => {
                           </div>
                         </div>
                         <p className="text-center text-[10px] sm:text-xs text-muted-foreground mt-2 opacity-70">
-                          Powered by LinkedInPulse
+                          Powered by Engagematic
                         </p>
                       </div>
                     </div>

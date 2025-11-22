@@ -1,7 +1,7 @@
 @echo off
-REM LinkedInPulse - Complete SaaS Application Startup Script for Windows
+REM Engagematic - Complete SaaS Application Startup Script for Windows
 
-echo 🚀 Starting LinkedInPulse SaaS Application...
+echo 🚀 Starting Engagematic SaaS Application...
 echo ==============================================
 
 REM Check if Node.js is installed
@@ -70,7 +70,7 @@ echo ⏳ Waiting for servers to start...
 timeout /t 5 /nobreak >nul
 
 echo.
-echo 🎉 LinkedInPulse is now running!
+echo 🎉 Engagematic is now running!
 echo ================================
 echo 🌐 Frontend: http://localhost:5173
 echo 🔧 Backend API: http://localhost:5000

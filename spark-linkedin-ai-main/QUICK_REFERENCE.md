@@ -1,4 +1,4 @@
-# Quick Reference - LinkedInPulse Spark AI
+# Quick Reference - Engagematic Spark AI
 
 ## 🚀 Quick Start
 

@@ -101,7 +101,7 @@ const BlogsPage = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl lg:text-5xl font-bold mb-4">
-            LinkedInPulse{" "}
+            Engagematic{" "}
             <span className="gradient-pulse bg-clip-text text-transparent">Blog</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

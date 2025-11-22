@@ -23,7 +23,7 @@ const fallbackTestimonials: Testimonial[] = [
     displayName: "Priya S.",
     jobTitle: "Content Creator",
     rating: 5,
-    comment: "I've been testing LinkedInPulse for 2 weeks. The persona feature actually learns my writing style—no more generic AI posts. Still experimenting, but early results are promising.",
+    comment: "I've been testing Engagematic for 2 weeks. The persona feature actually learns my writing style—no more generic AI posts. Still experimenting, but early results are promising.",
     createdAt: new Date().toISOString()
   },
   {
@@ -268,7 +268,7 @@ export const Testimonials = () => {
         {/* Trust Building Footer */}
         <div className="mt-12 text-center">
           <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-            All testimonials are from verified LinkedInPulse users. 
+            All testimonials are from verified Engagematic users. 
           </p>
         </div>
       </div>

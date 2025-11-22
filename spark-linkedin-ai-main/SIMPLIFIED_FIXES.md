@@ -281,7 +281,7 @@ node server.js
 ```
 ✅ MongoDB connected successfully
 ✅ Default hooks initialized
-🚀 LinkedInPulse API server running on port 5000
+🚀 Engagematic API server running on port 5000
 ```
 
 ### Start Frontend:

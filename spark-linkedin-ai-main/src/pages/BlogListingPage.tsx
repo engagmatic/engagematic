@@ -22,8 +22,8 @@ interface Blog {
 const blogs: Blog[] = [
   {
     id: "linkedinpulse-vs-chatgpt",
-    title: "LinkedInPulse vs ChatGPT: Why LinkedInPulse Wins for Professional Content",
-    excerpt: "Discover why LinkedInPulse outperforms ChatGPT for LinkedIn content creation with specialized AI, industry expertise, and professional optimization.",
+    title: "Engagematic vs ChatGPT: Why Engagematic Wins for Professional Content",
+    excerpt: "Discover why Engagematic outperforms ChatGPT for LinkedIn content creation with specialized AI, industry expertise, and professional optimization.",
     category: "comparison",
     readTime: "8 min read",
     publishDate: "2025-01-15",
@@ -32,8 +32,8 @@ const blogs: Blog[] = [
   },
   {
     id: "linkedinpulse-vs-taplio",
-    title: "LinkedInPulse vs Taplio: The Ultimate LinkedIn Content Tool Comparison",
-    excerpt: "Compare LinkedInPulse and Taplio side-by-side. See why LinkedInPulse offers better AI, more features, and superior value for LinkedIn creators.",
+    title: "Engagematic vs Taplio: The Ultimate LinkedIn Content Tool Comparison",
+    excerpt: "Compare Engagematic and Taplio side-by-side. See why Engagematic offers better AI, more features, and superior value for LinkedIn creators.",
     category: "comparison",
     readTime: "7 min read",
     publishDate: "2025-01-15",
@@ -42,8 +42,8 @@ const blogs: Blog[] = [
   },
   {
     id: "linkedinpulse-vs-hootsuite",
-    title: "LinkedInPulse vs Hootsuite: AI Content Creation vs Social Media Management",
-    excerpt: "Learn why LinkedInPulse's AI-powered content creation beats Hootsuite's generic scheduling tools for LinkedIn success.",
+    title: "Engagematic vs Hootsuite: AI Content Creation vs Social Media Management",
+    excerpt: "Learn why Engagematic's AI-powered content creation beats Hootsuite's generic scheduling tools for LinkedIn success.",
     category: "comparison",
     readTime: "6 min read",
     publishDate: "2025-01-15",
@@ -52,8 +52,8 @@ const blogs: Blog[] = [
   },
   {
     id: "linkedinpulse-vs-authoredup",
-    title: "LinkedInPulse vs AuthoredUp: Advanced AI vs Basic Content Tools",
-    excerpt: "See how LinkedInPulse's advanced AI and LinkedIn specialization outperforms AuthoredUp's basic content generation features.",
+    title: "Engagematic vs AuthoredUp: Advanced AI vs Basic Content Tools",
+    excerpt: "See how Engagematic's advanced AI and LinkedIn specialization outperforms AuthoredUp's basic content generation features.",
     category: "comparison",
     readTime: "7 min read",
     publishDate: "2025-01-15",
@@ -62,8 +62,8 @@ const blogs: Blog[] = [
   },
   {
     id: "linkedinpulse-vs-kleo",
-    title: "LinkedInPulse vs Kleo: Professional Content AI vs Generic Automation",
-    excerpt: "Compare LinkedInPulse's professional-grade AI with Kleo's generic automation. Discover why LinkedInPulse delivers superior LinkedIn content.",
+    title: "Engagematic vs Kleo: Professional Content AI vs Generic Automation",
+    excerpt: "Compare Engagematic's professional-grade AI with Kleo's generic automation. Discover why Engagematic delivers superior LinkedIn content.",
     category: "comparison",
     readTime: "6 min read",
     publishDate: "2025-01-15",
@@ -73,7 +73,7 @@ const blogs: Blog[] = [
   {
     id: "linkedin-creators-guide",
     title: "The Complete Guide to LinkedIn Content Creation for Creators",
-    excerpt: "Master LinkedIn content creation with LinkedInPulse. Learn strategies, tools, and techniques used by top LinkedIn creators to build engaged audiences.",
+    excerpt: "Master LinkedIn content creation with Engagematic. Learn strategies, tools, and techniques used by top LinkedIn creators to build engaged audiences.",
     category: "usecase",
     targetAudience: "LinkedIn Creators",
     readTime: "12 min read",
@@ -84,7 +84,7 @@ const blogs: Blog[] = [
   {
     id: "founders-ceos-guide",
     title: "LinkedIn Content Strategy for Founders & CEOs: Build Authority and Drive Growth",
-    excerpt: "Elevate your executive presence on LinkedIn with LinkedInPulse. Learn how founders and CEOs use strategic content to build authority and drive business growth.",
+    excerpt: "Elevate your executive presence on LinkedIn with Engagematic. Learn how founders and CEOs use strategic content to build authority and drive business growth.",
     category: "usecase",
     targetAudience: "Founders & CEOs",
     readTime: "10 min read",
@@ -95,7 +95,7 @@ const blogs: Blog[] = [
   {
     id: "freelancers-guide",
     title: "LinkedIn Marketing for Freelancers: Attract Clients and Build Your Brand",
-    excerpt: "Transform your LinkedIn presence into a client magnet with LinkedInPulse. Discover proven strategies freelancers use to attract high-quality clients.",
+    excerpt: "Transform your LinkedIn presence into a client magnet with Engagematic. Discover proven strategies freelancers use to attract high-quality clients.",
     category: "usecase",
     targetAudience: "Freelancers",
     readTime: "9 min read",
@@ -106,7 +106,7 @@ const blogs: Blog[] = [
   {
     id: "recruiters-guide",
     title: "LinkedIn Recruiting Strategies: Find and Engage Top Talent",
-    excerpt: "Master LinkedIn recruiting with LinkedInPulse. Learn how top recruiters use content marketing to attract and engage the best candidates.",
+    excerpt: "Master LinkedIn recruiting with Engagematic. Learn how top recruiters use content marketing to attract and engage the best candidates.",
     category: "usecase",
     targetAudience: "Recruiters",
     readTime: "11 min read",
@@ -117,7 +117,7 @@ const blogs: Blog[] = [
   {
     id: "sales-reps-guide",
     title: "LinkedIn Sales Prospecting: Generate Leads and Close Deals",
-    excerpt: "Boost your sales performance with LinkedInPulse. Learn how sales professionals use LinkedIn content to generate leads and build relationships.",
+    excerpt: "Boost your sales performance with Engagematic. Learn how sales professionals use LinkedIn content to generate leads and build relationships.",
     category: "usecase",
     targetAudience: "Sales Reps",
     readTime: "10 min read",
@@ -174,7 +174,7 @@ const BlogListingPage = () => {
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl lg:text-5xl font-bold mb-6">
               <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                LinkedInPulse Blog
+                Engagematic Blog
               </span>
             </h1>
             <p className="text-xl text-gray-600 mb-8">
@@ -300,7 +300,7 @@ const BlogListingPage = () => {
             Ready to Transform Your LinkedIn Content?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of professionals using LinkedInPulse to create engaging content that drives results.
+            Join thousands of professionals using Engagematic to create engaging content that drives results.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/auth/register" className="w-full sm:w-auto">

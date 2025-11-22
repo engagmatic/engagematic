@@ -82,13 +82,13 @@ export const WaitlistModal = ({
   };
 
   const handleShare = () => {
-    const shareText = `I just joined the waitlist for ${plan} plan on LinkedInPulse - the AI-powered LinkedIn content toolkit! 🚀`;
+    const shareText = `I just joined the waitlist for ${plan} plan on Engagematic - the AI-powered LinkedIn content toolkit! 🚀`;
     const shareUrl = "https://linkedinpulse.ai?ref=waitlist";
 
     if (navigator.share) {
       navigator
         .share({
-          title: "Join LinkedInPulse Waitlist",
+          title: "Join Engagematic Waitlist",
           text: shareText,
           url: shareUrl,
         })

@@ -36,7 +36,7 @@ export const TryItFreeSection = () => {
           </h2>
           
           <p className="text-xs sm:text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
-            No signup. No friction. Instantly see how LinkedInPulse crafts a post tailored to your style and audience.
+            No signup. No friction. Instantly see how Engagematic crafts a post tailored to your style and audience.
           </p>
         </div>
 

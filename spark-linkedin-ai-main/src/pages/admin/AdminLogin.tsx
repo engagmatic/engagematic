@@ -62,7 +62,7 @@ export default function AdminLogin() {
             <Shield className="h-10 w-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Admin Portal</h1>
-          <p className="text-gray-400">LinkedInPulse Dashboard</p>
+          <p className="text-gray-400">Engagematic Dashboard</p>
         </div>
 
         {/* Error Alert */}

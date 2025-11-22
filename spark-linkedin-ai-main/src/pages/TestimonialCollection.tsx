@@ -91,8 +91,8 @@ const TestimonialCollection = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
         <SEO 
-          title="Testimonial Submitted | LinkedInPulse"
-          description="Thank you for sharing your experience with LinkedInPulse!"
+          title="Testimonial Submitted | Engagematic"
+          description="Thank you for sharing your experience with Engagematic!"
         />
         
         <Card className="max-w-md w-full p-8 text-center shadow-2xl">
@@ -142,9 +142,9 @@ const TestimonialCollection = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       <SEO 
-        title="Share Your Experience | LinkedInPulse Testimonials"
-        description="Share your success story with LinkedInPulse and help others discover the power of AI-driven LinkedIn content creation."
-        keywords="testimonial, review, feedback, LinkedInPulse, success story"
+        title="Share Your Experience | Engagematic Testimonials"
+        description="Share your success story with Engagematic and help others discover the power of AI-driven LinkedIn content creation."
+        keywords="testimonial, review, feedback, Engagematic, success story"
       />
       
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -163,7 +163,7 @@ const TestimonialCollection = () => {
           </h1>
           
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Help others discover the power of LinkedInPulse by sharing your experience. 
+            Help others discover the power of Engagematic by sharing your experience. 
             Your testimonial could inspire someone to transform their LinkedIn presence.
           </p>
         </div>
@@ -177,7 +177,7 @@ const TestimonialCollection = () => {
                 Your Experience
               </h2>
               <p className="text-gray-600 text-sm">
-                Tell us how LinkedInPulse has helped you grow your LinkedIn presence.
+                Tell us how Engagematic has helped you grow your LinkedIn presence.
               </p>
             </div>
 
@@ -292,7 +292,7 @@ const TestimonialCollection = () => {
                   name="comment"
                   value={formData.comment}
                   onChange={handleInputChange}
-                  placeholder="Share your experience with LinkedInPulse. How has it helped you? What results have you seen? Be specific and honest!"
+                  placeholder="Share your experience with Engagematic. How has it helped you? What results have you seen? Be specific and honest!"
                   rows={6}
                   maxLength={1000}
                   required
@@ -369,7 +369,7 @@ const TestimonialCollection = () => {
                   <div>
                     <h4 className="font-semibold text-gray-900">Inspire Innovation</h4>
                     <p className="text-sm text-gray-600">
-                      Help us improve LinkedInPulse for everyone
+                      Help us improve Engagematic for everyone
                     </p>
                   </div>
                 </div>

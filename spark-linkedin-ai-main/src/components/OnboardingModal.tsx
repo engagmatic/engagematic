@@ -164,7 +164,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
       }
 
       toast({
-        title: "🎉 Welcome to LinkedInPulse!",
+        title: "🎉 Welcome to Engagematic!",
         description: "Your personalized experience is ready.",
       });
 

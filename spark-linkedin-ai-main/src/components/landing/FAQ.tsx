@@ -7,19 +7,19 @@ import {
 
 const faqs = [
   {
-    question: "How does LinkedInPulse help me grow my LinkedIn presence?",
-    answer: "LinkedInPulse uses AI to create authentic, engaging content that sounds like you. Our Persona Engine learns your unique voice, while the Viral Hook Selector ensures your posts stop the scroll. Users typically see a 6x increase in engagement within the first month."
+    question: "How does Engagematic help me grow my LinkedIn presence?",
+    answer: "Engagematic uses AI to create authentic, engaging content that sounds like you. Our Persona Engine learns your unique voice, while the Viral Hook Selector ensures your posts stop the scroll. Users typically see a 6x increase in engagement within the first month."
   },
   {
     question: "Will the content sound like it was written by AI?",
-    answer: "No! That's the magic of LinkedInPulse. Our advanced Persona Engine analyzes your writing style, tone, and preferences to create content that authentically represents you. Plus, you can edit and refine every post before sharing."
+    answer: "No! That's the magic of Engagematic. Our advanced Persona Engine analyzes your writing style, tone, and preferences to create content that authentically represents you. Plus, you can edit and refine every post before sharing."
   },
   {
     question: "How many posts and comments can I generate?",
     answer: "It depends on your plan. The free Starter plan includes 5 AI posts and 10 AI comments per month. Pro users get unlimited posts and comments, plus access to advanced features like the full viral hook library and analytics dashboard."
   },
   {
-    question: "Can I try LinkedInPulse before upgrading to Pro?",
+    question: "Can I try Engagematic before upgrading to Pro?",
     answer: "Absolutely! Start with our free Starter plan to experience the power of AI-generated LinkedIn content. When you're ready for unlimited content and advanced features, upgrade to Pro with a 7-day free trial—no credit card required."
   },
   {
@@ -27,8 +27,8 @@ const faqs = [
     answer: "You can start creating content in under 2 minutes! Sign up, complete our quick onboarding wizard, and you'll be generating viral-worthy LinkedIn posts immediately. No complicated setup required."
   },
   {
-    question: "What makes LinkedInPulse different from other AI tools?",
-    answer: "LinkedInPulse is specifically trained on 50,000+ viral LinkedIn posts, making it purpose-built for professional networking. Unlike generic AI tools, we understand LinkedIn's algorithm, B2B marketing dynamics, and what drives engagement on the platform. Our Persona Engine ensures every post sounds authentically like you."
+    question: "What makes Engagematic different from other AI tools?",
+    answer: "Engagematic is specifically trained on 50,000+ viral LinkedIn posts, making it purpose-built for professional networking. Unlike generic AI tools, we understand LinkedIn's algorithm, B2B marketing dynamics, and what drives engagement on the platform. Our Persona Engine ensures every post sounds authentically like you."
   }
 ];
 
@@ -42,7 +42,7 @@ export const FAQ = () => {
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Questions</span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground px-4">
-            Everything you need to know about LinkedInPulse
+            Everything you need to know about Engagematic
           </p>
         </div>
         

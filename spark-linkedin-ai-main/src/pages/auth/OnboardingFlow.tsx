@@ -110,7 +110,7 @@ const OnboardingFlow = () => {
     
     if (result.success) {
       toast({
-        title: "🎉 Welcome to LinkedInPulse!",
+        title: "🎉 Welcome to Engagematic!",
         description: "Your AI-powered content assistant is ready",
       });
       
@@ -151,7 +151,7 @@ const OnboardingFlow = () => {
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
               <Activity className="h-7 w-7 text-white" />
             </div>
-            <span className="text-2xl font-bold">LinkedInPulse</span>
+            <span className="text-2xl font-bold">Engagematic</span>
           </Link>
           <p className="text-muted-foreground">Create your AI-powered LinkedIn presence in 60 seconds</p>
         </div>

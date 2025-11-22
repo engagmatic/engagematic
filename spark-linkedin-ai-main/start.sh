@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# LinkedInPulse - Complete SaaS Application Startup Script
+# Engagematic - Complete SaaS Application Startup Script
 
-echo "🚀 Starting LinkedInPulse SaaS Application..."
+echo "🚀 Starting Engagematic SaaS Application..."
 echo "=============================================="
 
 # Check if Node.js is installed
@@ -115,7 +115,7 @@ wait_for_servers() {
 # Function to show application info
 show_info() {
     echo ""
-    echo "🎉 LinkedInPulse is now running!"
+    echo "🎉 Engagematic is now running!"
     echo "================================"
     echo "🌐 Frontend: http://localhost:5173"
     echo "🔧 Backend API: http://localhost:5000"

@@ -212,7 +212,7 @@ const BlogPostPage = () => {
             </div>
             <div>
               <h3 className="font-semibold text-lg">{blogPost.author.name}</h3>
-              <p className="text-sm text-muted-foreground">Content Creator at LinkedInPulse</p>
+              <p className="text-sm text-muted-foreground">Content Creator at Engagematic</p>
             </div>
           </div>
         </Card>

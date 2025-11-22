@@ -94,7 +94,7 @@ export default function AffiliateDashboard() {
 
   const shareOnSocial = (platform: string) => {
     const url = affiliate?.referralLink || "";
-    const text = "Join LinkedInPulse and get 14-day extended trial! 🚀";
+    const text = "Join Engagematic and get 14-day extended trial! 🚀";
 
     const urls: Record<string, string> = {
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
@@ -143,7 +143,7 @@ export default function AffiliateDashboard() {
   return (
     <>
       <Helmet>
-        <title>Affiliate Dashboard | LinkedInPulse</title>
+        <title>Affiliate Dashboard | Engagematic</title>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-purple-50/50 to-white py-12">
@@ -304,7 +304,7 @@ export default function AffiliateDashboard() {
                   WhatsApp
                 </Button>
                 <Button
-                  onClick={() => window.open(`mailto:?subject=Join LinkedInPulse&body=${encodeURIComponent(affiliate.referralLink)}`, "_blank")}
+                  onClick={() => window.open(`mailto:?subject=Join Engagematic&body=${encodeURIComponent(affiliate.referralLink)}`, "_blank")}
                   variant="outline"
                   className="gap-2"
                 >

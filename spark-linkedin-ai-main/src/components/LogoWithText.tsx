@@ -37,11 +37,12 @@ export const LogoWithText = ({
 
   const content = (
     <div className={`inline-flex items-center gap-2 ${className}`}>
-      <div className={`${iconSizeClasses[textSize]} rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg`}>
-        <Activity className={`${activityIconSizes[textSize]} text-white animate-pulse`} />
-      </div>
+      {/* <div className={`${iconSizeClasses[textSize]} rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg`}> */}
+        {/* <Activity className={`${activityIconSizes[textSize]} text-white animate-pulse`} /> */}
+      {/* </div> */}
+      <img src='/favicon.ico' alt="Engagematic" />
       <span className={`${sizeClasses[textSize]} font-bold`}>
-        LinkedInPulse
+        Engagematic
       </span>
     </div>
   );
