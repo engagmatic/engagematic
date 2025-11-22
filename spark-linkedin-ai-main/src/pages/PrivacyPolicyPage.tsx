@@ -34,7 +34,7 @@ const PrivacyPolicyPage = () => {
             <div>
               <h2 className="text-2xl font-bold mb-4">Introduction</h2>
               <p className="text-muted-foreground mb-4">
-                LinkedInPulse ("we," "our," or "us") is committed to protecting your privacy and personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website, mobile application, and services (collectively, the "Service").
+                Engagematic ("we," "our," or "us") is committed to protecting your privacy and personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website, mobile application, and services (collectively, the "Service").
               </p>
               <p className="text-muted-foreground">
                 By using our Service, you agree to the collection and use of information in accordance with this Privacy Policy. If you do not agree with the terms of this Privacy Policy, please do not access or use the Service.
@@ -329,12 +329,12 @@ const PrivacyPolicyPage = () => {
             <div className="space-y-4">
               <div>
                 <h3 className="font-semibold">Email</h3>
-                <p className="text-muted-foreground">privacy@linkedinpulse.com</p>
+                <p className="text-muted-foreground">privacy@engagematic.com</p>
               </div>
               <div>
                 <h3 className="font-semibold">Address</h3>
                 <p className="text-muted-foreground">
-                  LinkedInPulse Privacy Team<br />
+                  Engagematic Privacy Team<br />
                   123 Innovation Drive<br />
                   San Francisco, CA 94105
                 </p>

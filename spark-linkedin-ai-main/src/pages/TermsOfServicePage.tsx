@@ -380,7 +380,7 @@ const TermsOfServicePage = () => {
             <div className="space-y-4">
               <div>
                 <h3 className="font-semibold">Email</h3>
-                <p className="text-muted-foreground">legal@linkedinpulse.com</p>
+                <p className="text-muted-foreground">legal@engagematic.com</p>
               </div>
               <div>
                 <h3 className="font-semibold">Address</h3>

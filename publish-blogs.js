@@ -1,125 +1,187 @@
 #!/usr/bin/env node
 
-// Blog Publishing Script for LinkedInPulse
+// Blog Publishing Script for Engagematic
 // This script publishes all the created blogs to the blog management system
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Blog data structure
 const blogs = [
   // Comparison Blogs
   {
-    title: "LinkedInPulse vs ChatGPT: Why AI-Powered LinkedIn Content Beats Generic AI",
-    slug: "linkedinpulse-vs-chatgpt-ai-powered-linkedin-content",
+    title:
+      "Engagematic vs ChatGPT: Why AI-Powered LinkedIn Content Beats Generic AI",
+    slug: "engagematic-vs-chatgpt-ai-powered-linkedin-content",
     category: "AI & Technology",
-    tags: ["LinkedInPulse", "ChatGPT", "AI", "LinkedIn", "Content Creation"],
-    excerpt: "Discover why LinkedIn-specific AI tools like LinkedInPulse outperform generic AI platforms like ChatGPT for LinkedIn content creation and professional networking.",
+    tags: ["Engagematic", "ChatGPT", "AI", "LinkedIn", "Content Creation"],
+    excerpt:
+      "Discover why LinkedIn-specific AI tools like Engagematic outperform generic AI platforms like ChatGPT for LinkedIn content creation and professional networking.",
     content: "", // Will be filled from file
     isFeatured: true,
-    status: "published"
+    status: "published",
   },
   {
-    title: "LinkedInPulse vs Taplio: The Ultimate LinkedIn Content Creation Showdown",
-    slug: "linkedinpulse-vs-taplio-linkedin-content-creation-showdown",
+    title:
+      "Engagematic vs Taplio: The Ultimate LinkedIn Content Creation Showdown",
+    slug: "engagematic-vs-taplio-linkedin-content-creation-showdown",
     category: "Content Strategy",
-    tags: ["LinkedInPulse", "Taplio", "LinkedIn", "Content Creation", "Comparison"],
-    excerpt: "Compare LinkedInPulse and Taplio to see which LinkedIn content creation tool delivers better results for professionals and content creators.",
+    tags: [
+      "Engagematic",
+      "Taplio",
+      "LinkedIn",
+      "Content Creation",
+      "Comparison",
+    ],
+    excerpt:
+      "Compare Engagematic and Taplio to see which LinkedIn content creation tool delivers better results for professionals and content creators.",
     content: "", // Will be filled from file
     isFeatured: true,
-    status: "published"
+    status: "published",
   },
   {
-    title: "LinkedInPulse vs Hootsuite: Why LinkedIn-Specific Tools Beat Social Media Management Platforms",
-    slug: "linkedinpulse-vs-hootsuite-linkedin-specific-tools",
+    title:
+      "Engagematic vs Hootsuite: Why LinkedIn-Specific Tools Beat Social Media Management Platforms",
+    slug: "engagematic-vs-hootsuite-linkedin-specific-tools",
     category: "Marketing",
-    tags: ["LinkedInPulse", "Hootsuite", "Social Media", "LinkedIn", "Marketing"],
-    excerpt: "Learn why specialized LinkedIn tools like LinkedInPulse outperform general social media management platforms like Hootsuite for LinkedIn success.",
+    tags: ["Engagematic", "Hootsuite", "Social Media", "LinkedIn", "Marketing"],
+    excerpt:
+      "Learn why specialized LinkedIn tools like Engagematic outperform general social media management platforms like Hootsuite for LinkedIn success.",
     content: "", // Will be filled from file
     isFeatured: true,
-    status: "published"
+    status: "published",
   },
   {
-    title: "LinkedInPulse vs AuthoredUp: The Ultimate LinkedIn Content Creation Showdown",
-    slug: "linkedinpulse-vs-authoredup-linkedin-content-showdown",
+    title:
+      "Engagematic vs AuthoredUp: The Ultimate LinkedIn Content Creation Showdown",
+    slug: "engagematic-vs-authoredup-linkedin-content-showdown",
     category: "Content Strategy",
-    tags: ["LinkedInPulse", "AuthoredUp", "LinkedIn", "Content Creation", "Comparison"],
-    excerpt: "Compare LinkedInPulse and AuthoredUp to discover why specialized LinkedIn AI tools outperform generic content creation platforms.",
+    tags: [
+      "Engagematic",
+      "AuthoredUp",
+      "LinkedIn",
+      "Content Creation",
+      "Comparison",
+    ],
+    excerpt:
+      "Compare Engagematic and AuthoredUp to discover why specialized LinkedIn AI tools outperform generic content creation platforms.",
     content: "", // Will be filled from file
     isFeatured: true,
-    status: "published"
+    status: "published",
   },
   {
-    title: "LinkedInPulse vs Kleo: Why AI-Powered LinkedIn Tools Beat Traditional Content Platforms",
-    slug: "linkedinpulse-vs-kleo-ai-powered-linkedin-tools",
+    title:
+      "Engagematic vs Kleo: Why AI-Powered LinkedIn Tools Beat Traditional Content Platforms",
+    slug: "engagematic-vs-kleo-ai-powered-linkedin-tools",
     category: "AI & Technology",
-    tags: ["LinkedInPulse", "Kleo", "AI", "LinkedIn", "Content Creation"],
-    excerpt: "Explore why AI-powered LinkedIn tools like LinkedInPulse outperform traditional content platforms like Kleo for LinkedIn success.",
+    tags: ["Engagematic", "Kleo", "AI", "LinkedIn", "Content Creation"],
+    excerpt:
+      "Explore why AI-powered LinkedIn tools like Engagematic outperform traditional content platforms like Kleo for LinkedIn success.",
     content: "", // Will be filled from file
     isFeatured: true,
-    status: "published"
+    status: "published",
   },
   // Use Case Blogs
   {
-    title: "LinkedIn Creators: How LinkedInPulse Transforms Content Creation and Builds Your Personal Brand",
-    slug: "linkedin-creators-linkedinpulse-content-creation-personal-brand",
+    title:
+      "LinkedIn Creators: How Engagematic Transforms Content Creation and Builds Your Personal Brand",
+    slug: "linkedin-creators-engagematic-content-creation-personal-brand",
     category: "Career Growth",
-    tags: ["LinkedIn Creators", "LinkedInPulse", "Personal Brand", "Content Creation", "LinkedIn"],
-    excerpt: "Discover how LinkedInPulse empowers LinkedIn creators to scale content production, increase engagement, and build powerful personal brands.",
+    tags: [
+      "LinkedIn Creators",
+      "Engagematic",
+      "Personal Brand",
+      "Content Creation",
+      "LinkedIn",
+    ],
+    excerpt:
+      "Discover how Engagematic empowers LinkedIn creators to scale content production, increase engagement, and build powerful personal brands.",
     content: "", // Will be filled from file
     isFeatured: true,
-    status: "published"
+    status: "published",
   },
   {
-    title: "Founders & CEOs: How LinkedInPulse Builds Thought Leadership and Drives Business Growth",
-    slug: "founders-ceos-linkedinpulse-thought-leadership-business-growth",
+    title:
+      "Founders & CEOs: How Engagematic Builds Thought Leadership and Drives Business Growth",
+    slug: "founders-ceos-engagematic-thought-leadership-business-growth",
     category: "Career Growth",
-    tags: ["Founders", "CEOs", "LinkedInPulse", "Thought Leadership", "Business Growth"],
-    excerpt: "Learn how LinkedInPulse helps founders and CEOs build thought leadership, attract talent, secure funding, and drive revenue growth.",
+    tags: [
+      "Founders",
+      "CEOs",
+      "Engagematic",
+      "Thought Leadership",
+      "Business Growth",
+    ],
+    excerpt:
+      "Learn how Engagematic helps founders and CEOs build thought leadership, attract talent, secure funding, and drive revenue growth.",
     content: "", // Will be filled from file
     isFeatured: true,
-    status: "published"
+    status: "published",
   },
   {
-    title: "Freelancers: How LinkedInPulse Builds Your Professional Brand and Attracts High-Value Clients",
-    slug: "freelancers-linkedinpulse-professional-brand-high-value-clients",
+    title:
+      "Freelancers: How Engagematic Builds Your Professional Brand and Attracts High-Value Clients",
+    slug: "freelancers-engagematic-professional-brand-high-value-clients",
     category: "Career Growth",
-    tags: ["Freelancers", "LinkedInPulse", "Professional Brand", "Client Acquisition", "LinkedIn"],
-    excerpt: "Explore how LinkedInPulse empowers freelancers to build strong professional brands, showcase expertise, and attract high-value clients.",
+    tags: [
+      "Freelancers",
+      "Engagematic",
+      "Professional Brand",
+      "Client Acquisition",
+      "LinkedIn",
+    ],
+    excerpt:
+      "Explore how Engagematic empowers freelancers to build strong professional brands, showcase expertise, and attract high-value clients.",
     content: "", // Will be filled from file
     isFeatured: true,
-    status: "published"
+    status: "published",
   },
   {
-    title: "Recruiters: How LinkedInPulse Builds Your Talent Pipeline and Establishes Industry Authority",
-    slug: "recruiters-linkedinpulse-talent-pipeline-industry-authority",
+    title:
+      "Recruiters: How Engagematic Builds Your Talent Pipeline and Establishes Industry Authority",
+    slug: "recruiters-engagematic-talent-pipeline-industry-authority",
     category: "Career Growth",
-    tags: ["Recruiters", "LinkedInPulse", "Talent Pipeline", "Industry Authority", "LinkedIn"],
-    excerpt: "Discover how LinkedInPulse helps recruiters build strong talent pipelines, establish industry authority, and attract top candidates.",
+    tags: [
+      "Recruiters",
+      "Engagematic",
+      "Talent Pipeline",
+      "Industry Authority",
+      "LinkedIn",
+    ],
+    excerpt:
+      "Discover how Engagematic helps recruiters build strong talent pipelines, establish industry authority, and attract top candidates.",
     content: "", // Will be filled from file
     isFeatured: true,
-    status: "published"
+    status: "published",
   },
   {
-    title: "Sales Reps: How LinkedInPulse Builds Your Pipeline and Drives Revenue Growth",
-    slug: "sales-reps-linkedinpulse-pipeline-revenue-growth",
+    title:
+      "Sales Reps: How Engagematic Builds Your Pipeline and Drives Revenue Growth",
+    slug: "sales-reps-engagematic-pipeline-revenue-growth",
     category: "Career Growth",
-    tags: ["Sales Reps", "LinkedInPulse", "Pipeline Building", "Revenue Growth", "LinkedIn"],
-    excerpt: "Learn how LinkedInPulse empowers sales professionals to build prospect pipelines, establish credibility, and drive revenue consistently.",
+    tags: [
+      "Sales Reps",
+      "Engagematic",
+      "Pipeline Building",
+      "Revenue Growth",
+      "LinkedIn",
+    ],
+    excerpt:
+      "Learn how Engagematic empowers sales professionals to build prospect pipelines, establish credibility, and drive revenue consistently.",
     content: "", // Will be filled from file
     isFeatured: true,
-    status: "published"
-  }
+    status: "published",
+  },
 ];
 
 // Function to read blog content from file
 function readBlogContent(filename) {
   try {
     const filePath = path.join(__dirname, filename);
-    return fs.readFileSync(filePath, 'utf8');
+    return fs.readFileSync(filePath, "utf8");
   } catch (error) {
     console.error(`Error reading ${filename}:`, error.message);
-    return '';
+    return "";
   }
 }
 
@@ -135,10 +197,10 @@ function generateSEO(title, excerpt, tags) {
   return {
     title: title,
     description: excerpt,
-    keywords: tags.join(', '),
-    author: "LinkedInPulse Team",
+    keywords: tags.join(", "),
+    author: "Engagematic Team",
     publishedTime: new Date().toISOString(),
-    modifiedTime: new Date().toISOString()
+    modifiedTime: new Date().toISOString(),
   };
 }
 
@@ -154,9 +216,9 @@ function createBlogObject(blogData, content) {
     bannerImage: "/blog-banner.jpg", // Default banner image
     bannerImageAlt: blogData.title,
     author: {
-      name: "LinkedInPulse Team",
-      email: "team@linkedinpulse.com",
-      bio: "The LinkedInPulse team creates content to help professionals succeed on LinkedIn."
+      name: "Engagematic Team",
+      email: "team@engagematic.com",
+      bio: "The Engagematic team creates content to help professionals succeed on LinkedIn.",
     },
     seo: generateSEO(blogData.title, blogData.excerpt, blogData.tags),
     isFeatured: blogData.isFeatured,
@@ -164,7 +226,7 @@ function createBlogObject(blogData, content) {
     readTime: calculateReadTime(content),
     publishedAt: new Date(),
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 }
 
@@ -180,7 +242,7 @@ function prepareAllBlogs() {
     "BLOG_USECASE_FOUNDERS_CEOS.md",
     "BLOG_USECASE_FREELANCERS.md",
     "BLOG_USECASE_RECRUITERS.md",
-    "BLOG_USECASE_SALES_REPS.md"
+    "BLOG_USECASE_SALES_REPS.md",
   ];
 
   const preparedBlogs = [];
@@ -188,7 +250,7 @@ function prepareAllBlogs() {
   for (let i = 0; i < blogs.length; i++) {
     const blogData = blogs[i];
     const content = readBlogContent(blogFiles[i]);
-    
+
     if (content) {
       const blogObject = createBlogObject(blogData, content);
       preparedBlogs.push(blogObject);
@@ -208,12 +270,16 @@ console.log(`\n📝 Blog Publishing Summary:`);
 console.log(`Total blogs prepared: ${allBlogs.length}`);
 console.log(`Comparison blogs: 5`);
 console.log(`Use case blogs: 5`);
-console.log(`Featured blogs: ${allBlogs.filter(blog => blog.isFeatured).length}`);
+console.log(
+  `Featured blogs: ${allBlogs.filter((blog) => blog.isFeatured).length}`
+);
 
 // Save to JSON file for easy import
-fs.writeFileSync('published-blogs.json', JSON.stringify(allBlogs, null, 2));
+fs.writeFileSync("published-blogs.json", JSON.stringify(allBlogs, null, 2));
 console.log(`\n💾 Blog data saved to: published-blogs.json`);
 
-console.log(`\n🚀 Ready to publish! Use the admin panel to import these blogs.`);
+console.log(
+  `\n🚀 Ready to publish! Use the admin panel to import these blogs.`
+);
 
 module.exports = allBlogs;

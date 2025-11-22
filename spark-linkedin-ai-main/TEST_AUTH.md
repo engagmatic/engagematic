@@ -39,7 +39,7 @@ node server.js
 ```
 ✅ MongoDB connected successfully
 ✅ Default hooks initialized
-🚀 LinkedInPulse API server running on port 5000
+🚀 Engagematic API server running on port 5000
 ```
 
 ### Step 2: Start Frontend Server
@@ -65,7 +65,7 @@ VITE ready in [time] ms
 ### Step 1: Account Setup
 **Fill in:**
 - Name: Test User
-- Email: test@linkedinpulse.com
+- Email: test@engagematic.com
 - Password: Test123!@#
 - Confirm Password: Test123!@#
 
@@ -114,7 +114,7 @@ VITE ready in [time] ms
 
 **Expected Results:**
 - ✅ Loading state shows "Creating account..."
-- ✅ Success toast: "Welcome to LinkedInPulse! 🎉"
+- ✅ Success toast: "Welcome to Engagematic! 🎉"
 - ✅ Redirect to dashboard
 - ✅ User is logged in
 - ✅ Token stored in localStorage
@@ -137,7 +137,7 @@ Complete registration first OR use existing account
 
 ### Fill Login Form
 **Enter:**
-- Email: test@linkedinpulse.com
+- Email: test@engagematic.com
 - Password: Test123!@#
 
 **Click "Sign In"**

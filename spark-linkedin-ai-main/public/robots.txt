@@ -1,4 +1,4 @@
-# robots.txt for LinkedInPulse (www.linkedinpulse.com)
+# robots.txt for Engagematic (www.engagematic.com)
 # Generated: 2025-01-24
 
 # Allow all crawlers
@@ -47,8 +47,8 @@ Allow: /*.svg$
 Allow: /*.webp$
 
 # Sitemap location
-Sitemap: https://www.linkedinpulse.com/sitemap.xml
-Sitemap: https://linkedinpulse.com/sitemap.xml
+Sitemap: https://www.engagematic.com/sitemap.xml
+Sitemap: https://engagematic.com/sitemap.xml
 
 # Host declaration (preferred domain)
-Host: https://www.linkedinpulse.com
+Host: https://www.engagematic.com

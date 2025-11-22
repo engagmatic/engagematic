@@ -55,10 +55,10 @@ app.use(
 // CORS configuration
 const allowedOrigins = [
   config.FRONTEND_URL,
-  "https://linkedinpulse.com",
-  "https://www.linkedinpulse.com",
-  "http://linkedinpulse.com",
-  "http://www.linkedinpulse.com",
+  "https://engagematic.com",
+  "https://www.engagematic.com",
+  "http://engagematic.com",
+  "http://www.engagematic.com",
   "chrome-extension://eofnebjkdholeglegaillijcbbefgmjm", // your Chrome extension origin
   "http://localhost:5173", // if your frontend runs locally
   "http://localhost:5000", // optional, if your backend talks to itself  "http://localhost:5173", // dev frontend if any
@@ -112,7 +112,7 @@ app.use(express.urlencoded({ extended: true, limit: "5mb" })); // Reduced from 1
 app.get("/health", (req, res) => {
   res.json({
     success: true,
-    message: "LinkedInPulse API is running",
+    message: "Engagematic API is running",
     timestamp: new Date().toISOString(),
     environment: config.NODE_ENV,
   });

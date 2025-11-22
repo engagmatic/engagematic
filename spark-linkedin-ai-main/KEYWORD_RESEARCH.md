@@ -1,4 +1,4 @@
-# 🔍 LinkedInPulse Keyword Research & SEO Strategy
+# 🔍 Engagematic Keyword Research & SEO Strategy
 
 ## 📊 Keyword Categories Overview
 
@@ -25,32 +25,26 @@
 - LinkedIn engagement tool
 
 ### 2. **Brand Variations & Misspellings**
-- LinkedInPulse
-- LinkedIn Pulse
-- LinkedInPulse AI
-- LinkedIn Pulse AI
-- LinkedInPulse tool
-- LinkedIn Pulse tool
-- LinkedInPulse app
-- LinkedIn Pulse app
-- LinkedInPulse software
-- LinkedIn Pulse software
-- LinkedInPulse platform
-- LinkedIn Pulse platform
+- Engagematic
+- Engagematic AI
+- Engagematic tool
+- Engagematic app
+- Engagematic software
+- Engagematic platform
 
 ### 3. **Competitive Keywords**
 
 #### Direct Competitors
-- LinkedInPulse vs Taplio
-- LinkedInPulse vs Hootsuite
-- LinkedInPulse vs ChatGPT
-- LinkedInPulse vs AuthoredUp
-- LinkedInPulse vs Kleo
-- LinkedInPulse vs Buffer
-- LinkedInPulse vs Sprout Social
-- LinkedInPulse vs Later
-- LinkedInPulse vs CoSchedule
-- LinkedInPulse vs Canva
+- Engagematic vs Taplio
+- Engagematic vs Hootsuite
+- Engagematic vs ChatGPT
+- Engagematic vs AuthoredUp
+- Engagematic vs Kleo
+- Engagematic vs Buffer
+- Engagematic vs Sprout Social
+- Engagematic vs Later
+- Engagematic vs CoSchedule
+- Engagematic vs Canva
 
 #### Alternative Tools
 - Taplio alternative
@@ -172,11 +166,11 @@
 
 ### Homepage
 - Primary: LinkedIn post generator, AI LinkedIn posts
-- Secondary: LinkedInPulse vs competitors, best LinkedIn AI tool
+- Secondary: Engagematic vs competitors, best LinkedIn AI tool
 - Long-tail: how to create viral LinkedIn posts
 
 ### Blog Pages
-- Comparison posts: LinkedInPulse vs [competitor]
+- Comparison posts: Engagematic vs [competitor]
 - Use case guides: LinkedIn for [industry/role]
 - Problem-solving: LinkedIn [problem] solution
 

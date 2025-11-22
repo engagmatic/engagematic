@@ -39,7 +39,7 @@ export function BlogEditor({ blog, onClose, onSave }: BlogEditorProps) {
     tags: "",
     bannerImage: "",
     bannerImageAlt: "",
-    authorName: "LinkedInPulse Team",
+    authorName: "Engagematic Team",
     authorEmail: "",
     metaTitle: "",
     metaDescription: "",
@@ -58,7 +58,7 @@ export function BlogEditor({ blog, onClose, onSave }: BlogEditorProps) {
         tags: blog.tags?.join(", ") || "",
         bannerImage: blog.bannerImage || "",
         bannerImageAlt: blog.bannerImageAlt || "",
-        authorName: blog.author?.name || "LinkedInPulse Team",
+        authorName: blog.author?.name || "Engagematic Team",
         authorEmail: blog.author?.email || "",
         metaTitle: blog.seo?.metaTitle || "",
         metaDescription: blog.seo?.metaDescription || "",
@@ -291,7 +291,7 @@ Markdown formatting:
                   onChange={(e) =>
                     setFormData({ ...formData, authorName: e.target.value })
                   }
-                  placeholder="LinkedInPulse Team"
+                  placeholder="Engagematic Team"
                   className="mt-1"
                 />
               </div>
@@ -305,7 +305,7 @@ Markdown formatting:
                   onChange={(e) =>
                     setFormData({ ...formData, authorEmail: e.target.value })
                   }
-                  placeholder="team@linkedinpulse.com"
+                  placeholder="team@engagematic.com"
                   className="mt-1"
                 />
               </div>

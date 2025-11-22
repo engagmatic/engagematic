@@ -48,6 +48,6 @@ export const config = {
 
   // Email Configuration
   EMAIL_FROM: process.env.EMAIL_FROM || "hello@engagematic.com",
-  EMAIL_FROM_NAME: process.env.EMAIL_FROM_NAME || "LinkedInPulse",
+  EMAIL_FROM_NAME: process.env.EMAIL_FROM_NAME || "Engagematic",
   RESEND_API_KEY: process.env.RESEND_API_KEY || "",
 };

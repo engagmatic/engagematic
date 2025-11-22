@@ -1,4 +1,4 @@
-# LinkedInPulse - Complete SaaS Application
+# Engagematic - Complete SaaS Application
 
 A full-stack LinkedIn content generation platform powered by AI, featuring subscription management, usage tracking, and analytics.
 
@@ -222,7 +222,7 @@ MIT License - see LICENSE file for details
 ## 📞 Support
 
 For support and questions:
-- Email: support@linkedinpulse.com
+- Email: support@engagematic.com
 - Documentation: [docs.linkedinpulse.com](https://docs.linkedinpulse.com)
 - Issues: GitHub Issues
 

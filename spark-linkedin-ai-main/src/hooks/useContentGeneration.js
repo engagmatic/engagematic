@@ -18,7 +18,7 @@ export function useContentGeneration() {
           setQuotaInfo(response.data.quota);
           toast({
             title: "Post generated successfully! 🚀",
-            description: "Your LinkedIn pulse just got stronger!",
+            description: "Your engagement just got stronger!",
           });
           return { success: true, content: response.data.content };
         } else {
@@ -63,7 +63,7 @@ export function useContentGeneration() {
           setQuotaInfo(response.data.quota);
           toast({
             title: "Post generated successfully! 🚀",
-            description: "Your LinkedIn pulse just got stronger!",
+            description: "Your engagement just got stronger!",
           });
           return { success: true, content: response.data.content };
         } else {

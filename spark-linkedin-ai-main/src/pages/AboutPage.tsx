@@ -12,7 +12,7 @@ const AboutPage = () => {
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-2">
             About{" "}
-            <span className="gradient-pulse bg-clip-text text-transparent">LinkedInPulse</span>
+            <span className="gradient-pulse bg-clip-text text-transparent">Engagematic</span>
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
             We're on a mission to help professionals build authentic, engaging LinkedIn presences that drive real business results.
@@ -32,7 +32,7 @@ const AboutPage = () => {
                   LinkedIn has become the world's largest professional network, but most professionals struggle to create content that resonates and drives engagement. We believe that authentic, AI-assisted content creation is the future of professional networking.
                 </p>
                 <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mb-4 sm:mb-6 break-words">
-                  LinkedInPulse combines the power of artificial intelligence with human authenticity to help you create content that sounds like you, engages your audience, and builds meaningful professional relationships.
+                  Engagematic combines the power of artificial intelligence with human authenticity to help you create content that sounds like you, engages your audience, and builds meaningful professional relationships.
                 </p>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                   <Link to="/auth/register" className="w-full sm:w-auto">
@@ -120,10 +120,10 @@ const AboutPage = () => {
                   Born from Real Professional Challenges
                 </h2>
                 <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mb-4 sm:mb-6 break-words">
-                  LinkedInPulse was founded by a team of marketing professionals who struggled with creating consistent, engaging LinkedIn content. We spent hours crafting posts that barely got any engagement, while watching others effortlessly build massive followings.
+                  Engagematic was founded by a team of marketing professionals who struggled with creating consistent, engaging LinkedIn content. We spent hours crafting posts that barely got any engagement, while watching others effortlessly build massive followings.
                 </p>
                 <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mb-4 sm:mb-6 break-words">
-                  We realized that the problem wasn't lack of expertise—it was lack of time, consistency, and the right tools. That's when we decided to build LinkedInPulse: a platform that combines AI efficiency with human authenticity.
+                  We realized that the problem wasn't lack of expertise—it was lack of time, consistency, and the right tools. That's when we decided to build Engagematic: a platform that combines AI efficiency with human authenticity.
                 </p>
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-2 sm:gap-3">
@@ -179,7 +179,7 @@ const AboutPage = () => {
           <Card className="p-4 sm:p-6 lg:p-8 gradient-card shadow-card overflow-hidden">
             <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 px-2 break-words">Ready to Transform Your LinkedIn Presence?</h2>
             <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mb-4 sm:mb-6 max-w-2xl mx-auto px-4 break-words">
-              Join thousands of professionals who are already using LinkedInPulse to build authentic, engaging LinkedIn content that drives real results.
+              Join thousands of professionals who are already using Engagematic to build authentic, engaging LinkedIn content that drives real results.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
               <Link to="/auth/register" className="w-full sm:w-auto">

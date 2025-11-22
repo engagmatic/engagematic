@@ -2,7 +2,7 @@
 
 ## 🎯 Overview
 
-This guide covers the complete setup of the automated email system for LinkedInPulse using **Resend** (100% FREE for up to 3,000 emails/month).
+This guide covers the complete setup of the automated email system for Engagematic using **Resend** (100% FREE for up to 3,000 emails/month).
 
 ## ✅ Features Implemented
 
@@ -61,7 +61,7 @@ Add to your `backend/.env` file:
 # Email Configuration
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 EMAIL_FROM=noreply@yourdomain.com
-EMAIL_FROM_NAME=LinkedInPulse
+EMAIL_FROM_NAME=Engagematic
 
 # Frontend URL (for unsubscribe links)
 FRONTEND_URL=http://localhost:3000
@@ -479,8 +479,8 @@ db.emailpreferences.findOne({ userId: ObjectId("USER_ID") })
 ```env
 NODE_ENV=production
 RESEND_API_KEY=re_live_xxxxxxxxxxxxx
-EMAIL_FROM=noreply@linkedinpulse.com
-EMAIL_FROM_NAME=LinkedInPulse
+EMAIL_FROM=noreply@engagematic.com
+EMAIL_FROM_NAME=Engagematic
 FRONTEND_URL=https://linkedinpulse.com
 ```
 
@@ -583,5 +583,5 @@ Your email automation system is now fully operational. Users will automatically 
 
 ---
 
-**Built with ❤️ for LinkedInPulse**
+**Built with ❤️ for Engagematic**
 

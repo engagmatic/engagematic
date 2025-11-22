@@ -65,7 +65,7 @@ const ContactPage = () => {
       icon: Mail,
       title: "Email Support",
       description: "Get help from our support team",
-      contact: "support@linkedinpulse.com",
+      contact: "support@engagematic.com",
       responseTime: "Within 24 hours"
     },
     {
@@ -294,7 +294,7 @@ const ContactPage = () => {
                 </div>
                 <h3 className="text-xl font-bold mb-2">24/7 Support</h3>
                 <p className="text-muted-foreground">
-                  Our support team is available around the clock to help you succeed with LinkedInPulse.
+                  Our support team is available around the clock to help you succeed with Engagematic.
                 </p>
               </div>
               <div>

@@ -1,12 +1,12 @@
 /**
- * SEO Constants and Keywords for LinkedInPulse
+ * SEO Constants and Keywords for Engagematic
  * Centralized SEO configuration for consistency across all pages
  */
 
 // Primary Brand
-export const SITE_NAME = 'LinkedInPulse';
-export const SITE_URL = 'https://www.linkedinpulse.com';
-export const SITE_DOMAIN = 'linkedinpulse.com';
+export const SITE_NAME = 'Engagematic';
+export const SITE_URL = 'https://www.engagematic.com';
+export const SITE_DOMAIN = 'engagematic.com';
 
 // Primary Keywords (High-Value)
 export const PRIMARY_KEYWORDS = [
@@ -48,33 +48,27 @@ export const SECONDARY_KEYWORDS = [
 
 // Brand Misspellings and Variations
 export const BRAND_VARIATIONS = [
-  'LinkedInPulse',
-  'LinkedIn Pulse',
-  'LinkedInPulse AI',
-  'LinkedIn Pulse AI',
-  'LinkedInPulse tool',
-  'LinkedIn Pulse tool',
-  'LinkedInPulse app',
-  'LinkedIn Pulse app',
-  'LinkedInPulse software',
-  'LinkedIn Pulse software',
-  'LinkedInPulse platform',
-  'LinkedIn Pulse platform'
+  'Engagematic',
+  'Engagematic AI',
+  'Engagematic tool',
+  'Engagematic app',
+  'Engagematic software',
+  'Engagematic platform'
 ];
 
 // Competitive Keywords
 export const COMPETITIVE_KEYWORDS = [
   // Direct Competitors
-  'LinkedInPulse vs Taplio',
-  'LinkedInPulse vs Hootsuite',
-  'LinkedInPulse vs ChatGPT',
-  'LinkedInPulse vs AuthoredUp',
-  'LinkedInPulse vs Kleo',
-  'LinkedInPulse vs Buffer',
-  'LinkedInPulse vs Sprout Social',
-  'LinkedInPulse vs Later',
-  'LinkedInPulse vs CoSchedule',
-  'LinkedInPulse vs Canva',
+  'Engagematic vs Taplio',
+  'Engagematic vs Hootsuite',
+  'Engagematic vs ChatGPT',
+  'Engagematic vs AuthoredUp',
+  'Engagematic vs Kleo',
+  'Engagematic vs Buffer',
+  'Engagematic vs Sprout Social',
+  'Engagematic vs Later',
+  'Engagematic vs CoSchedule',
+  'Engagematic vs Canva',
   
   // Alternative Tools
   'Taplio alternative',
@@ -186,13 +180,13 @@ export const ALL_KEYWORDS = [
 
 // Default SEO Configuration
 export const DEFAULT_SEO = {
-  title: 'LinkedInPulse - AI LinkedIn Post Generator | Viral Content',
-  description: 'Create viral-worthy LinkedIn posts, comments, and carousels with AI that sounds authentically like you. Join 1000+ creators boosting their LinkedIn presence with LinkedInPulse.',
+  title: 'Engagematic - AI LinkedIn Post Generator | Viral Content',
+  description: 'Create viral-worthy LinkedIn posts, comments, and carousels with AI that sounds authentically like you. Join 1000+ creators boosting their LinkedIn presence with Engagematic.',
   keywords: ALL_KEYWORDS.join(', '),
-  author: 'LinkedInPulse Team',
+  author: 'Engagematic Team',
   image: `${SITE_URL}/og-default.png`, // Default OG image for all pages
-  imageAlt: 'LinkedInPulse - AI LinkedIn Content Generator',
-  twitterHandle: '@linkedinpulse',
+  imageAlt: 'Engagematic - AI LinkedIn Content Generator',
+  twitterHandle: '@engagematic',
   locale: 'en_US',
   type: 'website'
 };
@@ -200,22 +194,22 @@ export const DEFAULT_SEO = {
 // Page-Specific SEO
 export const PAGE_SEO = {
   home: {
-    title: 'LinkedInPulse - AI LinkedIn Post Generator | Best AI Tool',
+    title: 'Engagematic - AI LinkedIn Post Generator | Best AI Tool',
     description: 'Transform your LinkedIn presence with AI-powered content generation. Create engaging posts, viral comments, and professional carousels that sound authentically like you. Free trial available. The best AI tools for creating LinkedIn content for businesses. Generate LinkedIn posts with AI, schedule content, and optimize engagement.',
-    keywords: 'LinkedIn post generator, AI LinkedIn tool, viral LinkedIn content, LinkedIn automation, content marketing AI, LinkedInPulse vs Taplio, LinkedInPulse vs Hootsuite, best LinkedIn AI tool, LinkedIn content creator, LinkedIn post scheduler, best AI tools for LinkedIn content, AI services that generate LinkedIn posts, AI platforms for LinkedIn content, AI-powered LinkedIn content personalization, LinkedIn content creation AI, LinkedIn post performance analysis AI, LinkedIn content automation AI, LinkedIn B2B content AI',
+    keywords: 'LinkedIn post generator, AI LinkedIn tool, viral LinkedIn content, LinkedIn automation, content marketing AI, Engagematic vs Taplio, Engagematic vs Hootsuite, best LinkedIn AI tool, LinkedIn content creator, LinkedIn post scheduler, best AI tools for LinkedIn content, AI services that generate LinkedIn posts, AI platforms for LinkedIn content, AI-powered LinkedIn content personalization, LinkedIn content creation AI, LinkedIn post performance analysis AI, LinkedIn content automation AI, LinkedIn B2B content AI',
     canonical: SITE_URL,
     image: `${SITE_URL}/og-home.png` // Special home page OG image
   },
   
   pricing: {
-    title: 'LinkedInPulse Pricing - Affordable AI Tools',
+    title: 'Engagematic Pricing - Affordable AI Tools',
     description: 'Choose the perfect plan for your LinkedIn growth. Starter at $12/month or Pro at $24/month. 7-day free trial, no credit card required. Cancel anytime.',
     keywords: 'LinkedIn tool pricing, AI content generator cost, LinkedIn subscription, content marketing pricing',
     canonical: `${SITE_URL}/pricing`
   },
   
   postGenerator: {
-    title: 'AI LinkedIn Post Generator - Viral Posts | LinkedInPulse',
+    title: 'AI LinkedIn Post Generator - Viral Posts | Engagematic',
     description: 'Generate engaging LinkedIn posts with AI trained on 50K+ viral posts. 15 curated personas, smart formatting, zero-edit content. Start creating in seconds. Best AI tool for LinkedIn content creation for businesses and marketing teams.',
     keywords: 'LinkedIn post generator, AI post creator, viral post generator, LinkedIn content AI, automated post creation, best AI tools for LinkedIn content, AI services that generate LinkedIn posts for marketing, AI platforms that schedule LinkedIn content, AI-powered LinkedIn content personalization, LinkedIn content creation AI, LinkedIn post performance analysis AI, LinkedIn content automation AI, LinkedIn B2B content AI',
     canonical: `${SITE_URL}/post-generator`
@@ -236,30 +230,30 @@ export const PAGE_SEO = {
   },
   
   waitlist: {
-    title: 'Join the Waitlist - Be First to Access LinkedInPulse Premium',
-    description: 'Join 500+ professionals waiting for LinkedInPulse premium features. Get exclusive early bird pricing and priority access when we launch.',
-    keywords: 'LinkedInPulse waitlist, early access, beta signup, LinkedIn tool launch',
+    title: 'Join the Waitlist - Be First to Access Engagematic Premium',
+    description: 'Join 500+ professionals waiting for Engagematic premium features. Get exclusive early bird pricing and priority access when we launch.',
+    keywords: 'Engagematic waitlist, early access, beta signup, LinkedIn tool launch',
     canonical: `${SITE_URL}/waitlist`
   },
   
   faq: {
-    title: 'FAQ - Frequently Asked Questions | LinkedInPulse',
-    description: 'Find answers to common questions about LinkedInPulse AI content generation, pricing, features, and LinkedIn best practices.',
-    keywords: 'LinkedInPulse FAQ, LinkedIn tool questions, AI content help, support',
+    title: 'FAQ - Frequently Asked Questions | Engagematic',
+    description: 'Find answers to common questions about Engagematic AI content generation, pricing, features, and LinkedIn best practices.',
+    keywords: 'Engagematic FAQ, LinkedIn tool questions, AI content help, support',
     canonical: `${SITE_URL}/faq`
   },
   
   blog: {
-    title: 'Blog - LinkedIn Tips, AI Content Strategy & Creator Growth | LinkedInPulse',
+    title: 'Blog - LinkedIn Tips, AI Content Strategy & Creator Growth | Engagematic',
     description: 'Expert insights on LinkedIn growth, AI content creation, viral post strategies, and creator economy trends. Learn from top LinkedIn creators.',
     keywords: 'LinkedIn blog, content marketing tips, viral post strategy, LinkedIn growth, creator economy',
     canonical: `${SITE_URL}/blog`
   },
   
   register: {
-    title: 'Sign Up Free - Start Your 7-Day Trial | LinkedInPulse',
-    description: 'Create your free LinkedInPulse account. No credit card required. Start generating viral LinkedIn content in seconds. Join 1000+ creators.',
-    keywords: 'LinkedIn tool signup, free trial, AI content free, register LinkedInPulse',
+    title: 'Sign Up Free - Start Your 7-Day Trial | Engagematic',
+    description: 'Create your free Engagematic account. No credit card required. Start generating viral LinkedIn content in seconds. Join 1000+ creators.',
+    keywords: 'LinkedIn tool signup, free trial, AI content free, register Engagematic',
     canonical: `${SITE_URL}/auth/register`
   }
 };
