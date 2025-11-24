@@ -54,7 +54,12 @@ router.post("/login", async (req, res) => {
 
     // Find admin
     console.log("username", username);
-    const admin = await Admin.findOne({ username: username.toLowerCase() });
+    const admin = await Admin.findOne({
+      $or: [
+        { username: username.toLowerCase() },
+        { name: username.toLowerCase() },
+      ],
+    });
     const admins = await Admin.find();
     console.log("totalAdmins", admins);
     console.log("admin", admin);
