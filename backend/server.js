@@ -59,10 +59,10 @@ app.use(
 // CORS configuration
 const allowedOrigins = [
   config.FRONTEND_URL,
-  "http://linkedinpulse.com",
-  "http://www.linkedinpulse.com",
-  "http://engagematic.com",
-  "http://www.engagematic.com",
+  "https://engagematic.com",
+  "https://www.engagematic.com",
+  "https://linkedinpulse.com",
+  "https://www.linkedinpulse.com",
   "chrome-extension://eofnebjkdholeglegaillijcbbefgmjm", // your Chrome extension origin
   "http://localhost:5173", // if your frontend runs locally
   "http://localhost:5000", // optional, if your backend talks to itself
