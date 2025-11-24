@@ -59,8 +59,8 @@ app.use(
 // CORS configuration
 const allowedOrigins = [
   config.FRONTEND_URL,
-  "https://engagematic.com",
-  "https://www.engagematic.com",
+  "http://linkedinpulse.com",
+  "http://www.linkedinpulse.com",
   "http://engagematic.com",
   "http://www.engagematic.com",
   "chrome-extension://eofnebjkdholeglegaillijcbbefgmjm", // your Chrome extension origin
@@ -94,11 +94,11 @@ const corsOptions = {
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: [
-    "Content-Type", 
-    "Authorization", 
+    "Content-Type",
+    "Authorization",
     "X-Requested-With",
     "Accept",
-    "Origin"
+    "Origin",
   ],
   exposedHeaders: ["Content-Length", "X-Foo"],
   maxAge: 86400, // 24 hours
