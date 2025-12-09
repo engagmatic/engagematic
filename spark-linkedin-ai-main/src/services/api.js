@@ -96,8 +96,8 @@ class ApiClient {
         // Provide more specific error messages
         if (response.status === 400) {
           // Validation errors - show detailed message
-          const errorMsg =
-            data.details || data.message || "Invalid request data";
+          // Prioritize error field, then message, then details
+          const errorMsg = data.error || data.message || data.details || "Invalid request data";
           const validationErrors = data.errors
             ?.map((e) => e.msg || e.message || `${e.path}: ${e.msg}`)
             .join(", ");
@@ -105,6 +105,7 @@ class ApiClient {
           
           console.error("Validation errors:", {
             errors: data.errors,
+            error: data.error,
             details: data.details,
             message: data.message,
           });
@@ -117,9 +118,12 @@ class ApiClient {
         } else if (response.status === 404) {
           throw new Error(data.message || "Resource not found");
         } else if (response.status === 500) {
-          throw new Error(
-            data.message || "Server error. Please try again later."
-          );
+          // Include error details from backend if available
+          const errorDetails = data.error || data.message || "Server error. Please try again later.";
+          // Create error with both message and error field for better debugging
+          const error = new Error(data.message || errorDetails);
+          error.error = data.error;
+          throw error;
         }
 
         throw new Error(

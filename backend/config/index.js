@@ -27,6 +27,7 @@ export const config = {
   // Google AI
   GOOGLE_AI_API_KEY:
     process.env.GOOGLE_AI_API_KEY || "AIzaSyB_x5suyfwTsNkJcRy0qmEoEp9viuawxec",
+  
 
   // Razorpay - Live Keys
   RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || "rzp_live_RYVCzLOdKhLCpg",
@@ -45,6 +46,9 @@ export const config = {
 
   // RapidAPI (LinkedIn Scraper)
   RAPIDAPI_KEY: process.env.RAPIDAPI_KEY || "your-rapidapi-key-here",
+  
+  // SerpApi (Free tier: 100 searches/month - https://serpapi.com)
+  SERPAPI_KEY: process.env.SERPAPI_KEY || "ff7f229f9456cb0d1b2d8c1e64c9c86a998a1127f0a392bdd739b0f371697658",
 
   // Email Configuration
   EMAIL_FROM: process.env.EMAIL_FROM || "hello@engagematic.com",

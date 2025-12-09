@@ -33,6 +33,7 @@ import linkedinScraperRoutes from "./routes/linkedinScraper.js";
 import offerRoutes from "./routes/offers.js";
 import extensionRoutes from "./routes/extension.js";
 import couponRoutes from "./routes/coupons.js";
+import profileCoachRoutes from "./routes/profileCoach.js";
 
 // Import services
 import emailScheduler from "./services/emailScheduler.js";
@@ -111,14 +112,24 @@ app.use(cors(corsOptions));
 // Handle preflight requests explicitly
 app.options("*", cors(corsOptions));
 
-// Rate limiting
+// Rate limiting - More lenient in development
 const limiter = rateLimit({
   windowMs: config.RATE_LIMIT_WINDOW_MS,
-  max: config.RATE_LIMIT_MAX_REQUESTS,
+  max: config.NODE_ENV === "development" ? 10000 : config.RATE_LIMIT_MAX_REQUESTS, // 10k requests in dev, 1k in prod
   message: {
     success: false,
     message: "Too many requests, please try again later",
   },
+  // Skip rate limiting for localhost in development
+  skip: (req) => {
+    if (config.NODE_ENV === "development") {
+      const ip = req.ip || req.connection.remoteAddress || "";
+      return ip.includes("127.0.0.1") || ip.includes("::1") || ip.includes("localhost");
+    }
+    return false;
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use(limiter);
 
@@ -160,6 +171,7 @@ app.use("/api/linkedin-scraper", linkedinScraperRoutes); // LinkedIn Profile Scr
 app.use("/api/offers", offerRoutes); // Coupons and Offers
 app.use("/api/extension", extensionRoutes); // Chrome Extension API
 app.use("/api/coupons", couponRoutes); // Coupon management and validation
+app.use("/api/profile-coach", profileCoachRoutes); // LinkedInPulse Profile Coach (NEW - Testing)
 
 // Admin routes
 app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication

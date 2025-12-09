@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Activity, FileText, MessageSquare, TrendingUp, Loader2, Lightbulb, Users, Gift, Copy, Check, Lock, AlertCircle, Sparkles, ArrowRight, Clock, Target, Zap } from "lucide-react";
+import { Activity, FileText, MessageSquare, TrendingUp, Loader2, Lightbulb, Users, Gift, Copy, Check, Lock, AlertCircle, Sparkles, ArrowRight, Clock, Target, Zap, UserCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useDashboard } from "../hooks/useAnalytics";

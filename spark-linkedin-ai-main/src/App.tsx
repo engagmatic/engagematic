@@ -19,6 +19,7 @@ import Register from "./pages/auth/Register";
 const PostGenerator = lazy(() => import("./pages/PostGenerator"));
 const IdeaGenerator = lazy(() => import("./pages/IdeaGenerator"));
 const CommentGenerator = lazy(() => import("./pages/CommentGenerator"));
+const ProfileAnalyzer = lazy(() => import("./pages/ProfileAnalyzer"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
 const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
@@ -152,6 +153,7 @@ const App = () => (
                     <Route path="/idea-generator" element={<IdeaGenerator />} />
                     <Route path="/post-generator" element={<PostGenerator />} />
                     <Route path="/comment-generator" element={<CommentGenerator />} />
+                    <Route path="/profile-analyzer" element={<ProfileAnalyzer />} />
                   </Route>
                   {/* Blog Routes */}
                   {/* Static Pages */}

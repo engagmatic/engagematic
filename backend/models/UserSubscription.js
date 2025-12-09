@@ -186,7 +186,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.ideasPerMonth = 10; // 10 ideas for free trial
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
-        this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
+        this.limits.profileAnalyses = 1; // 1 profile analysis for free trial
         this.limits.prioritySupport = false;
         this.billing.amount = 0;
         break;
@@ -197,7 +197,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.ideasPerMonth = -1; // UNLIMITED ideas per month
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
-        this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
+        this.limits.profileAnalyses = 5; // 5 profile analyses per month
         this.limits.prioritySupport = false;
         this.billing.amount = 199; // ₹199/month (INR)
         break;
@@ -208,7 +208,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.ideasPerMonth = -1; // UNLIMITED ideas per month
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
-        this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
+        this.limits.profileAnalyses = 10; // 10 profile analyses per month
         this.limits.prioritySupport = true;
         this.billing.amount = 449; // ₹449/month (INR)
         break;

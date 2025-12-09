@@ -3,7 +3,7 @@ import { OnboardingModal } from "@/components/OnboardingModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { LogoWithText } from "@/components/LogoWithText";
-import { LayoutDashboard, Home, User, LogOut, Lightbulb, FileText, MessageSquare, Menu, X } from "lucide-react";
+import { LayoutDashboard, Home, User, LogOut, Lightbulb, FileText, MessageSquare, Menu, X, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const DashboardLayout = () => {
@@ -25,6 +25,7 @@ export const DashboardLayout = () => {
     { path: '/idea-generator', label: 'Idea Generator', icon: Lightbulb },
     { path: '/post-generator', label: 'Post Generator', icon: FileText },
     { path: '/comment-generator', label: 'Comment Generator', icon: MessageSquare },
+    { path: '/profile-analyzer', label: 'Profile Analyzer', icon: UserCircle },
   ];
 
   // Save sidebar state to localStorage

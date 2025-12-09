@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedInPulse Profile Coach - Test Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+        }
+        
+        .form-section {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .results {
+            padding: 30px;
+            background: #f8f9fa;
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .score-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        
+        .score-bar {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s;
+        }
+        
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .summary-point {
+            padding: 10px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+        
+        .headline-suggestion {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f0f7ff;
+            border: 1px solid #667eea;
+            border-radius: 6px;
+        }
+        
+        .quick-win {
+            padding: 10px;
+            margin: 5px 0;
+            background: #fff4e6;
+            border-left: 4px solid #ff9800;
+            border-radius: 4px;
+        }
+        
+        .post-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px dashed #667eea;
+            margin-top: 15px;
+        }
+        
+        .post-content {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-wrap;
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        
+        .copy-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+        
+        .copy-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #c33;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 LinkedInPulse Profile Coach</h1>
+            <p>Enter a LinkedIn Profile URL - We'll analyze it and generate AI-powered optimization suggestions</p>
+        </div>
+        
+        <div class="form-section">
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="profileUrl">LinkedIn Profile URL *</label>
+                    <input type="url" id="profileUrl" required 
+                           placeholder="https://www.linkedin.com/in/username"
+                           pattern=".*linkedin\.com/in/.*">
+                    <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+                        Enter the full LinkedIn profile URL (e.g., https://www.linkedin.com/in/username)
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="userType">User Type (Optional - AI will detect if not provided)</label>
+                    <select id="userType">
+                        <option value="">Auto-detect</option>
+                        <option value="Student">Student</option>
+                        <option value="Early Professional">Early Professional</option>
+                        <option value="Senior Leader / Thought Leader">Senior Leader / Thought Leader</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="targetAudience">Target Audience (Optional)</label>
+                    <input type="text" id="targetAudience" placeholder="e.g., Tech recruiters and hiring managers">
+                </div>
+                
+                <div class="form-group">
+                    <label for="mainGoal">Main Goal (Optional)</label>
+                    <select id="mainGoal">
+                        <option value="build credibility">Build Credibility</option>
+                        <option value="get interviews">Get Interviews</option>
+                        <option value="attract clients">Attract Clients</option>
+                        <option value="grow followers">Grow Followers</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn" id="submitBtn">Analyze Profile</button>
+            </form>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing your profile...</p>
+            </div>
+            
+            <div id="error" class="error" style="display: none;"></div>
+            
+            <div id="content" style="display: none;">
+                <div class="score-card">
+                    <h2>Profile Score</h2>
+                    <div class="score" id="score">0</div>
+                    <div class="score-bar">
+                        <div class="score-fill" id="scoreFill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>📊 Summary Points</h3>
+                    <div id="summaryPoints"></div>
+                </div>
+                
+                <div class="section">
+                    <h3>✍️ Headline Suggestions</h3>
+                    <div id="headlineSuggestions"></div>
+                </div>
+                
+                <div class="section">
+                    <h3>📝 About Section (Copy-Paste Ready)</h3>
+                    <div class="post-box">
+                        <div class="post-content" id="aboutSection"></div>
+                        <button onclick="copyToClipboard('aboutSection')" style="margin-top: 10px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">Copy to Clipboard</button>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>🚀 Quick Wins</h3>
+                    <div id="quickWins"></div>
+                </div>
+                
+                <div class="section">
+                    <h3>📱 Generated LinkedIn Post</h3>
+                    <p id="postIntro"></p>
+                    <div class="post-box">
+                        <div class="post-content" id="generatedPost"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('profileForm');
+        const results = document.getElementById('results');
+        const loading = document.getElementById('loading');
+        const content = document.getElementById('content');
+        const errorDiv = document.getElementById('error');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Show loading
+            results.classList.add('show');
+            loading.style.display = 'block';
+            content.style.display = 'none';
+            errorDiv.style.display = 'none';
+            submitBtn.disabled = true;
+            
+            // Get form data
+            const profileUrl = document.getElementById('profileUrl').value.trim();
+            
+            if (!profileUrl || !profileUrl.includes('linkedin.com/in/')) {
+                showError('Please enter a valid LinkedIn profile URL (must include linkedin.com/in/)');
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+                return;
+            }
+            
+            const formData = {
+                profileUrl: profileUrl,
+                userType: document.getElementById('userType').value || undefined,
+                targetAudience: document.getElementById('targetAudience').value || undefined,
+                mainGoal: document.getElementById('mainGoal').value || undefined
+            };
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/profile-coach/test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    displayResults(result.data);
+                } else {
+                    showError(result.error || 'Analysis failed. Please try again.');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message + '. Make sure the backend server is running on http://localhost:5000');
+            } finally {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+        
+        function displayResults(data) {
+            // Score
+            document.getElementById('score').textContent = data.profile_score + '/100';
+            document.getElementById('scoreFill').style.width = data.profile_score + '%';
+            
+            // Summary Points
+            const summaryDiv = document.getElementById('summaryPoints');
+            summaryDiv.innerHTML = '';
+            data.summary_points.forEach(point => {
+                const div = document.createElement('div');
+                div.className = 'summary-point';
+                div.textContent = point;
+                summaryDiv.appendChild(div);
+            });
+            
+            // Headline Suggestions
+            const headlineDiv = document.getElementById('headlineSuggestions');
+            headlineDiv.innerHTML = '';
+            data.headline_suggestions.forEach(headline => {
+                const div = document.createElement('div');
+                div.className = 'headline-suggestion';
+                div.textContent = headline;
+                headlineDiv.appendChild(div);
+            });
+            
+            // About Section (complete text, not outline)
+            const aboutText = data.about_section || data.about_outline || '';
+            document.getElementById('aboutSection').textContent = aboutText;
+            
+            // Quick Wins
+            const quickWinsDiv = document.getElementById('quickWins');
+            quickWinsDiv.innerHTML = '';
+            data.quick_wins.forEach(win => {
+                const div = document.createElement('div');
+                div.className = 'quick-win';
+                div.textContent = win;
+                quickWinsDiv.appendChild(div);
+            });
+            
+            // Generated Post
+            document.getElementById('postIntro').textContent = data.generated_post_intro;
+            document.getElementById('generatedPost').textContent = data.generated_post;
+            
+            // Add copy buttons
+            addCopyButtons();
+            
+            // Show content
+            content.style.display = 'block';
+            
+            // Scroll to results
+            results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // Show feedback
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#4caf50';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#667eea';
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy. Please select and copy manually.');
+            });
+        }
+        
+        function addCopyButtons() {
+            // Add copy button to headline suggestions
+            const headlineDiv = document.getElementById('headlineSuggestions');
+            headlineDiv.querySelectorAll('.headline-suggestion').forEach((div, index) => {
+                if (!div.querySelector('.copy-btn')) {
+                    const btn = document.createElement('button');
+                    btn.className = 'copy-btn';
+                    btn.textContent = 'Copy';
+                    btn.style.marginLeft = '10px';
+                    btn.onclick = () => {
+                        navigator.clipboard.writeText(div.textContent.replace('Copy', '')).then(() => {
+                            btn.textContent = 'Copied!';
+                            setTimeout(() => btn.textContent = 'Copy', 2000);
+                        });
+                    };
+                    div.style.display = 'flex';
+                    div.style.justifyContent = 'space-between';
+                    div.style.alignItems = 'center';
+                    div.appendChild(btn);
+                }
+            });
+            
+            // Add copy button to post
+            const postBox = document.querySelector('#generatedPost').parentElement;
+            if (!postBox.querySelector('.copy-btn')) {
+                const btn = document.createElement('button');
+                btn.className = 'copy-btn';
+                btn.textContent = 'Copy Post';
+                btn.onclick = () => copyToClipboard('generatedPost');
+                postBox.appendChild(btn);
+            }
+        }
+    </script>
+</body>
+</html>
+
