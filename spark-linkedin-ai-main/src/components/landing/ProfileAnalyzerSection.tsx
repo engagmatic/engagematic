@@ -36,12 +36,14 @@ export const ProfileAnalyzerSection = () => {
     setIsAnalyzing(true);
     
     try {
+      console.log("🔍 Calling profile analyzer API...");
       const response = await apiClient.request("/profile-coach/test", {
         method: "POST",
         body: JSON.stringify({
           profileUrl,
         }),
       });
+      console.log("✅ Profile analyzer response:", response);
 
       if (response.success && response.data) {
         // Navigate to profile analyzer page with results

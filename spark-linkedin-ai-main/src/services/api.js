@@ -56,7 +56,22 @@ class ApiClient {
   }
 
   async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
+    // Normalize endpoint path
+    // baseURL is like "http://localhost:5000/api" (ends with /api)
+    // endpoint is like "/profile-coach/test" or "profile-coach/test"
+    // We want: "http://localhost:5000/api/profile-coach/test"
+    let normalizedEndpoint = endpoint;
+    if (normalizedEndpoint.startsWith('/')) {
+      normalizedEndpoint = normalizedEndpoint.substring(1); // Remove leading slash
+    }
+    // baseURL already ends with /api, so we add / before the endpoint
+    const url = `${this.baseURL}/${normalizedEndpoint}`;
+    
+    // Log in development
+    if (import.meta.env.DEV) {
+      console.log('🔗 API Request:', options.method || 'GET', url);
+    }
+    
     const token = this.getToken();
 
     const config = {
