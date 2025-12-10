@@ -172,6 +172,7 @@ app.use("/api/offers", offerRoutes); // Coupons and Offers
 app.use("/api/extension", extensionRoutes); // Chrome Extension API
 app.use("/api/coupons", couponRoutes); // Coupon management and validation
 app.use("/api/profile-coach", profileCoachRoutes); // LinkedInPulse Profile Coach (NEW - Testing)
+console.log("✅ Profile Coach routes registered at /api/profile-coach");
 
 // Admin routes
 app.use("/api/admin/auth", adminAuthRoutes); // Admin authentication
@@ -180,9 +181,13 @@ app.use("/api/admin/affiliates", adminAffiliatesRoutes); // Admin affiliate mana
 
 // 404 handler
 app.use("*", (req, res) => {
+  console.log("❌ 404 - Endpoint not found:", req.method, req.originalUrl);
+  console.log("Available routes include: /api/profile-coach/test");
   res.status(404).json({
     success: false,
     message: "API endpoint not found",
+    method: req.method,
+    path: req.originalUrl,
   });
 });
 

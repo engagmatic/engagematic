@@ -105,6 +105,12 @@ router.post(
  */
 router.post("/test", async (req, res) => {
   try {
+    console.log("✅ /api/profile-coach/test endpoint hit");
+    console.log("Request body:", req.body);
+    console.log("Request method:", req.method);
+    console.log("Request path:", req.path);
+    console.log("Request originalUrl:", req.originalUrl);
+    
     const { profileUrl, userType, targetAudience, mainGoal } = req.body;
     
     // Rate limiting for anonymous users (1 free analysis per IP per 24 hours)
