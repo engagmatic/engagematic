@@ -345,13 +345,17 @@ router.put("/:id/approve", adminAuth, async (req, res) => {
       });
     }
 
+    // Set status to active and record approval
     affiliate.status = "active";
     affiliate.approvalDate = new Date();
+    affiliate.isActive = true; // Ensure isActive is also set
     await affiliate.save();
+
+    console.log(`✅ Affiliate approved: ${affiliate.email} (${affiliate.affiliateCode})`);
 
     res.json({
       success: true,
-      message: "Affiliate approved successfully",
+      message: "Affiliate approved successfully. They can now start earning commissions.",
       data: affiliate,
     });
   } catch (error) {

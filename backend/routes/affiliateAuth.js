@@ -133,11 +133,20 @@ router.post(
         });
       }
 
-      // Check if account is active
+      // Check if account is active (allow pending affiliates to login)
       if (!affiliate.isActive) {
         return res.status(403).json({
           success: false,
           message: "Affiliate account is deactivated",
+        });
+      }
+      
+      // Allow login for pending, approved, and active affiliates
+      // Only block suspended or rejected
+      if (affiliate.status === "suspended" || affiliate.status === "rejected") {
+        return res.status(403).json({
+          success: false,
+          message: `Affiliate account is ${affiliate.status}. Please contact support.`,
         });
       }
 

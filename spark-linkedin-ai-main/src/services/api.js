@@ -517,8 +517,9 @@ class ApiClient {
       body: JSON.stringify(credentials),
     });
 
-    if (response.success && response.data.token) {
+    if (response.success && response.data && response.data.token) {
       this.setToken(response.data.token);
+      console.log("✅ Affiliate token saved");
     }
 
     return response;

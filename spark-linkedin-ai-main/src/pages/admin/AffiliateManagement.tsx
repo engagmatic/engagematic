@@ -207,6 +207,10 @@ export default function AffiliateManagement() {
   };
 
   const handleApprove = async (affiliateId: string) => {
+    if (!confirm('Are you sure you want to approve this affiliate? They will be able to start earning commissions.')) {
+      return;
+    }
+
     try {
       const token = localStorage.getItem('adminToken');
       if (!token) {
@@ -225,7 +229,7 @@ export default function AffiliateManagement() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        toast.success(data.message || 'Affiliate approved successfully');
+        toast.success(data.message || 'Affiliate approved successfully! They can now start earning commissions.');
         await fetchAffiliates();
         await fetchStats();
       } else {
@@ -444,13 +448,22 @@ export default function AffiliateManagement() {
                 <UserCheck className="h-8 w-8 text-green-600" />
               </div>
             </Card>
-            <Card className="p-6">
+            <Card className={`p-6 ${stats.affiliates.pending > 0 ? 'border-yellow-400 border-2 bg-yellow-50 dark:bg-yellow-900/20' : ''}`}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Pending Applications</p>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{stats.affiliates.pending}</h3>
+                  {stats.affiliates.pending > 0 && (
+                    <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                      Requires approval
+                    </p>
+                  )}
                 </div>
-                <Calendar className="h-8 w-8 text-yellow-600" />
+                {stats.affiliates.pending > 0 ? (
+                  <AlertCircle className="h-8 w-8 text-yellow-600 animate-pulse" />
+                ) : (
+                  <Calendar className="h-8 w-8 text-yellow-600" />
+                )}
               </div>
             </Card>
             <Card className="p-6">
@@ -465,6 +478,76 @@ export default function AffiliateManagement() {
               </div>
             </Card>
           </div>
+        )}
+
+        {/* Pending Affiliates Quick View */}
+        {stats && stats.affiliates.pending > 0 && (
+          <Card className="p-6 border-yellow-400 border-2 bg-yellow-50 dark:bg-yellow-900/20">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-yellow-600" />
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Pending Approvals ({stats.affiliates.pending})
+                </h2>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setFilterStatus('pending')}
+                className="gap-2"
+              >
+                View All Pending
+              </Button>
+            </div>
+            <div className="space-y-3">
+              {filteredAffiliates
+                .filter(a => a.status === 'pending')
+                .slice(0, 5)
+                .map((affiliate) => (
+                  <div
+                    key={affiliate._id}
+                    className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-yellow-200"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center text-white font-bold">
+                        {affiliate.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-900 dark:text-white">{affiliate.name}</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">{affiliate.email}</div>
+                        <div className="text-xs text-gray-500">
+                          Applied: {new Date(affiliate.applicationDate).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleApprove(affiliate._id)}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleReject(affiliate._id)}
+                      >
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Reject
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => viewAffiliateDetails(affiliate._id)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </Card>
         )}
 
         {/* Top Affiliates */}
@@ -582,43 +665,68 @@ export default function AffiliateManagement() {
                         {new Date(affiliate.applicationDate).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => viewAffiliateDetails(affiliate._id)}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Details
-                            </DropdownMenuItem>
-                            {affiliate.status === 'pending' && (
-                              <>
-                                <DropdownMenuItem onClick={() => handleApprove(affiliate._id)}>
-                                  <CheckCircle className="h-4 w-4 mr-2" />
-                                  Approve
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleReject(affiliate._id)}>
-                                  <XCircle className="h-4 w-4 mr-2" />
-                                  Reject
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                            {affiliate.status === 'active' && (
-                              <DropdownMenuItem onClick={() => handleSuspend(affiliate._id)}>
-                                <Ban className="h-4 w-4 mr-2" />
-                                Suspend
+                        <div className="flex items-center gap-2">
+                          {/* Quick Approve/Reject buttons for pending affiliates */}
+                          {affiliate.status === 'pending' && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => handleApprove(affiliate._id)}
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleReject(affiliate._id)}
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Reject
+                              </Button>
+                            </>
+                          )}
+                          
+                          {/* Actions dropdown for all affiliates */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => viewAffiliateDetails(affiliate._id)}>
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
                               </DropdownMenuItem>
-                            )}
-                            {(affiliate.status === 'suspended' || affiliate.status === 'rejected') && (
-                              <DropdownMenuItem onClick={() => handleActivate(affiliate._id)}>
-                                <UserCheck className="h-4 w-4 mr-2" />
-                                Activate
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              {affiliate.status === 'pending' && (
+                                <>
+                                  <DropdownMenuItem onClick={() => handleApprove(affiliate._id)}>
+                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    Approve
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleReject(affiliate._id)}>
+                                    <XCircle className="h-4 w-4 mr-2" />
+                                    Reject
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                              {affiliate.status === 'active' && (
+                                <DropdownMenuItem onClick={() => handleSuspend(affiliate._id)}>
+                                  <Ban className="h-4 w-4 mr-2" />
+                                  Suspend
+                                </DropdownMenuItem>
+                              )}
+                              {(affiliate.status === 'suspended' || affiliate.status === 'rejected') && (
+                                <DropdownMenuItem onClick={() => handleActivate(affiliate._id)}>
+                                  <UserCheck className="h-4 w-4 mr-2" />
+                                  Activate
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -639,6 +747,33 @@ export default function AffiliateManagement() {
             </DialogHeader>
             {selectedAffiliate && (
               <div className="space-y-4">
+                {/* Action buttons for pending affiliates */}
+                {selectedAffiliate.status === 'pending' && (
+                  <div className="flex gap-2 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200">
+                    <Button
+                      onClick={() => {
+                        handleApprove(selectedAffiliate._id);
+                        setViewDialogOpen(false);
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white flex-1"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Approve Application
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        handleReject(selectedAffiliate._id);
+                        setViewDialogOpen(false);
+                      }}
+                      className="flex-1"
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Reject Application
+                    </Button>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-600">Name</label>
@@ -656,6 +791,20 @@ export default function AffiliateManagement() {
                     <label className="text-sm font-medium text-gray-600">Status</label>
                     <div>{getStatusBadge(selectedAffiliate.status)}</div>
                   </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Application Date</label>
+                    <p className="text-gray-900">
+                      {new Date(selectedAffiliate.applicationDate || selectedAffiliate.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                  {selectedAffiliate.approvalDate && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Approval Date</label>
+                      <p className="text-gray-900">
+                        {new Date(selectedAffiliate.approvalDate).toLocaleString()}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 {selectedAffiliate.profile && (
                   <div>

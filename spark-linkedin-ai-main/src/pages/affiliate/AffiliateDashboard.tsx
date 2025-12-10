@@ -116,29 +116,24 @@ export default function AffiliateDashboard() {
     );
   }
 
-  if (!affiliate || affiliate.status !== "active") {
+  // Show pending/rejected status but allow viewing dashboard
+  if (!affiliate) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-purple-50/50 to-white flex items-center justify-center py-12 px-4">
         <Card className="p-8 max-w-md text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            {affiliate?.status === "pending"
-              ? "Application Pending"
-              : affiliate?.status === "rejected"
-              ? "Application Rejected"
-              : "Account Not Active"}
+            Loading...
           </h2>
           <p className="text-gray-600 mb-6">
-            {affiliate?.status === "pending"
-              ? "Your affiliate application is under review. We'll notify you once it's approved."
-              : "Your affiliate account is not currently active. Please contact support for assistance."}
+            Please wait while we load your dashboard.
           </p>
-          <Button onClick={() => navigate("/affiliate/login")} variant="outline">
-            Back to Login
-          </Button>
         </Card>
       </div>
     );
   }
+  
+  // Show warning banner for pending/rejected status but allow dashboard access
+  const showStatusBanner = affiliate.status === "pending" || affiliate.status === "rejected" || affiliate.status === "suspended";
 
   return (
     <>
@@ -148,6 +143,38 @@ export default function AffiliateDashboard() {
 
       <div className="min-h-screen bg-gradient-to-b from-purple-50/50 to-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Status Banner */}
+          {showStatusBanner && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
+              <Card className={`p-4 ${
+                affiliate.status === "pending" 
+                  ? "bg-yellow-50 border-yellow-200" 
+                  : "bg-red-50 border-red-200"
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">
+                      {affiliate.status === "pending"
+                        ? "Application Pending Approval"
+                        : affiliate.status === "rejected"
+                        ? "Application Rejected"
+                        : "Account Suspended"}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {affiliate.status === "pending"
+                        ? "Your affiliate application is under review. You can view your referral link and stats, but commissions will only be processed after approval."
+                        : "Your affiliate account is not active. Please contact support for assistance."}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+          
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -29,10 +29,19 @@ export const authenticateAffiliate = async (req, res, next) => {
       });
     }
 
-    if (!affiliate.isActive || affiliate.status !== "active") {
+    // Allow pending and approved affiliates to access dashboard
+    // Only block suspended or rejected affiliates
+    if (!affiliate.isActive) {
       return res.status(403).json({
         success: false,
-        message: "Affiliate account is not active",
+        message: "Affiliate account is deactivated",
+      });
+    }
+    
+    if (affiliate.status === "suspended" || affiliate.status === "rejected") {
+      return res.status(403).json({
+        success: false,
+        message: `Affiliate account is ${affiliate.status}. Please contact support.`,
       });
     }
 
