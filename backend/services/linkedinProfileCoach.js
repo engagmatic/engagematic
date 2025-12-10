@@ -72,10 +72,11 @@ class LinkedInProfileCoach {
     const serpApiKey = process.env.SERPAPI_KEY || config.SERPAPI_KEY;
     
     if (!serpApiKey || serpApiKey.length < 10) {
-      // If SerpApi key is not configured, allow manual input mode
-      console.warn("⚠️ SERPAPI_KEY not configured. Profile scraping will be limited.");
-      throw new Error("Profile scraping service not configured. Please use manual input mode or configure SerpApi key.");
+      console.error("❌ SERPAPI_KEY not configured or invalid. Key length:", serpApiKey?.length || 0);
+      throw new Error("Profile scraping service not configured. Please configure SerpApi key.");
     }
+    
+    console.log("✅ SerpApi key found, length:", serpApiKey.length);
 
     try {
       console.log("🔍 Fetching profile from SerpApi for:", username);
@@ -138,11 +139,21 @@ class LinkedInProfileCoach {
       throw new Error("Invalid SerpApi key");
     }
 
+    // Ensure fetch is available (Node.js 18+ has global fetch)
+    if (typeof fetch === 'undefined') {
+      throw new Error("Fetch API is not available. Please use Node.js 18+ or install node-fetch.");
+    }
+
     // SerpApi LinkedIn profile endpoint - use google search to find LinkedIn profile
     // Note: SerpApi doesn't have a direct LinkedIn engine, so we use Google search
+    // Try multiple search strategies for better results
     const profileUrl = `https://www.linkedin.com/in/${username}`;
-    const searchQuery = `site:linkedin.com/in/${username}`;
-    const apiUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(searchQuery)}&api_key=${apiKey}`;
+    
+    // Strategy 1: Direct site search
+    let searchQuery = `site:linkedin.com/in/${username}`;
+    let apiUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(searchQuery)}&api_key=${apiKey}`;
+    
+    console.log("🔗 SerpApi URL (key hidden):", apiUrl.replace(apiKey, "***"));
     
     // Create timeout controller
     const controller = new AbortController();
@@ -150,16 +161,20 @@ class LinkedInProfileCoach {
 
     let response;
     try {
+      console.log("📡 Making request to SerpApi...");
       response = await fetch(apiUrl, {
         method: "GET",
         headers: {
           "Accept": "application/json",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         },
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
+      console.log("✅ SerpApi response status:", response.status, response.statusText);
     } catch (fetchError) {
       clearTimeout(timeoutId);
+      console.error("❌ SerpApi fetch error:", fetchError);
       if (fetchError.name === 'AbortError') {
         throw new Error("Request to SerpApi timed out after 30 seconds. Please try again.");
       }
@@ -167,12 +182,20 @@ class LinkedInProfileCoach {
     }
 
     if (!response.ok) {
-      let errorMessage = `SerpApi request failed: ${response.status}`;
+      let errorMessage = `SerpApi request failed: ${response.status} ${response.statusText}`;
       try {
         const errorText = await response.text();
+        console.error("❌ SerpApi error response:", errorText.substring(0, 500));
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.error || errorData.message || errorMessage;
+          // Log specific error codes
+          if (errorData.error === "Invalid API key.") {
+            throw new Error("Invalid SerpApi API key. Please check your SERPAPI_KEY configuration.");
+          }
+          if (errorData.error && errorData.error.includes("quota")) {
+            throw new Error("SerpApi quota exceeded. Please upgrade your plan or wait for quota reset.");
+          }
         } catch (e) {
           if (errorText) {
             errorMessage += ` - ${errorText.substring(0, 200)}`;
@@ -187,11 +210,28 @@ class LinkedInProfileCoach {
     let data;
     try {
       data = await response.json();
+      console.log("✅ SerpApi response received, organic_results count:", data.organic_results?.length || 0);
     } catch (parseError) {
+      console.error("❌ Failed to parse SerpApi JSON response:", parseError);
       throw new Error("Invalid JSON response from SerpApi");
     }
     
     if (data.error) {
+      console.error("❌ SerpApi returned error:", data.error);
+      
+      // Handle specific SerpApi errors
+      if (data.error === "Google hasn't returned any results for this query.") {
+        throw new Error(`Google search did not return results for LinkedIn profile "${username}". The profile may not be indexed by Google or may be private.`);
+      }
+      
+      if (data.error === "Invalid API key.") {
+        throw new Error("Invalid SerpApi API key. Please check your SERPAPI_KEY configuration.");
+      }
+      
+      if (data.error.includes("quota") || data.error.includes("limit")) {
+        throw new Error("SerpApi quota exceeded. Please upgrade your plan or wait for quota reset.");
+      }
+      
       throw new Error(data.error);
     }
 
@@ -213,8 +253,74 @@ class LinkedInProfileCoach {
       }
     }
     
+    // If no profile found, try alternative search strategy
     if (!profile) {
-      throw new Error(`Profile "${username}" not found via search. Please verify the LinkedIn profile URL is correct and the profile is public. You can also use manual input mode.`);
+      console.log("⚠️ Profile not found with site: search, trying alternative search...");
+      
+      // Strategy 2: Search for LinkedIn profile with username
+      const altSearchQuery = `linkedin.com/in/${username}`;
+      const altApiUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(altSearchQuery)}&api_key=${apiKey}`;
+      
+      try {
+        const altResponse = await fetch(altApiUrl, {
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          },
+        });
+        
+        if (altResponse.ok) {
+          const altData = await altResponse.json();
+          
+          if (!altData.error && altData.organic_results) {
+            profile = altData.organic_results.find(r => 
+              r.link && r.link.includes('linkedin.com/in/') && r.link.includes(username)
+            );
+            
+            if (!profile) {
+              profile = altData.organic_results.find(r => 
+                r.link && r.link.includes('linkedin.com/in/')
+              );
+            }
+          }
+        }
+      } catch (altError) {
+        console.warn("⚠️ Alternative search also failed:", altError.message);
+      }
+    }
+    
+    if (!profile) {
+      // Try one more time with a simpler query
+      console.log("⚠️ Profile not found, trying simpler search query...");
+      const simpleQuery = `"${username}" linkedin`;
+      const simpleApiUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(simpleQuery)}&api_key=${apiKey}`;
+      
+      try {
+        const simpleResponse = await fetch(simpleApiUrl, {
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          },
+        });
+        
+        if (simpleResponse.ok) {
+          const simpleData = await simpleResponse.json();
+          
+          if (!simpleData.error && simpleData.organic_results) {
+            profile = simpleData.organic_results.find(r => 
+              r.link && r.link.includes('linkedin.com/in/') && r.link.includes(username)
+            );
+          }
+        }
+      } catch (simpleError) {
+        console.warn("⚠️ Simple search also failed:", simpleError.message);
+      }
+    }
+    
+    if (!profile) {
+      throw new Error(`LinkedIn profile "${username}" not found via Google search. This may be because: 1) The profile is not indexed by Google, 2) The profile is private, or 3) The profile URL is incorrect. Please verify the profile URL is correct and the profile is public.`);
     }
 
     // Format the Google search result as a LinkedIn profile
@@ -417,10 +523,10 @@ class LinkedInProfileCoach {
           
           profileResult = await this.fetchProfileFromSerpApi(username);
           
-          if (profileResult.success) {
+          if (profileResult && profileResult.success) {
             break;
           } else {
-            throw new Error(profileResult.message || "Failed to fetch profile data");
+            throw new Error(profileResult?.message || "Failed to fetch profile data");
           }
         } catch (error) {
           retryCount++;
@@ -437,7 +543,7 @@ class LinkedInProfileCoach {
 
       const scrapedData = profileResult.data;
       
-      // Validate scraped data - MUST have real data
+      // Validate scraped data
       if (!scrapedData) {
         throw new Error("No profile data received from scraping service. Please check the profile URL.");
       }
@@ -710,6 +816,10 @@ class LinkedInProfileCoach {
    * Build additional text from scraped profile data
    */
   buildAdditionalText(scrapedData) {
+    if (!scrapedData) {
+      return "";
+    }
+    
     const parts = [];
     
     if (scrapedData.experience && scrapedData.experience.length > 0) {
@@ -722,6 +832,11 @@ class LinkedInProfileCoach {
     
     if (scrapedData.skills && scrapedData.skills.length > 0) {
       parts.push("Skills: " + scrapedData.skills.join(", "));
+    }
+    
+    // If we have minimal data, add the profile URL for context
+    if (parts.length === 0 && scrapedData.name) {
+      parts.push(`Profile: ${scrapedData.name} (LinkedIn profile analysis)`);
     }
     
     return parts.join("\n");

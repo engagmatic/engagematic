@@ -185,10 +185,12 @@ router.post("/test", async (req, res) => {
         if (errorMessage.includes('SerpApi') || errorMessage.includes('SERPAPI')) {
           if (errorMessage.includes('not configured') || errorMessage.includes('Invalid API key')) {
             userMessage = "LinkedIn profile scraping service is not configured. Please contact support.";
-          } else if (errorMessage.includes('rate limit') || errorMessage.includes('429')) {
+          } else if (errorMessage.includes('rate limit') || errorMessage.includes('429') || errorMessage.includes('quota')) {
             userMessage = "LinkedIn profile scraping quota exceeded. Please try again later or upgrade your plan.";
-          } else if (errorMessage.includes('not found') || errorMessage.includes('404')) {
-            userMessage = "LinkedIn profile not found. Please check the URL and ensure the profile is public.";
+          } else if (errorMessage.includes('not found') || errorMessage.includes('404') || errorMessage.includes('not indexed')) {
+            userMessage = "LinkedIn profile not found via search. The profile may not be indexed by Google, may be private, or the URL may be incorrect. Please verify the profile URL is correct and the profile is public.";
+          } else if (errorMessage.includes("Google hasn't returned")) {
+            userMessage = "Google search did not return results for this LinkedIn profile. The profile may not be indexed by Google or may be private. Please verify the profile URL is correct.";
           } else {
             userMessage = "LinkedIn profile scraping service error. Please try again in a few minutes.";
           }
@@ -202,7 +204,7 @@ router.post("/test", async (req, res) => {
           userMessage = "Request timed out. The profile may be taking too long to load. Please try again.";
         } else if (errorMessage.includes('Network error') || errorMessage.includes('fetch') || errorMessage.includes('SerpApi connection failed')) {
           // Show the actual error message from SerpApi, not a generic network error
-          userMessage = errorMessage.includes('SerpApi') ? errorMessage : "Network error. Please check your internet connection and try again. You can also use manual input mode.";
+          userMessage = errorMessage.includes('SerpApi') ? errorMessage : "Network error. Please check your internet connection and try again.";
         }
         
         return res.status(statusCode).json({
