@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Copy, Check, UserCircle, Link as LinkIcon, RotateCcw, TrendingUp, CheckCircle2, ArrowRight } from "lucide-react";
+import { Loader2, Copy, Check, UserCircle, Link as LinkIcon, RotateCcw, TrendingUp, CheckCircle2, ArrowRight, FileDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -57,6 +57,8 @@ const ProfileAnalyzer = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<AnalysisResult | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [profileInfo, setProfileInfo] = useState({ name: "", headline: "" });
 
   // Form fields
   const [persona, setPersona] = useState("Job Seeker");
@@ -350,6 +352,7 @@ const ProfileAnalyzer = () => {
       if (response.success && response.data) {
         console.log("✅ Analysis response received:", response.data);
         console.log("📊 Response data keys:", Object.keys(response.data));
+        console.log("📊 Usage info:", response.usage);
         
         // Backend returns data - normalize to handle both formats
         const data = response.data;
@@ -392,10 +395,34 @@ const ProfileAnalyzer = () => {
         console.log("📊 Has about_feedback:", !!normalizedData.about_feedback);
         
         setResults(normalizedData);
-        toast({
-          title: "Analysis complete! ✅",
-          description: "Your profile has been analyzed",
-        });
+        
+        // Show usage info if available
+        if (response.usage) {
+          const { remaining, limit, plan, requiresAuth } = response.usage;
+          if (remaining === 0 && requiresAuth) {
+            toast({
+              title: "Free analysis used! 🎉",
+              description: "Sign up to get 1 more free analysis, then upgrade for more!",
+              variant: "default",
+            });
+          } else if (remaining === 0) {
+            toast({
+              title: "Analysis limit reached",
+              description: `You've used all ${limit} analyses. Upgrade your plan for more!`,
+              variant: "default",
+            });
+          } else {
+            toast({
+              title: "Analysis complete! ✅",
+              description: `You have ${remaining} analysis${remaining !== 1 ? 'es' : ''} remaining this month.`,
+            });
+          }
+        } else {
+          toast({
+            title: "Analysis complete! ✅",
+            description: "Your profile has been analyzed",
+          });
+        }
       } else {
         throw new Error(response.error || response.message || "Analysis failed");
       }
@@ -405,46 +432,65 @@ const ProfileAnalyzer = () => {
         message: error.message,
         stack: error.stack,
         name: error.name,
+        response: error.response,
       });
       
-      // Extract actual error message from backend
-      let errorMessage = error.message || "Could not analyze profile. Please try again.";
+      // Check for rate limit error with redirect info
+      const errorData = error.response?.data || error.data || {};
+      const isRateLimit = error.status === 429 || 
+                         error.message?.includes("rate limit") || 
+                         error.message?.includes("limit reached") ||
+                         errorData.error?.includes("limit") ||
+                         errorData.code === "RATE_LIMIT_EXCEEDED";
       
-      // If error contains backend error message, use it
-      if (errorMessage.includes("Unable to complete profile analysis")) {
-        // Try to extract the actual error from the message
-        const errorMatch = errorMessage.match(/error: (.+)/i);
-        if (errorMatch) {
-          errorMessage = errorMatch[1];
-        } else {
-          errorMessage = "Profile analysis failed. Please ensure all required fields are filled correctly.";
-        }
-      }
-      
-      if (error.message?.includes("Rate limit") || error.message?.includes("429")) {
+      if (isRateLimit) {
+        const redirectTo = errorData.redirectTo || (errorData.requiresAuth ? "/auth/register" : "/pricing");
+        const message = errorData.message || "You've used your free analysis. Sign up for more analyses!";
+        
         toast({
-          title: "Rate limit exceeded",
-          description: "You've used your free analysis. Please upgrade for more!",
-          variant: "destructive",
+          title: "Analysis limit reached",
+          description: message,
+          variant: "default",
         });
-      } else if (error.message?.includes("not found") || error.message?.includes("Invalid")) {
-        toast({
-          title: "Invalid input",
-          description: "Please check that all required fields are filled correctly.",
-          variant: "destructive",
-        });
-      } else if (error.message?.includes("Network error") || error.message?.includes("connect")) {
-        toast({
-          title: "Connection error",
-          description: "Unable to connect to server. Please check your internet connection and try again.",
-          variant: "destructive",
-        });
+        
+        // Redirect after showing toast
+        setTimeout(() => {
+          navigate(redirectTo);
+        }, 2000);
       } else {
-        toast({
-          title: "Analysis failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
+        // Extract actual error message from backend
+        let errorMessage = error.message || "Could not analyze profile. Please try again.";
+        
+        // If error contains backend error message, use it
+        if (errorMessage.includes("Unable to complete profile analysis")) {
+          // Try to extract the actual error from the message
+          const errorMatch = errorMessage.match(/error: (.+)/i);
+          if (errorMatch) {
+            errorMessage = errorMatch[1];
+          } else {
+            errorMessage = "Profile analysis failed. Please ensure all required fields are filled correctly.";
+          }
+        }
+        
+        if (error.message?.includes("not found") || error.message?.includes("Invalid")) {
+          toast({
+            title: "Invalid input",
+            description: "Please check that all required fields are filled correctly.",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes("Network error") || error.message?.includes("connect")) {
+          toast({
+            title: "Connection error",
+            description: "Unable to connect to server. Please check your internet connection and try again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Analysis failed",
+            description: errorData.message || errorMessage,
+            variant: "destructive",
+          });
+        }
       }
     } finally {
       setIsAnalyzing(false);
@@ -459,6 +505,37 @@ const ProfileAnalyzer = () => {
       description: "Content copied to clipboard",
     });
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleExportPDF = async () => {
+    if (!results) return;
+    
+    setIsExportingPDF(true);
+    try {
+      const blob = await apiClient.exportAnalysisPDF(results, profileInfo);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `linkedin-profile-analysis-${Date.now()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "PDF exported! ✅",
+        description: "Your analysis report has been downloaded",
+      });
+    } catch (error: any) {
+      console.error("PDF export error:", error);
+      toast({
+        title: "Export failed",
+        description: error.message || "Failed to export PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExportingPDF(false);
+    }
   };
 
   const handleGeneratePost = async () => {
@@ -489,7 +566,7 @@ const ProfileAnalyzer = () => {
         <SEO {...PAGE_SEO.profileAnalyzer} />
         <div className="max-w-6xl mx-auto space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
                 Profile Analysis Results
@@ -498,10 +575,29 @@ const ProfileAnalyzer = () => {
                 Your LinkedIn profile optimization insights
               </p>
             </div>
-            <Button variant="outline" onClick={() => setResults(null)}>
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Analyze Another
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleExportPDF}
+                disabled={isExportingPDF}
+              >
+                {isExportingPDF ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Export PDF
+                  </>
+                )}
+              </Button>
+              <Button variant="outline" onClick={() => setResults(null)}>
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Analyze Another
+              </Button>
+            </div>
           </div>
 
           {/* Overall Score */}

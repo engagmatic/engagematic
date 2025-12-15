@@ -103,18 +103,32 @@ export const ProfileAnalyzerSection = () => {
     } catch (error: any) {
       console.error("Analysis error:", error);
       
-      // If rate limited, suggest signup
-      if (error.message?.includes("rate limit") || error.message?.includes("429")) {
+      // Check for rate limit error with redirect info
+      const errorData = error.response?.data || error.data || {};
+      const isRateLimit = error.status === 429 || 
+                         error.message?.includes("rate limit") || 
+                         error.message?.includes("limit reached") ||
+                         errorData.error?.includes("limit") ||
+                         errorData.code === "RATE_LIMIT_EXCEEDED";
+      
+      if (isRateLimit) {
+        const redirectTo = errorData.redirectTo || (errorData.requiresAuth ? "/auth/register" : "/pricing");
+        const message = errorData.message || "You've used your free analysis. Sign up to get 1 more free analysis!";
+        
         toast({
-          title: "Free analysis used",
-          description: "Sign up for more analyses!",
+          title: "Free analysis used! 🎉",
+          description: message,
           variant: "default",
         });
-        setTimeout(() => navigate("/auth/register"), 2000);
+        
+        // Redirect after showing toast
+        setTimeout(() => {
+          navigate(redirectTo);
+        }, 2500);
       } else {
         toast({
           title: "Analysis failed",
-          description: error.message || "Please try again",
+          description: errorData.message || error.message || "Please try again",
           variant: "destructive",
         });
       }

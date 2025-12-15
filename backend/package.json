@@ -36,6 +36,7 @@
     "pdfkit": "^0.17.2",
     "puppeteer": "^24.26.1",
     "razorpay": "^2.9.2",
+    "resend": "^6.6.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

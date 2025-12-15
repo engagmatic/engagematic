@@ -325,6 +325,53 @@ class ApiClient {
     });
   }
 
+  async exportAnalysisPDF(analysisData, profileData = {}) {
+    const response = await fetch(`${this.baseURL}/profile-coach/export-pdf`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(this.getToken() ? { Authorization: `Bearer ${this.getToken()}` } : {}),
+      },
+      body: JSON.stringify({
+        analysisData,
+        profileData,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "Failed to export PDF" }));
+      throw new Error(error.message || "Failed to export PDF");
+    }
+
+    // Return blob for PDF download
+    const blob = await response.blob();
+    return blob;
+  }
+
+  async exportAnalysisPDFById(analysisId, profileName = "", profileHeadline = "") {
+    const params = new URLSearchParams({
+      analysisId,
+      ...(profileName ? { profileName } : {}),
+      ...(profileHeadline ? { profileHeadline } : {}),
+    });
+    
+    const response = await fetch(`${this.baseURL}/profile-coach/export-pdf?${params}`, {
+      method: "GET",
+      headers: {
+        ...(this.getToken() ? { Authorization: `Bearer ${this.getToken()}` } : {}),
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "Failed to export PDF" }));
+      throw new Error(error.message || "Failed to export PDF");
+    }
+
+    // Return blob for PDF download
+    const blob = await response.blob();
+    return blob;
+  }
+
   async analyzeContentOptimization(optimizationData) {
     return this.request("/content/analyze-optimization", {
       method: "POST",

@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import ejs from "ejs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -10,50 +10,36 @@ const __dirname = path.dirname(__filename);
 
 class EmailService {
   constructor() {
-    this.transporter = null;
+    this.resend = null;
     this.initialized = false;
     this.fromEmail = process.env.EMAIL_FROM || "hello@engagematic.com";
     this.fromName = process.env.EMAIL_FROM_NAME || "LinkedInPulse";
   }
 
   /**
-   * Initialize email transporter with Resend
+   * Initialize Resend API client
    */
   async initialize() {
     try {
       if (!process.env.RESEND_API_KEY) {
         console.warn("⚠️  RESEND_API_KEY not found. Email service disabled.");
+        console.warn("💡 Get your free API key at: https://resend.com/api-keys");
         return false;
       }
 
-      // Resend uses SMTP with timeout and retry settings
-      this.transporter = nodemailer.createTransport({
-        host: "smtp.resend.com",
-        port: 465,
-        secure: true,
-        auth: {
-          user: "resend",
-          pass: process.env.RESEND_API_KEY,
-        },
-        // Add timeout and connection settings
-        connectionTimeout: 10000, // 10 seconds
-        greetingTimeout: 5000, // 5 seconds
-        socketTimeout: 10000, // 10 seconds
-        pool: true, // Use connection pooling
-        maxConnections: 5, // Max connections in pool
-        maxMessages: 100, // Max messages per connection
-        rateLimit: 10, // Max messages per second
-      });
+      // Initialize Resend SDK
+      this.resend = new Resend(process.env.RESEND_API_KEY);
 
-      // Verify connection with timeout
-      const verifyPromise = this.transporter.verify();
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Connection timeout")), 10000)
-      );
+      // Test the API key by checking if it's valid (we'll do a simple validation)
+      // Resend doesn't have a verify method, so we'll just check if the key format is correct
+      if (!process.env.RESEND_API_KEY.startsWith("re_")) {
+        console.warn("⚠️  RESEND_API_KEY format appears invalid (should start with 're_')");
+        return false;
+      }
 
-      await Promise.race([verifyPromise, timeoutPromise]);
       this.initialized = true;
-      console.log("✅ Email service initialized with Resend");
+      console.log("✅ Email service initialized with Resend API");
+      console.log(`📧 From: ${this.fromName} <${this.fromEmail}>`);
       return true;
     } catch (error) {
       console.error("❌ Email service initialization failed:", error.message);
@@ -211,25 +197,29 @@ class EmailService {
         metadata,
       });
 
-      // Send email
-      const info = await this.transporter.sendMail({
+      // Send email using Resend API
+      const { data, error } = await this.resend.emails.send({
         from: `${this.fromName} <${this.fromEmail}>`,
-        to,
+        to: [to],
         subject,
         html,
       });
 
+      if (error) {
+        throw new Error(error.message || "Failed to send email via Resend");
+      }
+
       // Update log with success
       await EmailLog.findByIdAndUpdate(emailLog._id, {
         status: "sent",
-        providerId: info.messageId,
+        providerId: data?.id || "resend",
         sentAt: new Date(),
       });
 
-      console.log(`✅ Email sent: ${emailType} to ${to}`);
+      console.log(`✅ Email sent: ${emailType} to ${to} (ID: ${data?.id})`);
       return {
         success: true,
-        messageId: info.messageId,
+        messageId: data?.id,
         emailLogId: emailLog._id,
       };
     } catch (error) {
