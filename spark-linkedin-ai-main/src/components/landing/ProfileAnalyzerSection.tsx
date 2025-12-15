@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   TrendingUp, 
@@ -9,16 +9,41 @@ import {
   CheckCircle2, 
   ArrowRight,
   Loader2,
-  Link as LinkIcon
+  Link as LinkIcon,
+  X,
+  Copy,
+  Check
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import apiClient from "@/services/api";
 
+interface AnalysisResult {
+  score?: number;
+  profile_score?: number;
+  headline_feedback?: {
+    score: number;
+    strengths: string[];
+    improvements: string[];
+    rewritten_example: string;
+  };
+  about_feedback?: {
+    score: number;
+    strengths: string[];
+    improvements: string[];
+    structure_suggestions: string[];
+  };
+  top_3_priorities?: string[];
+  keywords?: string[];
+  recommended_skills?: string[];
+}
+
 export const ProfileAnalyzerSection = () => {
   const [profileUrl, setProfileUrl] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [results, setResults] = useState<AnalysisResult | null>(null);
+  const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -37,21 +62,40 @@ export const ProfileAnalyzerSection = () => {
     
     try {
       console.log("🔍 Calling profile analyzer API...");
-      const response = await apiClient.request("/profile-coach/test", {
-        method: "POST",
-        body: JSON.stringify({
-          profileUrl,
-        }),
-      });
+      const response = await apiClient.analyzeProfileWithCoachTest(profileUrl);
       console.log("✅ Profile analyzer response:", response);
 
       if (response.success && response.data) {
-        // Navigate to profile analyzer page with results
-        navigate("/profile-analyzer", { 
-          state: { 
-            analysisResult: response.data,
-            profileUrl 
-          } 
+        console.log("📊 Analysis data structure:", {
+          hasScore: !!response.data.score,
+          hasProfileScore: !!response.data.profile_score,
+          hasHeadlineFeedback: !!response.data.headline_feedback,
+          hasAboutFeedback: !!response.data.about_feedback,
+          keys: Object.keys(response.data),
+        });
+        
+        // Normalize data structure - ensure 'score' exists
+        const normalizedData = { ...response.data };
+        if (!normalizedData.score && normalizedData.profile_score !== undefined) {
+          normalizedData.score = normalizedData.profile_score;
+        }
+        
+        console.log("📊 Normalized data:", normalizedData);
+        
+        // Store results to display on home page
+        setResults(normalizedData);
+        
+        // Scroll to results section
+        setTimeout(() => {
+          const resultsElement = document.getElementById("analysis-results");
+          if (resultsElement) {
+            resultsElement.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 100);
+        
+        toast({
+          title: "Analysis complete! ✅",
+          description: "Your profile has been analyzed",
         });
       } else {
         throw new Error(response.error || "Analysis failed");
@@ -214,6 +258,156 @@ export const ProfileAnalyzerSection = () => {
                 View Full Analyzer
                 <ArrowRight className="h-4 w-4" />
               </Button>
+            </div>
+          )}
+
+          {/* Analysis Results */}
+          {results && (
+            <div id="analysis-results" className="mt-8 space-y-6">
+              <Card className="border-2 border-primary/30 bg-gradient-to-br from-white to-primary/5 dark:from-slate-900 dark:to-primary/10">
+                <CardHeader className="flex flex-row items-center justify-between pb-4">
+                  <div>
+                    <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                      <Sparkles className="h-6 w-6 text-primary" />
+                      Analysis Results
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      Profile: {profileUrl}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setResults(null);
+                      setProfileUrl("");
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Overall Score */}
+                  {(results.score !== undefined || results.profile_score !== undefined) && (
+                    <div className="text-center p-6 rounded-lg bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20">
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                        Overall Profile Score
+                      </p>
+                      <div className="text-5xl font-bold text-primary mb-2">
+                        {results.score ?? results.profile_score ?? 0}
+                        <span className="text-2xl text-gray-500">/100</span>
+                      </div>
+                      <Badge 
+                        variant={(results.score ?? results.profile_score ?? 0) >= 80 ? "default" : (results.score ?? results.profile_score ?? 0) >= 60 ? "secondary" : "destructive"}
+                        className="mt-2"
+                      >
+                        {(results.score ?? results.profile_score ?? 0) >= 80 ? "Excellent" : (results.score ?? results.profile_score ?? 0) >= 60 ? "Good" : "Needs Improvement"}
+                      </Badge>
+                    </div>
+                  )}
+
+                  {/* Top Priorities */}
+                  {results.top_3_priorities && results.top_3_priorities.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-primary" />
+                        Top 3 Priorities
+                      </h3>
+                      <ul className="space-y-2">
+                        {results.top_3_priorities.map((priority, index) => (
+                          <li key={index} className="flex items-start gap-2 p-3 rounded-lg bg-gray-50 dark:bg-slate-800">
+                            <Badge variant="outline" className="mt-0.5">{index + 1}</Badge>
+                            <span className="flex-1">{priority}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Headline Feedback */}
+                  {results.headline_feedback && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-primary" />
+                        Headline Feedback
+                        {results.headline_feedback.score !== undefined && (
+                          <Badge variant="outline" className="ml-2">
+                            Score: {results.headline_feedback.score}/100
+                          </Badge>
+                        )}
+                      </h3>
+                      {results.headline_feedback.rewritten_example && (
+                        <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 mb-3">
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                            Suggested Headline:
+                          </p>
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-base font-medium flex-1">{results.headline_feedback.rewritten_example}</p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                navigator.clipboard.writeText(results.headline_feedback!.rewritten_example);
+                                setCopied(true);
+                                setTimeout(() => setCopied(false), 2000);
+                                toast({
+                                  title: "Copied!",
+                                  description: "Headline copied to clipboard",
+                                });
+                              }}
+                            >
+                              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      {results.headline_feedback.improvements && results.headline_feedback.improvements.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Improvements:</p>
+                          <ul className="space-y-1">
+                            {results.headline_feedback.improvements.map((improvement, index) => (
+                              <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                                <span className="text-primary mt-1">•</span>
+                                <span>{improvement}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Keywords */}
+                  {results.keywords && results.keywords.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3">Recommended Keywords</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {results.keywords.map((keyword, index) => (
+                          <Badge key={index} variant="secondary">{keyword}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* View Full Analysis Button */}
+                  <div className="pt-4 border-t">
+                    <Button
+                      onClick={() => {
+                        navigate("/profile-analyzer", {
+                          state: {
+                            analysisResult: results,
+                            profileUrl
+                          }
+                        });
+                      }}
+                      className="w-full gap-2"
+                    >
+                      View Full Analysis
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>

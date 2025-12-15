@@ -1,5 +1,6 @@
 import googleAI from "./googleAI.js";
 import ProfileAnalysis from "../models/ProfileAnalysis.js";
+import { config } from "../config/index.js";
 
 class ProfileAnalyzer {
   /**
@@ -118,10 +119,33 @@ class ProfileAnalyzer {
       */
     } catch (error) {
       console.error("❌ Profile analysis error:", error);
+      
+      // Provide user-friendly error messages
+      let errorMessage = "Profile analysis is currently unavailable";
+      let userMessage = "We encountered an issue analyzing your profile. Please try again.";
+      
+      if (error.message) {
+        if (error.message.includes("RAPIDAPI_KEY") || error.message.includes("not configured")) {
+          errorMessage = "Profile scraping service is not configured";
+          userMessage = "The profile scraping service needs to be configured. Please contact support or try entering your profile information manually.";
+        } else if (error.message.includes("not found") || error.message.includes("404")) {
+          errorMessage = "Profile not found";
+          userMessage = "The LinkedIn profile could not be found. Please verify the URL is correct and the profile is public.";
+        } else if (error.message.includes("rate limit") || error.message.includes("429")) {
+          errorMessage = "Rate limit exceeded";
+          userMessage = "You've reached the rate limit for profile analysis. Please try again later or upgrade your plan.";
+        } else if (error.message.includes("timeout")) {
+          errorMessage = "Request timeout";
+          userMessage = "The request took too long to complete. Please try again with a different profile or check your internet connection.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       return {
         success: false,
-        message: "Profile analysis is currently unavailable",
-        error: error.message,
+        message: userMessage,
+        error: errorMessage,
       };
     }
   }
@@ -155,54 +179,108 @@ class ProfileAnalyzer {
    */
   async fetchProfileFromRapidAPI(username) {
     try {
-      const rapidApiKey = process.env.RAPIDAPI_KEY;
-      if (!rapidApiKey) {
-        throw new Error("RAPIDAPI_KEY not configured");
+      const rapidApiKey = process.env.RAPIDAPI_KEY || config.RAPIDAPI_KEY;
+      
+      // Check if RapidAPI key is configured and valid
+      if (!rapidApiKey || rapidApiKey === "your-rapidapi-key-here") {
+        console.warn("⚠️ RAPIDAPI_KEY not configured, profile scraping will be limited");
+        return {
+          success: false,
+          message: "RAPIDAPI_KEY not configured. Please configure it in your environment variables.",
+        };
       }
-      console.log("🔍 RapidAPI key:", username);
-      const response = await fetch(
-        `https://linkedin-data-api.p.rapidapi.com/?username=${username}`,
-        {
-          method: "GET",
-          headers: {
-            "x-rapidapi-host": "linkedin-data-api.p.rapidapi.com",
-            "x-rapidapi-key": rapidApiKey,
-          },
+
+      console.log("🔍 Fetching profile from RapidAPI for:", username);
+      
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+      let response;
+      try {
+        response = await fetch(
+          `https://linkedin-data-api.p.rapidapi.com/?username=${username}`,
+          {
+            method: "GET",
+            headers: {
+              "x-rapidapi-host": "linkedin-data-api.p.rapidapi.com",
+              "x-rapidapi-key": rapidApiKey,
+            },
+            signal: controller.signal,
+          }
+        );
+        clearTimeout(timeoutId);
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === 'AbortError') {
+          throw new Error("Request to RapidAPI timed out after 30 seconds");
         }
-      );
+        throw fetchError;
+      }
 
       if (!response.ok) {
-        throw new Error(
-          `RapidAPI request failed: ${response.status} ${response.statusText}`
-        );
+        const errorText = await response.text().catch(() => "");
+        let errorMessage = `RapidAPI request failed: ${response.status} ${response.statusText}`;
+        
+        if (response.status === 401) {
+          errorMessage = "Invalid RapidAPI key. Please check your RAPIDAPI_KEY configuration.";
+        } else if (response.status === 429) {
+          errorMessage = "RapidAPI rate limit exceeded. Please try again later or upgrade your plan.";
+        } else if (response.status === 404) {
+          errorMessage = `Profile "${username}" not found. Please verify the LinkedIn profile URL is correct.`;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      console.log("🔍 RapidAPI response:", data);
-      // Transform RapidAPI response to our expected format
+      console.log("✅ RapidAPI response received");
+      
+      // Check if response contains error
+      if (data.error || data.message) {
+        throw new Error(data.error || data.message || "RapidAPI returned an error");
+      }
+
+      // Transform RapidAPI response to our expected format with better fallbacks
       const profileData = {
-        name: data.name || data.fullName || "",
-        headline: data.headline || data.title || "",
-        summary: data.summary || data.about || "",
-        location: data.location || "",
+        name: data.name || data.fullName || data.full_name || "",
+        headline: data.headline || data.title || data.jobTitle || "",
+        summary: data.summary || data.about || data.bio || "",
+        location: data.location || data.geo || "",
         industry: data.industry || "",
-        experience: data.experience || [],
-        education: data.education || [],
-        skills: data.skills || [],
+        experience: Array.isArray(data.experience) ? data.experience : 
+                    Array.isArray(data.positions) ? data.positions : 
+                    Array.isArray(data.work_experience) ? data.work_experience : [],
+        education: Array.isArray(data.education) ? data.education : 
+                   Array.isArray(data.schools) ? data.schools : [],
+        skills: Array.isArray(data.skills) ? data.skills : [],
         connections: data.connections || 0,
-        profilePicture: data.profilePicture || "",
-        bannerImage: data.bannerImage || "",
+        profilePicture: data.profilePicture || data.profile_picture || "",
+        bannerImage: data.bannerImage || data.banner_image || "",
       };
+
+      // Validate that we got REAL data - NO FALLBACKS
+      if (!profileData.headline || profileData.headline.length < 10) {
+        throw new Error("Profile headline is missing or too short. The profile may be incomplete or private.");
+      }
+      
+      if (!profileData.summary || profileData.summary.length < 50) {
+        throw new Error("Profile about section is missing or too short. The profile may be incomplete or private.");
+      }
+      
+      if (!profileData.name || profileData.name.length < 2) {
+        throw new Error("Profile name could not be extracted. The profile may not exist or may be private.");
+      }
 
       return {
         success: true,
         data: profileData,
       };
     } catch (error) {
-      console.error("❌ RapidAPI fetch error:", error);
+      console.error("❌ RapidAPI fetch error:", error.message);
       return {
         success: false,
-        message: error.message,
+        message: error.message || "Failed to fetch profile from RapidAPI",
       };
     }
   }
@@ -487,15 +565,14 @@ Make it SO GOOD that the person immediately feels the value and implements your 
           throw new Error("No JSON found in AI response");
         }
       } catch (parseError) {
-        console.log("⚠️ AI response parsing failed, using enhanced fallback");
-        recommendations = this.getFallbackRecommendations(profileData, scores);
+        console.error("❌ AI response parsing failed:", parseError);
+        throw new Error("Failed to parse AI recommendations. Please try again.");
       }
 
       return recommendations;
     } catch (error) {
       console.error("❌ Recommendation generation error:", error.message);
-      console.log("📝 Using enhanced fallback recommendations");
-      return this.getFallbackRecommendations(profileData, scores);
+      throw new Error(`Failed to generate recommendations: ${error.message}`);
     }
   }
 

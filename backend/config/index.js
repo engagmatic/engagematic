@@ -44,10 +44,21 @@ export const config = {
   RATE_LIMIT_MAX_REQUESTS:
     parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000, // Increased from 100 to 1000
 
-  // RapidAPI (LinkedIn Scraper)
-  RAPIDAPI_KEY: process.env.RAPIDAPI_KEY || "your-rapidapi-key-here",
+  // CoreSignal (LinkedIn Data API - EXCELLENT OPTION - Professional LinkedIn data)
+  // API Key: rT5M97UDI3FEbLdDY7LHLtkrUUoOwhf0
+  // Documentation: https://docs.coresignal.com/
+  CORESIGNAL_API_KEY: process.env.CORESIGNAL_API_KEY || "rT5M97UDI3FEbLdDY7LHLtkrUUoOwhf0",
   
-  // SerpApi (Free tier: 100 searches/month - https://serpapi.com)
+  // Proxycurl (LinkedIn API - BEST OPTION - Free tier: 100 requests/month)
+  // Sign up at https://nubela.co/proxycurl/ - Get free API key
+  PROXYCURL_API_KEY: process.env.PROXYCURL_API_KEY || "",
+  
+  // RapidAPI (LinkedIn Scraper - Fallback option)
+  // Sign up at https://rapidapi.com - Search for "LinkedIn Profile Scraper"
+  RAPIDAPI_KEY: process.env.RAPIDAPI_KEY || "",
+  RAPIDAPI_HOST: process.env.RAPIDAPI_HOST || "linkedin-profile-scraper-api.p.rapidapi.com",
+  
+  // SerpApi (Fallback option - Free tier: 100 searches/month - https://serpapi.com)
   SERPAPI_KEY: process.env.SERPAPI_KEY || "ff7f229f9456cb0d1b2d8c1e64c9c86a998a1127f0a392bdd739b0f371697658",
 
   // Email Configuration

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Copy, Check, UserCircle, Link as LinkIcon, RotateCcw, TrendingUp, CheckCircle2, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import apiClient from "@/services/api";
 import { SEO } from "@/components/SEO";
 import { PAGE_SEO } from "@/constants/seo";
@@ -33,6 +33,9 @@ interface AnalysisResult {
     feedback: string;
   };
   top_3_priorities?: string[];
+  keywords?: string[];
+  recommended_skills?: string[];
+  optimized_about?: string;
   generated_post?: {
     content: string;
     hook_explanation: string;
@@ -71,9 +74,25 @@ const ProfileAnalyzer = () => {
   // Check for analysis result from home page
   useEffect(() => {
     const locationState = (window.history.state && window.history.state.usr) || {};
+    console.log("🔍 Checking navigation state for analysis results...");
+    console.log("Location state:", locationState);
+    
     if (locationState.analysisResult) {
-      setResults(locationState.analysisResult);
+      console.log("✅ Found analysis result in navigation state");
+      console.log("Analysis result keys:", Object.keys(locationState.analysisResult));
+      console.log("Score:", locationState.analysisResult.score || locationState.analysisResult.profile_score);
+      
+      // Normalize the data structure
+      const normalizedData: AnalysisResult = locationState.analysisResult;
+      if (!normalizedData.score && normalizedData.profile_score !== undefined) {
+        normalizedData.score = normalizedData.profile_score;
+      }
+      
+      console.log("📊 Setting results with normalized data:", normalizedData);
+      setResults(normalizedData);
       setProfileUrl(locationState.profileUrl || "");
+    } else {
+      console.log("⚠️ No analysis result found in navigation state");
     }
   }, []);
 
@@ -124,24 +143,30 @@ const ProfileAnalyzer = () => {
         mainGoal: goal,
       });
 
-      const response = await apiClient.request("/profile-coach/test", {
-        method: "POST",
-        body: JSON.stringify({
-          profileUrl,
+      const response = await apiClient.analyzeProfileWithCoachTest(
+        profileUrl,
+        {
           userType: userTypeMap[persona] || persona,
           targetAudience: targetAudience || undefined,
           mainGoal: goal || undefined,
-        }),
-      });
+        }
+      );
 
       console.log("✅ Analysis response received:", response);
 
       if (response.success && response.data) {
+        console.log("📊 Response data keys:", Object.keys(response.data));
+        
         // Backend returns analysis data directly
         const data = response.data;
         
+        // Ensure 'score' field exists
+        if (!data.score && data.profile_score !== undefined) {
+          data.score = data.profile_score;
+        }
+        
         // Normalize to handle both formats
-        const normalizedData: AnalysisResult = data.score ? data : {
+        const normalizedData: AnalysisResult = data.score !== undefined ? data : {
           score: data.profile_score || 0,
           headline_feedback: {
             score: 0,
@@ -166,6 +191,11 @@ const ProfileAnalyzer = () => {
             engagement_tactics: [],
           },
         };
+        
+        console.log("📊 Normalized data for display:", normalizedData);
+        console.log("📊 Score:", normalizedData.score);
+        console.log("📊 Has headline_feedback:", !!normalizedData.headline_feedback);
+        console.log("📊 Has about_feedback:", !!normalizedData.about_feedback);
         
         setResults(normalizedData);
         toast({
@@ -296,17 +326,41 @@ const ProfileAnalyzer = () => {
             mainGoal: goal,
           };
 
-      const response = await apiClient.request("/profile-coach/test", {
-        method: "POST",
-        body: JSON.stringify(requestBody),
-      });
+      // For manual input, we still need profileUrl, so we'll use a placeholder
+      // The backend requires profileUrl, so manual input mode should use URL mode
+      if (!profileUrl || !profileUrl.includes("linkedin.com/in/")) {
+        toast({
+          title: "URL required",
+          description: "Please switch to URL mode and enter a LinkedIn profile URL, or use the manual fields to prepare your content first.",
+          variant: "destructive",
+        });
+        setIsAnalyzing(false);
+        return;
+      }
+
+      const response = await apiClient.analyzeProfileWithCoachTest(
+        profileUrl,
+        {
+          userType: userTypeMap[persona] || persona,
+          targetAudience: targetAudience || undefined,
+          mainGoal: goal || undefined,
+        }
+      );
 
       if (response.success && response.data) {
+        console.log("✅ Analysis response received:", response.data);
+        console.log("📊 Response data keys:", Object.keys(response.data));
+        
         // Backend returns data - normalize to handle both formats
         const data = response.data;
         
+        // Ensure 'score' field exists
+        if (!data.score && data.profile_score !== undefined) {
+          data.score = data.profile_score;
+        }
+        
         // If old format, convert to new format for display
-        const normalizedData: AnalysisResult = data.score ? data : {
+        const normalizedData: AnalysisResult = data.score !== undefined ? data : {
           score: data.profile_score || 0,
           headline_feedback: {
             score: 0,
@@ -331,6 +385,11 @@ const ProfileAnalyzer = () => {
             engagement_tactics: [],
           },
         };
+        
+        console.log("📊 Normalized data for display:", normalizedData);
+        console.log("📊 Score:", normalizedData.score);
+        console.log("📊 Has headline_feedback:", !!normalizedData.headline_feedback);
+        console.log("📊 Has about_feedback:", !!normalizedData.about_feedback);
         
         setResults(normalizedData);
         toast({
@@ -400,6 +459,14 @@ const ProfileAnalyzer = () => {
       description: "Content copied to clipboard",
     });
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleGeneratePost = async () => {
+    toast({
+      title: "Feature coming soon",
+      description: "Post generation will be available soon",
+      variant: "default",
+    });
   };
 
   const getScoreColor = (score: number) => {

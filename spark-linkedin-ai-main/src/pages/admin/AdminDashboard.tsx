@@ -3,7 +3,8 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { Card } from '@/components/ui/card';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const API_BASE = `${API_URL}`;
+// Ensure API_BASE includes /api prefix
+const API_BASE = API_URL.includes('/api') ? API_URL : `${API_URL}/api`;
 import { 
   Users, 
   FileText, 
@@ -88,15 +89,20 @@ export default function AdminDashboard() {
   const fetchAffiliateStats = async () => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) return;
+
       const response = await fetch(`${API_BASE}/admin/affiliates/stats`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
       if (response.ok) {
         const result = await response.json();
         setAffiliateStats(result.data);
+      } else {
+        console.error('Failed to fetch affiliate stats:', response.statusText);
       }
     } catch (error) {
       console.error('Failed to fetch affiliate stats:', error);
@@ -106,15 +112,30 @@ export default function AdminDashboard() {
   const fetchDashboardStats = async () => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        console.error('No admin token found');
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/admin/stats`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setStats(data);
+        const result = await response.json();
+        // Handle both direct data and wrapped response
+        if (result.data) {
+          setStats(result.data);
+        } else {
+          setStats(result);
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to fetch stats:', errorData.message || response.statusText);
       }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
@@ -126,15 +147,20 @@ export default function AdminDashboard() {
   const fetchRecentUsers = async () => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) return;
+
       const response = await fetch(`${API_BASE}/admin/recent-users?limit=5`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
       if (response.ok) {
         const result = await response.json();
         setRecentUsers(result.data || []);
+      } else {
+        console.error('Failed to fetch recent users:', response.statusText);
       }
     } catch (error) {
       console.error('Failed to fetch recent users:', error);
@@ -144,15 +170,20 @@ export default function AdminDashboard() {
   const fetchRecentActivity = async () => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) return;
+
       const response = await fetch(`${API_BASE}/admin/recent-activity?limit=5`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
       if (response.ok) {
         const result = await response.json();
         setRecentActivity(result.data || []);
+      } else {
+        console.error('Failed to fetch recent activity:', response.statusText);
       }
     } catch (error) {
       console.error('Failed to fetch recent activity:', error);

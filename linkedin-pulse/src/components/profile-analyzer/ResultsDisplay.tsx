@@ -98,6 +98,87 @@ export function ResultsDisplay({ data, onReset, showUpgrade = false }: ResultsDi
         />
       </div>
 
+      {/* Optimized About Section - Copy-Paste Ready */}
+      {data.about_feedback.optimized_about && (
+        <Card className="border-2 border-primary/50">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl">✨ Optimized About Section</CardTitle>
+                <CardDescription>Copy-paste ready - Use this directly in your LinkedIn profile</CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => copyToClipboard(data.about_feedback.optimized_about!, "about")}
+              >
+                {copied === "about" ? (
+                  <>
+                    <Check className="mr-2 h-4 w-4" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="p-4 bg-muted rounded-lg border-2 border-dashed border-primary/30">
+              <p className="text-sm whitespace-pre-line leading-relaxed">
+                {data.about_feedback.optimized_about}
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3 text-center">
+              💡 This is a complete, optimized About section ready to copy and paste into your LinkedIn profile
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Keywords & Skills */}
+      {(data.keywords || data.recommended_skills) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {data.keywords && data.keywords.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Recommended Keywords</CardTitle>
+                <CardDescription>Add these to improve search visibility</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {data.keywords.map((keyword, index) => (
+                    <Badge key={index} variant="secondary" className="text-sm">
+                      {keyword}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          {data.recommended_skills && data.recommended_skills.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Recommended Skills</CardTitle>
+                <CardDescription>Add these skills to your profile</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {data.recommended_skills.map((skill, index) => (
+                    <Badge key={index} variant="outline" className="text-sm">
+                      {skill}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
       {/* Persona Alignment */}
       <Card>
         <CardHeader>
@@ -145,9 +226,9 @@ export function ResultsDisplay({ data, onReset, showUpgrade = false }: ResultsDi
               variant="ghost"
               size="sm"
               className="absolute top-2 right-2"
-              onClick={() => copyToClipboard(data.generated_post.content)}
+              onClick={() => copyToClipboard(data.generated_post.content, "post")}
             >
-              {copied ? (
+              {copied === "post" ? (
                 <Check className="h-4 w-4" />
               ) : (
                 <Copy className="h-4 w-4" />

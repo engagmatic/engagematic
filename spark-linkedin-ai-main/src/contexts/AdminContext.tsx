@@ -22,7 +22,8 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const API_BASE = `${API_URL}`;
+// Ensure API_BASE includes /api prefix
+const API_BASE = API_URL.includes('/api') ? API_URL : `${API_URL}/api`;
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [admin, setAdmin] = useState<Admin | null>(null);

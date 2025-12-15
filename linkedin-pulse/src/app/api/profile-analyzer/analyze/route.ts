@@ -12,7 +12,15 @@ export async function POST(request: NextRequest) {
     console.log("📊 Profile analyzer API request received")
 
     // Get user ID from Clerk (or IP for anonymous)
-    const { userId } = await auth()
+    // Clerk is optional - if not configured, use IP address
+    let userId: string | null = null
+    try {
+      const authResult = await auth()
+      userId = authResult?.userId || null
+    } catch (error) {
+      // Clerk not configured or error - continue without auth
+      console.log("Clerk not configured, using anonymous identifier")
+    }
     const identifier = userId || request.ip || "anonymous"
     const isPaidUser = false // TODO: Check subscription status from database
 
@@ -42,36 +50,122 @@ export async function POST(request: NextRequest) {
     // Parse and validate input
     const body = await request.json()
     
-    // Check if profileUrl is provided for scraping
-    let validatedInput = body
-    if (body.profileUrl && typeof body.profileUrl === 'string') {
-      console.log("🔍 Profile URL provided, scraping profile...")
-      const scrapeResult = await scrapeLinkedInProfile(body.profileUrl)
-      
-      if (!scrapeResult.success || !scrapeResult.data) {
+    // Profile URL is required for analysis
+    if (!body.profileUrl || typeof body.profileUrl !== 'string' || body.profileUrl.trim().length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Profile URL required",
+          message: "Please provide a LinkedIn profile URL to analyze.",
+        },
+        { status: 400 }
+      )
+    }
+
+    if (!body.profileUrl.includes("linkedin.com/in/")) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid LinkedIn profile URL",
+          message: "Please provide a valid LinkedIn profile URL (e.g., https://www.linkedin.com/in/username).",
+        },
+        { status: 400 }
+      )
+    }
+
+    console.log("🔍 Analyzing LinkedIn profile:", body.profileUrl)
+    
+    // Analyze the profile from URL
+    const profileData = await scrapeLinkedInProfile(body.profileUrl)
+    
+    // If profile analysis fails, return error - NO FALLBACKS, only real profile data
+    if (!profileData.success || !profileData.data) {
+      console.error("❌ Profile analysis failed - returning error")
+      return NextResponse.json(
+        {
+          success: false,
+          error: profileData.error || "Failed to analyze profile",
+          message: "Could not analyze the profile from the provided URL. Please ensure the profile URL is correct and the profile is public.",
+        },
+        { status: 400 }
+      )
+    }
+    
+    // Validate that we got real profile data
+    if (!profileData.data.headline || profileData.data.headline.length < 10) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Insufficient profile data",
+          message: "The profile could not be fully analyzed. Please ensure the profile is public and contains a headline.",
+        },
+        { status: 400 }
+      )
+    }
+    
+    if (!profileData.data.about || profileData.data.about.length < 50) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Insufficient profile data",
+          message: "The profile's about section could not be analyzed or is too short. Please ensure the profile has a complete about section.",
+        },
+        { status: 400 }
+      )
+    }
+    
+    // Profile analysis succeeded - use ONLY real profile data
+    console.log("✅ Profile analyzed successfully - using real profile data")
+    let validatedInput = {
+      persona: body.persona || "Job Seeker",
+      headline: profileData.data.headline, // ONLY real profile data
+      about: profileData.data.about, // ONLY real profile data
+      currentRole: profileData.data.experience?.[0]?.title || "",
+      industry: profileData.data.industry || "",
+      targetAudience: body.targetAudience,
+      goal: body.goal,
+    }
+
+    // Validate that we have real profile data
+    if (!validatedInput.headline || validatedInput.headline.length < 10) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Insufficient profile data",
+          message: "The profile headline could not be analyzed. Please ensure the profile is public and contains a headline.",
+        },
+        { status: 400 }
+      )
+    }
+
+    if (!validatedInput.about || validatedInput.about.length < 50) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Insufficient profile data",
+          message: "The profile about section could not be analyzed. Please ensure the profile has a complete about section.",
+        },
+        { status: 400 }
+      )
+    }
+
+    // Validate with schema
+    try {
+      validatedInput = ProfileAnalyzerInputSchema.parse(validatedInput)
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
         return NextResponse.json(
           {
             success: false,
-            error: scrapeResult.error || "Failed to scrape profile",
+            error: "Validation error",
+            details: validationError.errors,
+            message: "Please check your input and try again.",
           },
           { status: 400 }
         )
       }
-
-      // Merge scraped data with user input
-      validatedInput = {
-        persona: body.persona || "Job Seeker",
-        headline: scrapeResult.data.headline || body.headline || "",
-        about: scrapeResult.data.about || body.about || "",
-        currentRole: scrapeResult.data.experience?.[0]?.title || body.currentRole,
-        industry: scrapeResult.data.industry || body.industry,
-        targetAudience: body.targetAudience,
-        goal: body.goal,
-      }
+      throw validationError
     }
-
-    // Validate input
-    validatedInput = ProfileAnalyzerInputSchema.parse(validatedInput)
 
     console.log("🤖 Starting AI analysis...")
 

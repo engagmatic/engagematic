@@ -93,9 +93,18 @@ export async function scrapeLinkedInProfile(
       }
     }
 
-    // SerpApi LinkedIn profile endpoint
-    const encodedUrl = encodeURIComponent(`https://www.linkedin.com/in/${username}`)
-    const apiUrl = `https://serpapi.com/search.json?engine=linkedin&q=${encodedUrl}&api_key=${apiKey}`
+    // SerpApi Google search for LinkedIn profile (LinkedIn engine not supported)
+    // Try multiple search query formats for better results
+    const searchQueries = [
+      `"${username}" linkedin`,  // Quoted username - most specific
+      `linkedin.com/in/${username}`,  // Direct URL format
+      `site:linkedin.com/in/${username}`,  // Site-specific search
+      `${username} linkedin profile`,  // General search
+    ]
+    
+    // Try first query
+    let encodedQuery = encodeURIComponent(searchQueries[0])
+    let apiUrl = `https://serpapi.com/search.json?engine=google&q=${encodedQuery}&api_key=${apiKey}`
 
     // Create timeout controller
     const controller = new AbortController()
@@ -173,46 +182,123 @@ export async function scrapeLinkedInProfile(
       }
     }
 
-    if (data.error) {
+    // If first query failed with "no results", try alternative queries
+    if (data.error && data.error.includes("hasn't returned any results")) {
+      console.log(`⚠️ First search query returned no results, trying alternative queries...`)
+      
+      let foundResults = false
+      for (let i = 1; i < searchQueries.length; i++) {
+        try {
+          encodedQuery = encodeURIComponent(searchQueries[i])
+          apiUrl = `https://serpapi.com/search.json?engine=google&q=${encodedQuery}&api_key=${apiKey}`
+          
+          console.log(`🔍 Trying alternative search query ${i + 1}: ${searchQueries[i]}`)
+          
+          const altController = new AbortController()
+          const altTimeoutId = setTimeout(() => altController.abort(), 20000)
+          
+          const altResponse = await fetch(apiUrl, {
+            method: "GET",
+            headers: { "Accept": "application/json" },
+            signal: altController.signal,
+          })
+          
+          clearTimeout(altTimeoutId)
+          
+          if (altResponse.ok) {
+            const altData = await altResponse.json()
+            if (!altData.error) {
+              data = altData
+              foundResults = true
+              console.log(`✅ Found results with alternative query ${i + 1}`)
+              break
+            } else if (!altData.error.includes("hasn't returned any results")) {
+              // Different error, might be rate limit or other issue
+              data = altData
+              break
+            }
+          }
+        } catch (altError) {
+          console.warn(`Alternative query ${i + 1} failed:`, altError)
+          continue
+        }
+      }
+      
+      // If all queries failed with "no results"
+      if (!foundResults && data.error && data.error.includes("hasn't returned any results")) {
+        return {
+          success: false,
+          error: `LinkedIn profile "${username}" not found in Google search. The profile may be private, not indexed by Google, or the username may be incorrect. Please verify the LinkedIn profile URL is correct and the profile is public. You can also try entering your profile information manually.`,
+        }
+      }
+    }
+    
+    // Handle other errors
+    if (data.error && !data.error.includes("hasn't returned any results")) {
       return {
         success: false,
         error: data.error,
       }
     }
 
-    // Extract profile from SerpApi response
-    let profile = data.profiles?.[0] || 
-                  data.people_also_viewed?.[0] ||
-                  data.organic_results?.find((r: any) => r.link?.includes('linkedin.com/in/')) ||
-                  data.profile
+    // Extract profile from Google search results
+    // Google search returns results in organic_results array
+    let profile = data.organic_results?.find((r: any) => 
+      r.link?.includes(`linkedin.com/in/${username}`) || 
+      r.link?.includes('linkedin.com/in/')
+    ) || 
+    data.profiles?.[0] || 
+    data.profile ||
+    data.people_also_viewed?.[0]
 
-    // If not found, try searching by username directly
+    // If not found, try searching by username directly with multiple strategies
     if (!profile) {
-      console.log("🔍 Profile not found in first response, trying direct search...")
-      try {
-        const searchUrl = `https://serpapi.com/search.json?engine=linkedin&q=${encodeURIComponent(username)}&api_key=${apiKey}`
-        const searchController = new AbortController()
-        const searchTimeoutId = setTimeout(() => searchController.abort(), 30000)
-        
-        const searchResponse = await fetch(searchUrl, {
-          method: "GET",
-          headers: {
-            "Accept": "application/json",
-          },
-          signal: searchController.signal,
-        })
-        
-        clearTimeout(searchTimeoutId)
-        
-        if (searchResponse.ok) {
-          const searchData = await searchResponse.json()
-          if (!searchData.error) {
-            profile = searchData.profiles?.[0] || 
-                      searchData.organic_results?.find((r: any) => r.link?.includes('linkedin.com/in/'))
+      console.log("🔍 Profile not found in first response, trying alternative search strategies...")
+      
+      const searchStrategies = [
+        // Strategy 1: Google search with quoted username
+        `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(`"${username}" linkedin`)}&api_key=${apiKey}`,
+        // Strategy 2: Google search with site-specific query (alternative format)
+        `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(`linkedin.com/in/${username}`)}&api_key=${apiKey}`,
+        // Strategy 3: Google search with full URL
+        `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(`https://www.linkedin.com/in/${username}`)}&api_key=${apiKey}`,
+      ]
+
+      for (const searchUrl of searchStrategies) {
+        try {
+          const searchController = new AbortController()
+          const searchTimeoutId = setTimeout(() => searchController.abort(), 20000)
+          
+          const searchResponse = await fetch(searchUrl, {
+            method: "GET",
+            headers: {
+              "Accept": "application/json",
+            },
+            signal: searchController.signal,
+          })
+          
+          clearTimeout(searchTimeoutId)
+          
+          if (searchResponse.ok) {
+            const searchData = await searchResponse.json()
+            if (!searchData.error) {
+              profile = searchData.organic_results?.find((r: any) => 
+                r.link?.includes(`linkedin.com/in/${username}`) || 
+                r.link?.includes('linkedin.com/in/')
+              ) ||
+              searchData.profiles?.[0] || 
+              searchData.profile
+              
+              if (profile) {
+                console.log("✅ Profile found using alternative search strategy")
+                break
+              }
+            }
           }
+        } catch (searchError) {
+          console.warn("Search strategy failed, trying next...", searchError)
+          continue
         }
-      } catch (searchError) {
-        console.warn("Direct search also failed:", searchError)
       }
     }
 
@@ -223,19 +309,47 @@ export async function scrapeLinkedInProfile(
       }
     }
 
-    // Format profile data
+    // Format profile data - handle Google search results format
+    // Google search results have: title, snippet, link
+    // Try to extract name from title (e.g., "John Doe | LinkedIn" or "John Doe - Software Engineer | LinkedIn")
+    let profileName = ""
+    if (profile.title) {
+      // Extract name from title (remove "| LinkedIn" and job title parts)
+      profileName = profile.title
+        .replace(/\s*\|\s*LinkedIn.*$/i, '')
+        .replace(/\s*-\s*[^|]+$/, '')
+        .trim()
+    }
+    
     const scrapedData: ScrapedProfileData = {
-      name: profile.name || profile.title || "",
-      headline: profile.headline || profile.snippet || profile.description || profile.subtitle || "",
-      about: profile.about || profile.summary || profile.description || "",
-      location: profile.location || "",
+      name: profileName || profile.name || profile.title || profile.full_name || "",
+      headline: profile.headline || profile.snippet || profile.description || profile.subtitle || profile.job_title || profile.title?.split('|')[1]?.trim() || "",
+      about: profile.about || profile.summary || profile.description || profile.bio || profile.snippet || "",
+      location: profile.location || profile.geo || "",
       industry: profile.industry || "",
-      experience: profile.experience || profile.positions || profile.work_experience || [],
-      education: profile.education || profile.schools || [],
-      skills: profile.skills || [],
+      experience: Array.isArray(profile.experience) ? profile.experience : 
+                  Array.isArray(profile.positions) ? profile.positions :
+                  Array.isArray(profile.work_experience) ? profile.work_experience :
+                  profile.experience ? [profile.experience] : [],
+      education: Array.isArray(profile.education) ? profile.education :
+                Array.isArray(profile.schools) ? profile.schools :
+                profile.education ? [profile.education] : [],
+      skills: Array.isArray(profile.skills) ? profile.skills :
+              profile.skills ? [profile.skills] : [],
+    }
+    
+    // Ensure arrays are properly formatted
+    if (!Array.isArray(scrapedData.experience)) {
+      scrapedData.experience = []
+    }
+    if (!Array.isArray(scrapedData.education)) {
+      scrapedData.education = []
+    }
+    if (!Array.isArray(scrapedData.skills)) {
+      scrapedData.skills = []
     }
 
-    console.log("✅ Profile data scraped successfully:", {
+    console.log("✅ Profile data analyzed successfully:", {
       name: scrapedData.name,
       hasHeadline: !!scrapedData.headline,
       hasAbout: !!scrapedData.about,
@@ -246,10 +360,10 @@ export async function scrapeLinkedInProfile(
       data: scrapedData,
     }
   } catch (error) {
-    console.error("❌ LinkedIn scraping error:", error)
+    console.error("❌ LinkedIn profile analysis error:", error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred while scraping profile",
+      error: error instanceof Error ? error.message : "Unknown error occurred while analyzing profile",
     }
   }
 }

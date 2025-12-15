@@ -41,27 +41,57 @@ export default function AffiliateDashboard() {
     try {
       setIsLoading(true);
 
+      // Check if affiliate token exists
+      const affiliateToken = localStorage.getItem("affiliateToken");
+      if (!affiliateToken) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to your affiliate account",
+          variant: "destructive",
+        });
+        navigate("/affiliate/login");
+        return;
+      }
+
       // Get dashboard stats
       const statsResponse = await api.getAffiliateDashboardStats();
       if (statsResponse.success) {
         setAffiliate(statsResponse.data.affiliate);
         setStats(statsResponse.data.stats);
+      } else {
+        throw new Error(statsResponse.message || "Failed to load stats");
       }
 
       // Get commissions
-      const commissionsResponse = await api.getAffiliateCommissions(1, 10);
-      if (commissionsResponse.success) {
-        setCommissions(commissionsResponse.data.commissions || []);
+      try {
+        const commissionsResponse = await api.getAffiliateCommissions(1, 10);
+        if (commissionsResponse.success) {
+          setCommissions(commissionsResponse.data.commissions || []);
+        }
+      } catch (commError) {
+        console.error("Error fetching commissions:", commError);
+        // Don't block dashboard if commissions fail
       }
 
       // Get referrals
-      const referralsResponse = await api.getAffiliateReferrals();
-      if (referralsResponse.success) {
-        setReferrals(referralsResponse.data || []);
+      try {
+        const referralsResponse = await api.getAffiliateReferrals();
+        if (referralsResponse.success) {
+          setReferrals(referralsResponse.data || []);
+        }
+      } catch (refError) {
+        console.error("Error fetching referrals:", refError);
+        // Don't block dashboard if referrals fail
       }
     } catch (error: any) {
       console.error("Error fetching dashboard data:", error);
-      if (error.message?.includes("401") || error.message?.includes("Authentication")) {
+      if (
+        error.message?.includes("401") ||
+        error.message?.includes("Authentication") ||
+        error.message?.includes("required")
+      ) {
+        // Clear invalid token
+        localStorage.removeItem("affiliateToken");
         toast({
           title: "Authentication Required",
           description: "Please log in to your affiliate account",
@@ -71,7 +101,7 @@ export default function AffiliateDashboard() {
       } else {
         toast({
           title: "Error",
-          description: "Failed to load dashboard data",
+          description: error.message || "Failed to load dashboard data. Please try refreshing.",
           variant: "destructive",
         });
       }
@@ -191,7 +221,11 @@ export default function AffiliateDashboard() {
                 </p>
               </div>
               <Button
-                onClick={() => navigate("/affiliate/login")}
+                onClick={() => {
+                  // Clear affiliate token
+                  localStorage.removeItem("affiliateToken");
+                  navigate("/affiliate/login");
+                }}
                 variant="outline"
               >
                 Logout

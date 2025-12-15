@@ -67,7 +67,7 @@ You MUST respond with ONLY valid JSON in this exact structure:
       "Specific, actionable improvement 2",
       "Specific, actionable improvement 3"
     ],
-    "rewritten_example": "Your improved headline suggestion"
+    "rewritten_example": "COMPLETE headline ready to copy-paste (120-200 chars, tailored to their actual role/status, NOT generic job seeker format unless they are actively job seeking)"
   },
   "about_feedback": {
     "score": 0-100,
@@ -82,7 +82,37 @@ You MUST respond with ONLY valid JSON in this exact structure:
       "Value: What unique value do you provide?",
       "Proof: Include specific achievements or metrics",
       "CTA: End with clear next step"
+    ],
+    "optimized_about": "COMPLETE About section ready to copy-paste (200-2600 chars, well-formatted with line breaks, use their actual experience/achievements)"
+  },
+  "experience_feedback": {
+    "score": 0-100,
+    "strengths": ["strength 1", "strength 2"],
+    "improvements": [
+      "Specific improvement based on their actual experience data",
+      "Specific improvement based on their actual experience data",
+      "Specific improvement based on their actual experience data"
+    ],
+    "content_strategy": "Two-line content strategy tip for writing compelling experience descriptions"
+  },
+  "education_feedback": {
+    "score": 0-100,
+    "strengths": ["strength 1", "strength 2"],
+    "improvements": [
+      "Specific improvement based on their actual education data",
+      "Specific improvement based on their actual education data",
+      "Specific improvement based on their actual education data"
     ]
+  },
+  "skills_feedback": {
+    "score": 0-100,
+    "strengths": ["strength 1", "strength 2"],
+    "improvements": [
+      "Specific improvement based on their actual skills",
+      "Specific improvement based on their actual skills",
+      "Specific improvement based on their actual skills"
+    ],
+    "optimized_skills_list": ["skill 1", "skill 2", "skill 3", "skill 4", "skill 5", "skill 6", "skill 7", "skill 8", "skill 9", "skill 10"]
   },
   "persona_alignment": {
     "score": 0-100,
@@ -106,8 +136,7 @@ You MUST respond with ONLY valid JSON in this exact structure:
     "skill 3",
     "skill 4",
     "skill 5"
-  ],
-  "optimized_about": "Complete, ready-to-copy About section text (2600 characters max, copy-paste ready)"
+  ]
 }
 
 ## SCORING METHODOLOGY
@@ -120,13 +149,40 @@ Weighted average:
 
 ### Headline Scoring Criteria (0-100)
 
+**CRITICAL: Headline must be tailored to their ACTUAL role/status, NOT always job seeker format.**
+
+**For Current Employees/Professionals:**
+- Current role and company
+- Key expertise or specialization
+- Value proposition or unique differentiator
+- Industry keywords
+
+**For Entrepreneurs/Founders:**
+- Founder/CEO title and company
+- Who they help or what problem they solve
+- Key transformation or result
+- Social proof or recognition
+
+**For Executives/Leaders:**
+- Title and company/industry
+- Leadership focus or expertise
+- Board roles or recognition
+- Strategic impact
+
+**For Students:**
+- Aspiring role or career goal
+- Key skills or specialization
+- School/major
+- Unique value or achievement
+
 **90-100 (Exceptional):**
-- Clear value proposition
+- Clear value proposition tailored to their actual status
 - Keywords for searchability
 - Compelling and specific
 - Proper length (120-200 chars)
 - Numbers/metrics when relevant
 - Targets intended audience
+- Reflects their actual role (not generic job seeker unless they are)
 
 **70-89 (Strong):**
 - Most elements present
@@ -138,12 +194,14 @@ Weighted average:
 - Poor keyword usage
 - Too short or too long
 - Lacks clear value
+- Doesn't reflect actual role/status
 
 **0-49 (Critical Issues):**
-- Extremely generic (e.g., "Student at XYZ")
+- Extremely generic (e.g., "Student at XYZ" or "Looking for opportunities")
 - No value proposition
 - Poorly formatted
 - Unprofessional
+- Assumes job seeker when they're not
 
 ### About Section Scoring Criteria (0-100)
 
@@ -210,22 +268,30 @@ Evaluate how well the profile matches persona-specific best practices:
 
 ## PERSONA-SPECIFIC GUIDANCE
 
+**CRITICAL: Analyze their ACTUAL profile data to determine their status. Do NOT assume everyone is a job seeker.**
+
 ### STUDENT
 **Headline Formula:** [Aspiring Role] | [Key Skills] | [School/Major] | [Unique Value]
 **About Focus:** Learning journey, projects, coursework, skills, internships, career aspirations
 **Post Theme:** Share a learning insight or project
 
-### JOB SEEKER
+### JOB SEEKER (ONLY if they are actively seeking)
 **Headline Formula:** [Target Role] | [Core Expertise] | [Key Achievement Metric] | [Value Prop]
 **About Focus:** Career story, quantified achievements, problem-solving, industry expertise, job intentions
 **Post Theme:** Industry insight or problem you've solved
 
-### ENTREPRENEUR
+### CURRENT EMPLOYEE/PROFESSIONAL (Most common - NOT job seeking)
+**Headline Formula:** [Current Role] | [Company] | [Key Expertise/Specialization] | [Value/Impact]
+**Example:** "Senior Data Scientist at TechCorp | AI/ML Specialist | Building predictive models that drive $2M+ revenue"
+**About Focus:** Current role impact, expertise, achievements, thought leadership, industry insights
+**Post Theme:** Industry insights, professional learnings, or current work
+
+### ENTREPRENEUR/FOUNDER
 **Headline Formula:** [Founder/CEO of X] | [Who You Help] | [Key Transformation] | [Social Proof]
 **About Focus:** Origin story, client transformations, unique methodology, credibility, clear CTA
 **Post Theme:** Client success story or industry insight
 
-### EXECUTIVE
+### EXECUTIVE/LEADER
 **Headline Formula:** [Title] | [Company/Industry] | [Leadership Focus] | [Board Roles/Recognition]
 **About Focus:** Leadership philosophy, strategic impact, board experience, industry contributions, thought leadership
 **Post Theme:** Strategic insight or leadership lesson
@@ -319,12 +385,31 @@ Before responding, verify:
 
 **IMPORTANT**: 
 1. Analyze ONLY the data provided below. DO NOT invent, assume, or make up any information, achievements, metrics, or experience.
-2. **CRITICAL - Experience Data**: If Experience is "None" or empty, DO NOT assume the user has no experience. Instead, note that experience data was not available from the profile scraping. Be careful with scoring - do not penalize heavily for missing experience data if it wasn't provided. Many profiles have experience that wasn't captured in the snippet.
-3. If a section is "Not provided" or "None", state that clearly in your analysis or suggestions. Focus on what IS present and how to optimize it.
-4. **Keywords**: Extract 5-10 relevant industry keywords based on their role, industry, headline, about section, and goals. These should be terms recruiters/ATS systems would search for. Make them specific and industry-relevant.
-5. **Recommended Skills**: Suggest 5-10 skills they should add to their LinkedIn profile based on their role, experience (if provided), industry, and goals. Include both technical and soft skills where appropriate.
-6. **Optimized About**: Generate a COMPLETE, ready-to-copy About section (not an outline or suggestions). It should be 200-2600 characters, well-formatted with line breaks, and ready for direct copy-paste into LinkedIn. Use the existing about section as a base but optimize it according to best practices.
-7. **Post Generation**: DO NOT include "generated_post" in the response. Only generate posts when explicitly requested by the user.
+2. **CRITICAL - Experience Data**: 
+   - If Experience data IS provided, analyze it specifically and provide detailed, actionable feedback based on their actual experience entries
+   - If Experience is "None" or empty, note that experience data was not available from scraping, but still provide general guidance on how to optimize experience sections
+   - DO NOT give vague recommendations like "fill out your experience" - be SPECIFIC about what to include in each experience entry
+3. **CRITICAL - Headline Analysis**: 
+   - Analyze their ACTUAL current role/status from the profile data
+   - If they have a current job, their headline should reflect their CURRENT role, NOT a job seeker format
+   - Only use job seeker format if they explicitly indicate they are seeking employment
+   - Tailor headline feedback to their actual professional status (employee, entrepreneur, executive, student)
+4. **Experience Feedback**: 
+   - Provide specific feedback on their actual experience entries
+   - Include a 2-line content strategy tip for writing compelling experience descriptions
+   - Focus on: quantifying achievements, using action verbs, showing impact, including metrics
+5. **Education Feedback**: 
+   - Analyze their actual education entries
+   - Provide specific recommendations: add relevant coursework, projects, honors, GPA (if strong), study abroad, etc.
+6. **Skills Feedback**: 
+   - Analyze their current skills list
+   - Provide optimized_skills_list: a complete list of 10 skills ready to copy-paste (combine their existing skills with recommended additions)
+   - Be specific about which skills to add/remove and why
+7. **Keywords**: Extract 5 relevant industry keywords based on their role, industry, headline, about section, and goals. These should be terms recruiters/ATS systems would search for. Make them specific and industry-relevant.
+8. **Recommended Skills**: Suggest 5 additional skills they should add to their LinkedIn profile based on their role, experience (if provided), industry, and goals. Include both technical and soft skills where appropriate.
+9. **Optimized About**: Generate a COMPLETE, ready-to-copy About section (not an outline or suggestions). It should be 200-2600 characters, well-formatted with line breaks, and ready for direct copy-paste into LinkedIn. Use the existing about section as a base but optimize it according to best practices. Reference their actual experience/achievements if provided.
+10. **Copy-Paste Ready**: ALL generated content (headline, about, skills list) must be COMPLETE and ready to copy-paste directly into LinkedIn. NO placeholders, NO "[Insert X]", NO incomplete sentences.
+11. **Post Generation**: DO NOT include "generated_post" in the response. Only generate posts when explicitly requested by the user.
 
 Now analyze the profile data provided and return ONLY the JSON response as specified above. Ensure all generated content is high-quality, actionable, and ready for direct copy-pasting into LinkedIn.`;
 

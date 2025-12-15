@@ -72,7 +72,14 @@ class ApiClient {
       console.log('🔗 API Request:', options.method || 'GET', url);
     }
     
-    const token = this.getToken();
+    // Check if this is an affiliate endpoint - use affiliate token if available
+    const isAffiliateEndpoint = endpoint.includes('/affiliate/');
+    let token = isAffiliateEndpoint ? this.getAffiliateToken() : this.getToken();
+    
+    // If no token found and it's an affiliate endpoint, try regular token as fallback
+    if (!token && isAffiliateEndpoint) {
+      token = this.getToken();
+    }
 
     const config = {
       headers: {
@@ -291,6 +298,33 @@ class ApiClient {
     });
   }
 
+  // Profile Coach methods (new LinkedIn profile analyzer)
+  async analyzeProfileWithCoach(profileUrl, options = {}) {
+    const { userType, targetAudience, mainGoal } = options;
+    return this.request("/profile-coach/analyze", {
+      method: "POST",
+      body: JSON.stringify({
+        profileUrl,
+        userType,
+        targetAudience,
+        mainGoal,
+      }),
+    });
+  }
+
+  async analyzeProfileWithCoachTest(profileUrl, options = {}) {
+    const { userType, targetAudience, mainGoal } = options;
+    return this.request("/profile-coach/test", {
+      method: "POST",
+      body: JSON.stringify({
+        profileUrl,
+        userType,
+        targetAudience,
+        mainGoal,
+      }),
+    });
+  }
+
   async analyzeContentOptimization(optimizationData) {
     return this.request("/content/analyze-optimization", {
       method: "POST",
@@ -505,7 +539,9 @@ class ApiClient {
     });
 
     if (response.success && response.data.token) {
-      this.setToken(response.data.token);
+      // Store affiliate token separately
+      localStorage.setItem("affiliateToken", response.data.token);
+      console.log("✅ Affiliate token saved");
     }
 
     return response;
@@ -518,18 +554,43 @@ class ApiClient {
     });
 
     if (response.success && response.data && response.data.token) {
-      this.setToken(response.data.token);
+      // Store affiliate token separately
+      localStorage.setItem("affiliateToken", response.data.token);
       console.log("✅ Affiliate token saved");
     }
 
     return response;
   }
 
+  getAffiliateToken() {
+    return localStorage.getItem("affiliateToken");
+  }
+
+  setAffiliateToken(token) {
+    if (token) {
+      localStorage.setItem("affiliateToken", token);
+    } else {
+      localStorage.removeItem("affiliateToken");
+    }
+  }
+
+  clearAffiliateToken() {
+    localStorage.removeItem("affiliateToken");
+  }
+
   async getAffiliateProfile() {
+    const token = this.getAffiliateToken();
+    if (!token) {
+      throw new Error("Authentication required. Please log in to your affiliate account.");
+    }
     return this.request("/affiliate/me");
   }
 
   async updateAffiliateProfile(profileData) {
+    const token = this.getAffiliateToken();
+    if (!token) {
+      throw new Error("Authentication required. Please log in to your affiliate account.");
+    }
     return this.request("/affiliate/profile", {
       method: "PUT",
       body: JSON.stringify(profileData),
@@ -538,14 +599,27 @@ class ApiClient {
 
   // Affiliate dashboard methods
   async getAffiliateDashboardStats() {
+    // Ensure we use affiliate token for affiliate endpoints
+    const token = this.getAffiliateToken();
+    if (!token) {
+      throw new Error("Authentication required. Please log in to your affiliate account.");
+    }
     return this.request("/affiliate/dashboard/stats");
   }
 
   async getAffiliateCommissions(page = 1, limit = 50) {
+    const token = this.getAffiliateToken();
+    if (!token) {
+      throw new Error("Authentication required. Please log in to your affiliate account.");
+    }
     return this.request(`/affiliate/dashboard/commissions?page=${page}&limit=${limit}`);
   }
 
   async getAffiliateReferrals() {
+    const token = this.getAffiliateToken();
+    if (!token) {
+      throw new Error("Authentication required. Please log in to your affiliate account.");
+    }
     return this.request("/affiliate/dashboard/referrals");
   }
 

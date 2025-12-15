@@ -95,9 +95,15 @@ export function ScoreCard({
 
         {/* Rewritten Example */}
         {rewrittenExample && (
-          <div className="space-y-2 p-4 bg-muted rounded-lg">
-            <h4 className="text-sm font-semibold">Suggested Rewrite</h4>
-            <p className="text-sm text-muted-foreground italic">{rewrittenExample}</p>
+          <div className="space-y-2 p-4 bg-muted rounded-lg border border-primary/20">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-semibold">✨ Copy-Paste Ready Headline</h4>
+              <Badge variant="outline" className="text-xs">Ready to Use</Badge>
+            </div>
+            <p className="text-sm font-medium">{rewrittenExample}</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              💡 Copy this headline and paste it directly into your LinkedIn profile
+            </p>
           </div>
         )}
       </CardContent>

@@ -60,6 +60,510 @@ class LinkedInProfileCoach {
   }
 
   /**
+   * Fetch profile data using CoreSignal API
+   * EXCELLENT for LinkedIn professional data - World-class API
+   * Documentation: https://docs.coresignal.com/
+   * API Key: rT5M97UDI3FEbLdDY7LHLtkrUUoOwhf0
+   */
+  async fetchProfileFromCoreSignal(profileUrl) {
+    const coresignalKey = process.env.CORESIGNAL_API_KEY || config.CORESIGNAL_API_KEY;
+    
+    if (!coresignalKey || coresignalKey.length < 10) {
+      throw new Error("CoreSignal API key not configured.");
+    }
+    
+    try {
+      console.log("🔍 Fetching profile from CoreSignal API (World-class LinkedIn data)...");
+      console.log("Profile URL:", profileUrl);
+      
+      // Extract username from URL for CoreSignal API
+      const username = this.extractUsernameFromUrl(profileUrl);
+      if (!username) {
+        throw new Error("Could not extract username from profile URL");
+      }
+      
+      console.log("Extracted username:", username);
+      
+      // CoreSignal API endpoints - try multiple approaches based on their API structure
+      // CoreSignal uses apikey header based on MCP config
+      // Documentation: https://docs.coresignal.com/
+      const apiEndpoints = [
+        {
+          url: `https://api.coresignal.com/cdapi/v1/person/search`,
+          params: { linkedin_url: profileUrl },
+          method: 'GET',
+          description: 'Search by LinkedIn URL'
+        },
+        {
+          url: `https://api.coresignal.com/cdapi/v1/person/search`,
+          params: { linkedin_username: username },
+          method: 'GET',
+          description: 'Search by LinkedIn username'
+        },
+        {
+          url: `https://api.coresignal.com/cdapi/v1/person`,
+          params: { linkedin_url: profileUrl },
+          method: 'GET',
+          description: 'Get person by LinkedIn URL'
+        },
+        {
+          url: `https://api.coresignal.com/cdapi/v1/person`,
+          params: { linkedin_username: username },
+          method: 'GET',
+          description: 'Get person by LinkedIn username'
+        }
+      ];
+      
+      let personData = null;
+      let lastError = null;
+      let successfulEndpoint = null;
+      
+      for (let i = 0; i < apiEndpoints.length; i++) {
+        const endpoint = apiEndpoints[i];
+        try {
+          // Build URL with query parameters
+          const queryString = new URLSearchParams(endpoint.params).toString();
+          const fullUrl = queryString ? `${endpoint.url}?${queryString}` : endpoint.url;
+          
+          console.log(`🔍 Trying CoreSignal endpoint ${i + 1}/${apiEndpoints.length}: ${endpoint.description}`);
+          console.log(`   Method: ${endpoint.method}`);
+          console.log(`   URL: ${fullUrl.replace(coresignalKey, "***")}`);
+          console.log(`   Params:`, endpoint.params);
+          
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000);
+          
+          const response = await fetch(fullUrl, {
+            method: endpoint.method,
+            headers: {
+              "apikey": coresignalKey, // CoreSignal uses apikey header (based on MCP config)
+              "Authorization": `Bearer ${coresignalKey}`, // Also try Bearer token
+              "Accept": "application/json",
+              "Content-Type": "application/json",
+            },
+            signal: controller.signal,
+          });
+          
+          clearTimeout(timeoutId);
+          
+          console.log(`📡 CoreSignal response status: ${response.status} ${response.statusText}`);
+          console.log(`   Response headers:`, Object.fromEntries(response.headers.entries()));
+          
+          if (response.ok) {
+            const responseText = await response.text();
+            console.log(`📊 CoreSignal response (first 500 chars):`, responseText.substring(0, 500));
+            
+            let data;
+            try {
+              data = JSON.parse(responseText);
+            } catch (parseError) {
+              console.error("❌ Failed to parse CoreSignal response as JSON:", parseError);
+              throw new Error(`CoreSignal returned invalid JSON response: ${parseError.message}`);
+            }
+            
+            console.log("📊 CoreSignal response keys:", Object.keys(data));
+            console.log("📊 CoreSignal response structure:", JSON.stringify(data, null, 2).substring(0, 1000));
+            
+            // Handle different response formats from CoreSignal
+            if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+              personData = data.data[0];
+              successfulEndpoint = fullUrl;
+            } else if (data.data && typeof data.data === 'object' && !Array.isArray(data.data)) {
+              personData = data.data;
+              successfulEndpoint = fullUrl;
+            } else if (data.person) {
+              personData = data.person;
+              successfulEndpoint = fullUrl;
+            } else if (data.full_name || data.name || data.first_name || data.headline) {
+              personData = data;
+              successfulEndpoint = fullUrl;
+            } else if (Array.isArray(data) && data.length > 0) {
+              personData = data[0];
+              successfulEndpoint = fullUrl;
+            } else if (data.results && Array.isArray(data.results) && data.results.length > 0) {
+              personData = data.results[0];
+              successfulEndpoint = fullUrl;
+            }
+            
+            if (personData) {
+              console.log("✅ CoreSignal profile found using endpoint:", successfulEndpoint);
+              break;
+            } else {
+              console.warn("⚠️ CoreSignal returned data but no person found in response structure");
+              console.warn("⚠️ Full response data:", JSON.stringify(data, null, 2));
+              lastError = `CoreSignal returned response but no person data found. Response structure: ${JSON.stringify(Object.keys(data))}`;
+            }
+          } else {
+            const errorText = await response.text();
+            let errorData;
+            try {
+              errorData = JSON.parse(errorText);
+            } catch {
+              errorData = { message: errorText };
+            }
+            
+            console.warn(`⚠️ CoreSignal endpoint ${i + 1} failed:`, response.status, errorData.message || errorText);
+            
+            if (response.status === 401 || response.status === 403) {
+              throw new Error("Invalid CoreSignal API key. Please check your CORESIGNAL_API_KEY.");
+            } else if (response.status === 429) {
+              throw new Error("CoreSignal rate limit exceeded. Please try again later.");
+            } else if (response.status === 404) {
+              lastError = `Profile "${username}" not found in CoreSignal database. The profile may not be indexed yet or may be private.`;
+              // Continue to next endpoint
+              continue;
+            } else {
+              // Log detailed error information
+              console.error(`❌ CoreSignal API error ${response.status}:`, {
+                status: response.status,
+                statusText: response.statusText,
+                errorData: errorData,
+                endpoint: endpoint.description,
+                url: fullUrl.replace(coresignalKey, "***"),
+              });
+              lastError = errorData.message || errorData.error || errorData.detail || `CoreSignal API error: ${response.status} ${response.statusText}`;
+            }
+          }
+        } catch (error) {
+          if (error.name === 'AbortError') {
+            throw new Error("CoreSignal request timed out after 30 seconds.");
+          }
+          if (error.message.includes("Invalid") || error.message.includes("rate limit")) {
+            throw error;
+          }
+          lastError = error.message;
+          console.warn(`⚠️ CoreSignal endpoint ${i + 1} error:`, error.message);
+        }
+      }
+      
+      if (!personData) {
+        const detailedError = lastError || `Profile "${username}" may not be in CoreSignal database. Please verify the profile URL is correct and the profile is public.`;
+        
+        // Log all attempted endpoints for debugging
+        console.error("❌ CoreSignal failed to find profile after trying all endpoints:");
+        console.error("   Profile URL:", profileUrl);
+        console.error("   Username:", username);
+        console.error("   Last error:", lastError);
+        console.error("   Tried", apiEndpoints.length, "different endpoint strategies");
+        
+        throw new Error(`CoreSignal returned no profile data. ${detailedError}
+
+Debugging info:
+- Profile URL: ${profileUrl}
+- Username: ${username}
+- Tried ${apiEndpoints.length} different CoreSignal API endpoints
+- All endpoints returned no profile data
+
+Possible reasons:
+1. Profile not yet indexed in CoreSignal database (new profiles may take time)
+2. Profile has privacy restrictions
+3. Profile URL format issue
+4. CoreSignal API endpoint format may need adjustment`);
+      }
+      
+      // Format CoreSignal response to our structure with comprehensive mapping
+      const profileData = {
+        name: personData.full_name || 
+              `${(personData.first_name || '').trim()} ${(personData.last_name || '').trim()}`.trim() || 
+              personData.name || 
+              personData.display_name || "",
+        headline: personData.headline || 
+                  personData.job_title || 
+                  personData.occupation || 
+                  personData.title ||
+                  personData.current_position?.title || 
+                  personData.current_job_title || "",
+        summary: personData.summary || 
+                 personData.about || 
+                 personData.bio || 
+                 personData.description ||
+                 personData.overview || "",
+        location: personData.location || 
+                  personData.city || 
+                  (personData.city && personData.country 
+                    ? `${personData.city}, ${personData.country}` 
+                    : personData.country || personData.city || ""),
+        experience: this.formatExperience(personData.experiences || 
+                                          personData.positions || 
+                                          personData.work_experience || 
+                                          personData.employment_history ||
+                                          (personData.current_position ? [personData.current_position] : [])),
+        education: this.formatEducation(personData.education || 
+                                        personData.schools || 
+                                        personData.educations ||
+                                        personData.education_history || []),
+        skills: this.formatSkills(personData.skills || 
+                                  personData.skill_list || 
+                                  personData.skills_list ||
+                                  (typeof personData.skills === 'string' ? personData.skills.split(',').map(s => s.trim()) : [])),
+        industry: personData.industry || 
+                  personData.industries?.[0] || 
+                  personData.primary_industry || "",
+        profilePicture: personData.profile_picture_url || 
+                        personData.image || 
+                        personData.photo_url ||
+                        personData.profile_image || "",
+      };
+      
+      // Ensure we have at least name and headline for analysis
+      if (!profileData.name || profileData.name.length < 2) {
+        throw new Error("CoreSignal returned incomplete profile data (missing name)");
+      }
+      
+      if (!profileData.headline || profileData.headline.length < 5) {
+        // Set a default headline if missing
+        profileData.headline = profileData.name + " - LinkedIn Profile";
+      }
+      
+      console.log("✅ CoreSignal profile data extracted:", {
+        name: profileData.name,
+        headline: profileData.headline.substring(0, 60),
+        hasAbout: !!profileData.summary && profileData.summary.length > 0,
+        aboutLength: profileData.summary?.length || 0,
+        experienceCount: profileData.experience.length,
+        educationCount: profileData.education.length,
+        skillsCount: profileData.skills.length,
+        location: profileData.location,
+      });
+      
+      return {
+        success: true,
+        data: profileData,
+      };
+    } catch (error) {
+      console.error("❌ CoreSignal API error:", error);
+      if (error.name === 'AbortError') {
+        throw new Error("CoreSignal request timed out after 30 seconds.");
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Format experience data from various API formats
+   */
+  formatExperience(experience) {
+    if (!experience) return [];
+    if (!Array.isArray(experience)) return [experience];
+    
+    return experience.map(exp => ({
+      title: exp.title || exp.job_title || exp.position || exp.role || "",
+      company: exp.company || exp.company_name || exp.organization || "",
+      description: exp.description || exp.summary || "",
+      duration: exp.duration || exp.period || exp.time_period || "",
+      startDate: exp.start_date || exp.start || "",
+      endDate: exp.end_date || exp.end || exp.current ? "Present" : "",
+    })).filter(exp => exp.title || exp.company);
+  }
+
+  /**
+   * Format education data from various API formats
+   */
+  formatEducation(education) {
+    if (!education) return [];
+    if (!Array.isArray(education)) return [education];
+    
+    return education.map(edu => ({
+      school: edu.school || edu.institution || edu.university || edu.college || "",
+      degree: edu.degree || edu.qualification || "",
+      field: edu.field || edu.major || edu.subject || "",
+      duration: edu.duration || edu.period || "",
+    })).filter(edu => edu.school);
+  }
+
+  /**
+   * Format skills data from various API formats
+   */
+  formatSkills(skills) {
+    if (!skills) return [];
+    if (typeof skills === 'string') {
+      return skills.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    }
+    if (Array.isArray(skills)) {
+      return skills.map(skill => 
+        typeof skill === 'string' ? skill : skill.name || skill.skill || skill.title || ""
+      ).filter(s => s.length > 0);
+    }
+    return [];
+  }
+
+  /**
+   * Fetch profile data using Proxycurl (https://nubela.co/proxycurl/)
+   * BEST OPTION for LinkedIn - Free tier: 100 requests/month
+   * Sign up: https://nubela.co/proxycurl/
+   */
+  async fetchProfileFromProxycurl(profileUrl) {
+    const proxycurlKey = process.env.PROXYCURL_API_KEY || config.PROXYCURL_API_KEY;
+    
+    if (!proxycurlKey || proxycurlKey.length < 10) {
+      throw new Error("Proxycurl API key not configured. Sign up at https://nubela.co/proxycurl/ for free API key.");
+    }
+    
+    try {
+      console.log("🔍 Fetching profile from Proxycurl:", profileUrl);
+      
+      const apiUrl = `https://nubela.co/proxycurl/api/v2/linkedin?url=${encodeURIComponent(profileUrl)}`;
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
+      const response = await fetch(apiUrl, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${proxycurlKey}`,
+          "Accept": "application/json",
+        },
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          throw new Error("Invalid Proxycurl API key. Please check your PROXYCURL_API_KEY.");
+        }
+        if (response.status === 429) {
+          throw new Error("Proxycurl rate limit exceeded. Free tier allows 100 requests/month.");
+        }
+        throw new Error(errorData.error || `Proxycurl API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Format Proxycurl response to our structure
+      const profileData = {
+        name: data.full_name || data.name || "",
+        headline: data.headline || data.occupation || "",
+        summary: data.summary || data.about || "",
+        location: (data.city || "") + (data.country ? `, ${data.country}` : ""),
+        experience: data.experiences || [],
+        education: data.education || [],
+        skills: data.skills || [],
+        industry: data.industry || "",
+        profilePicture: data.profile_pic_url || "",
+      };
+      
+      console.log("✅ Proxycurl profile data:", {
+        name: profileData.name,
+        hasHeadline: !!profileData.headline,
+        hasAbout: !!profileData.summary,
+      });
+      
+      return {
+        success: true,
+        data: profileData,
+      };
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw new Error("Proxycurl request timed out after 30 seconds.");
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch profile data using RapidAPI LinkedIn Scraper
+   * Free tier available - Sign up at https://rapidapi.com
+   */
+  async fetchProfileFromRapidAPI(username) {
+    const rapidApiKey = process.env.RAPIDAPI_KEY || config.RAPIDAPI_KEY;
+    const rapidApiHost = process.env.RAPIDAPI_HOST || config.RAPIDAPI_HOST || "linkedin-profile-scraper-api.p.rapidapi.com";
+    
+    if (!rapidApiKey || rapidApiKey.length < 10) {
+      throw new Error("RapidAPI key not configured. Sign up at https://rapidapi.com for free API key.");
+    }
+    
+    try {
+      console.log("🔍 Fetching profile from RapidAPI:", username);
+      
+      const profileUrl = `https://www.linkedin.com/in/${username}`;
+      // Try different RapidAPI endpoints
+      const apiUrls = [
+        `https://${rapidApiHost}/profile/${encodeURIComponent(profileUrl)}`,
+        `https://${rapidApiHost}/linkedin?url=${encodeURIComponent(profileUrl)}`,
+      ];
+      
+      let data = null;
+      let lastError = null;
+      
+      for (const apiUrl of apiUrls) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000);
+          
+          const response = await fetch(apiUrl, {
+            method: "GET",
+            headers: {
+              "X-RapidAPI-Key": rapidApiKey,
+              "X-RapidAPI-Host": rapidApiHost,
+              "Accept": "application/json",
+            },
+            signal: controller.signal,
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (response.ok) {
+            data = await response.json();
+            break;
+          } else {
+            const errorData = await response.json().catch(() => ({}));
+            if (response.status === 401 || response.status === 403) {
+              throw new Error("Invalid RapidAPI key. Please check your RAPIDAPI_KEY.");
+            }
+            if (response.status === 429) {
+              throw new Error("RapidAPI rate limit exceeded. Please upgrade your plan.");
+            }
+            lastError = errorData.message || `RapidAPI error: ${response.status}`;
+          }
+        } catch (error) {
+          if (error.name === 'AbortError') {
+            throw new Error("RapidAPI request timed out after 30 seconds.");
+          }
+          if (error.message.includes("Invalid") || error.message.includes("rate limit")) {
+            throw error;
+          }
+          lastError = error.message;
+        }
+      }
+      
+      if (!data) {
+        throw new Error(lastError || "RapidAPI failed to fetch profile data");
+      }
+      
+      // Format RapidAPI response to our structure (handle different response formats)
+      const profileData = {
+        name: data.name || data.fullName || data.full_name || "",
+        headline: data.headline || data.title || data.occupation || "",
+        summary: data.summary || data.about || data.description || "",
+        location: data.location || data.city || "",
+        experience: data.experiences || data.experience || data.positions || [],
+        education: data.education || data.educations || [],
+        skills: data.skills || [],
+        industry: data.industry || "",
+        profilePicture: data.profilePicture || data.profile_pic_url || data.image || "",
+      };
+      
+      console.log("✅ RapidAPI profile data:", {
+        name: profileData.name,
+        hasHeadline: !!profileData.headline,
+        hasAbout: !!profileData.summary,
+      });
+      
+      return {
+        success: true,
+        data: profileData,
+      };
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw new Error("RapidAPI request timed out after 30 seconds.");
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Fetch profile data using SerpApi (https://serpapi.com)
    * Free tier: 250 searches/month
    */
@@ -111,8 +615,8 @@ class LinkedInProfileCoach {
         throw new Error("SerpApi rate limit exceeded. Free tier allows 100 searches/month. Please try again later, upgrade your plan, or use manual input mode.");
       }
       
-      if (errorMsg.includes('404') || errorMsg.includes('not found') || errorMsg.includes('Unsupported')) {
-        throw new Error(`LinkedIn profile "${username}" not found via search. Please verify the profile URL is correct and the profile is public. You can also use manual input mode.`);
+      if (errorMsg.includes('404') || errorMsg.includes('not found') || errorMsg.includes('Unsupported') || errorMsg.includes('hasn\'t returned')) {
+        throw new Error(`LinkedIn profile "${username}" not found via Google search. The profile may not be indexed by Google yet, may be private, or the URL may be incorrect. Please verify the profile URL is correct and the profile is public. If the profile is new, it may take a few days for Google to index it.`);
       }
       
       // Don't mask network errors - show the actual error
@@ -270,7 +774,21 @@ class LinkedInProfileCoach {
     
     // If no profile found after trying all strategies
     if (!profile) {
-      throw new Error(`LinkedIn profile "${username}" not found via Google search after trying ${searchStrategies.length} strategies. This may be because: 1) The profile is not indexed by Google, 2) The profile is private, or 3) The profile URL is incorrect. Please verify the profile URL is correct and the profile is public. Last error: ${lastError || 'Unknown'}`);
+      // Provide a more helpful error message
+      const errorMsg = `LinkedIn profile "${username}" not found via Google search. This may be because:
+1. The profile is not indexed by Google (new profiles take time to be indexed)
+2. The profile is private or restricted
+3. The profile URL is incorrect
+4. The profile has been deleted or doesn't exist
+
+Please verify:
+- The profile URL is correct: https://www.linkedin.com/in/${username}
+- The profile is public (not private)
+- Try accessing the profile directly in your browser
+
+If the profile exists and is public, it may take a few days for Google to index it. You can try again later.`;
+      
+      throw new Error(errorMsg);
     }
 
     // Format the Google search result as a LinkedIn profile
@@ -285,13 +803,35 @@ class LinkedInProfileCoach {
     // Extract data from Google search result snippet
     const snippet = googleResult.snippet || googleResult.description || '';
     const title = googleResult.title || '';
+    const link = googleResult.link || '';
+    
+    // Extract name from title (remove " | LinkedIn" suffix)
+    let name = title.replace(/ \| LinkedIn$/, '').replace(/ on LinkedIn$/, '').trim();
+    if (!name || name.length < 2) {
+      // Try to extract from link
+      const linkMatch = link.match(/linkedin\.com\/in\/([^\/\?]+)/i);
+      if (linkMatch && linkMatch[1]) {
+        name = linkMatch[1].replace(/-/g, ' ').replace(/_/g, ' ');
+        // Capitalize first letter of each word
+        name = name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+      } else {
+        name = username;
+      }
+    }
     
     // Try to extract headline from title or snippet
-    let headline = title.replace(/ \| LinkedIn$/, '').replace(/ on LinkedIn$/, '');
-    if (headline === title) {
-      // Try to extract from snippet
+    let headline = name; // Default to name
+    if (title && title.includes('|')) {
+      const parts = title.split('|');
+      if (parts.length > 1) {
+        headline = parts.slice(1).join('|').trim();
+      }
+    }
+    
+    // If headline is still just the name, try to extract from snippet
+    if (headline === name || headline.length < 5) {
       const headlineMatch = snippet.match(/^([^•\n]+)/);
-      if (headlineMatch) {
+      if (headlineMatch && headlineMatch[1].trim().length > 5) {
         headline = headlineMatch[1].trim();
       }
     }
@@ -306,14 +846,20 @@ class LinkedInProfileCoach {
     const skills = this.extractSkillsFromSnippet(snippet);
     
     const profileData = {
-      name: title.split(' | ')[0] || username,
-      headline: headline || '',
-      summary: about || '',
+      name: name || username,
+      headline: headline || `${name} - LinkedIn Profile`,
+      summary: about || `LinkedIn profile for ${name}`,
       location: this.extractLocationFromSnippet(snippet),
       experience: experience,
       education: [],
       skills: skills,
     };
+    
+    console.log("✅ Formatted profile data:", {
+      name: profileData.name,
+      headline: profileData.headline.substring(0, 50),
+      summaryLength: profileData.summary.length,
+    });
     
     return {
       success: true,
@@ -452,43 +998,55 @@ class LinkedInProfileCoach {
       // Extract username with validation
       const username = this.extractUsernameFromUrl(profileUrl);
       if (!username || username.length < 2) {
-        throw new Error("Could not extract valid username from profile URL. Please check the URL format.");
+        throw new Error(`Could not extract valid username from profile URL: "${profileUrl}". Please ensure the URL follows this format: https://www.linkedin.com/in/username`);
       }
 
       console.log("Profile URL:", profileUrl);
       console.log("Extracted username:", username);
-
-      // Fetch profile data with retry logic
-      let profileResult;
-      let retryCount = 0;
-      const maxRetries = 3;
       
-      while (retryCount <= maxRetries) {
-        try {
-          if (retryCount > 0) {
-            const delay = 2000 * retryCount; // 2s, 4s, 6s
-            console.log(`⏳ Retry ${retryCount}/${maxRetries} after ${delay/1000}s...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-          }
-          
-          profileResult = await this.fetchProfileFromSerpApi(username);
-          
-          if (profileResult && profileResult.success) {
-            break;
-          } else {
-            throw new Error(profileResult?.message || "Failed to fetch profile data");
-          }
-        } catch (error) {
-          retryCount++;
-          if (retryCount > maxRetries) {
-            throw new Error(`Failed to fetch profile data after ${maxRetries} attempts: ${error.message}`);
-          }
-          console.warn(`⚠️ Profile fetch attempt ${retryCount} failed:`, error.message);
-        }
+      // Validate username format
+      if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+        throw new Error(`Invalid username format: "${username}". LinkedIn usernames can only contain letters, numbers, hyphens, and underscores.`);
       }
+
+      // NO FALLBACKS - ONLY CORESIGNAL REAL RESULTS
+      console.log("🔍 Fetching profile from CoreSignal API ONLY (no fallbacks - real results only)...");
       
-      if (!profileResult || !profileResult.success) {
-        throw new Error("Failed to fetch profile data. Please ensure the profile is public and the URL is correct.");
+      let profileResult;
+      try {
+        profileResult = await this.fetchProfileFromCoreSignal(profileUrl);
+        
+        if (!profileResult || !profileResult.success) {
+          throw new Error("CoreSignal returned unsuccessful response. No profile data available.");
+        }
+        
+        console.log("✅ Profile fetched successfully from CoreSignal - REAL DATA ONLY");
+      } catch (error) {
+        console.error("❌ CoreSignal API failed:", error);
+        console.error("Error details:", {
+          message: error.message,
+          name: error.name,
+          stack: error.stack,
+        });
+        
+        // Provide specific error message based on error type
+        let errorMsg = error.message || "Failed to fetch profile from CoreSignal API.";
+        
+        if (errorMsg.includes("not configured") || errorMsg.includes("API key")) {
+          errorMsg = "CoreSignal API key not configured. Please check your CORESIGNAL_API_KEY in .env file.";
+        } else if (errorMsg.includes("401") || errorMsg.includes("403") || errorMsg.includes("Invalid")) {
+          errorMsg = "Invalid CoreSignal API key. Please verify your CORESIGNAL_API_KEY is correct.";
+        } else if (errorMsg.includes("429") || errorMsg.includes("rate limit")) {
+          errorMsg = "CoreSignal API rate limit exceeded. Please try again later.";
+        } else if (errorMsg.includes("404") || errorMsg.includes("not found") || errorMsg.includes("not in CoreSignal database")) {
+          errorMsg = `LinkedIn profile not found in CoreSignal database. The profile "${username}" may not be indexed yet, may be private, or the URL may be incorrect. Please verify the profile URL is correct and the profile is public.`;
+        } else if (errorMsg.includes("timeout")) {
+          errorMsg = "CoreSignal API request timed out. Please try again.";
+        } else if (errorMsg.includes("incomplete") || errorMsg.includes("missing")) {
+          errorMsg = `CoreSignal returned incomplete profile data: ${errorMsg}`;
+        }
+        
+        throw new Error(errorMsg);
       }
 
       const scrapedData = profileResult.data;
@@ -498,11 +1056,21 @@ class LinkedInProfileCoach {
         throw new Error("No profile data received from scraping service. Please check the profile URL.");
       }
 
-      // For Google search results, we may have limited data - that's okay
-      // We'll use what we have and let the AI analyze based on available data
-      if (!scrapedData.headline && !scrapedData.summary) {
-        console.warn("⚠️ Limited profile data from search. Analysis will proceed with available information.");
-        // Don't throw error - allow analysis with minimal data
+      // Validate we have REAL data from CoreSignal - NO FALLBACKS
+      if (!scrapedData.name || scrapedData.name.length < 2) {
+        throw new Error("CoreSignal returned incomplete profile data (missing name). This is not a valid profile result.");
+      }
+      
+      if (!scrapedData.headline || scrapedData.headline.length < 5) {
+        throw new Error("CoreSignal returned incomplete profile data (missing or invalid headline). This is not a valid profile result.");
+      }
+      
+      if (!scrapedData.summary || scrapedData.summary.length < 50) {
+        console.warn("⚠️ CoreSignal returned limited summary data. Analysis will proceed with available information.");
+        // Only proceed if we have at least name and headline
+        if (!scrapedData.summary || scrapedData.summary.length < 20) {
+          scrapedData.summary = `Professional profile for ${scrapedData.name}. ${scrapedData.headline}`;
+        }
       }
 
       console.log(`✅ REAL Profile data extracted for: ${scrapedData.name || username}`);
@@ -552,8 +1120,14 @@ class LinkedInProfileCoach {
       }
 
       console.log("✅ REAL AI Analysis received:");
-      console.log("  - Profile Score:", analysisResult.data.profile_score);
+      console.log("  - Profile Score:", analysisResult.data.score || analysisResult.data.profile_score);
       console.log("  - Analysis is based on REAL profile data");
+      console.log("  - Full analysis keys:", Object.keys(analysisResult.data || {}));
+      
+      // Ensure data structure is correct before returning
+      if (analysisResult.data && !analysisResult.data.score && analysisResult.data.profile_score) {
+        analysisResult.data.score = analysisResult.data.profile_score;
+      }
       
       return analysisResult;
     } catch (error) {
@@ -647,7 +1221,7 @@ class LinkedInProfileCoach {
             temperature: 0.3,
             topK: 20,
             topP: 0.8,
-            maxOutputTokens: 2048,
+            maxOutputTokens: 8192, // Increased from 2048 to handle full JSON responses
             responseMimeType: "application/json", // Force JSON response
           },
         });
@@ -868,7 +1442,17 @@ class LinkedInProfileCoach {
         throw new Error("AI returned empty or invalid response");
       }
 
+      // Check if response was truncated (finishReason indicates truncation)
+      const finishReason = response.candidates?.[0]?.finishReason;
+      const isTruncated = finishReason === 'MAX_TOKENS' || finishReason === 'LENGTH';
+      
+      if (isTruncated) {
+        console.warn("⚠️ AI response was truncated (finishReason:", finishReason, "). Attempting to fix incomplete JSON...");
+      }
+
       console.log("✅ AI response received, parsing JSON...");
+      console.log("📊 Response length:", textContent.length, "chars");
+      console.log("📊 Finish reason:", finishReason || "unknown");
 
       // Extract JSON from response with error handling
       let analysis;
@@ -877,7 +1461,7 @@ class LinkedInProfileCoach {
         console.log("📄 Raw AI response (first 500 chars):", textContent.substring(0, 500));
         console.log("📄 Raw AI response (last 200 chars):", textContent.substring(Math.max(0, textContent.length - 200)));
         
-        analysis = this.extractJSONFromResponse(textContent);
+        analysis = this.extractJSONFromResponse(textContent, isTruncated);
         console.log("✅ Successfully parsed JSON from AI response");
         console.log("📊 Parsed analysis keys:", Object.keys(analysis || {}));
       } catch (parseError) {
@@ -886,16 +1470,30 @@ class LinkedInProfileCoach {
         console.error("❌ First 1000 chars:", textContent.substring(0, 1000));
         console.error("❌ Last 500 chars:", textContent.substring(Math.max(0, textContent.length - 500)));
         
+        // If truncated, try to fix and parse
+        if (isTruncated) {
+          try {
+            console.log("🔄 Response was truncated, attempting to fix incomplete JSON...");
+            const fixedJson = this.fixTruncatedJSON(textContent);
+            analysis = JSON.parse(fixedJson);
+            console.log("✅ Successfully parsed fixed truncated JSON");
+          } catch (fixError) {
+            console.error("❌ Failed to fix truncated JSON:", fixError.message);
+          }
+        }
+        
         // Last resort: try direct parse of the entire text
-        try {
-          console.log("🔄 Attempting direct JSON.parse on full response...");
-          const directParse = JSON.parse(textContent.trim());
-          console.log("✅ Direct parse succeeded! Using this result.");
-          analysis = directParse;
-        } catch (directError) {
-          console.error("❌ Direct parse also failed:", directError.message);
-          const errorMsg = `Failed to parse AI response: ${parseError.message}. Response length: ${textContent.length} chars. First 200 chars: ${textContent.substring(0, 200)}`;
-          throw new Error(errorMsg);
+        if (!analysis) {
+          try {
+            console.log("🔄 Attempting direct JSON.parse on full response...");
+            const directParse = JSON.parse(textContent.trim());
+            console.log("✅ Direct parse succeeded! Using this result.");
+            analysis = directParse;
+          } catch (directError) {
+            console.error("❌ Direct parse also failed:", directError.message);
+            const errorMsg = `Failed to parse AI response: ${parseError.message}. Response length: ${textContent.length} chars. First 200 chars: ${textContent.substring(0, 200)}`;
+            throw new Error(errorMsg);
+          }
         }
       }
 
@@ -907,7 +1505,21 @@ class LinkedInProfileCoach {
         throw new Error(`Analysis validation failed: ${validationError.message}`);
       }
 
-      console.log("✅ Profile analysis complete. Score:", analysis.profile_score);
+      // Normalize the response - ensure 'score' field exists (AI might return 'profile_score')
+      if (analysis.profile_score !== undefined && !analysis.score) {
+        analysis.score = analysis.profile_score;
+      }
+      
+      console.log("✅ Profile analysis complete. Score:", analysis.score || analysis.profile_score);
+      console.log("📊 Analysis data structure:", {
+        hasScore: !!analysis.score,
+        hasProfileScore: !!analysis.profile_score,
+        hasHeadlineFeedback: !!analysis.headline_feedback,
+        hasAboutFeedback: !!analysis.about_feedback,
+        hasPersonaAlignment: !!analysis.persona_alignment,
+        hasTop3Priorities: !!analysis.top_3_priorities,
+        keys: Object.keys(analysis),
+      });
 
       return {
         success: true,
@@ -927,9 +1539,10 @@ class LinkedInProfileCoach {
   /**
    * Extract JSON from AI response (handles markdown code blocks)
    * @param {string} textContent - Raw AI response text
+   * @param {boolean} isTruncated - Whether the response was truncated
    * @returns {Object} - Parsed JSON object
    */
-  extractJSONFromResponse(textContent) {
+  extractJSONFromResponse(textContent, isTruncated = false) {
     if (!textContent || typeof textContent !== 'string') {
       throw new Error("Invalid AI response: empty or non-string content");
     }
@@ -968,7 +1581,7 @@ class LinkedInProfileCoach {
     const lastBrace = cleanedText.lastIndexOf("}");
     if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
       try {
-        const jsonStr = cleanedText.substring(firstBrace, lastBrace + 1);
+        let jsonStr = cleanedText.substring(firstBrace, lastBrace + 1);
         const parsed = JSON.parse(jsonStr);
         if (parsed && typeof parsed === 'object') {
           console.log("✅ Successfully parsed JSON by extracting braces");
@@ -976,8 +1589,22 @@ class LinkedInProfileCoach {
         }
       } catch (e) {
         console.warn("Failed to parse extracted JSON:", e.message);
-        // Try to fix common JSON issues
+        // Try to fix common JSON issues including incomplete/truncated JSON
         try {
+          let jsonStr = cleanedText.substring(firstBrace, lastBrace + 1);
+          
+          // Check if JSON appears truncated (ends with incomplete string/array/object)
+          const isTruncated = !jsonStr.endsWith('}') || 
+                             (jsonStr.match(/"/g) || []).length % 2 !== 0 ||
+                             (jsonStr.match(/\{/g) || []).length !== (jsonStr.match(/\}/g) || []).length ||
+                             (jsonStr.match(/\[/g) || []).length !== (jsonStr.match(/\]/g) || []).length;
+          
+          if (isTruncated) {
+            console.warn("⚠️ JSON appears truncated, attempting to fix...");
+            // Try to close incomplete structures
+            jsonStr = this.fixTruncatedJSON(jsonStr);
+          }
+          
           let fixedJson = jsonStr
             .replace(/,\s*}/g, '}')  // Remove trailing commas before }
             .replace(/,\s*]/g, ']')   // Remove trailing commas before ]
@@ -1036,6 +1663,98 @@ class LinkedInProfileCoach {
   }
 
   /**
+   * Fix truncated JSON by closing incomplete structures
+   * @param {string} jsonStr - Potentially truncated JSON string
+   * @returns {string} - Fixed JSON string
+   */
+  fixTruncatedJSON(jsonStr) {
+    let fixed = jsonStr.trim();
+    
+    // Remove any trailing incomplete content
+    // Find the last complete JSON structure
+    let lastValidPos = fixed.length;
+    
+    // Work backwards to find where we can safely cut
+    for (let i = fixed.length - 1; i >= 0; i--) {
+      const char = fixed[i];
+      if (char === '}' || char === ']' || char === '"') {
+        // Check if this is a complete structure
+        try {
+          const testStr = fixed.substring(0, i + 1);
+          JSON.parse(testStr);
+          lastValidPos = i + 1;
+          break;
+        } catch (e) {
+          // Not valid yet, continue
+        }
+      }
+    }
+    
+    // If we found a valid position, use it
+    if (lastValidPos < fixed.length) {
+      fixed = fixed.substring(0, lastValidPos);
+    }
+    
+    // Count unclosed structures
+    const openBraces = (fixed.match(/\{/g) || []).length;
+    const closeBraces = (fixed.match(/\}/g) || []).length;
+    const openBrackets = (fixed.match(/\[/g) || []).length;
+    const closeBrackets = (fixed.match(/\]/g) || []).length;
+    
+    // Check if we're in the middle of a string (unclosed quote)
+    const lastQuoteIndex = fixed.lastIndexOf('"');
+    const escapedQuotes = (fixed.substring(0, lastQuoteIndex).match(/\\"/g) || []).length;
+    const quotesBeforeLast = (fixed.substring(0, lastQuoteIndex).match(/"/g) || []).length - escapedQuotes;
+    const isInString = quotesBeforeLast % 2 !== 0;
+    
+    // If in a string, we need to close it and remove the incomplete value
+    if (isInString) {
+      // Find the start of this string value
+      const lastColon = fixed.lastIndexOf(':');
+      const lastComma = fixed.lastIndexOf(',');
+      const lastBrace = fixed.lastIndexOf('{');
+      const lastBracket = fixed.lastIndexOf('[');
+      const contextStart = Math.max(lastColon, lastComma, lastBrace, lastBracket);
+      
+      if (contextStart > 0 && contextStart < lastQuoteIndex) {
+        // Remove the incomplete string value
+        fixed = fixed.substring(0, contextStart + 1).trim();
+        // Remove trailing comma if present
+        fixed = fixed.replace(/,\s*$/, '');
+      } else {
+        // Just close the string
+        fixed = fixed.trim();
+        if (!fixed.endsWith('"')) {
+          fixed += '"';
+        }
+      }
+    } else {
+      // Not in a string, but might have trailing comma or incomplete value
+      fixed = fixed.trim();
+      // Remove trailing comma before closing structures
+      fixed = fixed.replace(/,\s*$/, '');
+    }
+    
+    // Close incomplete arrays first (inner structures first)
+    for (let i = 0; i < openBrackets - closeBrackets; i++) {
+      fixed = fixed.trim();
+      if (!fixed.endsWith(']')) {
+        fixed += ']';
+      }
+    }
+    
+    // Close incomplete objects
+    for (let i = 0; i < openBraces - closeBraces; i++) {
+      fixed = fixed.trim();
+      if (!fixed.endsWith('}')) {
+        fixed += '}';
+      }
+    }
+    
+    return fixed;
+  }
+
+  /**
    * Validate the analysis structure (new format)
    * @param {Object} analysis - Analysis object to validate
    */
@@ -1049,11 +1768,13 @@ class LinkedInProfileCoach {
       "score",
       "headline_feedback",
       "about_feedback",
+      "experience_feedback",
+      "education_feedback",
+      "skills_feedback",
       "persona_alignment",
       "top_3_priorities",
       "keywords",
       "recommended_skills",
-      "optimized_about",
     ];
 
     for (const field of requiredFields) {
@@ -1141,9 +1862,57 @@ class LinkedInProfileCoach {
       throw new Error("recommended_skills must be an array with at least 5 items");
     }
 
-    // Validate optimized_about
-    if (!analysis.optimized_about || typeof analysis.optimized_about !== 'string' || analysis.optimized_about.trim().length < 200) {
-      throw new Error("optimized_about must be a string with at least 200 characters");
+    // Validate optimized_about (in about_feedback)
+    if (!analysis.about_feedback.optimized_about || typeof analysis.about_feedback.optimized_about !== 'string' || analysis.about_feedback.optimized_about.trim().length < 200) {
+      throw new Error("about_feedback.optimized_about must be a string with at least 200 characters");
+    }
+
+    // Validate experience_feedback
+    if (!analysis.experience_feedback || typeof analysis.experience_feedback !== 'object') {
+      throw new Error("experience_feedback must be an object");
+    }
+    if (typeof analysis.experience_feedback.score !== 'number' || analysis.experience_feedback.score < 0 || analysis.experience_feedback.score > 100) {
+      throw new Error("experience_feedback.score must be a number between 0 and 100");
+    }
+    if (!Array.isArray(analysis.experience_feedback.strengths) || analysis.experience_feedback.strengths.length < 2) {
+      throw new Error("experience_feedback.strengths must be an array with at least 2 items");
+    }
+    if (!Array.isArray(analysis.experience_feedback.improvements) || analysis.experience_feedback.improvements.length !== 3) {
+      throw new Error("experience_feedback.improvements must be an array with exactly 3 items");
+    }
+    if (!analysis.experience_feedback.content_strategy || typeof analysis.experience_feedback.content_strategy !== 'string' || analysis.experience_feedback.content_strategy.trim().length < 20) {
+      throw new Error("experience_feedback.content_strategy must be a string with at least 20 characters (2-line tip)");
+    }
+
+    // Validate education_feedback
+    if (!analysis.education_feedback || typeof analysis.education_feedback !== 'object') {
+      throw new Error("education_feedback must be an object");
+    }
+    if (typeof analysis.education_feedback.score !== 'number' || analysis.education_feedback.score < 0 || analysis.education_feedback.score > 100) {
+      throw new Error("education_feedback.score must be a number between 0 and 100");
+    }
+    if (!Array.isArray(analysis.education_feedback.strengths) || analysis.education_feedback.strengths.length < 2) {
+      throw new Error("education_feedback.strengths must be an array with at least 2 items");
+    }
+    if (!Array.isArray(analysis.education_feedback.improvements) || analysis.education_feedback.improvements.length !== 3) {
+      throw new Error("education_feedback.improvements must be an array with exactly 3 items");
+    }
+
+    // Validate skills_feedback
+    if (!analysis.skills_feedback || typeof analysis.skills_feedback !== 'object') {
+      throw new Error("skills_feedback must be an object");
+    }
+    if (typeof analysis.skills_feedback.score !== 'number' || analysis.skills_feedback.score < 0 || analysis.skills_feedback.score > 100) {
+      throw new Error("skills_feedback.score must be a number between 0 and 100");
+    }
+    if (!Array.isArray(analysis.skills_feedback.strengths) || analysis.skills_feedback.strengths.length < 2) {
+      throw new Error("skills_feedback.strengths must be an array with at least 2 items");
+    }
+    if (!Array.isArray(analysis.skills_feedback.improvements) || analysis.skills_feedback.improvements.length !== 3) {
+      throw new Error("skills_feedback.improvements must be an array with exactly 3 items");
+    }
+    if (!Array.isArray(analysis.skills_feedback.optimized_skills_list) || analysis.skills_feedback.optimized_skills_list.length < 5) {
+      throw new Error("skills_feedback.optimized_skills_list must be an array with at least 5 skills (copy-paste ready)");
     }
 
     // generated_post is now optional - only validate if present
@@ -1187,11 +1956,27 @@ class LinkedInProfileCoach {
       }
     });
 
-    analysis.generated_post.engagement_tactics.forEach((item, index) => {
-      if (typeof item !== 'string' || item.trim().length === 0) {
-        throw new Error(`generated_post.engagement_tactics[${index}] must be a non-empty string`);
+    // Validate generated_post if present (it's optional per the prompt)
+    if (analysis.generated_post) {
+      if (typeof analysis.generated_post !== 'object') {
+        throw new Error("generated_post must be an object");
       }
-    });
+      
+      if (analysis.generated_post.content && typeof analysis.generated_post.content !== 'string') {
+        throw new Error("generated_post.content must be a string");
+      }
+      
+      if (analysis.generated_post.engagement_tactics) {
+        if (!Array.isArray(analysis.generated_post.engagement_tactics)) {
+          throw new Error("generated_post.engagement_tactics must be an array");
+        }
+        analysis.generated_post.engagement_tactics.forEach((item, index) => {
+          if (typeof item !== 'string' || item.trim().length === 0) {
+            throw new Error(`generated_post.engagement_tactics[${index}] must be a non-empty string`);
+          }
+        });
+      }
+    }
   }
 
   /**

@@ -113,7 +113,10 @@ router.post("/test", async (req, res) => {
     
     const { profileUrl, userType, targetAudience, mainGoal } = req.body;
     
-    // Rate limiting for anonymous users (1 free analysis per IP per 24 hours)
+    // TEMPORARILY DISABLED: Rate limiting for anonymous users (1 free analysis per IP per 24 hours)
+    // TODO: Re-enable rate limiting after testing is complete and feature is confirmed working
+    // Uncomment the code below to restore rate limiting:
+    /*
     if (!req.user) {
       const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0] || 'unknown';
       const rateLimitKey = `profile_analyzer_anonymous_${clientIp}`;
@@ -135,6 +138,7 @@ router.post("/test", async (req, res) => {
         // Continue if rate limiting fails (graceful degradation)
       }
     }
+    */
 
     // If profileUrl is provided, use URL-based analysis
     if (profileUrl) {
@@ -159,7 +163,10 @@ router.post("/test", async (req, res) => {
           throw new Error("Analysis returned invalid result");
         }
 
-        // Record anonymous usage if not authenticated
+        // TEMPORARILY DISABLED: Record anonymous usage if not authenticated
+        // TODO: Re-enable usage recording after testing is complete
+        // Uncomment the code below to restore usage tracking:
+        /*
         if (!req.user) {
           try {
             const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0] || 'unknown';
@@ -170,6 +177,7 @@ router.post("/test", async (req, res) => {
             console.warn("Failed to record anonymous usage:", rateLimitError);
           }
         }
+        */
 
         return res.json({
           success: true,
@@ -184,33 +192,59 @@ router.post("/test", async (req, res) => {
         console.error("Error message:", error.message);
         
         const errorMessage = error.message || "An unexpected error occurred";
-        const statusCode = errorMessage.includes('not found') || errorMessage.includes('Invalid') || errorMessage.includes('profile') || errorMessage.includes('URL') ? 400 : 500;
+        // Determine status code based on error type
+        let statusCode = 500;
+        if (errorMessage.includes('not found') || errorMessage.includes('Invalid') || errorMessage.includes('profile') || errorMessage.includes('URL') || errorMessage.includes('hasn\'t returned')) {
+          statusCode = 400;
+        } else if (errorMessage.includes('rate limit') || errorMessage.includes('429') || errorMessage.includes('quota')) {
+          statusCode = 429;
+        } else if (errorMessage.includes('401') || errorMessage.includes('unauthorized') || errorMessage.includes('API key')) {
+          statusCode = 401;
+        }
         
-        // Provide more specific error messages
+        // Provide more specific error messages - CoreSignal specific
         let userMessage = errorMessage;
-        if (errorMessage.includes('SerpApi') || errorMessage.includes('SERPAPI')) {
-          if (errorMessage.includes('not configured') || errorMessage.includes('Invalid API key')) {
-            userMessage = "LinkedIn profile scraping service is not configured. Please contact support.";
-          } else if (errorMessage.includes('rate limit') || errorMessage.includes('429') || errorMessage.includes('quota')) {
-            userMessage = "LinkedIn profile scraping quota exceeded. Please try again later or upgrade your plan.";
-          } else if (errorMessage.includes('not found') || errorMessage.includes('404') || errorMessage.includes('not indexed')) {
-            userMessage = "LinkedIn profile not found via search. The profile may not be indexed by Google, may be private, or the URL may be incorrect. Please verify the profile URL is correct and the profile is public.";
-          } else if (errorMessage.includes("Google hasn't returned")) {
-            userMessage = "Google search did not return results for this LinkedIn profile. The profile may not be indexed by Google or may be private. Please verify the profile URL is correct.";
+        
+        // CoreSignal specific errors
+        if (errorMessage.includes('CoreSignal') || errorMessage.includes('coresignal')) {
+          if (errorMessage.includes('not configured') || errorMessage.includes('API key not configured')) {
+            userMessage = "CoreSignal API key not configured. Please check your CORESIGNAL_API_KEY in the backend .env file.";
+          } else if (errorMessage.includes('Invalid') && errorMessage.includes('API key')) {
+            userMessage = "Invalid CoreSignal API key. Please verify your CORESIGNAL_API_KEY is correct in the backend .env file.";
+          } else if (errorMessage.includes('rate limit') || errorMessage.includes('429')) {
+            userMessage = "CoreSignal API rate limit exceeded. Please try again later.";
+          } else if (errorMessage.includes('not found') || errorMessage.includes('not in CoreSignal database') || errorMessage.includes('404')) {
+            userMessage = `LinkedIn profile not found in CoreSignal database. This may be because:
+1. The profile is not yet indexed in CoreSignal's database (new profiles may take time)
+2. The profile URL format is incorrect
+3. The profile may have privacy restrictions
+
+Please verify:
+- The profile URL is correct (format: https://www.linkedin.com/in/username)
+- The profile is public and accessible
+- Try with a well-known public LinkedIn profile to test
+
+Note: CoreSignal may not have all LinkedIn profiles in their database.`;
+          } else if (errorMessage.includes('timeout') || errorMessage.includes('timed out')) {
+            userMessage = "CoreSignal API request timed out. Please try again.";
+          } else if (errorMessage.includes('incomplete') || errorMessage.includes('missing')) {
+            userMessage = `CoreSignal returned incomplete profile data: ${errorMessage}`;
           } else {
-            userMessage = "LinkedIn profile scraping service error. Please try again in a few minutes.";
+            userMessage = `CoreSignal API error: ${errorMessage}`;
           }
+        } else if (errorMessage.includes('SerpApi') || errorMessage.includes('SERPAPI')) {
+          // Legacy - should not happen anymore
+          userMessage = "LinkedIn profile scraping service error. Please contact support.";
         } else if (errorMessage.includes('Google Gemini') || errorMessage.includes('overloaded') || errorMessage.includes('503')) {
           userMessage = "AI analysis service is temporarily overloaded. Please try again in a few moments.";
         } else if (errorMessage.includes('not found') || errorMessage.includes('Invalid') || errorMessage.includes('URL')) {
-          userMessage = "LinkedIn profile not found or invalid URL. Please check the URL and ensure the profile is public.";
+          userMessage = `LinkedIn profile not found. ${errorMessage}`;
         } else if (errorMessage.includes('rate limit') || errorMessage.includes('429')) {
           userMessage = "API rate limit exceeded. Please try again later.";
         } else if (errorMessage.includes('timeout') || errorMessage.includes('timed out')) {
-          userMessage = "Request timed out. The profile may be taking too long to load. Please try again.";
-        } else if (errorMessage.includes('Network error') || errorMessage.includes('fetch') || errorMessage.includes('SerpApi connection failed')) {
-          // Show the actual error message from SerpApi, not a generic network error
-          userMessage = errorMessage.includes('SerpApi') ? errorMessage : "Network error. Please check your internet connection and try again.";
+          userMessage = "Request timed out. Please try again.";
+        } else if (errorMessage.includes('Network error') || errorMessage.includes('fetch')) {
+          userMessage = "Network error. Please check your internet connection and try again.";
         }
         
         return res.status(statusCode).json({

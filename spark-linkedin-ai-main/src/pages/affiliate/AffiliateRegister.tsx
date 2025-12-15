@@ -90,11 +90,15 @@ export default function AffiliateRegister() {
       const response = await api.affiliateRegister(submitData);
 
       if (response.success) {
+        // Token is already saved by api.affiliateRegister
         toast({
           title: "Application Submitted!",
           description: "Your affiliate application is pending approval. You'll receive an email once approved.",
         });
-        navigate("/affiliate/dashboard");
+        // Small delay to ensure token is saved
+        setTimeout(() => {
+          navigate("/affiliate/dashboard");
+        }, 100);
       } else {
         toast({
           title: "Error",
@@ -103,9 +107,10 @@ export default function AffiliateRegister() {
         });
       }
     } catch (error: any) {
+      console.error("Registration error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to submit application",
+        description: error.message || "Failed to submit application. Please try again.",
         variant: "destructive",
       });
     } finally {

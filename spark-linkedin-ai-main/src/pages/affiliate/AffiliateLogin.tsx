@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,16 +8,46 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/services/api";
 import { Helmet } from "react-helmet-async";
-import { LogIn, Mail, Lock } from "lucide-react";
+import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 
 export default function AffiliateLogin() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
+  // Check if already authenticated
+  useEffect(() => {
+    const checkAuth = async () => {
+      const affiliateToken = localStorage.getItem("affiliateToken");
+      if (!affiliateToken) {
+        setCheckingAuth(false);
+        return;
+      }
+
+      try {
+        const response = await api.getAffiliateProfile();
+        if (response.success) {
+          // Already authenticated, redirect to dashboard
+          navigate("/affiliate/dashboard", { replace: true });
+        } else {
+          // Invalid token, clear it
+          localStorage.removeItem("affiliateToken");
+          setCheckingAuth(false);
+        }
+      } catch (error) {
+        // Token invalid, clear it
+        localStorage.removeItem("affiliateToken");
+        setCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -33,12 +63,16 @@ export default function AffiliateLogin() {
     try {
       const response = await api.affiliateLogin(formData);
 
-      if (response.success) {
+      if (response.success && response.data?.token) {
+        // Token is already saved by api.affiliateLogin
         toast({
           title: "Welcome back!",
           description: "Successfully logged in to your affiliate account",
         });
-        navigate("/affiliate/dashboard");
+        // Small delay to ensure token is saved
+        setTimeout(() => {
+          navigate("/affiliate/dashboard");
+        }, 100);
       } else {
         toast({
           title: "Error",
@@ -47,15 +81,27 @@ export default function AffiliateLogin() {
         });
       }
     } catch (error: any) {
+      console.error("Login error:", error);
       toast({
         title: "Error",
-        description: error.message || "Login failed",
+        description: error.message || "Login failed. Please check your credentials.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-purple-50/50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-purple-600 mx-auto mb-4" />
+          <p className="text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

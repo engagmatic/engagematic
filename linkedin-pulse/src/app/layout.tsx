@@ -16,15 +16,22 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={inter.className}>
-          {children}
-          <Toaster position="top-right" />
-        </body>
-      </html>
-    </ClerkProvider>
+  // Only use ClerkProvider if Clerk is configured
+  const isClerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+
+  const content = (
+    <html lang="en">
+      <body className={inter.className}>
+        {children}
+        <Toaster position="top-right" />
+      </body>
+    </html>
+  )
+
+  return isClerkConfigured ? (
+    <ClerkProvider>{content}</ClerkProvider>
+  ) : (
+    content
   )
 }
 
