@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon } from "@/styles/premiumButtons";
-import { Menu, Home, FileText, MessageSquare, Lightbulb, User, LogOut, ArrowRight } from "lucide-react";
+import { Menu, Home, FileText, MessageSquare, Lightbulb, User, LogOut, ArrowRight, UserCircle, ChevronDown } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useState } from "react";
@@ -9,6 +9,12 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { UserDropdownMenu } from "../UserDropdownMenu";
 import { LogoWithText } from "../LogoWithText";
 
@@ -90,12 +96,44 @@ export const Header = () => {
                 </nav>
               ) : (
                 <nav className="hidden md:flex items-center gap-6">
-                  <Link 
-                    to="/tools"
-                    className="text-foreground/80 hover:text-foreground transition-smooth font-medium"
-                  >
-                    Free Tools
-                  </Link>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-smooth font-medium outline-none">
+                      Free Tools
+                      <ChevronDown className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56">
+                      <DropdownMenuItem asChild>
+                        <Link to="/tools" className="cursor-pointer">
+                          <FileText className="mr-2 h-4 w-4" />
+                          All Free Tools
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/tools/linkedin-profile-analyzer" className="cursor-pointer">
+                          <UserCircle className="mr-2 h-4 w-4" />
+                          Profile Analyzer
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/tools/linkedin-post-generator" className="cursor-pointer">
+                          <FileText className="mr-2 h-4 w-4" />
+                          Post Generator
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/#free-generator" className="cursor-pointer">
+                          <MessageSquare className="mr-2 h-4 w-4" />
+                          Comment Generator
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/#free-generator" className="cursor-pointer">
+                          <Lightbulb className="mr-2 h-4 w-4" />
+                          Idea Generator
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <button 
                     onClick={() => scrollToSection('features')}
                     className="text-foreground/80 hover:text-foreground transition-smooth"
@@ -215,13 +253,51 @@ export const Header = () => {
                 ) : (
                   <>
                     <nav className="flex flex-col gap-4">
-                      <Link 
-                        to="/tools"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
-                      >
-                        Free Tools
-                      </Link>
+                      <div className="space-y-2">
+                        <Link 
+                          to="/tools"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
+                        >
+                          Free Tools
+                        </Link>
+                        <div className="pl-4 space-y-2 border-l-2 border-muted">
+                          <Link 
+                            to="/tools/linkedin-profile-analyzer"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                          >
+                            Profile Analyzer
+                          </Link>
+                          <Link 
+                            to="/tools/linkedin-post-generator"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                          >
+                            Post Generator
+                          </Link>
+                          <Link 
+                            to="/#free-generator"
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              scrollToSection('free-generator');
+                            }}
+                            className="block text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                          >
+                            Comment Generator
+                          </Link>
+                          <Link 
+                            to="/#free-generator"
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              scrollToSection('free-generator');
+                            }}
+                            className="block text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                          >
+                            Idea Generator
+                          </Link>
+                        </div>
+                      </div>
                       <button 
                         onClick={() => scrollToSection('features')}
                         className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { X, Gift, Users, Star } from "lucide-react";
+import { X, Gift, Users, Star, UserCircle, FileText, MessageSquare, Lightbulb } from "lucide-react";
 import { LogoWithText } from "../LogoWithText";
 
 export const Footer = () => {
@@ -73,6 +73,17 @@ export const Footer = () => {
               <p className="text-sm text-muted-foreground">
                 Amplify your LinkedIn presence with AI-powered content that feels authentically you.
               </p>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold mb-4">Free Tools</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link to="/tools" className="hover:text-foreground transition-smooth flex items-center gap-2"><FileText className="h-3 w-3" /> All Free Tools</Link></li>
+                <li><Link to="/tools/linkedin-profile-analyzer" className="hover:text-foreground transition-smooth flex items-center gap-2"><UserCircle className="h-3 w-3" /> Profile Analyzer</Link></li>
+                <li><Link to="/tools/linkedin-post-generator" className="hover:text-foreground transition-smooth flex items-center gap-2"><FileText className="h-3 w-3" /> Post Generator</Link></li>
+                <li><Link to="/#free-generator" className="hover:text-foreground transition-smooth flex items-center gap-2"><MessageSquare className="h-3 w-3" /> Comment Generator</Link></li>
+                <li><Link to="/#free-generator" className="hover:text-foreground transition-smooth flex items-center gap-2"><Lightbulb className="h-3 w-3" /> Idea Generator</Link></li>
+              </ul>
             </div>
             
             <div>
