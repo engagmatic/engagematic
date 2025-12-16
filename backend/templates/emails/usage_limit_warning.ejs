@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usage Limit Warning - Engagematic</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .content h2 {
+            color: #333333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            color: #666666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .warning-box {
+            background-color: #fff9e6;
+            border-left: 4px solid #fdcb6e;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .warning-box h3 {
+            color: #d63031;
+            margin-top: 0;
+            font-size: 18px;
+        }
+
+        .usage-stats {
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .usage-stats h3 {
+            color: #333333;
+            margin-top: 0;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .usage-bar {
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .usage-fill {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #999999;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Usage Limit Warning</h1>
+        </div>
+
+        <div class="content">
+            <h2>Hi <%= name || 'there' %>,</h2>
+
+            <p>You're approaching your monthly usage limit for <%= limitType || 'posts' %>. Here's your current usage status:</p>
+
+            <div class="warning-box">
+                <h3><%= usagePercentage || '80' %>% of Monthly Limit Used</h3>
+                <p>You've used <strong><%= used || '0' %></strong> out of <strong><%= limit || '0' %></strong> <%= limitType || 'posts' %> this month.</p>
+                <p style="margin-top: 15px; color: #d63031;"><strong>Only <%= remaining || '0' %> <%= limitType || 'posts' %> remaining!</strong></p>
+            </div>
+
+            <div class="usage-stats">
+                <h3>Your Usage Breakdown</h3>
+                <div style="margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Posts:</span>
+                        <span><strong><%= postsUsed || '0' %>/<%= postsLimit || '0' %></strong></span>
+                    </div>
+                    <div class="usage-bar">
+                        <div class="usage-fill" style="width: <%= postsPercentage || '0' %>%"></div>
+                    </div>
+                </div>
+                <div style="margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Comments:</span>
+                        <span><strong><%= commentsUsed || '0' %>/<%= commentsLimit || '0' %></strong></span>
+                    </div>
+                    <div class="usage-bar">
+                        <div class="usage-fill" style="width: <%= commentsPercentage || '0' %>%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>What happens when you reach the limit?</strong></p>
+            <ul style="color: #666666; line-height: 1.8;">
+                <li>You won't be able to generate new content until next month</li>
+                <li>Your existing content remains accessible</li>
+                <li>Limits reset automatically on <%= resetDate || 'the 1st of next month' %></li>
+                <li>Upgrade to unlock unlimited usage</li>
+            </ul>
+
+            <p><strong>Options to Continue:</strong></p>
+            <ul style="color: #666666; line-height: 1.8;">
+                <li>Wait for monthly reset (in <%= daysUntilReset || 'X' %> days)</li>
+                <li>Upgrade to a higher plan for more limits</li>
+                <li>Purchase additional credits</li>
+            </ul>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="<%= upgradeUrl %>" class="cta-button">
+                    Upgrade for Unlimited Usage →
+                </a>
+            </div>
+
+            <p style="margin-top: 30px;">Your usage limits will reset on <strong><%= resetDate || 'the 1st of next month' %></strong>. Plan your content accordingly!</p>
+
+            <p style="margin-top: 30px;">Best regards,<br><strong>The Engagematic Team</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; <%= currentYear %> Engagematic. All rights reserved.</p>
+            <p>
+                <a href="<%= preferencesUrl %>">Email Preferences</a> |
+                <a href="<%= unsubscribeUrl %>">Unsubscribe</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>
+

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Suspended - Engagematic</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #d63031 0%, #e17055 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .content h2 {
+            color: #333333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            color: #666666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .suspended-box {
+            background: linear-gradient(135deg, #d63031 0%, #e17055 100%);
+            color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .suspended-box h3 {
+            margin: 0 0 15px 0;
+            font-size: 22px;
+        }
+
+        .info-box {
+            background-color: #ffe5e5;
+            border-left: 4px solid #d63031;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .info-box h3 {
+            color: #d63031;
+            margin-top: 0;
+            font-size: 18px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #d63031 0%, #e17055 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #999999;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Account Suspended</h1>
+        </div>
+
+        <div class="content">
+            <h2>Hi <%= name || 'there' %>,</h2>
+
+            <p>Your Engagematic account has been temporarily suspended due to: <strong><%= reason || 'Payment overdue' %></strong>.</p>
+
+            <div class="suspended-box">
+                <h3>Account Status: Suspended</h3>
+                <p style="font-size: 18px; margin: 15px 0;">Suspension Date: <%= suspensionDate || new Date().toLocaleDateString() %></p>
+            </div>
+
+            <div class="info-box">
+                <h3>What This Means</h3>
+                <ul style="color: #333333; line-height: 1.8;">
+                    <li>Your account access is currently restricted</li>
+                    <li>All your content and data are safe and preserved</li>
+                    <li>You can restore access by resolving the issue</li>
+                    <li>Account will be automatically reactivated once resolved</li>
+                </ul>
+            </div>
+
+            <p><strong>How to Restore Access:</strong></p>
+            <ul style="color: #666666; line-height: 1.8;">
+                <% if (reason && reason.includes('Payment')) { %>
+                <li>Update your payment method</li>
+                <li>Complete any outstanding payments</li>
+                <li>Your account will be reactivated immediately</li>
+                <% } else { %>
+                <li>Review the reason for suspension</li>
+                <li>Take necessary corrective action</li>
+                <li>Contact support if you need assistance</li>
+                <% } %>
+            </ul>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="<%= resolveUrl %>" class="cta-button">
+                    Restore Account Access →
+                </a>
+            </div>
+
+            <p style="margin-top: 30px;"><strong>Need Help?</strong></p>
+            <p>If you have questions about this suspension or need assistance resolving the issue, please reply to this email or contact our support team. We're here to help you get back on track!</p>
+
+            <p style="margin-top: 30px;">Best regards,<br><strong>The Engagematic Team</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; <%= currentYear %> Engagematic. All rights reserved.</p>
+            <p>
+                <a href="<%= preferencesUrl %>">Email Preferences</a> |
+                <a href="<%= unsubscribeUrl %>">Unsubscribe</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>
+

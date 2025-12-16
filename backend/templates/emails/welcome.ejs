@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to LinkedInPulse</title>
+    <title>Welcome to Engagematic</title>
     <style>
         body {
             margin: 0;
@@ -101,62 +101,56 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎉 Welcome to LinkedInPulse!</h1>
+            <h1>Welcome to Engagematic</h1>
         </div>
 
         <div class="content">
-            <h2>Hey <%= name %>,</h2>
+            <h2>Hi <%= name %>,</h2>
 
-            <p>Welcome aboard! We're thrilled to have you join thousands of professionals who are transforming their
-                LinkedIn presence with AI-powered content.</p>
+            <p>Welcome to Engagematic. We're glad you're here.</p>
 
-            <div class="trial-badge">
-                ⏰ Your <%= trialDays %>-Day Free Trial Starts Now!
-            </div>
-
-            <p>During your trial, you'll have full access to:</p>
+            <p>Your <%= trialDays %>-day free trial is now active. During this time, you have full access to all features:</p>
 
             <div class="feature-box">
-                <h3>🚀 AI-Powered Content Generation</h3>
-                <p>Create engaging LinkedIn posts in seconds with our advanced AI</p>
+                <h3>AI-Powered Content Generation</h3>
+                <p>Create professional LinkedIn posts in seconds</p>
             </div>
 
             <div class="feature-box">
-                <h3>🎯 Custom AI Personas</h3>
-                <p>Train AI to write in your unique voice and style</p>
+                <h3>Custom AI Personas</h3>
+                <p>Train AI to match your unique voice and style</p>
             </div>
 
             <div class="feature-box">
-                <h3>💡 Viral Hook Generator</h3>
-                <p>Start every post with attention-grabbing hooks</p>
+                <h3>Viral Hook Generator</h3>
+                <p>Start every post with attention-grabbing openings</p>
             </div>
 
             <div class="feature-box">
-                <h3>📊 Performance Analytics</h3>
-                <p>Track your content performance and optimize strategy</p>
+                <h3>Performance Analytics</h3>
+                <p>Track your content performance and optimize your strategy</p>
             </div>
 
             <div style="text-align: center; margin: 30px 0;">
-                <a href="<%= process.env.FRONTEND_URL || 'http://localhost:3000' %>/dashboard" class="cta-button">
-                    Start Creating Content Now →
+                <a href="<%= dashboardUrl || '/dashboard' %>" class="cta-button">
+                    Get Started
                 </a>
             </div>
 
-            <p><strong>Quick Start Tips:</strong></p>
+            <p><strong>Quick Start:</strong></p>
             <ul style="color: #666666; line-height: 1.8;">
-                <li>Complete your profile setup for personalized content</li>
-                <li>Create your first AI persona to match your brand voice</li>
-                <li>Generate your first post and see the magic happen</li>
-                <li>Schedule your content strategy for the week</li>
+                <li>Complete your profile for personalized content</li>
+                <li>Create your first AI persona</li>
+                <li>Generate your first post</li>
             </ul>
 
-            <p style="margin-top: 30px;">Need help getting started? Reply to this email - we're here to help!</p>
+            <p style="margin-top: 30px;">If you have questions, just reply to this email.</p>
 
-            <p style="margin-top: 30px;">To your LinkedIn success,<br><strong>The LinkedInPulse Team</strong></p>
+            <p style="margin-top: 30px;">Best regards,<br><strong>The Engagematic Team</strong></p>
         </div>
 
         <div class="footer">
-            <p>&copy; <%= currentYear %> LinkedInPulse. All rights reserved.</p>
+            <p>&copy; <%= currentYear %> Engagematic. All rights reserved.</p>
             <p>
                 <a href="<%= preferencesUrl %>">Email Preferences</a> |
                 <a href="<%= unsubscribeUrl %>">Unsubscribe</a>

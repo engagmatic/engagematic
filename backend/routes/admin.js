@@ -262,57 +262,73 @@ router.get("/recent-activity", adminAuth, async (req, res) => {
   }
 });
 
-// Get all users with detailed information
+// Get all users with detailed information (OPTIMIZED)
 router.get("/users", adminAuth, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
     const skip = (page - 1) * limit;
 
-    const users = await User.find()
-      .select("email name persona createdAt lastLogin")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    // Fetch users, subscriptions, and content counts in parallel
+    const [users, totalUsers] = await Promise.all([
+      User.find()
+        .select("email name persona createdAt lastLogin _id")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      User.countDocuments(),
+    ]);
 
-    // Enhance user data with activity metrics and subscription
-    const enhancedUsers = await Promise.all(
-      users.map(async (user) => {
-        // Fetch subscription separately
-        const subscription = await UserSubscription.findOne({
-          userId: user._id,
-        });
+    const userIds = users.map((u) => u._id);
 
-        const postsGenerated = await Content.countDocuments({
-          userId: user._id,
-          type: "post",
-        });
+    // Fetch all subscriptions in one query
+    const subscriptions = await UserSubscription.find({
+      userId: { $in: userIds },
+    }).lean();
 
-        const commentsGenerated = await Content.countDocuments({
-          userId: user._id,
-          type: "comment",
-        });
+    // Fetch content counts using aggregation (much faster)
+    const [postsCounts, commentsCounts] = await Promise.all([
+      Content.aggregate([
+        { $match: { userId: { $in: userIds }, type: "post" } },
+        { $group: { _id: "$userId", count: { $sum: 1 } } },
+      ]),
+      Content.aggregate([
+        { $match: { userId: { $in: userIds }, type: "comment" } },
+        { $group: { _id: "$userId", count: { $sum: 1 } } },
+      ]),
+    ]);
 
-        return {
-          _id: user._id,
-          email: user.email,
-          name: user.name || user.email.split("@")[0],
-          plan: subscription?.plan || "trial",
-          status:
-            user.lastLogin &&
-            Date.now() - new Date(user.lastLogin).getTime() <
-              7 * 24 * 60 * 60 * 1000
-              ? "active"
-              : "inactive",
-          joinedDate: user.createdAt,
-          lastActive: user.lastLogin || user.createdAt,
-          postsGenerated,
-          commentsGenerated,
-        };
-      })
+    // Create lookup maps for O(1) access
+    const subscriptionMap = new Map(
+      subscriptions.map((sub) => [sub.userId.toString(), sub])
+    );
+    const postsMap = new Map(postsCounts.map((p) => [p._id.toString(), p.count]));
+    const commentsMap = new Map(
+      commentsCounts.map((c) => [c._id.toString(), c.count])
     );
 
-    const totalUsers = await User.countDocuments();
+    // Build response (O(n) instead of O(n*m))
+    const enhancedUsers = users.map((user) => {
+      const userIdStr = user._id.toString();
+      const subscription = subscriptionMap.get(userIdStr);
+
+      return {
+        _id: user._id,
+        email: user.email,
+        name: user.name || user.email.split("@")[0],
+        plan: subscription?.plan || "trial",
+        status:
+          user.lastLogin &&
+          Date.now() - new Date(user.lastLogin).getTime() < 7 * 24 * 60 * 60 * 1000
+            ? "active"
+            : "inactive",
+        joinedDate: user.createdAt,
+        lastActive: user.lastLogin || user.createdAt,
+        postsGenerated: postsMap.get(userIdStr) || 0,
+        commentsGenerated: commentsMap.get(userIdStr) || 0,
+      };
+    });
 
     res.json({
       users: enhancedUsers,

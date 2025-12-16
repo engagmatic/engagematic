@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Renewed - Engagematic</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .content h2 {
+            color: #333333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            color: #666666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .success-box h3 {
+            margin: 0 0 15px 0;
+            font-size: 22px;
+        }
+
+        .stats-box {
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .stats-box h3 {
+            color: #333333;
+            margin-top: 0;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #999999;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Subscription Renewed Successfully!</h1>
+        </div>
+
+        <div class="content">
+            <h2>Hi <%= name || 'there' %>,</h2>
+
+            <p>Great news! Your Engagematic subscription has been automatically renewed. Your account remains active and you can continue using all premium features.</p>
+
+            <div class="success-box">
+                <h3>Renewal Confirmed</h3>
+                <div style="font-size: 24px; margin: 15px 0;"><%= plan || 'Pro Plan' %></div>
+                <div style="font-size: 18px; opacity: 0.9;">Next renewal: <%= nextRenewalDate || 'Next month' %></div>
+            </div>
+
+            <div class="stats-box">
+                <h3>Your Subscription Details</h3>
+                <div class="stat-row">
+                    <span>Plan:</span>
+                    <span><strong><%= plan || 'Pro Plan' %></strong></span>
+                </div>
+                <div class="stat-row">
+                    <span>Amount:</span>
+                    <span><strong><%= amount || '₹649' %></strong></span>
+                </div>
+                <div class="stat-row">
+                    <span>Renewal Date:</span>
+                    <span><%= renewalDate || new Date().toLocaleDateString() %></span>
+                </div>
+                <div class="stat-row">
+                    <span>Next Billing:</span>
+                    <span><%= nextBillingDate || 'Next month' %></span>
+                </div>
+                <div class="stat-row">
+                    <span>Status:</span>
+                    <span style="color: #00b894;"><strong>Active</strong></span>
+                </div>
+            </div>
+
+            <p><strong>What's Reset:</strong></p>
+            <ul style="color: #666666; line-height: 1.8;">
+                <li>Monthly usage limits have been reset</li>
+                <li>Full access to all premium features</li>
+                <li>Priority support continues</li>
+                <li>All your content and data are preserved</li>
+            </ul>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="<%= dashboardUrl %>" class="cta-button">
+                    Continue Creating Content →
+                </a>
+            </div>
+
+            <p style="margin-top: 30px;">A receipt has been sent to your email. You can also view your billing history in your account settings.</p>
+
+            <p style="margin-top: 30px;">Thank you for your continued trust in Engagematic. We're excited to continue helping you grow your LinkedIn presence!</p>
+
+            <p style="margin-top: 30px;">Best regards,<br><strong>The Engagematic Team</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; <%= currentYear %> Engagematic. All rights reserved.</p>
+            <p>
+                <a href="<%= preferencesUrl %>">Email Preferences</a> |
+                <a href="<%= unsubscribeUrl %>">Unsubscribe</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>
+

@@ -52,11 +52,23 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
         if (response.ok) {
           const data = await response.json();
-          setAdmin(data.admin);
+          // Handle both response formats: {success: true, admin: {...}} or {admin: {...}}
+          if (data.admin) {
+            setAdmin(data.admin);
+          } else if (data.success && data.data?.admin) {
+            setAdmin(data.data.admin);
+          } else {
+            // Invalid response format
+            console.warn('Invalid admin verify response:', data);
+            localStorage.removeItem('adminToken');
+            setAdmin(null);
+          }
         } else {
           // Token invalid, clear it
-          localStorage.removeItem('adminToken');
-          setAdmin(null);
+          if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem('adminToken');
+            setAdmin(null);
+          }
         }
       } catch (error) {
         console.error('Admin verification error:', error);
@@ -101,15 +113,21 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       }
 
       // Success - store token and admin data
-      localStorage.setItem('adminToken', data.token);
-      setAdmin(data.admin);
-      navigate('/admin/dashboard');
+      if (data.token && data.admin) {
+        localStorage.setItem('adminToken', data.token);
+        // Set admin state and loading state
+        setAdmin(data.admin);
+        setIsLoading(false);
+        // Don't navigate here - let the login component handle it after state updates
+        // This prevents race conditions
+      } else {
+        throw new Error('Invalid response from server');
+      }
       
     } catch (error: any) {
       setError(error.message);
-      throw error;
-    } finally {
       setIsLoading(false);
+      throw error;
     }
   };
 

@@ -99,7 +99,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎉</h1>
+            <h1></h1>
             <h2 style="color: white; margin-top: 10px;">Referral Success!</h2>
         </div>
 
@@ -108,7 +108,7 @@
 
             <p><strong>
                     <%= referredUserName %>
-                </strong> just joined LinkedInPulse using your referral link! 🎊</p>
+                </strong> just joined Engagematic using your referral link! </p>
 
             <div class="reward-box">
                 <p class="reward-number">
@@ -133,14 +133,14 @@
 
             <p><strong>How it works:</strong></p>
             <ul style="color: #666666; line-height: 1.8;">
-                <li>✅ 1 free month added for each successful referral</li>
-                <li>✅ Rewards never expire</li>
-                <li>✅ Automatically applied to your subscription</li>
-                <li>✅ Unlimited referrals allowed</li>
+                <li>1 free month added for each successful referral</li>
+                <li>Rewards never expire</li>
+                <li>Automatically applied to your subscription</li>
+                <li>Unlimited referrals allowed</li>
             </ul>
 
             <div style="text-align: center; margin: 30px 0;">
-                <a href="<%= process.env.FRONTEND_URL || 'http://localhost:3000' %>/dashboard/referrals"
+                <a href="<%=  %>/dashboard/referrals"
                     class="cta-button">
                     View Referral Dashboard →
                 </a>
@@ -148,7 +148,7 @@
 
             <div
                 style="background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 20px; border-radius: 8px; margin: 30px 0;">
-                <strong style="color: #2e7d32;">💡 Pro Tip:</strong>
+                <strong style="color: #2e7d32;">Pro Tip:</strong>
                 <p style="margin: 10px 0 0 0; color: #2e7d32;">Share your referral link on LinkedIn, Twitter, or via
                     email to reach more people. The more you share, the more free months you earn!</p>
             </div>
@@ -159,15 +159,15 @@
             <div
                 style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center;">
                 <p style="margin: 0; font-family: monospace; color: #667eea; font-size: 14px; word-break: break-all;">
-                    <%= process.env.FRONTEND_URL || 'http://localhost:3000' %>/signup?ref=YOUR_CODE
+                    <%=  %>/signup?ref=YOUR_CODE
                 </p>
             </div>
 
-            <p style="margin-top: 30px;">Thanks for spreading the word!<br><strong>The LinkedInPulse Team</strong></p>
+            <p style="margin-top: 30px;">Thanks for spreading the word!<br><strong>The Engagematic Team</strong></p>
         </div>
 
         <div class="footer">
-            <p>&copy; <%= currentYear %> LinkedInPulse. All rights reserved.</p>
+            <p>&copy; <%= currentYear %> Engagematic. All rights reserved.</p>
             <p>
                 <a href="<%= preferencesUrl %>">Email Preferences</a> |
                 <a href="<%= unsubscribeUrl %>">Unsubscribe</a>

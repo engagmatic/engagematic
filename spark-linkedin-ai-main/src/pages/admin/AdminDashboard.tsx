@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useAdmin } from '../../contexts/AdminContext';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 // Ensure API_BASE includes /api prefix
@@ -56,6 +58,7 @@ interface RecentActivity {
 }
 
 export default function AdminDashboard() {
+  const { isAuthenticated, isLoading: adminLoading, admin } = useAdmin();
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     activeUsers: 0,
@@ -76,15 +79,36 @@ export default function AdminDashboard() {
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currency, setCurrency] = useState<'INR'|'USD'>('INR');
+  const [error, setError] = useState<string | null>(null);
 
   const [affiliateStats, setAffiliateStats] = useState<any>(null);
 
   useEffect(() => {
+    // Wait for admin authentication to complete
+    if (adminLoading) {
+      return;
+    }
+
+    // Verify admin is authenticated
+    if (!isAuthenticated || !admin) {
+      setError('Not authenticated');
+      setIsLoading(false);
+      return;
+    }
+
+    // Verify token exists before making requests
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      setError('No authentication token found');
+      setIsLoading(false);
+      return;
+    }
+
     fetchDashboardStats();
     fetchRecentUsers();
     fetchRecentActivity();
     fetchAffiliateStats();
-  }, []);
+  }, [isAuthenticated, adminLoading, admin]);
 
   const fetchAffiliateStats = async () => {
     try {
@@ -136,9 +160,17 @@ export default function AdminDashboard() {
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('Failed to fetch stats:', errorData.message || response.statusText);
+        if (response.status === 401 || response.status === 403) {
+          // Token expired or invalid
+          localStorage.removeItem('adminToken');
+          window.location.href = '/admin/login';
+          return;
+        }
+        setError(errorData.message || 'Failed to load dashboard data');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch stats:', error);
+      setError('Failed to load dashboard data. Please try refreshing the page.');
     } finally {
       setIsLoading(false);
     }
@@ -287,6 +319,66 @@ export default function AdminDashboard() {
       color: 'from-indigo-500 to-indigo-600'
     }
   ];
+
+  // Show loading while admin is being verified
+  if (adminLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Verifying authentication...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  // Show error if not authenticated
+  if (!isAuthenticated || !admin) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Card className="p-6 max-w-md">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
+              <p className="text-gray-600 mb-4">Please log in to access the admin dashboard.</p>
+              <Button onClick={() => window.location.href = '/admin/login'}>Go to Login</Button>
+            </div>
+          </Card>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error && !isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Card className="p-6 max-w-md">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold mb-2">Error Loading Dashboard</h2>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <Button onClick={() => window.location.reload()}>Retry</Button>
+            </div>
+          </Card>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading dashboard...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>

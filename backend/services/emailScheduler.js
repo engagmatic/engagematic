@@ -33,6 +33,10 @@ class EmailScheduler {
     this.scheduleTrialExpiryReminders();
     this.scheduleReengagementEmails();
     this.scheduleMilestoneChecks();
+    this.schedulePaymentReminders();
+    this.scheduleSubscriptionRenewalReminders();
+    this.scheduleUsageLimitWarnings();
+    this.scheduleChurnPrevention();
 
     this.isRunning = true;
     console.log("✅ Email scheduler started successfully");
@@ -355,6 +359,297 @@ class EmailScheduler {
       console.error("Error sending feature update:", error);
       return { success: false, error: error.message };
     }
+  }
+
+  /**
+   * Schedule payment reminders (7, 3, 1 days before due date, and overdue)
+   * Runs daily at 8 AM
+   */
+  schedulePaymentReminders() {
+    const job = cron.schedule("0 8 * * *", async () => {
+      console.log("🔄 Running payment reminder check...");
+
+      try {
+        const UserSubscription = (await import("../models/UserSubscription.js")).default;
+        const now = new Date();
+
+        // Find subscriptions with upcoming payments
+        const subscriptions = await UserSubscription.find({
+          "billing.nextBillingDate": { $exists: true, $ne: null },
+          status: { $in: ["active", "trial"] },
+        }).populate("userId");
+
+        for (const subscription of subscriptions) {
+          if (!subscription.userId || !subscription.billing.nextBillingDate) continue;
+
+          const daysUntilDue = Math.ceil(
+            (subscription.billing.nextBillingDate - now) / (1000 * 60 * 60 * 24)
+          );
+
+          try {
+            // 7 days before
+            if (daysUntilDue === 7) {
+              await emailService.sendPaymentReminderEmail(subscription.userId, {
+                amount: subscription.billing.amount || "₹649",
+                dueDate: subscription.billing.nextBillingDate.toLocaleDateString(),
+                billingPeriod: subscription.billing.interval || "month",
+              });
+            }
+            // 3 days before
+            else if (daysUntilDue === 3) {
+              await emailService.sendPaymentReminderEmail(subscription.userId, {
+                amount: subscription.billing.amount || "₹649",
+                dueDate: subscription.billing.nextBillingDate.toLocaleDateString(),
+                billingPeriod: subscription.billing.interval || "month",
+              });
+            }
+            // 1 day before
+            else if (daysUntilDue === 1) {
+              await emailService.sendPaymentReminderEmail(subscription.userId, {
+                amount: subscription.billing.amount || "₹649",
+                dueDate: subscription.billing.nextBillingDate.toLocaleDateString(),
+                billingPeriod: subscription.billing.interval || "month",
+              });
+            }
+            // Overdue (past due date)
+            else if (daysUntilDue < 0 && daysUntilDue >= -7) {
+              await emailService.sendPaymentOverdueEmail(subscription.userId, {
+                amount: subscription.billing.amount || "₹649",
+                overdueDate: subscription.billing.nextBillingDate.toLocaleDateString(),
+              });
+            }
+          } catch (error) {
+            console.error(
+              `Error sending payment reminder to ${subscription.userId.email}:`,
+              error
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error in payment reminder job:", error);
+      }
+    });
+
+    this.jobs.push(job);
+    console.log("✅ Payment reminders scheduled (daily at 8 AM)");
+  }
+
+  /**
+   * Schedule subscription renewal reminders (7, 3, 1 days before renewal)
+   * Runs daily at 9 AM
+   */
+  scheduleSubscriptionRenewalReminders() {
+    const job = cron.schedule("0 9 * * *", async () => {
+      console.log("🔄 Running subscription renewal reminder check...");
+
+      try {
+        const UserSubscription = (await import("../models/UserSubscription.js")).default;
+        const now = new Date();
+
+        const subscriptions = await UserSubscription.find({
+          "billing.nextBillingDate": { $exists: true, $ne: null },
+          status: "active",
+        }).populate("userId");
+
+        for (const subscription of subscriptions) {
+          if (!subscription.userId || !subscription.billing.nextBillingDate) continue;
+
+          const daysUntilRenewal = Math.ceil(
+            (subscription.billing.nextBillingDate - now) / (1000 * 60 * 60 * 24)
+          );
+
+          // Send reminder 7, 3, or 1 day before renewal
+          if ([7, 3, 1].includes(daysUntilRenewal)) {
+            try {
+              await emailService.sendSubscriptionRenewalReminderEmail(subscription.userId, {
+                plan: subscription.plan,
+                daysLeft: daysUntilRenewal,
+                renewalDate: subscription.billing.nextBillingDate.toLocaleDateString(),
+                amount: subscription.billing.amount || "₹649",
+              });
+            } catch (error) {
+              console.error(
+                `Error sending renewal reminder to ${subscription.userId.email}:`,
+                error
+              );
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error in subscription renewal reminder job:", error);
+      }
+    });
+
+    this.jobs.push(job);
+    console.log("✅ Subscription renewal reminders scheduled (daily at 9 AM)");
+  }
+
+  /**
+   * Schedule usage limit warnings (at 80% and 90% usage)
+   * Runs daily at 11 AM
+   */
+  scheduleUsageLimitWarnings() {
+    const job = cron.schedule("0 11 * * *", async () => {
+      console.log("🔄 Running usage limit warning check...");
+
+      try {
+        const UserSubscription = (await import("../models/UserSubscription.js")).default;
+        const Content = (await import("../models/Content.js")).default;
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const subscriptions = await UserSubscription.find({
+          status: { $in: ["active", "trial"] },
+        }).populate("userId");
+
+        for (const subscription of subscriptions) {
+          if (!subscription.userId) continue;
+
+          try {
+            // Get usage for current month
+            const postsCount = await Content.countDocuments({
+              userId: subscription.userId._id,
+              type: "post",
+              createdAt: { $gte: startOfMonth },
+            });
+
+            const commentsCount = await Content.countDocuments({
+              userId: subscription.userId._id,
+              type: "comment",
+              createdAt: { $gte: startOfMonth },
+            });
+
+            const postsLimit = subscription.limits?.postsPerMonth || 7;
+            const commentsLimit = subscription.limits?.commentsPerMonth || 14;
+
+            const postsPercentage = (postsCount / postsLimit) * 100;
+            const commentsPercentage = (commentsCount / commentsLimit) * 100;
+            const maxPercentage = Math.max(postsPercentage, commentsPercentage);
+
+            // Send warning at 80% or 90% usage
+            if (maxPercentage >= 80 && maxPercentage < 90) {
+              // Check if already sent
+              const alreadySent = await EmailLog.findOne({
+                userId: subscription.userId._id,
+                emailType: "usage_limit_warning",
+                status: "sent",
+                createdAt: { $gte: startOfMonth },
+              });
+
+              if (!alreadySent) {
+                await emailService.sendUsageLimitWarningEmail(subscription.userId, {
+                  limitType: postsPercentage > commentsPercentage ? "posts" : "comments",
+                  used: postsPercentage > commentsPercentage ? postsCount : commentsCount,
+                  limit: postsPercentage > commentsPercentage ? postsLimit : commentsLimit,
+                  remaining:
+                    postsPercentage > commentsPercentage
+                      ? postsLimit - postsCount
+                      : commentsLimit - commentsCount,
+                  usagePercentage: Math.round(maxPercentage),
+                  postsUsed: postsCount,
+                  postsLimit: postsLimit,
+                  postsPercentage: Math.round(postsPercentage),
+                  commentsUsed: commentsCount,
+                  commentsLimit: commentsLimit,
+                  commentsPercentage: Math.round(commentsPercentage),
+                  resetDate: new Date(now.getFullYear(), now.getMonth() + 1, 1).toLocaleDateString(),
+                  daysUntilReset: Math.ceil(
+                    (new Date(now.getFullYear(), now.getMonth() + 1, 1) - now) /
+                      (1000 * 60 * 60 * 24)
+                  ),
+                });
+              }
+            }
+          } catch (error) {
+            console.error(
+              `Error checking usage limits for ${subscription.userId.email}:`,
+              error
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error in usage limit warning job:", error);
+      }
+    });
+
+    this.jobs.push(job);
+    console.log("✅ Usage limit warnings scheduled (daily at 11 AM)");
+  }
+
+  /**
+   * Schedule churn prevention emails (for inactive paid users)
+   * Runs daily at 2 PM
+   */
+  scheduleChurnPrevention() {
+    const job = cron.schedule("0 14 * * *", async () => {
+      console.log("🔄 Running churn prevention check...");
+
+      try {
+        const UserSubscription = (await import("../models/UserSubscription.js")).default;
+        const Content = (await import("../models/Content.js")).default;
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+        // Find active paid users who haven't been active in 7+ days
+        const subscriptions = await UserSubscription.find({
+          status: "active",
+          plan: { $in: ["starter", "pro", "elite"] },
+        }).populate("userId");
+
+        for (const subscription of subscriptions) {
+          if (!subscription.userId) continue;
+
+          // Check last activity
+          const lastContent = await Content.findOne({
+            userId: subscription.userId._id,
+          }).sort({ createdAt: -1 });
+
+          if (!lastContent || lastContent.createdAt < sevenDaysAgo) {
+            // Check if churn prevention email already sent recently
+            const alreadySent = await EmailLog.findOne({
+              userId: subscription.userId._id,
+              emailType: "churn_prevention",
+              status: "sent",
+              createdAt: { $gte: sevenDaysAgo },
+            });
+
+            if (!alreadySent) {
+              try {
+                const postsCount = await Content.countDocuments({
+                  userId: subscription.userId._id,
+                  type: "post",
+                });
+
+                const engagementCount = await Content.countDocuments({
+                  userId: subscription.userId._id,
+                });
+
+                await emailService.sendChurnPreventionEmail(subscription.userId, {
+                  postsCount,
+                  engagementCount,
+                  postsRemaining:
+                    (subscription.limits?.postsPerMonth || 0) -
+                    (subscription.usage?.postsGenerated || 0),
+                  commentsRemaining:
+                    (subscription.limits?.commentsPerMonth || 0) -
+                    (subscription.usage?.commentsGenerated || 0),
+                });
+              } catch (error) {
+                console.error(
+                  `Error sending churn prevention to ${subscription.userId.email}:`,
+                  error
+                );
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error in churn prevention job:", error);
+      }
+    });
+
+    this.jobs.push(job);
+    console.log("✅ Churn prevention emails scheduled (daily at 2 PM)");
   }
 
   /**

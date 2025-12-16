@@ -17,10 +17,14 @@ export default function AdminLogin() {
   const { login, isAuthenticated, isLoading } = useAdmin();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated or after successful login
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate('/admin/dashboard');
+      // Small delay to ensure state is fully updated and prevent blank page
+      const timer = setTimeout(() => {
+        navigate('/admin/dashboard', { replace: true });
+      }, 200);
+      return () => clearTimeout(timer);
     }
   }, [isAuthenticated, isLoading, navigate]);
 
@@ -37,7 +41,7 @@ export default function AdminLogin() {
 
     try {
       await login(username, password);
-      // Navigation handled by AdminContext
+      // Navigation will be handled by useEffect when isAuthenticated becomes true
     } catch (error: any) {
       setError(error.message);
     } finally {

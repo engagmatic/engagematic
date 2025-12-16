@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import EmailLog from "../models/EmailLog.js";
 import EmailPreference from "../models/EmailPreference.js";
+import { config } from "../config/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -171,13 +172,9 @@ class EmailService {
         });
       }
 
-      // Add unsubscribe link to template data
-      const unsubscribeUrl = `${
-        process.env.FRONTEND_URL || "http://localhost:3000"
-      }/unsubscribe?token=${preference.unsubscribeToken}`;
-      const preferencesUrl = `${
-        process.env.FRONTEND_URL || "http://localhost:3000"
-      }/email-preferences?token=${preference.unsubscribeToken}`;
+      // Add unsubscribe link to template data (use production URL from config)
+      const unsubscribeUrl = `${config.FRONTEND_URL}/unsubscribe?token=${preference.unsubscribeToken}`;
+      const preferencesUrl = `${config.FRONTEND_URL}/email-preferences?token=${preference.unsubscribeToken}`;
 
       // Render email template
       const html = await this.renderTemplate(templateName, {
@@ -252,13 +249,14 @@ class EmailService {
     return this.sendEmail({
       userId: user._id,
       to: user.email,
-      subject: "🎉 Welcome to LinkedInPulse - Let's Get Started!",
+      subject: "Welcome to Engagematic",
       templateName: "welcome",
       templateData: {
         name: user.name || "there",
         trialDays: Math.ceil(
           (new Date(user.trialEndsAt) - new Date()) / (1000 * 60 * 60 * 24)
         ),
+        dashboardUrl: `${config.FRONTEND_URL}/dashboard`,
       },
       emailType: "welcome",
     });
@@ -268,22 +266,22 @@ class EmailService {
     const emailTypes = {
       1: {
         type: "onboarding_day1",
-        subject: "Day 1: Create Your First AI-Powered LinkedIn Post 🚀",
+        subject: "Day 1: Create Your First Post",
         template: "onboarding_day1",
       },
       3: {
         type: "onboarding_day3",
-        subject: "Day 3: Master Your Content Strategy 📊",
+        subject: "Day 3: Master Your Content Strategy",
         template: "onboarding_day3",
       },
       5: {
         type: "onboarding_day5",
-        subject: "Day 5: Unlock Advanced Features ⚡",
+        subject: "Day 5: Unlock Advanced Features",
         template: "onboarding_day5",
       },
       7: {
         type: "onboarding_day7",
-        subject: "Day 7: Your Weekly LinkedIn Success Report 🏆",
+        subject: "Day 7: Your Weekly Success Report",
         template: "onboarding_day7",
       },
     };
@@ -307,18 +305,18 @@ class EmailService {
     const milestones = {
       10: {
         type: "milestone_10_posts",
-        subject: "🎉 First 10 Posts Created!",
+        subject: "First 10 Posts Created",
         emoji: "🎉",
       },
       50: {
         type: "milestone_50_posts",
-        subject: "🌟 50 Posts Milestone Unlocked!",
-        emoji: "🌟",
+        subject: "50 Posts Milestone Unlocked",
+        emoji: "",
       },
       100: {
         type: "milestone_100_posts",
-        subject: "🏆 100 Posts - You're a Content Machine!",
-        emoji: "🏆",
+        subject: "100 Posts Milestone",
+        emoji: "",
       },
     };
 
@@ -343,19 +341,19 @@ class EmailService {
     const configs = {
       7: {
         type: "trial_expiry_7days",
-        subject: "Your Trial Expires in 7 Days ⏰",
+        subject: "Your Trial Expires in 7 Days",
       },
       3: {
         type: "trial_expiry_3days",
-        subject: "Only 3 Days Left of Your Trial! 🚨",
+        subject: "Only 3 Days Left of Your Trial",
       },
       1: {
         type: "trial_expiry_1day",
-        subject: "Last Day of Your Trial - Don't Miss Out! ⚡",
+        subject: "Last Day of Your Trial",
       },
       0: {
         type: "trial_expired",
-        subject: "Your Trial Has Ended - Continue Your Success 💫",
+        subject: "Your Trial Has Ended",
       },
     };
 
@@ -380,15 +378,15 @@ class EmailService {
     const configs = {
       7: {
         type: "reengagement_7days",
-        subject: "We Miss You! Here's What's New 👋",
+        subject: "We Miss You",
       },
       14: {
         type: "reengagement_14days",
-        subject: "Your LinkedIn Content Strategy Is Waiting 🎯",
+        subject: "Your Content Strategy Is Waiting",
       },
       30: {
         type: "reengagement_30days",
-        subject: "Come Back - Special Offer Inside! 🎁",
+        subject: "Come Back - Special Offer",
       },
     };
 
@@ -412,7 +410,7 @@ class EmailService {
     return this.sendEmail({
       userId: user._id,
       to: user.email,
-      subject: "Unlock Your Full LinkedIn Potential 🚀",
+      subject: "Unlock Your Full Potential",
       templateName: "upgrade",
       templateData: {
         name: user.name || "there",
@@ -427,7 +425,7 @@ class EmailService {
     return this.sendEmail({
       userId: user._id,
       to: user.email,
-      subject: "⚠️ Payment Failed - Action Required",
+      subject: "Payment Failed - Action Required",
       templateName: "payment_failed",
       templateData: {
         name: user.name || "there",
@@ -441,13 +439,231 @@ class EmailService {
     return this.sendEmail({
       userId: user._id,
       to: user.email,
-      subject: `🎉 New Feature: ${featureDetails.title}`,
+      subject: `New Feature: ${featureDetails.title}`,
       templateName: "feature_update",
       templateData: {
         name: user.name || "there",
         ...featureDetails,
       },
       emailType: "feature_update",
+    });
+  }
+
+  async sendPaymentReminderEmail(user, paymentDetails) {
+    return this.sendEmail({
+      userId: user._id,
+      to: user.email,
+      subject: "Payment Reminder - Action Required",
+      templateName: "payment_reminder",
+      templateData: {
+        name: user.name || "there",
+        amount: paymentDetails.amount,
+        dueDate: paymentDetails.dueDate,
+        billingPeriod: paymentDetails.billingPeriod || "month",
+        paymentUrl: `${config.FRONTEND_URL}/pricing`,
+      },
+      emailType: "payment_reminder",
+    });
+  }
+
+  async sendPaymentOverdueEmail(user, paymentDetails) {
+    return this.sendEmail({
+      userId: user._id,
+      to: user.email,
+      subject: "Payment Overdue - Action Required",
+      templateName: "payment_overdue",
+      templateData: {
+        name: user.name || "there",
+        amount: paymentDetails.amount,
+        overdueDate: paymentDetails.overdueDate,
+        paymentUrl: `${config.FRONTEND_URL}/pricing`,
+      },
+      emailType: "payment_overdue",
+    });
+  }
+
+  async sendPaymentSuccessEmail(user, paymentDetails) {
+    return this.sendEmail({
+      userId: user._id,
+      to: user.email,
+      subject: "Payment Successful",
+      templateName: "payment_success",
+      templateData: {
+        name: user.name || "there",
+        amount: paymentDetails.amount,
+        plan: paymentDetails.plan,
+        transactionId: paymentDetails.transactionId,
+        paymentDate: paymentDetails.paymentDate,
+        nextBillingDate: paymentDetails.nextBillingDate,
+        dashboardUrl: `${config.FRONTEND_URL}/dashboard`,
+      },
+      emailType: "payment_success",
+    });
+  }
+
+  async sendSubscriptionRenewalReminderEmail(user, subscriptionDetails) {
+    return this.sendEmail({
+      userId: user._id,
+      to: user.email,
+      subject: "Subscription Renewal Reminder",
+      templateName: "subscription_renewal_reminder",
+      templateData: {
+        name: user.name || "there",
+        plan: subscriptionDetails.plan,
+        daysLeft: subscriptionDetails.daysLeft,
+        renewalDate: subscriptionDetails.renewalDate,
+        amount: subscriptionDetails.amount,
+        accountUrl: `${config.FRONTEND_URL}/settings`,
+      },
+      emailType: "subscription_renewal_reminder",
+    });
+  }
+
+  async sendSubscriptionRenewedEmail(user, subscriptionDetails) {
+    return this.sendEmail({
+      userId: user._id,
+      to: user.email,
+      subject: "Subscription Renewed",
+      templateName: "subscription_renewed",
+      templateData: {
+        name: user.name || "there",
+        plan: subscriptionDetails.plan,
+        amount: subscriptionDetails.amount,
+        renewalDate: subscriptionDetails.renewalDate,
+        nextBillingDate: subscriptionDetails.nextBillingDate,
+        nextRenewalDate: subscriptionDetails.nextRenewalDate,
+        dashboardUrl: `${config.FRONTEND_URL}/dashboard`,
+      },
+      emailType: "subscription_renewed",
+    });
+  }
+
+  async sendSubscriptionCancelledEmail(user, cancellationDetails) {
+    return this.sendEmail({
+      userId: user._id,
+      to: user.email,
+      subject: "Subscription Cancelled - We're Sorry to See You Go",
+      templateName: "subscription_cancelled",
+      templateData: {
+        name: user.name || "there",
+        accessUntilDate: cancellationDetails.accessUntilDate,
+        reactivateUrl: `${config.FRONTEND_URL}/pricing`,
+      },
+      emailType: "subscription_cancelled",
+    });
+  }
+
+  async sendSubscriptionCancellationWarningEmail(user, cancellationDetails) {
+    return this.sendEmail({
+      userId: user._id,
+      to: user.email,
+      subject: "Cancellation Scheduled",
+      templateName: "subscription_cancellation_warning",
+      templateData: {
+        name: user.name || "there",
+        cancellationDate: cancellationDetails.cancellationDate,
+        postsCount: cancellationDetails.postsCount || 0,
+        engagementCount: cancellationDetails.engagementCount || 0,
+        keepSubscriptionUrl: `${config.FRONTEND_URL}/settings`,
+      },
+      emailType: "subscription_cancellation_warning",
+    });
+  }
+
+  async sendAccountSuspendedEmail(user, suspensionDetails) {
+    return this.sendEmail({
+      userId: user._id,
+      to: user.email,
+      subject: "Account Suspended - Action Required",
+      templateName: "account_suspended",
+      templateData: {
+        name: user.name || "there",
+        reason: suspensionDetails.reason,
+        suspensionDate: suspensionDetails.suspensionDate,
+        resolveUrl: `${config.FRONTEND_URL}/settings`,
+      },
+      emailType: "account_suspended",
+    });
+  }
+
+  async sendAccountWarningEmail(user, warningDetails) {
+    return this.sendEmail({
+      userId: user._id,
+      to: user.email,
+      subject: "Important Account Notice",
+      templateName: "account_warning",
+      templateData: {
+        name: user.name || "there",
+        warningReason: warningDetails.reason,
+        actionRequired: warningDetails.actionRequired,
+        deadlineDate: warningDetails.deadlineDate,
+        actionUrl: `${config.FRONTEND_URL}/settings`,
+      },
+      emailType: "account_warning",
+    });
+  }
+
+  async sendReactivationOfferEmail(user, offerDetails) {
+    return this.sendEmail({
+      userId: user._id,
+      to: user.email,
+      subject: "We Miss You - Special Offer",
+      templateName: "reactivation_offer",
+      templateData: {
+        name: user.name || "there",
+        discount: offerDetails.discount || 30,
+        promoCode: offerDetails.promoCode || "WELCOMEBACK30",
+        daysValid: offerDetails.daysValid || 7,
+        postsCount: offerDetails.postsCount || 0,
+        engagementCount: offerDetails.engagementCount || 0,
+        reactivateUrl: `${config.FRONTEND_URL}/pricing?promo=${offerDetails.promoCode || "WELCOMEBACK30"}`,
+      },
+      emailType: "reactivation_offer",
+    });
+  }
+
+  async sendChurnPreventionEmail(user, stats) {
+    return this.sendEmail({
+      userId: user._id,
+      to: user.email,
+      subject: "💡 You're Missing Out - Don't Let Your Subscription Go to Waste!",
+      templateName: "churn_prevention",
+      templateData: {
+        name: user.name || "there",
+        postsCount: stats.postsCount || 0,
+        engagementCount: stats.engagementCount || 0,
+        postsRemaining: stats.postsRemaining || 0,
+        commentsRemaining: stats.commentsRemaining || 0,
+        dashboardUrl: `${config.FRONTEND_URL}/dashboard`,
+      },
+      emailType: "churn_prevention",
+    });
+  }
+
+  async sendUsageLimitWarningEmail(user, usageDetails) {
+    return this.sendEmail({
+      userId: user._id,
+      to: user.email,
+      subject: "Usage Limit Warning",
+      templateName: "usage_limit_warning",
+      templateData: {
+        name: user.name || "there",
+        limitType: usageDetails.limitType || "posts",
+        used: usageDetails.used || 0,
+        limit: usageDetails.limit || 0,
+        remaining: usageDetails.remaining || 0,
+        usagePercentage: usageDetails.usagePercentage || 0,
+        postsUsed: usageDetails.postsUsed || 0,
+        postsLimit: usageDetails.postsLimit || 0,
+        postsPercentage: usageDetails.postsPercentage || 0,
+        commentsUsed: usageDetails.commentsUsed || 0,
+        commentsLimit: usageDetails.commentsLimit || 0,
+        commentsPercentage: usageDetails.commentsPercentage || 0,
+        resetDate: usageDetails.resetDate,
+        daysUntilReset: usageDetails.daysUntilReset,
+        upgradeUrl: `${config.FRONTEND_URL}/pricing`,
+      },
+      emailType: "usage_limit_warning",
     });
   }
 }

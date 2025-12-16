@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>We Miss You - Special Offer - Engagematic</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .content h2 {
+            color: #333333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            color: #666666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .offer-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #ffffff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .offer-box h3 {
+            margin: 0 0 20px 0;
+            font-size: 28px;
+        }
+
+        .discount {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .stats-box {
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .stats-box h3 {
+            color: #333333;
+            margin-top: 0;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 18px 50px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #999999;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>We Miss You - Special Offer!</h1>
+        </div>
+
+        <div class="content">
+            <h2>Hi <%= name || 'there' %>,</h2>
+
+            <p>We noticed you haven't been using Engagematic lately, and we wanted to reach out with a special offer to welcome you back!</p>
+
+            <div class="offer-box">
+                <h3>Exclusive Reactivation Offer</h3>
+                <div class="discount"><%= discount || '30' %>% OFF</div>
+                <p style="font-size: 20px; margin: 15px 0;">Your First Month</p>
+                <p style="opacity: 0.9; font-size: 16px;">Use code: <strong style="font-size: 20px;"><%= promoCode || 'WELCOMEBACK30' %></strong></p>
+                <p style="opacity: 0.8; margin-top: 15px; font-size: 14px;">Valid for <%= daysValid || '7' %> days only</p>
+            </div>
+
+            <div class="stats-box">
+                <h3>Your Engagematic Journey</h3>
+                <p style="color: #333333; line-height: 1.8;">
+                    During your time with us, you created <strong><%= postsCount || '0' %> posts</strong> and generated <strong><%= engagementCount || '0' %> engagements</strong>!
+                </p>
+                <p style="color: #666666; margin-top: 15px;">That's amazing progress. Imagine where you could be with continued support!</p>
+            </div>
+
+            <p><strong>What's New Since You Left:</strong></p>
+            <ul style="color: #666666; line-height: 1.8;">
+                <li>Enhanced AI content generation</li>
+                <li>Advanced analytics dashboard</li>
+                <li>New viral hook templates</li>
+                <li>Improved performance and speed</li>
+            </ul>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="<%= reactivateUrl %>" class="cta-button">
+                    Reactivate with <%= discount || '30' %>% Off →
+                </a>
+            </div>
+
+            <p style="margin-top: 30px;">This is a limited-time offer, so don't miss out! All your previous content and data are still here, waiting for you.</p>
+
+            <p style="margin-top: 30px;">We'd love to have you back and help you continue growing your LinkedIn presence!</p>
+
+            <p style="margin-top: 30px;">Best regards,<br><strong>The Engagematic Team</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; <%= currentYear %> Engagematic. All rights reserved.</p>
+            <p>
+                <a href="<%= preferencesUrl %>">Email Preferences</a> |
+                <a href="<%= unsubscribeUrl %>">Unsubscribe</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>
+

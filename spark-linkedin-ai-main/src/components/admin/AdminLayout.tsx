@@ -35,10 +35,22 @@ const navigationItems = [
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  const { admin, logout } = useAdmin();
+  const { admin, logout, isLoading } = useAdmin();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Show loading if admin is not loaded yet
+  if (isLoading || !admin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleLogout = () => {
     if (confirm('Are you sure you want to logout?')) {

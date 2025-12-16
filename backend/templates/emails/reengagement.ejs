@@ -27,12 +27,12 @@
         <div class="content">
             <h2>It's been <%= daysInactive %> days...</h2>
             
-            <p>We noticed you haven't been active on LinkedInPulse lately, and we wanted to check in!</p>
+            <p>We noticed you haven't been active on Engagematic lately, and we wanted to check in!</p>
             
             <p>Your LinkedIn presence doesn't have to take a backseat. We're here to make content creation effortless.</p>
             
             <div class="news-box">
-                <strong style="color: #2e7d32; font-size: 18px;">🎉 What's New Since You've Been Away:</strong>
+                <strong style="color: #2e7d32; font-size: 18px;">What's New Since You've Been Away:</strong>
                 <ul style="color: #2e7d32; line-height: 1.8; margin: 15px 0 0 0;">
                     <li>Enhanced AI for even better content quality</li>
                     <li>New viral hook templates added</li>
@@ -50,25 +50,25 @@
             </ol>
             
             <div style="text-align: center; margin: 30px 0;">
-                <a href="<%= process.env.FRONTEND_URL || 'http://localhost:3000' %>/dashboard" class="cta-button">
+                <a href="<%=  %>/dashboard" class="cta-button">
                     Jump Back In →
                 </a>
             </div>
             
             <% if (daysInactive >= 30) { %>
             <div style="background-color: #fff3e0; border-left: 4px solid #ff9800; padding: 20px; border-radius: 8px; margin: 30px 0;">
-                <strong style="color: #e65100;">🎁 Welcome Back Gift:</strong>
+                <strong style="color: #e65100;">Welcome Back Gift:</strong>
                 <p style="margin: 10px 0 0 0; color: #e65100;">Log in within 7 days and get 50 bonus AI tokens + exclusive access to our new features!</p>
             </div>
             <% } %>
             
             <p><strong>Need help getting back on track?</strong> We're here for you! Reply to this email and let us know what we can do to help.</p>
             
-            <p style="margin-top: 30px;">Your LinkedIn success is waiting,<br><strong>The LinkedInPulse Team</strong></p>
+            <p style="margin-top: 30px;">Your LinkedIn success is waiting,<br><strong>The Engagematic Team</strong></p>
         </div>
         
         <div class="footer">
-            <p>&copy; <%= currentYear %> LinkedInPulse. All rights reserved.</p>
+            <p>&copy; <%= currentYear %> Engagematic. All rights reserved.</p>
             <p>
                 <a href="<%= preferencesUrl %>">Email Preferences</a> | 
                 <a href="<%= unsubscribeUrl %>">Unsubscribe</a>
