@@ -694,7 +694,7 @@ class ReferralService {
           await emailService.sendEmail({
             userId: user._id,
             to: email,
-            subject: `${user.name} invited you to try LinkedInPulse!`,
+            subject: `${user.name} invited you to try Engagematic!`,
             templateName: "referral_invite",
             templateData: {
               referrerName: user.name,

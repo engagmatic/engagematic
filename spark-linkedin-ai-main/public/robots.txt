@@ -18,6 +18,10 @@ Allow: /terms
 Allow: /blogs
 Allow: /blogs/*
 
+# Allow free tools pages (critical for SEO)
+Allow: /tools
+Allow: /tools/*
+
 # Block authentication pages (not useful for SEO)
 Disallow: /auth/
 Disallow: /auth/*

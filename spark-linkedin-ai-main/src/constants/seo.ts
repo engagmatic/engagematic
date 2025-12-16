@@ -228,6 +228,28 @@ export const PAGE_SEO = {
     keywords: 'LinkedIn profile analyzer, profile optimization, LinkedIn score, profile tips, LinkedIn SEO',
     canonical: `${SITE_URL}/profile-analyzer`
   },
+
+  // Free Tools Pages - SEO Optimized
+  freeTools: {
+    title: 'Free LinkedIn Tools - Profile Analyzer, Post Generator & More | Engagematic',
+    description: 'Access 100% free LinkedIn tools: Profile Analyzer, Post Generator, Comment Generator, and Idea Generator. No signup required. Get instant AI-powered LinkedIn optimization and content creation tools.',
+    keywords: 'free linkedin tools, free linkedin profile analyzer, free linkedin post generator, free linkedin comment generator, free linkedin idea generator, linkedin tools free, linkedin content generator free, linkedin profile checker free',
+    canonical: `${SITE_URL}/tools`
+  },
+
+  linkedinProfileAnalyzerTool: {
+    title: 'Free LinkedIn Profile Analyzer - Get Your Profile Score & Optimization Tips | Engagematic',
+    description: 'Analyze your LinkedIn profile for free. Get instant AI-powered score (0-100), headline optimization, about section rewrite, skills recommendations, and exportable PDF report. No signup required for first analysis.',
+    keywords: 'free linkedin profile analyzer, linkedin profile score, linkedin profile checker, linkedin profile optimization, linkedin profile analyzer free, linkedin profile analyzer tool, linkedin profile analysis, linkedin profile review, linkedin profile audit, linkedin profile grader',
+    canonical: `${SITE_URL}/tools/linkedin-profile-analyzer`
+  },
+
+  linkedinPostGeneratorTool: {
+    title: 'Free LinkedIn Post Generator - AI-Powered Viral Posts | Engagematic',
+    description: 'Generate viral LinkedIn posts in seconds with AI trained on 50,000+ high-performing posts. Free post generator with 15+ personas, viral hooks, and zero-edit ready content. No signup required.',
+    keywords: 'free linkedin post generator, linkedin post generator ai, linkedin content generator, ai linkedin posts, linkedin post creator, linkedin post generator free, linkedin content generator free, linkedin ai tool, linkedin post maker, linkedin content creator',
+    canonical: `${SITE_URL}/tools/linkedin-post-generator`
+  },
   
   waitlist: {
     title: 'Join the Waitlist - Be First to Access Engagematic Premium',

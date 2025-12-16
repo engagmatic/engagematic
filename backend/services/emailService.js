@@ -14,7 +14,7 @@ class EmailService {
     this.resend = null;
     this.initialized = false;
     this.fromEmail = process.env.EMAIL_FROM || "hello@engagematic.com";
-    this.fromName = process.env.EMAIL_FROM_NAME || "LinkedInPulse";
+    this.fromName = process.env.EMAIL_FROM_NAME || "Engagematic";
   }
 
   /**

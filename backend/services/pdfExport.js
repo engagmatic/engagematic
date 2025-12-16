@@ -25,7 +25,7 @@ export async function generateAnalysisPDF(analysisData, profileData = {}) {
         margin: 50,
         info: {
           Title: "LinkedIn Profile Analysis Report",
-          Author: "LinkedInPulse",
+          Author: "Engagematic",
           Subject: "Profile Optimization Report",
         },
       });
@@ -446,7 +446,7 @@ export async function generateAnalysisPDF(analysisData, profileData = {}) {
           .fontSize(8)
           .font("Helvetica")
           .text(
-            `LinkedInPulse Profile Analysis Report | Page ${i + 1} of ${pageCount} | Generated on ${new Date().toLocaleDateString()}`,
+            `Engagematic Profile Analysis Report | Page ${i + 1} of ${pageCount} | Generated on ${new Date().toLocaleDateString()}`,
             50,
             doc.page.height - 30,
             { align: "center" }

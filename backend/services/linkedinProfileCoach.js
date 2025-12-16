@@ -3,7 +3,7 @@ import { config } from "../config/index.js";
 import { buildProfileAnalyzerPrompt } from "../prompts/profileAnalyzerPrompt.js";
 
 /**
- * LinkedInPulse Profile Coach Service
+ * Engagematic Profile Coach Service
  * 
  * A new standalone service for testing the world-class profile analyzer prompt.
  * This service analyzes LinkedIn profiles and generates optimization suggestions + posts.
@@ -981,7 +981,7 @@ If the profile exists and is public, it may take a few days for Google to index 
    */
   async analyzeProfileFromUrl(profileUrl, userInput = {}) {
     try {
-      console.log("🔍 LinkedInPulse Profile Coach: Starting analysis from URL...");
+      console.log("🔍 Engagematic Profile Coach: Starting analysis from URL...");
       
       // Validate and sanitize inputs
       if (!profileUrl || typeof profileUrl !== 'string') {
@@ -1382,7 +1382,7 @@ If the profile exists and is public, it may take a few days for Google to index 
    */
   async analyzeProfile(profileData) {
     try {
-      console.log("🔍 LinkedInPulse Profile Coach: Starting analysis...");
+      console.log("🔍 Engagematic Profile Coach: Starting analysis...");
       
       // Validate required fields
       if (!profileData || typeof profileData !== 'object') {

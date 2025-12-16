@@ -90,6 +90,12 @@ export const Header = () => {
                 </nav>
               ) : (
                 <nav className="hidden md:flex items-center gap-6">
+                  <Link 
+                    to="/tools"
+                    className="text-foreground/80 hover:text-foreground transition-smooth font-medium"
+                  >
+                    Free Tools
+                  </Link>
                   <button 
                     onClick={() => scrollToSection('features')}
                     className="text-foreground/80 hover:text-foreground transition-smooth"
@@ -209,6 +215,13 @@ export const Header = () => {
                 ) : (
                   <>
                     <nav className="flex flex-col gap-4">
+                      <Link 
+                        to="/tools"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
+                      >
+                        Free Tools
+                      </Link>
                       <button 
                         onClick={() => scrollToSection('features')}
                         className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"

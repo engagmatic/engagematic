@@ -1,0 +1,337 @@
+import { SEO } from "@/components/SEO";
+import { SITE_URL, generateFAQSchema, generateBreadcrumbSchema } from "@/constants/seo";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { 
+  FileText, 
+  MessageSquare, 
+  UserCircle, 
+  Lightbulb,
+  CheckCircle2,
+  ArrowRight,
+  Sparkles,
+  Zap,
+  TrendingUp,
+  Users
+} from "lucide-react";
+import { Link } from "react-router-dom";
+
+const freeTools = [
+  {
+    id: "profile-analyzer",
+    name: "Free LinkedIn Profile Analyzer",
+    description: "Get instant AI-powered analysis of your LinkedIn profile. Discover your profile score, receive personalized optimization tips, and boost your visibility.",
+    icon: UserCircle,
+    url: "/tools/linkedin-profile-analyzer",
+    features: [
+      "Instant profile score (0-100)",
+      "Headline optimization suggestions",
+      "About section rewrite recommendations",
+      "Skills optimization",
+      "Experience section feedback",
+      "Keywords for better discoverability",
+      "Exportable PDF report"
+    ],
+    keywords: "free linkedin profile analyzer, linkedin profile score, linkedin profile optimization, linkedin profile checker, linkedin profile analyzer free",
+    monthlySearches: "12,000+",
+    color: "from-blue-500 to-cyan-500"
+  },
+  {
+    id: "post-generator",
+    name: "Free LinkedIn Post Generator",
+    description: "Create viral-worthy LinkedIn posts in seconds with AI trained on 50,000+ high-performing posts. No signup required for your first post.",
+    icon: FileText,
+    url: "/tools/linkedin-post-generator",
+    features: [
+      "AI-powered post generation",
+      "15+ curated personas",
+      "Viral hook suggestions",
+      "Smart formatting",
+      "Zero-edit ready content",
+      "Multiple post variations",
+      "Engagement optimization"
+    ],
+    keywords: "free linkedin post generator, linkedin post generator ai, linkedin content generator, ai linkedin posts, linkedin post creator",
+    monthlySearches: "18,000+",
+    color: "from-purple-500 to-pink-500"
+  },
+  {
+    id: "comment-generator",
+    name: "Free LinkedIn Comment Generator",
+    description: "Generate thoughtful, context-aware comments that start real conversations and build authentic professional relationships.",
+    icon: MessageSquare,
+    url: "/tools/linkedin-comment-generator",
+    features: [
+      "Context-aware comments",
+      "Relationship-building tone",
+      "Engagement-focused responses",
+      "Multiple comment variations",
+      "Professional networking",
+      "Authentic conversation starters"
+    ],
+    keywords: "free linkedin comment generator, linkedin comment ai, linkedin engagement tool, linkedin networking tool",
+    monthlySearches: "8,000+",
+    color: "from-green-500 to-emerald-500"
+  },
+  {
+    id: "idea-generator",
+    name: "Free LinkedIn Idea Generator",
+    description: "Never run out of content ideas. Get AI-powered hooks, angles, and topics tailored to your industry and audience.",
+    icon: Lightbulb,
+    url: "/tools/linkedin-idea-generator",
+    features: [
+      "Unlimited content ideas",
+      "Industry-specific suggestions",
+      "Viral hook generation",
+      "Content angle recommendations",
+      "Trending topic insights",
+      "Audience-tailored ideas"
+    ],
+    keywords: "free linkedin idea generator, linkedin content ideas, linkedin post ideas, linkedin content inspiration",
+    monthlySearches: "6,000+",
+    color: "from-orange-500 to-amber-500"
+  }
+];
+
+const faqData = [
+  {
+    question: "Are these LinkedIn tools really free?",
+    answer: "Yes! All our LinkedIn tools offer free access. The LinkedIn Profile Analyzer gives you 1 free analysis, and the Post Generator, Comment Generator, and Idea Generator offer free usage without requiring signup. You can upgrade to premium plans for unlimited access and advanced features."
+  },
+  {
+    question: "Do I need to create an account to use free tools?",
+    answer: "No account required for most free tools! You can use the LinkedIn Post Generator, Comment Generator, and Idea Generator without signing up. The Profile Analyzer offers 1 free analysis per IP address. Create a free account to unlock more analyses and save your work."
+  },
+  {
+    question: "What makes these LinkedIn tools different from others?",
+    answer: "Our tools are powered by AI trained specifically on 50,000+ viral LinkedIn posts. Unlike generic AI tools, we understand LinkedIn's algorithm, B2B marketing dynamics, and what drives engagement. Every tool is designed to help you grow your professional presence authentically."
+  },
+  {
+    question: "Can I use these tools for commercial purposes?",
+    answer: "Yes! All our free tools can be used for personal and commercial purposes. Whether you're a freelancer, entrepreneur, marketer, or business owner, you're welcome to use our tools to enhance your LinkedIn presence and grow your business."
+  },
+  {
+    question: "How accurate is the LinkedIn Profile Analyzer?",
+    answer: "Our Profile Analyzer uses advanced AI trained on successful LinkedIn profiles to provide accurate scores and actionable recommendations. It analyzes your headline, about section, experience, skills, and overall profile structure to give you a comprehensive optimization roadmap."
+  },
+  {
+    question: "Will my data be stored when using free tools?",
+    answer: "We respect your privacy. When using free tools without an account, your data is processed but not permanently stored. If you create an account, you can choose to save your generated content for future reference. We never share your data with third parties."
+  }
+];
+
+const FreeTools = () => {
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: SITE_URL },
+    { name: "Free Tools", url: `${SITE_URL}/tools` }
+  ]);
+
+  const faqSchema = generateFAQSchema(faqData);
+
+  const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Free LinkedIn Tools - Engagematic",
+      "description": "Access free LinkedIn tools including profile analyzer, post generator, comment generator, and idea generator. No signup required for most tools.",
+      "url": `${SITE_URL}/tools`,
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": freeTools.map((tool, index) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "SoftwareApplication",
+            "name": tool.name,
+            "url": `${SITE_URL}${tool.url}`,
+            "applicationCategory": "BusinessApplication",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            }
+          }
+        }))
+      }
+    },
+    breadcrumbSchema,
+    faqSchema
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background via-primary/5 to-background">
+      <SEO
+        title="Free LinkedIn Tools - Profile Analyzer, Post Generator & More | Engagematic"
+        description="Access 100% free LinkedIn tools: Profile Analyzer, Post Generator, Comment Generator, and Idea Generator. No signup required. Get instant AI-powered LinkedIn optimization and content creation tools."
+        keywords="free linkedin tools, free linkedin profile analyzer, free linkedin post generator, free linkedin comment generator, free linkedin idea generator, linkedin tools free, linkedin content generator free, linkedin profile checker free"
+        url={`${SITE_URL}/tools`}
+        structuredData={structuredData}
+      />
+
+      {/* Hero Section */}
+      <section className="relative py-16 sm:py-20 lg:py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 blur-3xl" />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-7xl">
+          <div className="text-center max-w-4xl mx-auto">
+            <Badge className="mb-4 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20">
+              <Sparkles className="w-3 h-3 mr-1" />
+              100% Free Tools
+            </Badge>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Free LinkedIn Tools
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8">
+              Boost your LinkedIn presence with our suite of free AI-powered tools. 
+              No credit card required. Start optimizing your profile and creating engaging content today.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <span>No Signup Required</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <span>100% Free Forever</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <span>Instant Results</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tools Grid */}
+      <section className="py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            {freeTools.map((tool) => {
+              const Icon = tool.icon;
+              return (
+                <Card key={tool.id} className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-2xl">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${tool.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tool.color} flex items-center justify-center shadow-lg`}>
+                        <Icon className="w-7 h-7 text-white" />
+                      </div>
+                      <Badge variant="secondary" className="text-xs">
+                        {tool.monthlySearches} searches/month
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-2xl mb-2">{tool.name}</CardTitle>
+                    <CardDescription className="text-base">{tool.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2 mb-6">
+                      {tool.features.map((feature, index) => (
+                        <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
+                          <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Link to={tool.url}>
+                      <Button className="w-full group/btn" size="lg">
+                        Use Free Tool
+                        <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-muted/50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Why Use Our Free LinkedIn Tools?</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to grow your LinkedIn presence, completely free
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+            {[
+              {
+                icon: Zap,
+                title: "Lightning Fast",
+                description: "Get instant results. No waiting, no delays. Our AI-powered tools deliver results in seconds."
+              },
+              {
+                icon: TrendingUp,
+                title: "Proven Results",
+                description: "Built with insights from 50,000+ viral LinkedIn posts. Our tools are trained on what actually works."
+              },
+              {
+                icon: Users,
+                title: "Trusted by Thousands",
+                description: "Join 10,000+ professionals using our tools to grow their LinkedIn presence and advance their careers."
+              }
+            ].map((benefit, index) => {
+              const Icon = benefit.icon;
+              return (
+                <Card key={index} className="text-center p-6">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-4">
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">{benefit.title}</h3>
+                  <p className="text-muted-foreground">{benefit.description}</p>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12">
+            Frequently Asked Questions
+          </h2>
+          <div className="space-y-6">
+            {faqData.map((faq, index) => (
+              <Card key={index} className="p-6">
+                <h3 className="text-lg font-bold mb-3">{faq.question}</h3>
+                <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            Ready to Grow Your LinkedIn Presence?
+          </h2>
+          <p className="text-lg text-muted-foreground mb-8">
+            Start using our free tools today. No credit card required. Upgrade anytime for unlimited access.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/tools/linkedin-profile-analyzer">
+              <Button size="lg" className="w-full sm:w-auto">
+                Analyze Your Profile Free
+              </Button>
+            </Link>
+            <Link to="/tools/linkedin-post-generator">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                Generate Free Posts
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default FreeTools;
+

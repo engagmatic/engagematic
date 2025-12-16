@@ -441,7 +441,7 @@ export default function AdminDashboard() {
                 </p>
               </div>
             </div>
-            {affiliateStats.topAffiliates && affiliateStats.topAffiliates.length > 0 && (
+            {affiliateStats?.topAffiliates && Array.isArray(affiliateStats.topAffiliates) && affiliateStats.topAffiliates.length > 0 && (
               <div className="mt-4 pt-4 border-t">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Top 3 Affiliates</h3>
                 <div className="space-y-2">

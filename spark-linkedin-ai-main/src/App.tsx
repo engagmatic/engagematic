@@ -20,6 +20,9 @@ const PostGenerator = lazy(() => import("./pages/PostGenerator"));
 const IdeaGenerator = lazy(() => import("./pages/IdeaGenerator"));
 const CommentGenerator = lazy(() => import("./pages/CommentGenerator"));
 const ProfileAnalyzer = lazy(() => import("./pages/ProfileAnalyzer"));
+const FreeTools = lazy(() => import("./pages/FreeTools"));
+const LinkedInProfileAnalyzerTool = lazy(() => import("./pages/tools/LinkedInProfileAnalyzerTool"));
+const LinkedInPostGeneratorTool = lazy(() => import("./pages/tools/LinkedInPostGeneratorTool"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
 const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
@@ -147,6 +150,11 @@ const App = () => (
                 {/* All other pages share header/footer */}
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<Index />} />
+                  
+                  {/* Free Tools Pages - Public SEO Pages */}
+                  <Route path="/tools" element={<FreeTools />} />
+                  <Route path="/tools/linkedin-profile-analyzer" element={<LinkedInProfileAnalyzerTool />} />
+                  <Route path="/tools/linkedin-post-generator" element={<LinkedInPostGeneratorTool />} />
                   
                   {/* Dashboard routes with onboarding modal */}
                   <Route element={<DashboardLayout />}>
