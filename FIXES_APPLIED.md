@@ -1,6 +1,6 @@
 # Fixes Applied ✅
 
-## 1. **All Sign-In/Register Buttons Redirect to One Page** ✅
+## 1. **All Sign-In/Register Buttons Redirect to One Page** ✅ 
 
 **Problem**: Different buttons were redirecting to different pages
 **Solution**: All registration/sign-in buttons now redirect to `/auth/register`
