@@ -71,7 +71,8 @@ const Index = () => {
       <UseCases />
       <TryItFreeSection />
       <Features />
-      <ProfileAnalyzerSection />
+      {/* ProfileAnalyzerSection disabled temporarily */}
+      {/* <ProfileAnalyzerSection /> */}
       <Testimonials />
       <ReferralSection />
       <Pricing />

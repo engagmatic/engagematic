@@ -47,6 +47,23 @@ const faqData = [
 ];
 
 const LinkedInProfileAnalyzerTool = () => {
+  // Component disabled temporarily - redirect to home
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Redirect to home page
+    navigate("/");
+  }, [navigate]);
+  
+  return (
+    <div className="container mx-auto px-4 py-16 text-center">
+      <h1 className="text-2xl font-bold mb-4">This tool is temporarily unavailable</h1>
+      <p className="text-muted-foreground mb-4">The LinkedIn Profile Analyzer is currently being updated.</p>
+      <Link to="/">
+        <Button>Go to Home</Button>
+      </Link>
+    </div>
+  );
   const [profileUrl, setProfileUrl] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -363,4 +380,5 @@ const LinkedInProfileAnalyzerTool = () => {
 };
 
 export default LinkedInProfileAnalyzerTool;
+// */ // END DISABLED
 

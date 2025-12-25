@@ -153,7 +153,8 @@ const App = () => (
                   
                   {/* Free Tools Pages - Public SEO Pages */}
                   <Route path="/tools" element={<FreeTools />} />
-                  <Route path="/tools/linkedin-profile-analyzer" element={<LinkedInProfileAnalyzerTool />} />
+                  {/* LinkedIn Profile Analyzer Tool disabled temporarily */}
+                  {/* <Route path="/tools/linkedin-profile-analyzer" element={<LinkedInProfileAnalyzerTool />} /> */}
                   <Route path="/tools/linkedin-post-generator" element={<LinkedInPostGeneratorTool />} />
                   
                   {/* Dashboard routes with onboarding modal */}
