@@ -26,11 +26,13 @@ import {
   FileText,
   GraduationCap,
   Megaphone,
-  ShoppingCart
+  ShoppingCart,
+  X,
+  Search
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { WRITING_STYLES, TONE_OPTIONS, INDUSTRIES, EXPERIENCE_LEVELS } from "@/constants/personaOptions";
+import { WRITING_STYLES, TONE_OPTIONS, INDUSTRIES, POPULAR_INDUSTRIES, EXPERIENCE_LEVELS } from "@/constants/personaOptions";
 import api from "@/services/api";
 
 const GOALS = [
@@ -76,6 +78,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
     jobTitle: "",
     company: "",
     industry: "",
+    customIndustry: "",
     experience: "",
     usageContext: "",
     workContext: "",
@@ -90,6 +93,8 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
     linkedinUrl: "",
     postFormatting: "plain",
   });
+  const [showCustomIndustry, setShowCustomIndustry] = useState(false);
+  const [industrySearch, setIndustrySearch] = useState("");
 
   const steps = [
     { id: 1, title: "Profile", icon: User },
@@ -159,7 +164,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
           onboardingCompleted: true,
           jobTitle: formData.jobTitle || null,
           company: formData.company || null,
-          industry: formData.industry || null,
+          industry: formData.customIndustry || formData.industry || null,
           experience: formData.experience || null,
           linkedinUrl: formData.linkedinUrl || null,
           postFormatting: formData.postFormatting || "plain",
@@ -365,63 +370,191 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
               </div>
 
               {/* Compact Professional Info */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="jobTitle" className="text-xs font-medium">Job Title</Label>
-                  <Input
-                    id="jobTitle"
-                    type="text"
-                    placeholder="e.g., Marketing Manager"
-                    value={formData.jobTitle}
-                    onChange={(e) => handleChange('jobTitle', e.target.value)}
-                    className="h-9 text-sm"
-                    disabled={isLoading}
-                  />
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="jobTitle" className="text-xs font-medium">Job Title</Label>
+                    <Input
+                      id="jobTitle"
+                      type="text"
+                      placeholder="e.g., Marketing Manager"
+                      value={formData.jobTitle}
+                      onChange={(e) => handleChange('jobTitle', e.target.value)}
+                      className="h-9 text-sm"
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="company" className="text-xs font-medium">Company</Label>
+                    <Input
+                      id="company"
+                      type="text"
+                      placeholder="e.g., Acme Inc."
+                      value={formData.company}
+                      onChange={(e) => handleChange('company', e.target.value)}
+                      className="h-9 text-sm"
+                      disabled={isLoading}
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="company" className="text-xs font-medium">Company</Label>
-                  <Input
-                    id="company"
-                    type="text"
-                    placeholder="e.g., Acme Inc."
-                    value={formData.company}
-                    onChange={(e) => handleChange('company', e.target.value)}
-                    className="h-9 text-sm"
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="industry" className="text-xs font-medium">Industry</Label>
-                  <select
-                    id="industry"
-                    value={formData.industry}
-                    onChange={(e) => handleChange('industry', e.target.value)}
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs"
-                    disabled={isLoading}
-                  >
-                    <option value="">Select</option>
-                    {INDUSTRIES.slice(0, 10).map((industry) => (
-                      <option key={industry} value={industry}>{industry}</option>
+                {/* Industry Selection - Enhanced */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium block">Industry</Label>
+                  
+                  {/* Popular Industries - Chip Selection */}
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {POPULAR_INDUSTRIES.map((industry) => (
+                      <button
+                        key={industry}
+                        type="button"
+                        onClick={() => {
+                          handleChange('industry', industry);
+                          setShowCustomIndustry(false);
+                          setIndustrySearch("");
+                        }}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                          formData.industry === industry && !showCustomIndustry
+                            ? 'bg-primary text-primary-foreground shadow-sm scale-105'
+                            : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                        }`}
+                        disabled={isLoading}
+                      >
+                        {industry}
+                        {formData.industry === industry && !showCustomIndustry && (
+                          <Check className="h-3 w-3 inline-block ml-1.5" />
+                        )}
+                      </button>
                     ))}
-                  </select>
+                  </div>
+
+                  {/* Search/Filter Industries */}
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Search industries..."
+                      value={industrySearch}
+                      onChange={(e) => {
+                        setIndustrySearch(e.target.value);
+                        if (e.target.value) {
+                          setShowCustomIndustry(false);
+                        }
+                      }}
+                      className="h-9 text-sm pr-8"
+                      disabled={isLoading}
+                    />
+                    {industrySearch && (
+                      <button
+                        type="button"
+                        onClick={() => setIndustrySearch("")}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Filtered Industry List */}
+                  {industrySearch && (
+                    <div className="max-h-32 overflow-y-auto border rounded-md p-2 space-y-1 bg-background">
+                      {INDUSTRIES.filter(industry => 
+                        industry.toLowerCase().includes(industrySearch.toLowerCase()) &&
+                        !POPULAR_INDUSTRIES.includes(industry as any)
+                      ).map((industry) => (
+                        <button
+                          key={industry}
+                          type="button"
+                          onClick={() => {
+                            handleChange('industry', industry);
+                            setIndustrySearch("");
+                            setShowCustomIndustry(false);
+                          }}
+                          className={`w-full text-left px-2 py-1.5 rounded text-xs hover:bg-muted transition-colors ${
+                            formData.industry === industry ? 'bg-primary/10 text-primary font-medium' : ''
+                          }`}
+                          disabled={isLoading}
+                        >
+                          {industry}
+                        </button>
+                      ))}
+                      {INDUSTRIES.filter(industry => 
+                        industry.toLowerCase().includes(industrySearch.toLowerCase()) &&
+                        !POPULAR_INDUSTRIES.includes(industry as any)
+                      ).length === 0 && (
+                        <p className="text-xs text-muted-foreground px-2 py-1">No industries found</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Custom Industry Option */}
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCustomIndustry(!showCustomIndustry);
+                        if (!showCustomIndustry) {
+                          handleChange('industry', '');
+                          setIndustrySearch("");
+                        } else {
+                          handleChange('customIndustry', '');
+                        }
+                      }}
+                      className={`w-full px-3 py-2 rounded-lg border-2 text-left transition-all duration-200 ${
+                        showCustomIndustry || formData.customIndustry
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                      disabled={isLoading}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium">
+                          {showCustomIndustry || formData.customIndustry ? '✓ Custom Industry' : '+ Enter Custom Industry'}
+                        </span>
+                      </div>
+                    </button>
+
+                    {/* Custom Industry Input */}
+                    {(showCustomIndustry || formData.customIndustry) && (
+                      <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                        <Input
+                          type="text"
+                          placeholder="e.g., Blockchain, SaaS, EdTech..."
+                          value={formData.customIndustry}
+                          onChange={(e) => {
+                            handleChange('customIndustry', e.target.value);
+                            if (e.target.value) {
+                              handleChange('industry', 'custom');
+                            }
+                          }}
+                          className="h-9 text-sm"
+                          disabled={isLoading}
+                          autoFocus
+                        />
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          💡 Enter your specific industry for better personalization
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="experience" className="text-xs font-medium">Experience</Label>
-                  <select
-                    id="experience"
-                    value={formData.experience}
-                    onChange={(e) => handleChange('experience', e.target.value)}
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs"
-                    disabled={isLoading}
-                  >
-                    <option value="">Select</option>
-                    {EXPERIENCE_LEVELS.map((level) => (
-                      <option key={level} value={level}>{level}</option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="experience" className="text-xs font-medium">Experience</Label>
+                    <select
+                      id="experience"
+                      value={formData.experience}
+                      onChange={(e) => handleChange('experience', e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs"
+                      disabled={isLoading}
+                    >
+                      <option value="">Select</option>
+                      {EXPERIENCE_LEVELS.map((level) => (
+                        <option key={level} value={level}>{level}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
