@@ -3,15 +3,24 @@ import { OnboardingModal } from "@/components/OnboardingModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { LogoWithText } from "@/components/LogoWithText";
-import { LayoutDashboard, Home, User, LogOut, Lightbulb, FileText, MessageSquare, Menu, X, UserCircle } from "lucide-react";
+import { LayoutDashboard, Home, User, LogOut, Lightbulb, FileText, MessageSquare, Menu, X, UserCircle, Calendar, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useSubscription } from "@/hooks/useSubscription";
 
 export const DashboardLayout = () => {
   const { user, isLoading, checkAuthStatus, logout, isAuthenticated } = useAuth();
+  const { subscription, loading: subscriptionLoading } = useSubscription();
   const location = useLocation();
   const navigate = useNavigate();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [hasChecked, setHasChecked] = useState(false);
+  
+  // Check if user has paid plan (only check if subscription is loaded and user is authenticated)
+  const hasPaidPlan = isAuthenticated && 
+    !subscriptionLoading && 
+    subscription && 
+    subscription.plan !== 'trial' && 
+    subscription.status === 'active';
   
   // Sidebar state - persist in localStorage
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -25,6 +34,8 @@ export const DashboardLayout = () => {
     { path: "/idea-generator", label: "Idea Generator", icon: Lightbulb },
     { path: "/post-generator", label: "Post Generator", icon: FileText },
     { path: "/comment-generator", label: "Comment Generator", icon: MessageSquare },
+    // Content Planner - only show for paid users
+    ...(hasPaidPlan ? [{ path: "/content-planner", label: "Content Planner", icon: Calendar }] : []),
     // Profile Analyzer temporarily disabled while feature is being upgraded
     {
       path: "/profile-analyzer",
@@ -76,8 +87,41 @@ export const DashboardLayout = () => {
     }
   };
 
-  if (!isAuthenticated) {
+  // Check authentication status
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      checkAuthStatus?.();
+    }
+  }, [isLoading, isAuthenticated, checkAuthStatus]);
+
+  // Allow Content Planner to render its own access control
+  // Other dashboard routes require authentication
+  const isContentPlannerRoute = location.pathname === '/content-planner';
+  
+  if (isContentPlannerRoute) {
+    // Let ContentPlanner handle its own access control
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex">
+        <Outlet />
+      </div>
+    );
+  }
+
+  // For other dashboard routes, require authentication
+  if (!isAuthenticated && !isLoading) {
     return null;
+  }
+  
+  // If still loading, show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <span>Loading...</span>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -160,47 +204,49 @@ export const DashboardLayout = () => {
           })}
         </nav>
 
-        {/* User Section */}
-        <div className={`p-2 sm:p-4 border-t border-gray-200 dark:border-slate-800 space-y-2 ${!sidebarOpen ? 'lg:px-2' : ''}`}>
-          <Link
-            to="/profile"
-            onClick={() => setMobileSidebarOpen(false)}
-            className={`
-              flex items-center gap-3 px-3 sm:px-4 py-3 rounded-xl
-              text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-all
-              ${sidebarOpen ? '' : 'lg:justify-center lg:px-2'}
-            `}
-            title={!sidebarOpen ? 'Profile' : ''}
-          >
-            <User className="h-5 w-5 flex-shrink-0" />
-            {sidebarOpen && <span className="font-medium">Profile</span>}
-          </Link>
-          <Link
-            to="/"
-            onClick={() => setMobileSidebarOpen(false)}
-            className={`
-              flex items-center gap-3 px-3 sm:px-4 py-3 rounded-xl
-              text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-all
-              ${sidebarOpen ? '' : 'lg:justify-center lg:px-2'}
-            `}
-            title={!sidebarOpen ? 'Home' : ''}
-          >
-            <Home className="h-5 w-5 flex-shrink-0" />
-            {sidebarOpen && <span className="font-medium">Home</span>}
-          </Link>
-          <button
-            onClick={handleLogout}
-            className={`
-              w-full flex items-center gap-3 px-3 sm:px-4 py-3 rounded-xl
-              text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all
-              ${sidebarOpen ? '' : 'lg:justify-center lg:px-2'}
-            `}
-            title={!sidebarOpen ? 'Logout' : ''}
-          >
-            <LogOut className="h-5 w-5 flex-shrink-0" />
-            {sidebarOpen && <span className="font-medium">Logout</span>}
-          </button>
-        </div>
+        {/* User Section - Only show if authenticated */}
+        {isAuthenticated && (
+          <div className={`p-2 sm:p-4 border-t border-gray-200 dark:border-slate-800 space-y-2 ${!sidebarOpen ? 'lg:px-2' : ''}`}>
+            <Link
+              to="/profile"
+              onClick={() => setMobileSidebarOpen(false)}
+              className={`
+                flex items-center gap-3 px-3 sm:px-4 py-3 rounded-xl
+                text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-all
+                ${sidebarOpen ? '' : 'lg:justify-center lg:px-2'}
+              `}
+              title={!sidebarOpen ? 'Profile' : ''}
+            >
+              <User className="h-5 w-5 flex-shrink-0" />
+              {sidebarOpen && <span className="font-medium">Profile</span>}
+            </Link>
+            <Link
+              to="/"
+              onClick={() => setMobileSidebarOpen(false)}
+              className={`
+                flex items-center gap-3 px-3 sm:px-4 py-3 rounded-xl
+                text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-all
+                ${sidebarOpen ? '' : 'lg:justify-center lg:px-2'}
+              `}
+              title={!sidebarOpen ? 'Home' : ''}
+            >
+              <Home className="h-5 w-5 flex-shrink-0" />
+              {sidebarOpen && <span className="font-medium">Home</span>}
+            </Link>
+            <button
+              onClick={handleLogout}
+              className={`
+                w-full flex items-center gap-3 px-3 sm:px-4 py-3 rounded-xl
+                text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all
+                ${sidebarOpen ? '' : 'lg:justify-center lg:px-2'}
+              `}
+              title={!sidebarOpen ? 'Logout' : ''}
+            >
+              <LogOut className="h-5 w-5 flex-shrink-0" />
+              {sidebarOpen && <span className="font-medium">Logout</span>}
+            </button>
+          </div>
+        )}
 
         {/* Expand button - only show when collapsed on desktop */}
         {!sidebarOpen && (
@@ -244,7 +290,7 @@ export const DashboardLayout = () => {
         </header>
 
         {/* Page Content */}
-        <div className="w-full">
+        <div className="w-full" style={{ minHeight: '100vh', position: 'relative' }}>
           <Outlet />
         </div>
       </main>

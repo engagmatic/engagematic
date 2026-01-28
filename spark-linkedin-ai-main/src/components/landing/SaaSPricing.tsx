@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
-import { Check, Zap, Rocket, Settings, Globe, IndianRupee, Clock, Shield, Users, BarChart3, Eye, Zap as Lightning, Snowflake, AtSign, Headphones, Globe as GlobeIcon, ArrowRight, Sparkles, X, Lock, Star } from "lucide-react";
+import { Check, Zap, Rocket, Settings, Globe, IndianRupee, Clock, Shield, Users, BarChart3, Eye, Zap as Lightning, Snowflake, AtSign, Headphones, Globe as GlobeIcon, ArrowRight, Sparkles, X, Lock, Star, Calendar } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -130,6 +130,7 @@ export const SaaSPricing = () => {
         { text: `${currentLimits.comments} comments per month`, icon: <Users className="h-4 w-4" /> },
         { text: ideasText, icon: <Zap className="h-4 w-4" /> },
         { text: '15 curated AI personas', icon: <Users className="h-4 w-4" /> },
+        { text: 'Hook-to-Outcome Content Planner', icon: <Calendar className="h-4 w-4" /> },
         { text: 'Smart Planner', icon: <Check className="h-4 w-4" /> },
         { text: 'Basic analytics', icon: <BarChart3 className="h-4 w-4" /> },
         { text: 'Basic formatting controls', icon: <Settings className="h-4 w-4" /> },
@@ -145,6 +146,7 @@ export const SaaSPricing = () => {
         { text: `${currentLimits.comments} comments per month`, icon: <Users className="h-4 w-4" /> },
         { text: ideasText, icon: <Zap className="h-4 w-4" /> },
         { text: 'Unlimited custom AI personas, full edits', icon: <Users className="h-4 w-4" /> },
+        { text: 'Hook-to-Outcome Content Planner', icon: <Calendar className="h-4 w-4" /> },
         { text: 'Smart Planner', icon: <Check className="h-4 w-4" /> },
         { text: 'Advanced analytics', icon: <BarChart3 className="h-4 w-4" /> },
         { text: 'Full, premium formatting controls', icon: <Settings className="h-4 w-4" /> },
@@ -160,6 +162,7 @@ export const SaaSPricing = () => {
         { text: `${bulkCredits.posts} LinkedIn posts (use anytime, no expiry)`, icon: <Clock className="h-4 w-4" /> },
         { text: `${bulkCredits.comments} comments included`, icon: <Users className="h-4 w-4" /> },
         { text: `${bulkCredits.ideas} content ideas included`, icon: <Zap className="h-4 w-4" /> },
+        { text: 'Hook-to-Outcome Content Planner', icon: <Calendar className="h-4 w-4" /> },
         { text: 'Basic formatting controls', icon: <Settings className="h-4 w-4" /> },
         { text: 'Email support', icon: <AtSign className="h-4 w-4" /> },
         { text: '7-day free trial, all Pro features', icon: <Check className="h-4 w-4" /> }

@@ -20,6 +20,9 @@ const PostGenerator = lazy(() => import("./pages/PostGenerator"));
 const IdeaGenerator = lazy(() => import("./pages/IdeaGenerator"));
 const CommentGenerator = lazy(() => import("./pages/CommentGenerator"));
 const ProfileAnalyzer = lazy(() => import("./pages/ProfileAnalyzer"));
+// Try direct import first to debug - change back to lazy after fixing
+const ContentPlanner = lazy(() => import("./pages/ContentPlanner"));
+// import ContentPlanner from "./pages/ContentPlanner";
 const FreeTools = lazy(() => import("./pages/FreeTools"));
 const LinkedInProfileAnalyzerTool = lazy(() => import("./pages/tools/LinkedInProfileAnalyzerTool"));
 const LinkedInPostGeneratorTool = lazy(() => import("./pages/tools/LinkedInPostGeneratorTool"));
@@ -163,6 +166,7 @@ const App = () => (
                     <Route path="/idea-generator" element={<IdeaGenerator />} />
                     <Route path="/post-generator" element={<PostGenerator />} />
                     <Route path="/comment-generator" element={<CommentGenerator />} />
+                    <Route path="/content-planner" element={<ContentPlanner />} />
                     <Route path="/profile-analyzer" element={<ProfileAnalyzer />} />
                   </Route>
                   {/* Blog Routes */}

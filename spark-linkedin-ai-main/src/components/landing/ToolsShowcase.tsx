@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Brain, MessageSquare, Sparkles } from "lucide-react";
+import { Brain, MessageSquare, Sparkles, Calendar } from "lucide-react";
 
 const tools = [
   {
@@ -22,6 +22,13 @@ const tools = [
     description: "Generate AI-powered hooks and content ideas that grab attention and boost engagement. Never run out of inspiration.",
     color: "from-orange-500 via-amber-500 to-yellow-500",
     shadowColor: "shadow-orange-500/25"
+  },
+  {
+    icon: Calendar,
+    title: "Hook-to-Outcome Content Planner",
+    description: "Turn your monthly goal into a clear 30-post board with hooks, CTAs, and comment prompts that drive DMs and leads—not vanity likes.",
+    color: "from-green-500 via-emerald-500 to-teal-500",
+    shadowColor: "shadow-green-500/25"
   }
 ];
 

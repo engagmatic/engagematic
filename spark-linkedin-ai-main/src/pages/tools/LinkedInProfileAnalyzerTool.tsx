@@ -64,11 +64,6 @@ const LinkedInProfileAnalyzerTool = () => {
       </Link>
     </div>
   );
-  const [profileUrl, setProfileUrl] = useState("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
-  const { toast } = useToast();
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", url: SITE_URL },
