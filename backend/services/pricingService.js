@@ -63,9 +63,10 @@ class PricingService {
     }
 
     // For regular subscriptions, include all credits
+    // Handle unlimited ideas (-1) - don't charge for unlimited ideas
     const postPrice = credits.posts * config.postPrice;
     const commentPrice = credits.comments * config.commentPrice;
-    const ideaPrice = credits.ideas * config.ideaPrice;
+    const ideaPrice = credits.ideas === -1 ? 0 : credits.ideas * config.ideaPrice;
 
     const totalPrice = postPrice + commentPrice + ideaPrice;
 
@@ -147,9 +148,9 @@ class PricingService {
         total: credits.comments * config.commentPrice,
       },
       ideas: {
-        quantity: credits.ideas,
-        unitPrice: config.ideaPrice,
-        total: credits.ideas * config.ideaPrice,
+        quantity: credits.ideas === -1 ? 'Unlimited' : credits.ideas,
+        unitPrice: credits.ideas === -1 ? 0 : config.ideaPrice,
+        total: credits.ideas === -1 ? 0 : credits.ideas * config.ideaPrice,
       },
       total: totalPrice,
       currency: currency,
@@ -254,9 +255,10 @@ class PricingService {
               nextBillingDate: null, // No next billing for one-time
             },
             tokens: {
-              total: credits.posts * 5 + credits.comments * 3 + credits.ideas * 4,
+              // Handle unlimited ideas (-1) - use 0 tokens for unlimited ideas
+              total: credits.posts * 5 + credits.comments * 3 + (credits.ideas === -1 ? 0 : credits.ideas * 4),
               used: 0,
-              remaining: credits.posts * 5 + credits.comments * 3 + credits.ideas * 4,
+              remaining: credits.posts * 5 + credits.comments * 3 + (credits.ideas === -1 ? 0 : credits.ideas * 4),
             },
           });
         } else {
@@ -267,7 +269,8 @@ class PricingService {
           subscription.limits.ideasPerMonth = (subscription.limits.ideasPerMonth || 0) + credits.ideas;
 
           // Add tokens (bulk credits add to token pool)
-          const additionalTokens = credits.posts * 5 + credits.comments * 3 + credits.ideas * 4;
+          // Bulk packs shouldn't have unlimited ideas, but handle it just in case
+          const additionalTokens = credits.posts * 5 + credits.comments * 3 + (credits.ideas === -1 ? 0 : credits.ideas * 4);
           subscription.tokens.total = (subscription.tokens.total || 0) + additionalTokens;
           subscription.tokens.remaining = (subscription.tokens.remaining || 0) + additionalTokens;
 
@@ -303,10 +306,10 @@ class PricingService {
                 : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             },
             tokens: {
-              total: credits.posts * 5 + credits.comments * 3 + credits.ideas * 4,
+              // Handle unlimited ideas (-1) - use 0 tokens for unlimited ideas
+              total: credits.posts * 5 + credits.comments * 3 + (credits.ideas === -1 ? 0 : credits.ideas * 4),
               used: 0,
-              remaining:
-                credits.posts * 5 + credits.comments * 3 + credits.ideas * 4,
+              remaining: credits.posts * 5 + credits.comments * 3 + (credits.ideas === -1 ? 0 : credits.ideas * 4),
             },
           });
         } else {
@@ -333,8 +336,9 @@ class PricingService {
             : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
           // Reset and update tokens
+          // Handle unlimited ideas (-1) - use 0 tokens for unlimited ideas
           const newTokenTotal =
-            credits.posts * 5 + credits.comments * 3 + credits.ideas * 4;
+            credits.posts * 5 + credits.comments * 3 + (credits.ideas === -1 ? 0 : credits.ideas * 4);
           subscription.tokens.total = newTokenTotal;
           subscription.tokens.used = 0; // Reset usage on new subscription
           subscription.tokens.remaining = newTokenTotal;
@@ -391,8 +395,9 @@ class PricingService {
       subscription.billing.currency = currency;
 
       // Update tokens
+      // Handle unlimited ideas (-1) - use 0 tokens for unlimited ideas
       const newTokenTotal =
-        newCredits.posts * 5 + newCredits.comments * 3 + newCredits.ideas * 4;
+        newCredits.posts * 5 + newCredits.comments * 3 + (newCredits.ideas === -1 ? 0 : newCredits.ideas * 4);
       subscription.tokens.total = newTokenTotal;
       subscription.tokens.remaining = newTokenTotal - subscription.tokens.used;
 
@@ -448,8 +453,11 @@ class PricingService {
       errors.push("Comments must be between 10 and 100");
     }
 
-    if (!credits.ideas || credits.ideas < 10 || credits.ideas > 100) {
-      errors.push("Ideas must be between 10 and 100");
+    // Allow -1 for unlimited ideas, or between 10-100 for limited
+    if (credits.ideas === undefined || credits.ideas === null) {
+      errors.push("Ideas is required");
+    } else if (credits.ideas !== -1 && (credits.ideas < 10 || credits.ideas > 100)) {
+      errors.push("Ideas must be between 10 and 100, or -1 for unlimited");
     }
 
     return {

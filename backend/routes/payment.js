@@ -23,8 +23,13 @@ router.post(
       .isInt({ min: 10, max: 100 })
       .withMessage("Comments must be between 10 and 100"),
     body("credits.ideas")
-      .isInt({ min: 10, max: 100 })
-      .withMessage("Ideas must be between 10 and 100"),
+      .custom((value) => {
+        // Allow -1 for unlimited ideas, or between 10-100 for limited
+        if (value === -1) return true;
+        if (Number.isInteger(value) && value >= 10 && value <= 100) return true;
+        return false;
+      })
+      .withMessage("Ideas must be between 10 and 100, or -1 for unlimited"),
     body("currency")
       .optional()
       .isIn(["INR", "USD"])
