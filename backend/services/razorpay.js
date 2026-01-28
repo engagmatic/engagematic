@@ -75,13 +75,26 @@ class RazorpayService {
         planType = "elite";
       } else if (billingPeriod === "one-time") {
         // Bulk Pack: one-time purchase - price based on posts selected
-        // Minimum is calculated based on minimum posts, then scales linearly
+        // Pricing logic matches frontend:
+        // INR: Minimum ₹125 for 9 posts, then ₹15 per additional post
+        // USD: $0.49 per post (minimum 9 posts = $4.41)
         const minPosts = pricing.bulkPackMinPosts || 9;
-        const postPrice = pricing.postPrice || (currency === "INR" ? 15 : 0.49);
         
-        // Calculate price based on posts selected (minimum posts × postPrice if below minimum)
-        const postsSelected = Math.max(credits.posts, minPosts);
-        amount = postsSelected * postPrice;
+        if (currency === "INR") {
+          // Minimum price: ₹125 for 9 posts
+          // Then ₹15 per post for additional posts
+          if (credits.posts <= 9) {
+            amount = 125; // Minimum price
+          } else {
+            // ₹125 base + (additional posts × ₹15)
+            amount = 125 + ((credits.posts - 9) * 15);
+          }
+        } else {
+          // USD: $0.49 per post
+          const postPrice = 0.49;
+          const postsSelected = Math.max(credits.posts, minPosts);
+          amount = postsSelected * postPrice;
+        }
         
         // Round to 2 decimal places
         amount = Math.round(amount * 100) / 100;

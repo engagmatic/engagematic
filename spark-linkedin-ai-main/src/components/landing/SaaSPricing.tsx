@@ -247,6 +247,12 @@ export const SaaSPricing = () => {
       }
 
       // For bulk pack, use one-time billing, otherwise use selected interval
+      // Ensure billingInterval is set for non-bulk plans
+      if (planId !== 'bulk' && !billingInterval) {
+        toast.error('Please select monthly or yearly billing');
+        return;
+      }
+      
       const billingType = planId === 'bulk' ? 'one-time' : billingInterval;
       
       // Process payment with Razorpay

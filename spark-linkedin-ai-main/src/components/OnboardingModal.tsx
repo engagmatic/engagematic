@@ -20,7 +20,13 @@ import {
   Crown,
   Building2,
   Briefcase,
-  User
+  User,
+  Users,
+  BriefcaseBusiness,
+  FileText,
+  GraduationCap,
+  Megaphone,
+  ShoppingCart
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -35,6 +41,22 @@ const GOALS = [
   { id: 'founder', label: 'Founder/CEO', icon: Rocket, color: 'bg-pink-100 text-pink-700' },
   { id: 'startup', label: 'Startup', icon: Sparkles, color: 'bg-indigo-100 text-indigo-700' },
   { id: 'agency', label: 'Agency', icon: Briefcase, color: 'bg-orange-100 text-orange-700' },
+];
+
+const USAGE_CONTEXTS = [
+  { id: 'personal_profile', label: 'Personal Profile', icon: User, color: 'bg-blue-100 text-blue-700', description: 'For your own LinkedIn profile' },
+  { id: 'founder_brand', label: 'Founder Brand', icon: Crown, color: 'bg-purple-100 text-purple-700', description: 'Building your founder brand' },
+  { id: 'company_page', label: 'Company Page', icon: Building2, color: 'bg-green-100 text-green-700', description: 'For company LinkedIn page' },
+  { id: 'agency_clients', label: 'Agency Clients', icon: BriefcaseBusiness, color: 'bg-orange-100 text-orange-700', description: 'Creating content for clients' },
+  { id: 'side_projects', label: 'Side Projects', icon: Sparkles, color: 'bg-indigo-100 text-indigo-700', description: 'For personal projects' },
+];
+
+const CONTENT_FOCUS_OPTIONS = [
+  { id: 'education', label: 'Education', icon: GraduationCap, color: 'bg-blue-100 text-blue-700', description: 'Teach and share knowledge' },
+  { id: 'case_studies', label: 'Case Studies', icon: FileText, color: 'bg-purple-100 text-purple-700', description: 'Share success stories' },
+  { id: 'hiring', label: 'Hiring', icon: Users, color: 'bg-green-100 text-green-700', description: 'Attract talent' },
+  { id: 'product_updates', label: 'Product Updates', icon: Rocket, color: 'bg-orange-100 text-orange-700', description: 'Announce new features' },
+  { id: 'community', label: 'Community', icon: Heart, color: 'bg-pink-100 text-pink-700', description: 'Build community engagement' },
 ];
 
 interface OnboardingModalProps {
@@ -55,12 +77,15 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
     company: "",
     industry: "",
     experience: "",
+    usageContext: "",
+    workContext: "",
     // Step 2: AI Persona
     personaName: "",
     writingStyle: "",
     tone: "",
     expertise: "",
     targetAudience: "",
+    contentFocus: "",
     // Step 3: Preferences
     linkedinUrl: "",
     postFormatting: "plain",
@@ -102,7 +127,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
   const canProceed = (): boolean => {
     switch (currentStep) {
       case 1:
-        return !!formData.primaryGoal;
+        return !!formData.primaryGoal && !!formData.usageContext;
       case 2:
         return !!formData.writingStyle && !!formData.tone;
       case 3:
@@ -138,6 +163,8 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
           experience: formData.experience || null,
           linkedinUrl: formData.linkedinUrl || null,
           postFormatting: formData.postFormatting || "plain",
+          usageContext: formData.usageContext || null,
+          workContext: formData.workContext || null,
         },
         persona: {
           name: formData.personaName || `${formData.jobTitle || 'Professional'} Persona`,
@@ -146,6 +173,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
           expertise: formData.expertise || null,
           targetAudience: formData.targetAudience || null,
           goals: formData.primaryGoal || null,
+          contentFocus: formData.contentFocus || null,
           contentTypes: [],
         },
         interests: [],
@@ -297,6 +325,43 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                   })}
                 </div>
                 {errors.primaryGoal && <p className="text-xs text-red-500 mt-1">{errors.primaryGoal}</p>}
+              </div>
+
+              {/* Usage Context Selection */}
+              <div>
+                <Label className="text-xs font-medium mb-2 block">How will you use this? *</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {USAGE_CONTEXTS.map((context) => {
+                    const Icon = context.icon;
+                    return (
+                      <button
+                        key={context.id}
+                        type="button"
+                        onClick={() => handleChange('usageContext', context.id)}
+                        className={`p-2.5 rounded-lg border-2 text-left transition-all duration-200 ${
+                          formData.usageContext === context.id
+                            ? 'border-primary bg-primary/10 shadow-sm scale-105'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        disabled={isLoading}
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className={`p-1 rounded ${context.color} flex-shrink-0`}>
+                            <Icon className="h-3.5 w-3.5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-xs font-medium block">{context.label}</span>
+                            <span className="text-[10px] text-muted-foreground mt-0.5 block">{context.description}</span>
+                          </div>
+                          {formData.usageContext === context.id && (
+                            <Check className="h-3 w-3 text-primary flex-shrink-0" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                {errors.usageContext && <p className="text-xs text-red-500 mt-1">{errors.usageContext}</p>}
               </div>
 
               {/* Compact Professional Info */}
@@ -458,6 +523,43 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                     className="text-sm min-h-[60px]"
                     disabled={isLoading}
                   />
+                </div>
+
+                {/* Content Focus Selection */}
+                <div>
+                  <Label className="text-xs font-medium mb-2 block">Content Focus (Optional)</Label>
+                  <p className="text-[10px] text-muted-foreground mb-2">What type of content do you want to prioritize?</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {CONTENT_FOCUS_OPTIONS.map((focus) => {
+                      const Icon = focus.icon;
+                      return (
+                        <button
+                          key={focus.id}
+                          type="button"
+                          onClick={() => handleChange('contentFocus', focus.id)}
+                          className={`p-2.5 rounded-lg border-2 text-left transition-all duration-200 ${
+                            formData.contentFocus === focus.id
+                              ? 'border-primary bg-primary/10 shadow-sm scale-105'
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                          disabled={isLoading}
+                        >
+                          <div className="flex items-start gap-2">
+                            <div className={`p-1 rounded ${focus.color} flex-shrink-0`}>
+                              <Icon className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="text-xs font-medium block">{focus.label}</span>
+                              <span className="text-[10px] text-muted-foreground mt-0.5 block">{focus.description}</span>
+                            </div>
+                            {formData.contentFocus === focus.id && (
+                              <Check className="h-3 w-3 text-primary flex-shrink-0" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>

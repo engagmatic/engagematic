@@ -119,7 +119,7 @@ const userSubscriptionSchema = new mongoose.Schema(
       },
       interval: {
         type: String,
-        enum: ["monthly", "yearly"],
+        enum: ["monthly", "yearly", "one-time"],
         default: "monthly",
       },
       nextBillingDate: {

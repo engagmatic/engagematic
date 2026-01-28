@@ -136,6 +136,9 @@ router.post(
         goals: user.persona?.goals || null,
         targetAudience: user.persona?.targetAudience || null,
         expertise: user.persona?.expertise || null,
+        usageContext: user.profile?.usageContext || null,
+        workContext: user.profile?.workContext || null,
+        contentFocus: user.persona?.contentFocus || null,
       };
 
       console.log("👤 User Profile for Personalization:", userProfile);
@@ -307,6 +310,9 @@ router.post(
         goals: user.persona?.goals || null,
         targetAudience: user.persona?.targetAudience || null,
         expertise: user.persona?.expertise || null,
+        usageContext: user.profile?.usageContext || null,
+        workContext: user.profile?.workContext || null,
+        contentFocus: user.persona?.contentFocus || null,
       };
 
       console.log("👤 User Profile for Personalization:", userProfile);

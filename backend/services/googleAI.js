@@ -219,6 +219,9 @@ ${
     : ""
 }
 ${userProfile.expertise ? `**Areas of Expertise**: ${userProfile.expertise} - Reference these naturally, don't force them` : ""}
+${userProfile.usageContext ? `**Usage Context**: ${userProfile.usageContext} - Write as if this is primarily for ${userProfile.usageContext.replace(/_/g, " ")}` : ""}
+${userProfile.workContext ? `**Posting For**: ${userProfile.workContext} - Choose examples that match whose profile this appears on` : ""}
+${userProfile.contentFocus ? `**Content Focus**: ${userProfile.contentFocus} - Prioritize this type of content in structure and examples` : ""}
 
 **HOW TO USE THIS CONTEXT (Make it feel authentic, not forced):**
 1. **Role-specific examples**: If they're a ${userProfile.jobTitle || "professional"}, use examples from their daily work

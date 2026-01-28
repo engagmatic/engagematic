@@ -39,13 +39,29 @@ class PricingService {
   }
 
   // Calculate price for custom credit selection
-  calculatePrice(credits, currency = "USD") {
+  calculatePrice(credits, currency = "USD", isBulkPack = false) {
     const config = this.pricingConfigs[currency];
     if (!config) {
       throw new Error("Invalid currency");
     }
 
-    // For bulk pack (one-time), calculate based on posts only (minimum based on posts selected)
+    // For bulk pack (one-time), calculate based on posts only with minimum pricing
+    if (isBulkPack) {
+      if (currency === "INR") {
+        // Minimum ₹125 for 9 posts, then ₹15 per additional post
+        if (credits.posts <= 9) {
+          return 125;
+        } else {
+          return 125 + ((credits.posts - 9) * 15);
+        }
+      } else {
+        // USD: $0.49 per post (minimum 9 posts)
+        const minPosts = 9;
+        const postsSelected = Math.max(credits.posts, minPosts);
+        return Math.round(postsSelected * 0.49 * 100) / 100;
+      }
+    }
+
     // For regular subscriptions, include all credits
     const postPrice = credits.posts * config.postPrice;
     const commentPrice = credits.comments * config.commentPrice;
@@ -82,12 +98,24 @@ class PricingService {
   }
 
   // Get display price (preset price or calculated price)
-  getDisplayPrice(credits, currency = "USD") {
+  getDisplayPrice(credits, currency = "USD", billingInterval = "monthly") {
     const config = this.pricingConfigs[currency];
 
-    if (this.isStarterPlan(credits)) return config.starterPrice;
-    if (this.isProPlan(credits)) return config.proPrice;
-    if (this.isElitePlan(credits)) return config.elitePrice;
+    if (this.isStarterPlan(credits)) {
+      return billingInterval === "yearly" ? config.starterPrice * 10 : config.starterPrice;
+    }
+    if (this.isProPlan(credits)) {
+      return billingInterval === "yearly" ? config.proPrice * 10 : config.proPrice;
+    }
+    if (this.isElitePlan(credits)) {
+      return billingInterval === "yearly" ? (config.elitePrice || 1299) * 10 : (config.elitePrice || 1299);
+    }
+    
+    // For bulk pack (one-time), use special pricing
+    if (billingInterval === "one-time") {
+      return this.calculatePrice(credits, currency, true);
+    }
+    
     return this.calculatePrice(credits, currency);
   }
 
@@ -182,7 +210,7 @@ class PricingService {
   ) {
     try {
       const config = this.pricingConfigs[currency];
-      const price = this.getDisplayPrice(credits, currency);
+      const price = this.getDisplayPrice(credits, currency, billingInterval);
       const planName = this.getPlanName(credits);
 
       // Determine plan type based on credits
@@ -192,69 +220,125 @@ class PricingService {
         ? "pro"
         : this.isElitePlan(credits)
         ? "elite"
+        : billingInterval === "one-time"
+        ? "bulk"
         : "custom";
 
       // Create or update user subscription
       let subscription = await UserSubscription.findOne({ userId });
 
-      if (!subscription) {
-        subscription = new UserSubscription({
-          userId,
-          plan: planType,
-          status: "active", // Change from trial to active after payment
-          subscriptionStartDate: new Date(),
-          subscriptionEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-          limits: {
-            postsPerMonth: credits.posts,
-            commentsPerMonth: credits.comments,
-            ideasPerMonth: credits.ideas,
-            templatesAccess: true,
-            linkedinAnalysis: true,
-            profileAnalyses: -1, // Unlimited
-            prioritySupport: planType === "pro",
-          },
-          billing: {
-            amount: price,
-            currency: currency,
-            interval: billingInterval,
-            nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          },
-          tokens: {
-            total: credits.posts * 5 + credits.comments * 3 + credits.ideas * 4,
-            used: 0,
-            remaining:
-              credits.posts * 5 + credits.comments * 3 + credits.ideas * 4,
-          },
-        });
+      // Handle one-time bulk pack purchases differently
+      if (billingInterval === "one-time") {
+        // For bulk pack: Add credits to existing credits (don't replace subscription)
+        if (!subscription) {
+          // Create new subscription with bulk credits
+          subscription = new UserSubscription({
+            userId,
+            plan: "custom", // Bulk pack is always custom
+            status: "active",
+            subscriptionStartDate: new Date(),
+            subscriptionEndDate: null, // No expiry for bulk credits
+            limits: {
+              postsPerMonth: credits.posts,
+              commentsPerMonth: credits.comments,
+              ideasPerMonth: credits.ideas,
+              templatesAccess: true,
+              linkedinAnalysis: false,
+              profileAnalyses: 0,
+              prioritySupport: false,
+            },
+            billing: {
+              amount: price,
+              currency: currency,
+              interval: "one-time",
+              nextBillingDate: null, // No next billing for one-time
+            },
+            tokens: {
+              total: credits.posts * 5 + credits.comments * 3 + credits.ideas * 4,
+              used: 0,
+              remaining: credits.posts * 5 + credits.comments * 3 + credits.ideas * 4,
+            },
+          });
+        } else {
+          // Add bulk credits to existing subscription
+          // Increase limits by adding to existing (bulk credits stack)
+          subscription.limits.postsPerMonth = (subscription.limits.postsPerMonth || 0) + credits.posts;
+          subscription.limits.commentsPerMonth = (subscription.limits.commentsPerMonth || 0) + credits.comments;
+          subscription.limits.ideasPerMonth = (subscription.limits.ideasPerMonth || 0) + credits.ideas;
+
+          // Add tokens (bulk credits add to token pool)
+          const additionalTokens = credits.posts * 5 + credits.comments * 3 + credits.ideas * 4;
+          subscription.tokens.total = (subscription.tokens.total || 0) + additionalTokens;
+          subscription.tokens.remaining = (subscription.tokens.remaining || 0) + additionalTokens;
+
+          // Update billing to reflect one-time purchase (but keep existing subscription active)
+          // Don't change the plan or status, just add credits
+        }
       } else {
-        // Update existing subscription - upgrade from trial to paid
-        subscription.plan = planType;
-        subscription.status = "active"; // Activate subscription
-        subscription.subscriptionStartDate = new Date();
-        subscription.subscriptionEndDate = new Date(
-          Date.now() + 30 * 24 * 60 * 60 * 1000
-        );
+        // Regular monthly/yearly subscription
+        if (!subscription) {
+          subscription = new UserSubscription({
+            userId,
+            plan: planType,
+            status: "active", // Change from trial to active after payment
+            subscriptionStartDate: new Date(),
+            subscriptionEndDate: billingInterval === "yearly" 
+              ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year
+              : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+            limits: {
+              postsPerMonth: credits.posts,
+              commentsPerMonth: credits.comments,
+              ideasPerMonth: credits.ideas,
+              templatesAccess: true,
+              linkedinAnalysis: true,
+              profileAnalyses: -1, // Unlimited
+              prioritySupport: planType === "pro",
+            },
+            billing: {
+              amount: price,
+              currency: currency,
+              interval: billingInterval,
+              nextBillingDate: billingInterval === "yearly"
+                ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+                : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            },
+            tokens: {
+              total: credits.posts * 5 + credits.comments * 3 + credits.ideas * 4,
+              used: 0,
+              remaining:
+                credits.posts * 5 + credits.comments * 3 + credits.ideas * 4,
+            },
+          });
+        } else {
+          // Update existing subscription - upgrade from trial to paid
+          subscription.plan = planType;
+          subscription.status = "active"; // Activate subscription
+          subscription.subscriptionStartDate = new Date();
+          subscription.subscriptionEndDate = billingInterval === "yearly"
+            ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-        // Update limits
-        subscription.limits.postsPerMonth = credits.posts;
-        subscription.limits.commentsPerMonth = credits.comments;
-        subscription.limits.ideasPerMonth = credits.ideas;
-        subscription.limits.prioritySupport = planType === "pro";
+          // Update limits
+          subscription.limits.postsPerMonth = credits.posts;
+          subscription.limits.commentsPerMonth = credits.comments;
+          subscription.limits.ideasPerMonth = credits.ideas;
+          subscription.limits.prioritySupport = planType === "pro";
 
-        // Update billing
-        subscription.billing.amount = price;
-        subscription.billing.currency = currency;
-        subscription.billing.interval = billingInterval;
-        subscription.billing.nextBillingDate = new Date(
-          Date.now() + 30 * 24 * 60 * 60 * 1000
-        );
+          // Update billing
+          subscription.billing.amount = price;
+          subscription.billing.currency = currency;
+          subscription.billing.interval = billingInterval;
+          subscription.billing.nextBillingDate = billingInterval === "yearly"
+            ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-        // Reset and update tokens
-        const newTokenTotal =
-          credits.posts * 5 + credits.comments * 3 + credits.ideas * 4;
-        subscription.tokens.total = newTokenTotal;
-        subscription.tokens.used = 0; // Reset usage on new subscription
-        subscription.tokens.remaining = newTokenTotal;
+          // Reset and update tokens
+          const newTokenTotal =
+            credits.posts * 5 + credits.comments * 3 + credits.ideas * 4;
+          subscription.tokens.total = newTokenTotal;
+          subscription.tokens.used = 0; // Reset usage on new subscription
+          subscription.tokens.remaining = newTokenTotal;
+        }
       }
 
       await subscription.save();

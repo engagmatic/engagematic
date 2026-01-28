@@ -31,8 +31,8 @@ router.post(
       .withMessage("Currency must be INR or USD"),
     body("billingInterval")
       .optional()
-      .isIn(["monthly", "yearly"])
-      .withMessage("Billing interval must be monthly or yearly"),
+      .isIn(["monthly", "yearly", "one-time"])
+      .withMessage("Billing interval must be monthly, yearly, or one-time"),
   ],
   async (req, res) => {
     try {
@@ -172,8 +172,11 @@ router.post(
 
       // Calculate monthly amount (for recurring commissions)
       // If yearly, divide by 12; if monthly, use as-is
+      // For one-time purchases, use 0 (no recurring commission)
       const monthlyAmount =
-        billingInterval === "yearly"
+        billingInterval === "one-time"
+          ? 0
+          : billingInterval === "yearly"
           ? Math.round((orderDetails.amount / 100) / 12)
           : orderDetails.amount / 100;
 
@@ -233,8 +236,8 @@ router.post(
       .withMessage("Currency must be INR or USD"),
     body("billingInterval")
       .optional()
-      .isIn(["monthly", "yearly"])
-      .withMessage("Billing interval must be monthly or yearly"),
+      .isIn(["monthly", "yearly", "one-time"])
+      .withMessage("Billing interval must be monthly, yearly, or one-time"),
   ],
   async (req, res) => {
     try {

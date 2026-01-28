@@ -128,6 +128,14 @@ const userSchema = new mongoose.Schema(
         enum: ["plain", "bold", "italic", "emoji"],
         default: "plain",
       },
+      usageContext: {
+        type: String,
+        default: null,
+      },
+      workContext: {
+        type: String,
+        default: null,
+      },
     },
     // User interests/topics
     interests: [
@@ -158,6 +166,10 @@ const userSchema = new mongoose.Schema(
         default: null,
       },
       goals: {
+        type: String,
+        default: null,
+      },
+      contentFocus: {
         type: String,
         default: null,
       },

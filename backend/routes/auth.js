@@ -290,6 +290,8 @@ router.put("/profile", authenticateToken, async (req, res) => {
       if (profile.linkedinUrl !== undefined) updateData.profile.linkedinUrl = profile.linkedinUrl;
       if (profile.onboardingCompleted !== undefined) updateData.profile.onboardingCompleted = profile.onboardingCompleted;
       if (profile.postFormatting !== undefined) updateData.profile.postFormatting = profile.postFormatting;
+      if (profile.usageContext !== undefined) updateData.profile.usageContext = profile.usageContext;
+      if (profile.workContext !== undefined) updateData.profile.workContext = profile.workContext;
     }
     
     // Update nested persona object
@@ -301,6 +303,7 @@ router.put("/profile", authenticateToken, async (req, res) => {
       if (persona.expertise !== undefined) updateData.persona.expertise = persona.expertise;
       if (persona.targetAudience !== undefined) updateData.persona.targetAudience = persona.targetAudience;
       if (persona.goals !== undefined) updateData.persona.goals = persona.goals;
+      if (persona.contentFocus !== undefined) updateData.persona.contentFocus = persona.contentFocus;
       if (persona.contentTypes !== undefined) updateData.persona.contentTypes = persona.contentTypes;
       if (persona.trainingPostIds !== undefined && Array.isArray(persona.trainingPostIds)) {
         updateData.persona.trainingPostIds = persona.trainingPostIds;
