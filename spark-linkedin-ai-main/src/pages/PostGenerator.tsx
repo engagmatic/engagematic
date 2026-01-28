@@ -187,6 +187,7 @@ const PostGenerator = () => {
   }, []);
 
   // Use user's personas first, fall back to expanded personas
+  // Use user's personas first, fall back to expanded personas
   useEffect(() => {
     if (selectedPersona) return; // Already have a persona
 
@@ -310,14 +311,17 @@ const PostGenerator = () => {
       return;
     }
 
-    // SIMPLIFIED: Send persona data directly if it's a sample or onboarding persona
-    // Check if it's a valid MongoDB ObjectId (24 hex characters)
-    const isValidMongoId = selectedPersona._id && /^[0-9a-fA-F]{24}$/.test(selectedPersona._id);
-    const isOnboardingPersona = selectedPersona._id?.toString().startsWith('user-persona-') || selectedPersona.source === 'onboarding';
-    
-    const personaData = (isValidMongoId && !isOnboardingPersona)
-      ? { personaId: selectedPersona._id } // Real persona with valid MongoDB ObjectId
-      : { persona: selectedPersona }; // Sample persona or onboarding persona, send full data
+    // Always send a clean persona object to the backend (more robust when user switches personas)
+    const personaData = {
+      persona: {
+        name: selectedPersona.name,
+        industry: selectedPersona.industry,
+        experience: selectedPersona.experience,
+        tone: selectedPersona.tone,
+        writingStyle: selectedPersona.writingStyle,
+        description: selectedPersona.description,
+      },
+    };
 
     console.log('🚀 Generating post with data:', {
       topic,

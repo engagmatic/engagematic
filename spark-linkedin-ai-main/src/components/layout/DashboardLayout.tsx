@@ -21,12 +21,18 @@ export const DashboardLayout = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const navigationItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/idea-generator', label: 'Idea Generator', icon: Lightbulb },
-    { path: '/post-generator', label: 'Post Generator', icon: FileText },
-    { path: '/comment-generator', label: 'Comment Generator', icon: MessageSquare },
-    { path: '/profile-analyzer', label: 'Profile Analyzer', icon: UserCircle },
-  ];
+    { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { path: "/idea-generator", label: "Idea Generator", icon: Lightbulb },
+    { path: "/post-generator", label: "Post Generator", icon: FileText },
+    { path: "/comment-generator", label: "Comment Generator", icon: MessageSquare },
+    // Profile Analyzer temporarily disabled while feature is being upgraded
+    {
+      path: "/profile-analyzer",
+      label: "Profile Analyzer (Coming Soon)",
+      icon: UserCircle,
+      disabled: true,
+    },
+  ] as const;
 
   // Save sidebar state to localStorage
   useEffect(() => {
@@ -113,27 +119,43 @@ export const DashboardLayout = () => {
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
+            const isDisabled = (item as any).disabled;
 
             return (
-              <Link
+              <button
                 key={item.path}
-                to={item.path}
-                onClick={() => setMobileSidebarOpen(false)}
+                onClick={() => {
+                  if (isDisabled) {
+                    alert(
+                      "Profile Analyzer is temporarily unavailable while we upgrade this feature."
+                    );
+                    return;
+                  }
+                  navigate(item.path);
+                  setMobileSidebarOpen(false);
+                }}
                 className={`
-                  flex items-center gap-3 px-3 sm:px-4 py-3 rounded-xl
+                  w-full text-left flex items-center gap-3 px-3 sm:px-4 py-3 rounded-xl
                   transition-all duration-200
-                  ${sidebarOpen ? '' : 'lg:justify-center lg:px-2'}
+                  ${sidebarOpen ? "" : "lg:justify-center lg:px-2"}
                   ${
-                    isActive
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+                    isDisabled
+                      ? "cursor-not-allowed opacity-60 text-gray-400 dark:text-gray-500"
+                      : isActive
+                      ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
                   }
                 `}
-                title={!sidebarOpen ? item.label : ''}
+                title={
+                  !sidebarOpen ? item.label : isDisabled ? "Coming soon" : ""
+                }
+                disabled={isDisabled}
               >
                 <Icon className="h-5 w-5 flex-shrink-0" />
-                {sidebarOpen && <span className="font-medium">{item.label}</span>}
-              </Link>
+                {sidebarOpen && (
+                  <span className="font-medium">{item.label}</span>
+                )}
+              </button>
             );
           })}
         </nav>
