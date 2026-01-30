@@ -34,8 +34,7 @@ export const DashboardLayout = () => {
     { path: "/idea-generator", label: "Idea Generator", icon: Lightbulb },
     { path: "/post-generator", label: "Post Generator", icon: FileText },
     { path: "/comment-generator", label: "Comment Generator", icon: MessageSquare },
-    // Content Planner - only show for paid users
-    ...(hasPaidPlan ? [{ path: "/content-planner", label: "Content Planner", icon: Calendar }] : []),
+    { path: "/content-planner", label: "Content Planner", icon: Calendar },
   ] as const;
 
   // Save sidebar state to localStorage

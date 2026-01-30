@@ -90,6 +90,7 @@ export default function LinkedInTextFormatterPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const historyRef = useRef<string[]>([]);
   const historyIndexRef = useRef(-1);
+  const lastPushedRef = useRef<string>("");
   const { toast } = useToast();
 
   const pushHistory = useCallback((value: string) => {
@@ -399,14 +400,7 @@ export default function LinkedInTextFormatterPage() {
                 placeholder="Write here..."
                 value={input}
                 onChange={(e) => {
-                  const v = e.target.value;
-                  setInput(v);
-                  if (v === lastPushedRef.current) return;
-                  const t = setTimeout(() => {
-                    pushHistory(v);
-                    lastPushedRef.current = v;
-                  }, 600);
-                  return () => clearTimeout(t);
+                  setInput(e.target.value);
                 }}
                 onBlur={() => {
                   if (input !== lastPushedRef.current) {

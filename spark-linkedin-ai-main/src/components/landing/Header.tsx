@@ -97,45 +97,49 @@ export const Header = () => {
               ) : (
                 <nav className="hidden md:flex items-center gap-6">
                   <DropdownMenu>
-                    <DropdownMenuTrigger className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-smooth font-medium outline-none">
+                    <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/80 px-4 py-2 text-sm font-medium text-foreground/90 hover:bg-muted/50 hover:text-foreground hover:border-primary/30 transition-all outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50">
                       Free Tools
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown className="h-4 w-4 opacity-70" />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-56">
+                    <DropdownMenuContent align="start" sideOffset={8} className="w-72 rounded-xl border-2 border-border/80 bg-background shadow-xl p-2">
+                      <div className="px-3 py-2 mb-1 border-b border-border/60">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-primary">LinkedIn Free Tools</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">No signup · Use instantly</p>
+                      </div>
                       <DropdownMenuItem asChild>
-                        <Link to="/tools" className="cursor-pointer">
-                          <FileText className="mr-2 h-4 w-4" />
-                          All Free Tools
+                        <Link to="/tools" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10"><FileText className="h-4 w-4 text-primary" /></span>
+                          <span className="font-medium">All LinkedIn Free Tools</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link to="/tools/linkedin-post-generator" className="cursor-pointer">
-                          <FileText className="mr-2 h-4 w-4" />
-                          Post Generator
+                        <Link to="/tools/linkedin-post-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10"><FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" /></span>
+                          <span className="font-medium">LinkedIn Post Generator</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link to="/tools/linkedin-engagement-rate-calculator" className="cursor-pointer">
-                          <BarChart3 className="mr-2 h-4 w-4" />
-                          Engagement Rate Calculator
+                        <Link to="/tools/linkedin-engagement-rate-calculator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10"><BarChart3 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /></span>
+                          <span className="font-medium">LinkedIn Engagement Calculator</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link to="/tools/linkedin-text-formatter" className="cursor-pointer">
-                          <Type className="mr-2 h-4 w-4" />
-                          Text Formatter
+                        <Link to="/tools/linkedin-text-formatter" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/10"><Type className="h-4 w-4 text-purple-600 dark:text-purple-400" /></span>
+                          <span className="font-medium">LinkedIn Text Formatter</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link to="/#free-generator" className="cursor-pointer">
-                          <MessageSquare className="mr-2 h-4 w-4" />
-                          Comment Generator
+                        <Link to="/#free-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10"><MessageSquare className="h-4 w-4 text-amber-600 dark:text-amber-400" /></span>
+                          <span className="font-medium">LinkedIn Comment Generator</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link to="/#free-generator" className="cursor-pointer">
-                          <Lightbulb className="mr-2 h-4 w-4" />
-                          Idea Generator
+                        <Link to="/#free-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-pink-500/10"><Lightbulb className="h-4 w-4 text-pink-600 dark:text-pink-400" /></span>
+                          <span className="font-medium">LinkedIn Idea Generator</span>
                         </Link>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -259,55 +263,56 @@ export const Header = () => {
                 ) : (
                   <>
                     <nav className="flex flex-col gap-4">
-                      <div className="space-y-2">
-                        <Link 
-                          to="/tools"
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="block text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
-                        >
-                          Free Tools
-                        </Link>
-                        <div className="pl-4 space-y-2 border-l-2 border-muted">
+                      <div className="space-y-3">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-primary px-1">LinkedIn Free Tools</p>
+                        <div className="space-y-1 rounded-lg border border-border/60 bg-muted/30 p-2">
+                          <Link 
+                            to="/tools"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm font-medium text-foreground hover:bg-background/80 transition-colors"
+                          >
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10"><FileText className="h-4 w-4 text-primary" /></span>
+                            All LinkedIn Free Tools
+                          </Link>
                           <Link 
                             to="/tools/linkedin-post-generator"
                             onClick={() => setMobileMenuOpen(false)}
-                            className="block text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
                           >
-                            Post Generator
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10"><FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" /></span>
+                            LinkedIn Post Generator
                           </Link>
                           <Link 
                             to="/tools/linkedin-engagement-rate-calculator"
                             onClick={() => setMobileMenuOpen(false)}
-                            className="block text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
                           >
-                            Engagement Rate Calculator
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10"><BarChart3 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /></span>
+                            LinkedIn Engagement Calculator
                           </Link>
                           <Link 
                             to="/tools/linkedin-text-formatter"
                             onClick={() => setMobileMenuOpen(false)}
-                            className="block text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
                           >
-                            Text Formatter
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/10"><Type className="h-4 w-4 text-purple-600 dark:text-purple-400" /></span>
+                            LinkedIn Text Formatter
                           </Link>
                           <Link 
                             to="/#free-generator"
-                            onClick={() => {
-                              setMobileMenuOpen(false);
-                              scrollToSection('free-generator');
-                            }}
-                            className="block text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                            onClick={() => { setMobileMenuOpen(false); scrollToSection('free-generator'); }}
+                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
                           >
-                            Comment Generator
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10"><MessageSquare className="h-4 w-4 text-amber-600 dark:text-amber-400" /></span>
+                            LinkedIn Comment Generator
                           </Link>
                           <Link 
                             to="/#free-generator"
-                            onClick={() => {
-                              setMobileMenuOpen(false);
-                              scrollToSection('free-generator');
-                            }}
-                            className="block text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                            onClick={() => { setMobileMenuOpen(false); scrollToSection('free-generator'); }}
+                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
                           >
-                            Idea Generator
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-pink-500/10"><Lightbulb className="h-4 w-4 text-pink-600 dark:text-pink-400" /></span>
+                            LinkedIn Idea Generator
                           </Link>
                         </div>
                       </div>

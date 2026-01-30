@@ -76,14 +76,14 @@ export const Footer = () => {
             </div>
             
             <div>
-              <h3 className="font-semibold mb-4">Free Tools</h3>
+              <h3 className="font-semibold mb-4">LinkedIn Free Tools</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/tools" className="hover:text-foreground transition-smooth flex items-center gap-2"><FileText className="h-3 w-3" /> All Free Tools</Link></li>
-                <li><Link to="/tools/linkedin-post-generator" className="hover:text-foreground transition-smooth flex items-center gap-2"><FileText className="h-3 w-3" /> Post Generator</Link></li>
-                <li><Link to="/tools/linkedin-engagement-rate-calculator" className="hover:text-foreground transition-smooth flex items-center gap-2"><BarChart3 className="h-3 w-3" /> Engagement Rate Calculator</Link></li>
-                <li><Link to="/tools/linkedin-text-formatter" className="hover:text-foreground transition-smooth flex items-center gap-2"><Type className="h-3 w-3" /> Text Formatter</Link></li>
-                <li><Link to="/#free-generator" className="hover:text-foreground transition-smooth flex items-center gap-2"><MessageSquare className="h-3 w-3" /> Comment Generator</Link></li>
-                <li><Link to="/#free-generator" className="hover:text-foreground transition-smooth flex items-center gap-2"><Lightbulb className="h-3 w-3" /> Idea Generator</Link></li>
+                <li><Link to="/tools" className="hover:text-foreground transition-smooth flex items-center gap-2"><FileText className="h-3 w-3 shrink-0" /> All LinkedIn Free Tools</Link></li>
+                <li><Link to="/tools/linkedin-post-generator" className="hover:text-foreground transition-smooth flex items-center gap-2"><FileText className="h-3 w-3 shrink-0" /> LinkedIn Post Generator</Link></li>
+                <li><Link to="/tools/linkedin-engagement-rate-calculator" className="hover:text-foreground transition-smooth flex items-center gap-2"><BarChart3 className="h-3 w-3 shrink-0" /> LinkedIn Engagement Calculator</Link></li>
+                <li><Link to="/tools/linkedin-text-formatter" className="hover:text-foreground transition-smooth flex items-center gap-2"><Type className="h-3 w-3 shrink-0" /> LinkedIn Text Formatter</Link></li>
+                <li><Link to="/#free-generator" className="hover:text-foreground transition-smooth flex items-center gap-2"><MessageSquare className="h-3 w-3 shrink-0" /> LinkedIn Comment Generator</Link></li>
+                <li><Link to="/#free-generator" className="hover:text-foreground transition-smooth flex items-center gap-2"><Lightbulb className="h-3 w-3 shrink-0" /> LinkedIn Idea Generator</Link></li>
               </ul>
             </div>
             

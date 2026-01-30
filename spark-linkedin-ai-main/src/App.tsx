@@ -27,7 +27,8 @@ const FreeTools = lazy(() => import("./pages/FreeTools"));
 const LinkedInProfileAnalyzerTool = lazy(() => import("./pages/tools/LinkedInProfileAnalyzerTool"));
 const LinkedInPostGeneratorTool = lazy(() => import("./pages/tools/LinkedInPostGeneratorTool"));
 const LinkedInEngagementCalculator = lazy(() => import("./pages/tools/LinkedInEngagementCalculator"));
-const LinkedInTextFormatter = lazy(() => import("./pages/tools/LinkedInTextFormatter"));
+import LinkedInTextFormatter from "./pages/tools/LinkedInTextFormatter";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
 const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
@@ -162,7 +163,7 @@ const App = () => (
                   {/* <Route path="/tools/linkedin-profile-analyzer" element={<LinkedInProfileAnalyzerTool />} /> */}
                   <Route path="/tools/linkedin-post-generator" element={<LinkedInPostGeneratorTool />} />
                   <Route path="/tools/linkedin-engagement-rate-calculator" element={<LinkedInEngagementCalculator />} />
-                  <Route path="/tools/linkedin-text-formatter" element={<LinkedInTextFormatter />} />
+                  <Route path="/tools/linkedin-text-formatter" element={<ErrorBoundary><LinkedInTextFormatter /></ErrorBoundary>} />
                   
                   {/* Dashboard routes with onboarding modal */}
                   <Route element={<DashboardLayout />}>

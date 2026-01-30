@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Sparkles, Lock, Crown } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { PlannerStep1Goal } from "@/components/planner/PlannerStep1Goal";
@@ -16,47 +16,35 @@ import {
   generateBoard 
 } from "@/services/plannerService";
 import { GoalType } from "@/constants/plannerTemplates";
-import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const ContentPlanner = () => {
-  const { subscription, loading: subscriptionLoading } = useSubscription();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   
-  // Check if user has paid plan
-  const hasPaidPlan = subscription && 
-    subscription.plan !== 'trial' && 
-    subscription.status === 'active';
-  
-  // Show loading state while checking auth and subscription (with timeout)
+  // Show loading state while checking auth (with timeout)
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   
   useEffect(() => {
-    // Set a timeout to prevent infinite loading
-    const timer = setTimeout(() => {
-      setLoadingTimeout(true);
-    }, 5000); // 5 second timeout
-    
+    const timer = setTimeout(() => setLoadingTimeout(true), 5000);
     return () => clearTimeout(timer);
   }, []);
   
-  // Show loading state while checking subscription (but not forever)
-  if ((authLoading || subscriptionLoading) && !loadingTimeout) {
+  if (authLoading && !loadingTimeout) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background via-primary/5 to-background">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Checking access...</p>
+          <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
   }
   
-  // Show upgrade prompt if not authenticated or not paid user
-  if (!isAuthenticated || !hasPaidPlan) {
+  // Require sign-in only (Content Planner is free for all authenticated users)
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background via-primary/5 to-background p-4 sm:p-6 lg:p-8 flex items-center justify-center">
         <Card className="max-w-md w-full p-8 text-center space-y-6">
@@ -68,16 +56,15 @@ export const ContentPlanner = () => {
           <div className="space-y-2">
             <h2 className="text-2xl font-bold">Content Planner</h2>
             <p className="text-muted-foreground">
-              This feature is available for all paid plans (Starter, Pro, and Elite).
+              Sign in to plan your content, generate ideas, and turn them into posts.
             </p>
           </div>
           <div className="space-y-3">
             <Button 
-              onClick={() => navigate('/pricing')}
+              onClick={() => navigate('/auth/login')}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600"
             >
-              <Crown className="h-4 w-4 mr-2" />
-              View Plans & Upgrade
+              Sign In
             </Button>
             <Button 
               variant="outline" 
