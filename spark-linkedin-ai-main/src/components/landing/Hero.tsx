@@ -178,6 +178,27 @@ export const Hero = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Content Planner & Idea Generator - Compact Single Line */}
+              <div className="rounded-xl border-2 border-purple-100/50 dark:border-purple-900/50 bg-gradient-to-br from-white/95 via-purple-50/30 to-pink-50/20 dark:from-slate-900/95 dark:via-purple-950/30 dark:to-pink-950/20 backdrop-blur-sm shadow-lg hover:shadow-xl p-3 sm:p-4 hover-lift transition-all duration-300">
+                <div className="flex flex-col items-center text-center gap-2">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-blue-600 via-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-md">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-[9px] sm:text-[10px] font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">Plan & create</span>
+                    <h4 className="text-xs sm:text-sm font-semibold">Content planner & idea generator</h4>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight line-clamp-2">Plan posts on a calendar, generate ideas, then turn them into full posts with AI.</p>
+                    <div className="mt-1 flex flex-wrap gap-1 justify-center">
+                      <span className="px-1.5 py-0.5 text-[9px] rounded-full border bg-muted">Calendar</span>
+                      <span className="px-1.5 py-0.5 text-[9px] rounded-full border bg-muted">Ideas</span>
+                      <span className="px-1.5 py-0.5 text-[9px] rounded-full border bg-muted">AI</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
           {/* Trust Indicators */}
