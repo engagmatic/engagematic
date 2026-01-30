@@ -13,7 +13,9 @@ import {
   Sparkles,
   Zap,
   TrendingUp,
-  Users
+  Users,
+  BarChart3,
+  Type
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -54,6 +56,42 @@ const freeTools = [
     ],
     keywords: "free linkedin post generator, linkedin post generator ai, linkedin content generator, ai linkedin posts, linkedin post creator",
     monthlySearches: "18,000+",
+    color: "from-purple-500 to-pink-500"
+  },
+  {
+    id: "engagement-calculator",
+    name: "LinkedIn Engagement Rate Calculator",
+    description: "Measure your LinkedIn engagement rate instantly, compare to benchmarks (organic, sponsored, company), and get actionable insights. Post engagement score checker included.",
+    icon: BarChart3,
+    url: "/tools/linkedin-engagement-rate-calculator",
+    features: [
+      "Engagement rate from any two values",
+      "Benchmark comparison by channel",
+      "Above/Average/Below category",
+      "Post engagement score (0–100)",
+      "Up to 3 actionable suggestions",
+      "No login required"
+    ],
+    keywords: "linkedin engagement rate calculator, linkedin engagement rate, free linkedin analytics, linkedin metrics",
+    monthlySearches: "8,000+",
+    color: "from-blue-500 to-indigo-500"
+  },
+  {
+    id: "text-formatter",
+    name: "LinkedIn Text Formatter",
+    description: "Format LinkedIn post text with bold, italic, underlined, strikethrough and more using Unicode. Copy and paste into posts or messages—no native formatting needed.",
+    icon: Type,
+    url: "/tools/linkedin-text-formatter",
+    features: [
+      "Bold, italic, sans, script styles",
+      "Underline & strikethrough",
+      "Numbered, bullet & checklist lists",
+      "Real-time post preview",
+      "Desktop & mobile preview toggle",
+      "No login required"
+    ],
+    keywords: "linkedin text formatter, linkedin bold text, linkedin italic, format linkedin post, free linkedin formatter",
+    monthlySearches: "6,000+",
     color: "from-purple-500 to-pink-500"
   },
   {

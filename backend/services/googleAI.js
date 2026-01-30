@@ -268,10 +268,48 @@ Start with this exact hook: "${hook}"
 🎯 ENGAGEMENT GOAL: ${engagementGoal.description}
 **Your post must achieve**: ${engagementGoal.objectives.join(", ")}
 
+📌 VIRAL HOOK TEMPLATES (use or adapt these formulas for maximum stop-the-scroll):
+1. "How to [achieve result] in [exact timeframe]"
+2. "Stop [common practice] if you want [desired outcome]"
+3. "The [number] [adjective] [noun] framework"
+4. "Why [popular belief] is actually wrong"
+5. "[Result] without [expected requirement]"
+6. "I was wrong about [topic]"
+7. "The truth about [industry myth]"
+
+📌 BODY CONTENT RULES (STRICT):
+- MAX LINE LENGTH: 66 characters per line - each line stands alone visually
+- LINE STRUCTURE: Main point → Supporting point → Detail (hierarchy)
+- READABILITY: Grade 6-8 level - simple, direct language
+- PARAGRAPHS: None - use only line breaks between lines/blocks
+- BOLDING: Bold the first 3 words of each major point for scannability
+
+📌 ENGAGEMENT ELEMENTS:
+- QUESTION TYPES (use one): "Which point resonates most?" | "What would you add?" | "Agree or disagree?" | "What's your biggest challenge with this?"
+- CALL-TO-ACTION: Use ONE only. Choose from: "Save this for later" | "Follow for more" | "Comment below" | "Share with someone who needs this"
+
+📌 CONTENT MATRIX (1 core idea → pick one format):
+- How-To Guide | Personal Story | Mistake Analysis | Quick Tip List | Before/After Case Study
+- CONVERT: Stories → numbered lessons | Guides → personal experiences | Tips → frameworks | Data → stories | Questions → guides
+
+📌 CURRENT VIRAL PATTERNS (apply one per post):
+
+**Pattern A - "Anti-Pattern" Post:**
+1. Identify common advice → 2. Explain why it's flawed → 3. Offer counter-intuitive solution → 4. Share personal proof (numbers if possible) → 5. Ask for dissenting opinions
+Example vibe: "Stop posting daily. Here's why: [reason] When I cut from 7 to 3 posts/week: Engagement ↑ X%. Am I crazy or does this resonate?"
+
+**Pattern B - "Specific Result" Post:**
+1. Exact achievement in headline → 2. Timeframe specified → 3. 3-5 specific actions taken → 4. One surprising lesson → 5. Question about reader's goals
+Use exact numbers, include timeframe, show vulnerability (struggles), end with forward-looking question.
+
+**Pattern C - "Framework/List" Post:**
+Numbered or bulleted list with bold first 3 words per point; one clear takeaway per line; max 66 chars per line; end with single CTA.
+
 🔥 VIRAL CONTENT STRATEGY - Apply these proven patterns:
 
 **1. HOOK OPTIMIZATION (First 125 characters are CRITICAL):**
 - Your hook "${hook}" must create IMMEDIATE curiosity, emotion, or cognitive dissonance
+- Prefer the viral hook templates above when they fit the topic
 - Use one of these viral patterns:
   * Contrarian take: Challenge common belief
   * Personal revelation: "I made a mistake that cost me..."
@@ -304,10 +342,11 @@ Start with this exact hook: "${hook}"
 - Share specific examples, numbers, or personal experiences (make it relatable)
 
 **5. STRUCTURE FOR MAXIMUM ENGAGEMENT:**
-- **Hook** (125 chars): Stop the scroll with curiosity/emotion
-- **Context** (1-2 sentences): Why this matters NOW
-- **Story/Insight** (3-5 bullet points): The meat - specific, actionable, relatable
-- **CTA** (1-2 sentences): Drive engagement with question or call-to-action
+- **Hook** (max 125 chars): Stop the scroll with curiosity/emotion
+- **Body**: NO paragraphs - only line breaks. Max 66 characters per line. Each line stands alone. Hierarchy: main point → supporting point → detail
+- **Bold**: First 3 words of each major point for scannability
+- **Story/Insight**: 3-5 lines or bullets - specific, actionable, relatable (66 chars max per line)
+- **CTA**: ONE only - one question OR one CTA (e.g. "Save this for later" or "Comment below")
 
 **6. FORMATTING & VISUAL APPEAL (Based on user preference: ${postFormatting}):**
 ${postFormatting === "bold" ? 
@@ -317,9 +356,9 @@ ${postFormatting === "bold" ?
   postFormatting === "emoji" ? 
   "- Use emojis liberally (5-8 total) for visual appeal - this is the user's preferred style\n- Place emojis strategically: after impactful statements, before key insights, and in CTAs\n- Use context-specific emojis (🎯📊💰🔥⚡💡🚀) not generic ones (✨🌟⭐)\n- Emojis increase engagement by 25% - use them wisely" : 
   "- Use **bold** for 3-5 KEY PHRASES that deserve emphasis (e.g., **game-changing**, **critical mistake**, **biggest lesson**)\n- Use emojis sparingly (1-3 max) and only where they add genuine value\n- Bold numbers, key insights, and action items"}
-- Short paragraphs (2-3 sentences max) with line breaks for readability
+- No paragraphs - use line breaks only. Max 66 characters per line for readability
 - Use bullet points (→ or •) for lists - makes content scannable
-- White space is your friend - break up text for easy reading
+- Bold the first 3 words of each major point. White space between blocks
 
 **7. VALUE-FIRST CONTENT (Every sentence must earn its place):**
 - Offer actionable advice, avoid generic content
@@ -331,10 +370,9 @@ ${postFormatting === "bold" ?
 
 **8. GOAL-DRIVEN ENGAGEMENT:**
 ${engagementGoal.ctaStrategy}
-- End with a thought-provoking question that invites discussion
-- OR a clear call-to-action that drives the desired outcome
-- Make it easy for people to engage - ask for opinions, experiences, or advice
-- Questions that start with "What's been your experience with...?" get 3x more comments
+- Use ONE CTA only: e.g. "Save this for later" | "Follow for more" | "Comment below" | "Share with someone who needs this"
+- OR one engagement question: "Which point resonates most?" | "What would you add?" | "Agree or disagree?" | "What's your biggest challenge with this?"
+- Never stack multiple CTAs - one clear ask only
 
 **9. PERSONA TRAINING (Learn from user's saved posts):**
 ${trainingPosts.length > 0 ? `STUDY these examples of the user's preferred writing style:\n${trainingPosts.map((post, idx) => `Example ${idx + 1}:\n${post.content?.substring(0, 200)}...`).join('\n\n')}\n\nMATCH the tone, structure, and voice from these examples in your generated content\nLearn their preferred sentence length, paragraph structure, and CTA style\nNotice what made these posts successful - replicate those patterns` : ""}
@@ -352,13 +390,14 @@ ${trainingPosts.length > 0 ? `STUDY these examples of the user's preferred writi
 - Every word should add value - zero fluff, zero filler
 
 **12. VIRAL CHECKLIST (Before finalizing, ensure your post has):**
-✅ Hook that stops the scroll (first 125 chars)
+✅ Hook that stops the scroll (first 125 chars); prefer viral hook templates when they fit
+✅ Max 66 characters per line; line breaks only (no paragraph blocks)
+✅ Bold first 3 words of each major point
 ✅ At least 3 engagement triggers (emotion, relatability, specificity, vulnerability, value)
 ✅ Specific examples/numbers (not vague)
-✅ Clear value proposition (what will reader gain?)
-✅ Strong CTA that invites engagement
-✅ Natural, conversational tone (not AI-generated)
-✅ Scannable format (short paragraphs, bullets, white space)
+✅ ONE CTA or ONE engagement question only (no multiple CTAs)
+✅ Natural, conversational tone, Grade 6-8 readability (simple, direct)
+✅ Scannable format (line breaks, bullets, white space)
 ✅ Authentic voice matching ${persona.name}'s style
 
 GENERATE A POST THAT:

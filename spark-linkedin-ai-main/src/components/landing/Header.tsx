@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon } from "@/styles/premiumButtons";
-import { Menu, Home, FileText, MessageSquare, Lightbulb, User, LogOut, ArrowRight, UserCircle, ChevronDown } from "lucide-react";
+import { Menu, Home, FileText, MessageSquare, Lightbulb, User, LogOut, ArrowRight, UserCircle, ChevronDown, BarChart3, Type } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useState } from "react";
@@ -118,6 +118,18 @@ export const Header = () => {
                         <Link to="/tools/linkedin-post-generator" className="cursor-pointer">
                           <FileText className="mr-2 h-4 w-4" />
                           Post Generator
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/tools/linkedin-engagement-rate-calculator" className="cursor-pointer">
+                          <BarChart3 className="mr-2 h-4 w-4" />
+                          Engagement Rate Calculator
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/tools/linkedin-text-formatter" className="cursor-pointer">
+                          <Type className="mr-2 h-4 w-4" />
+                          Text Formatter
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
@@ -275,6 +287,20 @@ export const Header = () => {
                             className="block text-sm text-muted-foreground hover:text-foreground transition-smooth"
                           >
                             Post Generator
+                          </Link>
+                          <Link 
+                            to="/tools/linkedin-engagement-rate-calculator"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                          >
+                            Engagement Rate Calculator
+                          </Link>
+                          <Link 
+                            to="/tools/linkedin-text-formatter"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                          >
+                            Text Formatter
                           </Link>
                           <Link 
                             to="/#free-generator"

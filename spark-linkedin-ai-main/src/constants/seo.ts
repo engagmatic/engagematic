@@ -250,6 +250,20 @@ export const PAGE_SEO = {
     keywords: 'free linkedin post generator, linkedin post generator ai, linkedin content generator, ai linkedin posts, linkedin post creator, linkedin post generator free, linkedin content generator free, linkedin ai tool, linkedin post maker, linkedin content creator',
     canonical: `${SITE_URL}/tools/linkedin-post-generator`
   },
+
+  linkedinEngagementCalculator: {
+    title: 'LinkedIn Engagement Rate Calculator (Free) – Measure & Improve Your Posts',
+    description: 'Free LinkedIn engagement rate calculator and post engagement score tool for creators and marketers. Enter impressions and engagements to get your rate, benchmarks, and actionable tips.',
+    keywords: 'linkedin engagement rate calculator, linkedin engagement rate, linkedin post engagement, free linkedin analytics, linkedin metrics, linkedin engagement calculator',
+    canonical: `${SITE_URL}/tools/linkedin-engagement-rate-calculator`
+  },
+
+  linkedinTextFormatter: {
+    title: 'LinkedIn Text Formatter (Free) – Bold, Italic & More for Posts',
+    description: 'Format LinkedIn post text with bold, italic, underlined, strikethrough and more for free. Unicode-based styles work in LinkedIn. No login required.',
+    keywords: 'linkedin text formatter, linkedin bold text, linkedin italic, format linkedin post, linkedin post formatter, free linkedin formatter, linkedin unicode text',
+    canonical: `${SITE_URL}/tools/linkedin-text-formatter`
+  },
   
   waitlist: {
     title: 'Join the Waitlist - Be First to Access Engagematic Premium',

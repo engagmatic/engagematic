@@ -4,14 +4,14 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb, Crown, Lock, Share2, ExternalLink, Minimize2, ArrowRight, Scissors, RotateCcw } from "lucide-react";
+import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb, Crown, Lock, Share2, ExternalLink, Minimize2, ArrowRight, Scissors, RotateCcw, BarChart3, Type } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useContentGeneration } from "../hooks/useContentGeneration";
 import { usePersonas } from "../hooks/usePersonas";
 import apiClient from "../services/api.js";
 import { useSubscription } from "@/hooks/useSubscription";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { PAGE_SEO } from "@/constants/seo";
 import { EXPANDED_PERSONAS, PERSONA_CATEGORIES } from "@/constants/expandedPersonas";
@@ -466,6 +466,60 @@ const PostGenerator = () => {
 
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
+          {/* Free tools: Engagement Calculator + Text Formatter */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            <Link
+              to="/tools/linkedin-engagement-rate-calculator"
+              className="block flex-1 min-w-0"
+            >
+              <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-purple-500/5 hover:from-primary/10 hover:to-purple-500/10 transition-all hover:shadow-md hover:border-primary/30 h-full">
+                <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-lg bg-primary/10 p-2">
+                      <BarChart3 className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm text-foreground">
+                        Free: Engagement Rate Calculator
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Measure rate, benchmarks & post score — no login.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-primary flex items-center gap-1 sm:shrink-0">
+                    Try free <ExternalLink className="h-3 w-3" />
+                  </span>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link
+              to="/tools/linkedin-text-formatter"
+              className="block flex-1 min-w-0"
+            >
+              <Card className="border-2 border-primary/20 bg-gradient-to-r from-purple-500/5 to-pink-500/5 hover:from-purple-500/10 hover:to-pink-500/10 transition-all hover:shadow-md hover:border-primary/30 h-full">
+                <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-lg bg-purple-500/10 p-2">
+                      <Type className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm text-foreground">
+                        Free: LinkedIn Text Formatter
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Bold, italic, lists for posts — copy & paste. No login.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-purple-600 dark:text-purple-400 flex items-center gap-1 sm:shrink-0">
+                    Try free <ExternalLink className="h-3 w-3" />
+                  </span>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-11 gap-6">
           {/* Left Column - Input */}
           <div className="lg:col-span-6 space-y-6">

@@ -26,6 +26,8 @@ const ContentPlanner = lazy(() => import("./pages/ContentPlanner"));
 const FreeTools = lazy(() => import("./pages/FreeTools"));
 const LinkedInProfileAnalyzerTool = lazy(() => import("./pages/tools/LinkedInProfileAnalyzerTool"));
 const LinkedInPostGeneratorTool = lazy(() => import("./pages/tools/LinkedInPostGeneratorTool"));
+const LinkedInEngagementCalculator = lazy(() => import("./pages/tools/LinkedInEngagementCalculator"));
+const LinkedInTextFormatter = lazy(() => import("./pages/tools/LinkedInTextFormatter"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
 const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
@@ -159,6 +161,8 @@ const App = () => (
                   {/* LinkedIn Profile Analyzer Tool disabled temporarily */}
                   {/* <Route path="/tools/linkedin-profile-analyzer" element={<LinkedInProfileAnalyzerTool />} /> */}
                   <Route path="/tools/linkedin-post-generator" element={<LinkedInPostGeneratorTool />} />
+                  <Route path="/tools/linkedin-engagement-rate-calculator" element={<LinkedInEngagementCalculator />} />
+                  <Route path="/tools/linkedin-text-formatter" element={<LinkedInTextFormatter />} />
                   
                   {/* Dashboard routes with onboarding modal */}
                   <Route element={<DashboardLayout />}>
