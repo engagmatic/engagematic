@@ -3,6 +3,7 @@
 ## Issue Identified
 The header buttons were incorrectly configured - the "Sign In" button was redirecting to the registration page instead of the login page.
 
+
 ## ✅ Solution Applied
 
 ### **Fixed Header Navigation**
