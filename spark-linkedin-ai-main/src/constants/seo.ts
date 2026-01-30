@@ -231,9 +231,9 @@ export const PAGE_SEO = {
 
   // Free Tools Pages - SEO Optimized
   freeTools: {
-    title: 'Free LinkedIn Tools - Profile Analyzer, Post Generator & More | Engagematic',
-    description: 'Access 100% free LinkedIn tools: Profile Analyzer, Post Generator, Comment Generator, and Idea Generator. No signup required. Get instant AI-powered LinkedIn optimization and content creation tools.',
-    keywords: 'free linkedin tools, free linkedin profile analyzer, free linkedin post generator, free linkedin comment generator, free linkedin idea generator, linkedin tools free, linkedin content generator free, linkedin profile checker free',
+    title: 'Free LinkedIn Tools - Post Generator, Text Formatter & More | Engagematic',
+    description: 'Access 100% free LinkedIn tools: Post Generator, Text Formatter, Engagement Calculator, Comment Generator, and Idea Generator. No signup required. Get instant AI-powered LinkedIn content creation tools.',
+    keywords: 'free linkedin tools, free linkedin post generator, free linkedin comment generator, free linkedin idea generator, linkedin tools free, linkedin content generator free, linkedin text formatter',
     canonical: `${SITE_URL}/tools`
   },
 

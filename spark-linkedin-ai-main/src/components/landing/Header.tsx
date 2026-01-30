@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon } from "@/styles/premiumButtons";
-import { Menu, Home, FileText, MessageSquare, Lightbulb, User, LogOut, ArrowRight, UserCircle, ChevronDown, BarChart3, Type } from "lucide-react";
+import { Menu, Home, FileText, MessageSquare, Lightbulb, User, LogOut, ArrowRight, ChevronDown, BarChart3, Type } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useState } from "react";
@@ -106,12 +106,6 @@ export const Header = () => {
                         <Link to="/tools" className="cursor-pointer">
                           <FileText className="mr-2 h-4 w-4" />
                           All Free Tools
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/tools/linkedin-profile-analyzer" className="cursor-pointer">
-                          <UserCircle className="mr-2 h-4 w-4" />
-                          Profile Analyzer
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
@@ -274,13 +268,6 @@ export const Header = () => {
                           Free Tools
                         </Link>
                         <div className="pl-4 space-y-2 border-l-2 border-muted">
-                          <Link 
-                            to="/tools/linkedin-profile-analyzer"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block text-sm text-muted-foreground hover:text-foreground transition-smooth"
-                          >
-                            Profile Analyzer
-                          </Link>
                           <Link 
                             to="/tools/linkedin-post-generator"
                             onClick={() => setMobileMenuOpen(false)}

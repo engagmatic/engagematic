@@ -171,7 +171,6 @@ const App = () => (
                     <Route path="/post-generator" element={<PostGenerator />} />
                     <Route path="/comment-generator" element={<CommentGenerator />} />
                     <Route path="/content-planner" element={<ContentPlanner />} />
-                    <Route path="/profile-analyzer" element={<ProfileAnalyzer />} />
                   </Route>
                   {/* Blog Routes */}
                   {/* Static Pages */}

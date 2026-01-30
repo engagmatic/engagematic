@@ -159,27 +159,6 @@ export const Hero = () => {
                 </div>
               </div>
 
-              {/* Profile Analyzer - Compact Single Line */}
-              <div className="rounded-xl border-2 border-purple-100/50 dark:border-purple-900/50 bg-gradient-to-br from-white/95 via-purple-50/30 to-pink-50/20 dark:from-slate-900/95 dark:via-purple-950/30 dark:to-pink-950/20 backdrop-blur-sm shadow-lg hover:shadow-xl p-3 sm:p-4 hover-lift transition-all duration-300">
-                <div className="flex flex-col items-center text-center gap-2">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-blue-600 via-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-md">
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-[9px] sm:text-[10px] font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">Analyzer</span>
-                    <h4 className="text-xs sm:text-sm font-semibold">Profile optimization</h4>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight line-clamp-2">Get AI-powered score & actionable tips to boost your LinkedIn visibility.</p>
-                    <div className="mt-1 flex flex-wrap gap-1 justify-center">
-                      <span className="px-1.5 py-0.5 text-[9px] rounded-full border bg-muted">Score</span>
-                      <span className="px-1.5 py-0.5 text-[9px] rounded-full border bg-muted">Tips</span>
-                      <span className="px-1.5 py-0.5 text-[9px] rounded-full border bg-muted">Insights</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Smart Comments - Compact Single Line */}
               <div className="rounded-xl border-2 border-indigo-100/50 dark:border-indigo-900/50 bg-gradient-to-br from-white/95 via-indigo-50/30 to-purple-50/20 dark:from-slate-900/95 dark:via-indigo-950/30 dark:to-purple-950/20 backdrop-blur-sm shadow-lg hover:shadow-xl p-3 sm:p-4 hover-lift transition-all duration-300">
                 <div className="flex flex-col items-center text-center gap-2">

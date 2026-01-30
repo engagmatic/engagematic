@@ -3,7 +3,7 @@ import { OnboardingModal } from "@/components/OnboardingModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { LogoWithText } from "@/components/LogoWithText";
-import { LayoutDashboard, Home, User, LogOut, Lightbulb, FileText, MessageSquare, Menu, X, UserCircle, Calendar, Loader2 } from "lucide-react";
+import { LayoutDashboard, Home, User, LogOut, Lightbulb, FileText, MessageSquare, Menu, X, Calendar, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSubscription } from "@/hooks/useSubscription";
 
@@ -36,13 +36,6 @@ export const DashboardLayout = () => {
     { path: "/comment-generator", label: "Comment Generator", icon: MessageSquare },
     // Content Planner - only show for paid users
     ...(hasPaidPlan ? [{ path: "/content-planner", label: "Content Planner", icon: Calendar }] : []),
-    // Profile Analyzer temporarily disabled while feature is being upgraded
-    {
-      path: "/profile-analyzer",
-      label: "Profile Analyzer (Coming Soon)",
-      icon: UserCircle,
-      disabled: true,
-    },
   ] as const;
 
   // Save sidebar state to localStorage
@@ -163,18 +156,11 @@ export const DashboardLayout = () => {
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
-            const isDisabled = (item as any).disabled;
 
             return (
               <button
                 key={item.path}
                 onClick={() => {
-                  if (isDisabled) {
-                    alert(
-                      "Profile Analyzer is temporarily unavailable while we upgrade this feature."
-                    );
-                    return;
-                  }
                   navigate(item.path);
                   setMobileSidebarOpen(false);
                 }}
@@ -183,17 +169,12 @@ export const DashboardLayout = () => {
                   transition-all duration-200
                   ${sidebarOpen ? "" : "lg:justify-center lg:px-2"}
                   ${
-                    isDisabled
-                      ? "cursor-not-allowed opacity-60 text-gray-400 dark:text-gray-500"
-                      : isActive
+                    isActive
                       ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
                       : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
                   }
                 `}
-                title={
-                  !sidebarOpen ? item.label : isDisabled ? "Coming soon" : ""
-                }
-                disabled={isDisabled}
+                title={!sidebarOpen ? item.label : ""}
               >
                 <Icon className="h-5 w-5 flex-shrink-0" />
                 {sidebarOpen && (

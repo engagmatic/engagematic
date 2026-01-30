@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { 
   FileText, 
   MessageSquare, 
-  UserCircle, 
   Lightbulb,
   CheckCircle2,
   ArrowRight,
@@ -20,25 +19,6 @@ import {
 import { Link } from "react-router-dom";
 
 const freeTools = [
-  {
-    id: "profile-analyzer",
-    name: "Free LinkedIn Profile Analyzer",
-    description: "Get instant AI-powered analysis of your LinkedIn profile. Discover your profile score, receive personalized optimization tips, and boost your visibility.",
-    icon: UserCircle,
-    url: "/tools/linkedin-profile-analyzer",
-    features: [
-      "Instant profile score (0-100)",
-      "Headline optimization suggestions",
-      "About section rewrite recommendations",
-      "Skills optimization",
-      "Experience section feedback",
-      "Keywords for better discoverability",
-      "Exportable PDF report"
-    ],
-    keywords: "free linkedin profile analyzer, linkedin profile score, linkedin profile optimization, linkedin profile checker, linkedin profile analyzer free",
-    monthlySearches: "12,000+",
-    color: "from-blue-500 to-cyan-500"
-  },
   {
     id: "post-generator",
     name: "Free LinkedIn Post Generator",
@@ -135,11 +115,11 @@ const freeTools = [
 const faqData = [
   {
     question: "Are these LinkedIn tools really free?",
-    answer: "Yes! All our LinkedIn tools offer free access. The LinkedIn Profile Analyzer gives you 1 free analysis, and the Post Generator, Comment Generator, and Idea Generator offer free usage without requiring signup. You can upgrade to premium plans for unlimited access and advanced features."
+    answer: "Yes! All our LinkedIn tools offer free access. The Post Generator, Comment Generator, and Idea Generator offer free usage without requiring signup. You can upgrade to premium plans for unlimited access and advanced features."
   },
   {
     question: "Do I need to create an account to use free tools?",
-    answer: "No account required for most free tools! You can use the LinkedIn Post Generator, Comment Generator, and Idea Generator without signing up. The Profile Analyzer offers 1 free analysis per IP address. Create a free account to unlock more analyses and save your work."
+    answer: "No account required for most free tools! You can use the LinkedIn Post Generator, Comment Generator, and Idea Generator without signing up. Create a free account to save your work and unlock more features."
   },
   {
     question: "What makes these LinkedIn tools different from others?",
@@ -148,10 +128,6 @@ const faqData = [
   {
     question: "Can I use these tools for commercial purposes?",
     answer: "Yes! All our free tools can be used for personal and commercial purposes. Whether you're a freelancer, entrepreneur, marketer, or business owner, you're welcome to use our tools to enhance your LinkedIn presence and grow your business."
-  },
-  {
-    question: "How accurate is the LinkedIn Profile Analyzer?",
-    answer: "Our Profile Analyzer uses advanced AI trained on successful LinkedIn profiles to provide accurate scores and actionable recommendations. It analyzes your headline, about section, experience, skills, and overall profile structure to give you a comprehensive optimization roadmap."
   },
   {
     question: "Will my data be stored when using free tools?",
@@ -172,7 +148,7 @@ const FreeTools = () => {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       "name": "Free LinkedIn Tools - Engagematic",
-      "description": "Access free LinkedIn tools including profile analyzer, post generator, comment generator, and idea generator. No signup required for most tools.",
+      "description": "Access free LinkedIn tools including post generator, comment generator, and idea generator. No signup required for most tools.",
       "url": `${SITE_URL}/tools`,
       "mainEntity": {
         "@type": "ItemList",
@@ -200,9 +176,9 @@ const FreeTools = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-primary/5 to-background">
       <SEO
-        title="Free LinkedIn Tools - Profile Analyzer, Post Generator & More | Engagematic"
-        description="Access 100% free LinkedIn tools: Profile Analyzer, Post Generator, Comment Generator, and Idea Generator. No signup required. Get instant AI-powered LinkedIn optimization and content creation tools."
-        keywords="free linkedin tools, free linkedin profile analyzer, free linkedin post generator, free linkedin comment generator, free linkedin idea generator, linkedin tools free, linkedin content generator free, linkedin profile checker free"
+        title="Free LinkedIn Tools - Post Generator, Text Formatter & More | Engagematic"
+        description="Access 100% free LinkedIn tools: Post Generator, Text Formatter, Engagement Calculator, Comment Generator, and Idea Generator. No signup required. Get instant AI-powered LinkedIn content creation tools."
+        keywords="free linkedin tools, free linkedin post generator, free linkedin comment generator, free linkedin idea generator, linkedin tools free, linkedin content generator free, linkedin text formatter"
         url={`${SITE_URL}/tools`}
         structuredData={structuredData}
       />
@@ -354,14 +330,14 @@ const FreeTools = () => {
             Start using our free tools today. No credit card required. Upgrade anytime for unlimited access.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/tools/linkedin-profile-analyzer">
+            <Link to="/tools/linkedin-post-generator">
               <Button size="lg" className="w-full sm:w-auto">
-                Analyze Your Profile Free
+                Generate Free Posts
               </Button>
             </Link>
-            <Link to="/tools/linkedin-post-generator">
+            <Link to="/tools/linkedin-text-formatter">
               <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                Generate Free Posts
+                Format Post Text
               </Button>
             </Link>
           </div>

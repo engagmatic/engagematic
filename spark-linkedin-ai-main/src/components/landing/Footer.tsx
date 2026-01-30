@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { X, Gift, Users, Star, UserCircle, FileText, MessageSquare, Lightbulb, BarChart3, Type } from "lucide-react";
+import { X, Gift, Users, Star, FileText, MessageSquare, Lightbulb, BarChart3, Type } from "lucide-react";
 import { LogoWithText } from "../LogoWithText";
 
 export const Footer = () => {
@@ -79,7 +79,6 @@ export const Footer = () => {
               <h3 className="font-semibold mb-4">Free Tools</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/tools" className="hover:text-foreground transition-smooth flex items-center gap-2"><FileText className="h-3 w-3" /> All Free Tools</Link></li>
-                <li><Link to="/tools/linkedin-profile-analyzer" className="hover:text-foreground transition-smooth flex items-center gap-2"><UserCircle className="h-3 w-3" /> Profile Analyzer</Link></li>
                 <li><Link to="/tools/linkedin-post-generator" className="hover:text-foreground transition-smooth flex items-center gap-2"><FileText className="h-3 w-3" /> Post Generator</Link></li>
                 <li><Link to="/tools/linkedin-engagement-rate-calculator" className="hover:text-foreground transition-smooth flex items-center gap-2"><BarChart3 className="h-3 w-3" /> Engagement Rate Calculator</Link></li>
                 <li><Link to="/tools/linkedin-text-formatter" className="hover:text-foreground transition-smooth flex items-center gap-2"><Type className="h-3 w-3" /> Text Formatter</Link></li>

@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, TrendingUp, XCircle, Target } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Sparkles, TrendingUp, XCircle } from "lucide-react";
 import apiClient from "@/services/api";
 
 interface ProfileInsightsSummary {
@@ -44,38 +43,7 @@ export const ProfileInsightsBanner = () => {
   if (loading || dismissed) return null;
 
   if (!insights?.hasAnalysis) {
-    return (
-      <Card className="p-4 mb-6 border-2 border-dashed border-primary/30 bg-primary/5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold text-sm">
-                Unlock Smarter, More Human Content
-              </h3>
-            </div>
-            <p className="text-sm text-muted-foreground mb-3">
-              {insights.message} Analyze your profile once, get personalized
-              content every time.
-            </p>
-            <Link to="/profile-analyzer">
-              <Button size="sm" className="gap-2">
-                <Sparkles className="h-4 w-4" />
-                Analyze My Profile (Free)
-              </Button>
-            </Link>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setDismissed(true)}
-            className="shrink-0"
-          >
-            <XCircle className="h-4 w-4" />
-          </Button>
-        </div>
-      </Card>
-    );
+    return null;
   }
 
   return (
