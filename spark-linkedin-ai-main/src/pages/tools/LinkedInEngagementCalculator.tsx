@@ -101,7 +101,7 @@ function parseSafe(value: string): number {
 // Post score (deterministic)
 // ---------------------------------------------------------------------------
 
-const BUZZWORDS = ["synergy", "unlock", "leverage", "maximize", "game-changing"];
+const BUZZWORDS = ["synergy", "unlock", "leverage", "maximize", "game-changing", "disrupt", "paradigm", "circle back"];
 const CTA_PHRASES = [
   "comment",
   "save this",
@@ -109,8 +109,17 @@ const CTA_PHRASES = [
   "send me a dm",
   "share this",
   "bookmark",
+  "let me know",
+  "tag someone",
+  "drop a",
+  "what's your",
+  "share your",
+  "tell me",
+  "follow for more",
+  "double tap",
+  "click the link",
 ];
-const STRONG_HOOK_STARTS = ["how", "why", "what", "did", "are", "most", "stop"];
+const STRONG_HOOK_STARTS = ["how", "why", "what", "did", "are", "most", "stop", "the", "i ", "here's", "3", "5", "7", "10", "secret", "mistake", "lesson", "nobody", "never", "always"];
 
 function scorePost(content: string): {
   score: number;
@@ -145,11 +154,13 @@ function scorePost(content: string): {
   }
 
   // Structure (max 15)
-  if (lines.length >= 3) score += 15;
+  if (lines.length >= 4) score += 15;
+  else if (lines.length >= 3) score += 12;
+  else if (lines.length >= 2) score += 8;
   else {
-    score += 5;
+    score += 4;
     suggestions.push(
-      "Break your post into shorter paragraphs for easier reading."
+      "Use line breaks. 2–4 short blocks perform better than one long paragraph."
     );
   }
 
@@ -174,13 +185,23 @@ function scorePost(content: string): {
     );
   }
 
-  // Reward "you" focus
+  // Reward "you" focus (max 10)
   const youCount = (text.match(/\byou\b/gi) || []).length;
-  if (youCount >= 3) score += 10;
+  if (youCount >= 4) score += 10;
+  else if (youCount >= 2) score += 6;
+
+  // Bonus: hashtags (max 5) – 1–3 is sweet spot
+  const hashtagCount = (text.match(/#\w+/g) || []).length;
+  if (hashtagCount >= 1 && hashtagCount <= 3) score += 5;
+  else if (hashtagCount > 5) {
+    score -= 5;
+    if (!suggestions.some((s) => s.includes("hashtag")))
+      suggestions.push("Use 1–3 hashtags. Too many can hurt reach.");
+  }
 
   const finalScore = Math.max(0, Math.min(100, score));
 
-  if (wordCount < 60 && !suggestions.some((s) => s.includes("one more example")))
+  if (wordCount < 60 && !suggestions.some((s) => s.includes("example")))
     suggestions.push(
       "Add one more example or detail to make the post more concrete."
     );

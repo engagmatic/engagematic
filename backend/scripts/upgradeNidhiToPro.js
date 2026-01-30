@@ -42,13 +42,13 @@ const upgradeNidhiToPro = async () => {
     });
 
     const userId = targetUser._id;
-    const oneYearFromNow = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+    const twoMonthsFromNow = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000); // 2 months
 
     // Update User document to PRO (premium) with active status
     await User.findByIdAndUpdate(userId, {
       plan: "pro",
       subscriptionStatus: "active",
-      subscriptionEndsAt: oneYearFromNow,
+      subscriptionEndsAt: twoMonthsFromNow,
       trialEndsAt: null,
     });
     console.log('✅ User document updated: plan set to "pro" (premium), status "active"');
@@ -62,7 +62,7 @@ const upgradeNidhiToPro = async () => {
         plan: "pro",
         status: "active",
         subscriptionStartDate: new Date(),
-        subscriptionEndDate: oneYearFromNow,
+        subscriptionEndDate: twoMonthsFromNow,
         trialStartDate: null,
         trialEndDate: null,
         tokens: {
@@ -84,7 +84,7 @@ const upgradeNidhiToPro = async () => {
           amount: 0,
           currency: "USD",
           interval: "yearly",
-          nextBillingDate: oneYearFromNow,
+          nextBillingDate: twoMonthsFromNow,
         },
       });
       console.log(
@@ -94,7 +94,7 @@ const upgradeNidhiToPro = async () => {
       subscription.plan = "pro";
       subscription.status = "active";
       subscription.subscriptionStartDate = new Date();
-      subscription.subscriptionEndDate = oneYearFromNow;
+      subscription.subscriptionEndDate = twoMonthsFromNow;
       subscription.trialStartDate = null;
       subscription.trialEndDate = null;
 
@@ -110,7 +110,7 @@ const upgradeNidhiToPro = async () => {
       subscription.billing.amount = 0;
       subscription.billing.currency = "USD";
       subscription.billing.interval = "yearly";
-      subscription.billing.nextBillingDate = oneYearFromNow;
+      subscription.billing.nextBillingDate = twoMonthsFromNow;
 
       subscription.tokens.total = 1000;
       subscription.tokens.remaining = 1000 - (subscription.tokens.used || 0);
@@ -126,7 +126,7 @@ const upgradeNidhiToPro = async () => {
     const updatedUser = await User.findById(userId).lean();
     const updatedSubscription = await UserSubscription.findOne({ userId }).lean();
 
-    console.log('\n✅ Success! User "Nidhi" upgraded to PRO (premium) plan for FREE');
+    console.log('\n✅ Success! User "Nidhi" upgraded to PRO (premium) plan for 2 months');
     console.log("=".repeat(50));
     console.log("User Details:");
     console.log(`  Name: ${updatedUser.name}`);
@@ -148,7 +148,7 @@ const upgradeNidhiToPro = async () => {
       `  Subscription Start Date: ${updatedSubscription.subscriptionStartDate}`
     );
     console.log(
-      `  Subscription End Date: ${updatedSubscription.subscriptionEndDate}`
+      `  Subscription End Date: ${updatedSubscription.subscriptionEndDate} (2 months)`
     );
     console.log("=".repeat(50));
 

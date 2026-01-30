@@ -219,8 +219,8 @@ export const ContentPlanner = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-primary/5 to-background p-4 sm:p-6 lg:p-8" style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
-      <div className="max-w-6xl mx-auto" style={{ position: 'relative', zIndex: 2 }}>
+    <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-b from-background via-primary/5 to-background p-4 sm:p-6 lg:p-8">
+      <div className="max-w-6xl mx-auto w-full min-h-0">
         {/* Header */}
         <div className="text-center mb-8 space-y-3">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -243,7 +243,7 @@ export const ContentPlanner = () => {
         )}
 
         {/* Step Content */}
-        <Card className="p-6 sm:p-8 lg:p-10 min-h-[500px]">
+        <Card className="p-6 sm:p-8 lg:p-10 min-h-[420px] flex flex-col overflow-visible">
           {currentStep === 1 && (
             <PlannerStep1Goal
               selectedGoal={goal}

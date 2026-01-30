@@ -168,6 +168,11 @@ export function toLowercase(text: string): string {
   return text.toLowerCase();
 }
 
+/** Strip combining characters (underline, strikethrough) and leave other chars as-is. */
+export function stripCombiningChars(text: string): string {
+  return text.replace(/\u0332/g, "").replace(/\u0336/g, "");
+}
+
 export type StyleId =
   | "normal"
   | "bold"
