@@ -5,7 +5,7 @@
 TypeError: pricingService.getPricingConfig is not a function
 ```
 
-## Root Cause
+# Root Cause
 1. **Function name mismatch**: Called `getPricingConfig()` but function is named `getPricingConfigs()`
 2. **Wrong method call**: Called `calculateCustomPrice()` but should be `calculatePrice()`
 
