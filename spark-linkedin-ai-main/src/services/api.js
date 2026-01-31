@@ -256,6 +256,40 @@ class ApiClient {
     });
   }
 
+  async generatePostFromPlan(postData) {
+    return this.request("/content/posts/generate-from-plan", {
+      method: "POST",
+      body: JSON.stringify(postData),
+    });
+  }
+
+  // Content Planner - saved plans (dashboard)
+  async listContentPlans() {
+    return this.request("/content-plans", { method: "GET" });
+  }
+
+  async getContentPlan(id) {
+    return this.request(`/content-plans/${id}`, { method: "GET" });
+  }
+
+  async saveContentPlan(plan) {
+    return this.request("/content-plans", {
+      method: "POST",
+      body: JSON.stringify(plan),
+    });
+  }
+
+  async updateContentPlan(id, updates) {
+    return this.request(`/content-plans/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteContentPlan(id) {
+    return this.request(`/content-plans/${id}`, { method: "DELETE" });
+  }
+
   // Free post generation (no auth required)
   async generatePostFree(postData) {
     // This endpoint should be created on backend without auth middleware

@@ -194,6 +194,7 @@ export function useContentGeneration() {
   return {
     isGenerating,
     generatedContent,
+    setGeneratedContent,
     quotaInfo,
     generatePost,
     generatePostCustom,

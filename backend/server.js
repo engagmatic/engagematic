@@ -34,6 +34,7 @@ import offerRoutes from "./routes/offers.js";
 import extensionRoutes from "./routes/extension.js";
 import couponRoutes from "./routes/coupons.js";
 import profileCoachRoutes from "./routes/profileCoach.js";
+import contentPlanRoutes from "./routes/contentPlan.js";
 
 // Import services
 import emailScheduler from "./services/emailScheduler.js";
@@ -172,6 +173,7 @@ app.use("/api/offers", offerRoutes); // Coupons and Offers
 app.use("/api/extension", extensionRoutes); // Chrome Extension API
 app.use("/api/coupons", couponRoutes); // Coupon management and validation
 app.use("/api/profile-coach", profileCoachRoutes); // LinkedInPulse Profile Coach (NEW - Testing)
+app.use("/api/content-plans", contentPlanRoutes); // Content Planner - saved plans
 console.log("✅ Profile Coach routes registered at /api/profile-coach");
 
 // Admin routes

@@ -409,6 +409,81 @@ router.post(
   }
 );
 
+// Generate post from Content Planner context only (no persona)
+router.post(
+  "/posts/generate-from-plan",
+  authenticateToken,
+  checkTrialStatus,
+  async (req, res) => {
+    try {
+      const { topic, title, category, planContext } = req.body;
+      const userId = req.user._id;
+
+      if (!topic || !planContext) {
+        return res.status(400).json({
+          success: false,
+          message: "topic and planContext (audience, helpWith, platforms, promotion, goal) are required",
+        });
+      }
+
+      const canGenerate = await subscriptionService.canPerformAction(
+        userId,
+        "generate_post"
+      );
+      if (!canGenerate.allowed) {
+        return res.status(429).json({
+          success: false,
+          message: canGenerate.reason,
+          code: "SUBSCRIPTION_LIMIT_EXCEEDED",
+        });
+      }
+
+      const hookText = title && title.length >= 5 ? title : topic.split("\n")[0]?.slice(0, 100) || topic.slice(0, 100);
+      const aiResponse = await googleAIService.generatePostFromPlanContext(
+        topic,
+        hookText,
+        planContext
+      );
+
+      const content = new Content({
+        userId,
+        type: "post",
+        content: aiResponse.content,
+        topic,
+        hookId: null,
+        personaId: null,
+        engagementScore: aiResponse.engagementScore,
+        tokensUsed: aiResponse.tokensUsed,
+      });
+      await content.save();
+
+      await usageService.incrementUsage(userId, "posts", aiResponse.tokensUsed);
+      await subscriptionService.recordUsage(userId, "generate_post");
+
+      const subscription = await subscriptionService.getUserSubscription(userId);
+      res.json({
+        success: true,
+        message: "Post generated from content plan",
+        data: {
+          content: content,
+          quota: await usageService.checkQuotaExceeded(userId, "posts"),
+          subscription: {
+            usage: subscription.usage,
+            tokens: subscription.tokens,
+            limits: subscription.limits,
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Generate from plan error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to generate post from plan",
+      });
+    }
+  }
+);
+
 // Generate LinkedIn comment
 router.post(
   "/comments/generate",

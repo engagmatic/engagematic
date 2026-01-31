@@ -123,7 +123,7 @@ export const PlannerCalendarView = ({
     toast.success('Notes saved');
   };
 
-  // Generate content using Engagematic API
+  // Generate content from Content Planner context only (no persona)
   const handleGenerateContent = async (post: PlannerPost) => {
     if (!isAuthenticated) {
       toast.error('Please sign in to generate content');
@@ -134,17 +134,13 @@ export const PlannerCalendarView = ({
     setGeneratingPost(post.slot);
     
     try {
-      // Prepare topic from hook and angle
       const topic = `${post.hook}\n\n${post.angle}`;
-      
-      // Use hook as title (ensure it's between 5-100 chars)
       const title = post.hook.length > 100 
         ? post.hook.substring(0, 97) + '...' 
         : post.hook.length < 5 
         ? post.hook + ' - ' + post.angle.substring(0, 50)
         : post.hook;
       
-      // Determine category based on hook content (default to 'insight')
       let category = 'insight';
       const hookLower = post.hook.toLowerCase();
       if (hookLower.includes('story') || hookLower.includes('learned') || hookLower.includes('experience')) {
@@ -157,28 +153,35 @@ export const PlannerCalendarView = ({
         category = 'challenge';
       }
       
-      // Use generatePostCustom - requires: topic, title, category, and persona
-      const postData: any = {
-        topic: topic,
-        title: title,
-        category: category,
+      // Content Planner: use plan context only (no persona)
+      const planContext = {
+        audience: board.context.audience || '',
+        helpWith: board.context.helpWith || '',
+        platforms: board.context.platforms || [],
+        promotion: board.context.promotion || '',
+        goal: board.goal,
       };
-      
-      // Add persona data if available
-      if (user?.persona?._id) {
-        postData.personaId = user.persona._id;
-      } else if (user?.persona) {
-        postData.persona = user.persona;
-      }
 
-      const response = await apiClient.generatePostCustom(postData);
+      const response = await apiClient.generatePostFromPlan({
+        topic,
+        title,
+        category,
+        planContext,
+      });
       
-      if (response.success) {
-        toast.success('Content generated successfully!');
-        // Optionally navigate to post generator or show the generated content
+      if (response.success && response.data) {
+        const contentPayload = response.data.content;
+        const generatedContent =
+          typeof contentPayload === 'string'
+            ? { content: contentPayload, engagementScore: null, _id: null }
+            : {
+                ...contentPayload,
+                content: contentPayload.content ?? contentPayload,
+              };
+        toast.success('Content generated from your plan context!');
         navigate('/post-generator', { 
           state: { 
-            generatedContent: response.data.content,
+            generatedContent,
             topic: post.hook 
           } 
         });
@@ -187,7 +190,7 @@ export const PlannerCalendarView = ({
       }
     } catch (error: any) {
       console.error('Content generation error:', error);
-      toast.error(error.message || 'Failed to generate content. Please try again.');
+      toast.error(error?.message || 'Failed to generate content. Please try again.');
     } finally {
       setGeneratingPost(null);
     }

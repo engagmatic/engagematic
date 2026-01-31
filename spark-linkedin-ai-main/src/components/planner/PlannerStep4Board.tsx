@@ -4,7 +4,7 @@ import { PlannerCalendarView } from "@/components/planner/PlannerCalendarView";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlannerBoard, PlannerPost } from "@/services/plannerService";
-import { Download, Send, Copy, FileText, Calendar, Users, Target } from "lucide-react";
+import { Download, Send, Copy, FileText, Calendar, Users, Target, Loader2 } from "lucide-react";
 import { exportToCSV, exportToText } from "@/services/plannerService";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -15,17 +15,20 @@ interface PlannerStep4BoardProps {
   board: PlannerBoard;
   onPostEdit: (slot: number, field: keyof PlannerPost, value: string) => void;
   onRegenerate?: () => void;
+  onFinalize?: (board: PlannerBoard) => Promise<void>;
 }
 
 export const PlannerStep4Board = ({
   board,
   onPostEdit,
-  onRegenerate
+  onRegenerate,
+  onFinalize
 }: PlannerStep4BoardProps) => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [copiedFields, setCopiedFields] = useState<Set<string>>(new Set());
   const [showCalendarView, setShowCalendarView] = useState(false);
+  const [isFinalizing, setIsFinalizing] = useState(false);
 
   const handleCopy = (field: keyof PlannerPost, value: string, slot: number) => {
     navigator.clipboard.writeText(value);
@@ -60,10 +63,22 @@ export const PlannerStep4Board = ({
     toast.success('Exported to text');
   };
 
-  const handleSendToEngagematic = () => {
-    // Show calendar/kanban view for all users (free and authenticated)
-    setShowCalendarView(true);
-    toast.success('Schedule your content in the calendar view');
+  const handleSendToEngagematic = async () => {
+    if (onFinalize) {
+      setIsFinalizing(true);
+      try {
+        await onFinalize(board);
+        setShowCalendarView(true);
+        toast.success('Plan saved to dashboard. You can view it anytime from Content Planner.');
+      } catch (e: any) {
+        toast.error(e?.message || 'Failed to save plan');
+      } finally {
+        setIsFinalizing(false);
+      }
+    } else {
+      setShowCalendarView(true);
+      toast.success('Schedule your content in the calendar view');
+    }
   };
 
   const handleScheduleChange = (slot: number, date: Date, time: string) => {
@@ -144,10 +159,11 @@ export const PlannerStep4Board = ({
         </Button>
         <Button
           onClick={handleSendToEngagematic}
+          disabled={isFinalizing}
           className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600"
         >
-          <Send className="h-4 w-4" />
-          Send to Engagematic
+          {isFinalizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          {isFinalizing ? 'Saving...' : 'Send to Engagematic'}
         </Button>
         {onRegenerate && (
           <Button

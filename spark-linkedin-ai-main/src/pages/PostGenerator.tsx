@@ -65,7 +65,7 @@ const PostGenerator = () => {
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const navigate = useNavigate();
-  const { isGenerating, generatedContent, generatePost, generatePostCustom, copyToClipboard, saveContent } = useContentGeneration();
+  const { isGenerating, generatedContent, setGeneratedContent, generatePost, generatePostCustom, copyToClipboard, saveContent } = useContentGeneration();
   const { subscription, canPerformAction, fetchSubscription } = useSubscription();
 
   // Reset shortened state when new content is generated
@@ -176,6 +176,19 @@ const PostGenerator = () => {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, location.pathname, navigate, toast]);
+
+  // Handle generated content from Content Planner (Generate button)
+  useEffect(() => {
+    if (location.state?.generatedContent && setGeneratedContent) {
+      setGeneratedContent(location.state.generatedContent);
+      if (location.state.topic) setTopic(location.state.topic);
+      toast({
+        title: "Content loaded from plan!",
+        description: "Generated from your content planner context.",
+      });
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state?.generatedContent, location.state?.topic, location.pathname, navigate, setGeneratedContent, toast]);
 
   // Cleanup testimonial timeout on unmount
   useEffect(() => {

@@ -83,6 +83,68 @@ class GoogleAIService {
     }
   }
 
+  /**
+   * Generate post from Content Planner context only (no persona).
+   * Uses only the plan's audience, helpWith, platforms, promotion, goal.
+   */
+  async generatePostFromPlanContext(topic, hook, planContext) {
+    try {
+      const { audience, helpWith, platforms = [], promotion, goal } = planContext || {};
+      const platformList = platforms.join(", ") || "LinkedIn";
+      const prompt = this.buildPostPromptFromPlanContext(topic, hook, {
+        audience: audience || "professionals",
+        helpWith: helpWith || "their goals",
+        platformList,
+        promotion: promotion || "",
+        goal: goal || "calls",
+      });
+
+      const result = await this.model.generateContent({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.8,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        },
+      });
+
+      const response = await result.response;
+      const generatedText = response.text();
+      const engagementScore = this.calculateEngagementScore(generatedText);
+      return {
+        content: generatedText,
+        engagementScore,
+        tokensUsed: response.usageMetadata?.totalTokenCount || 150,
+      };
+    } catch (error) {
+      console.error("❌ generatePostFromPlanContext error:", error.message);
+      throw new Error("Failed to generate post from plan: " + error.message);
+    }
+  }
+
+  buildPostPromptFromPlanContext(topic, hook, ctx) {
+    return `You are a LinkedIn content creator. Write ONLY based on the following content plan context. Do NOT use any other persona or voice.
+
+CONTENT PLAN CONTEXT (use this only):
+- Audience: ${ctx.audience}
+- What you help them with: ${ctx.helpWith}
+- Platforms: ${ctx.platformList}
+${ctx.promotion ? `- Promotion/offer: ${ctx.promotion}` : ""}
+- Goal for content: ${ctx.goal === "calls" ? "Book more calls / DMs" : ctx.goal === "sell" ? "Sell product/service" : "Grow followers"}
+
+Create a viral-worthy LinkedIn post about: "${topic}"
+Start with this exact hook: "${hook}"
+
+RULES:
+- MAX 66 characters per line. No paragraphs, only line breaks.
+- Bold the first 3 words of each major point.
+- Tone and purpose must match the audience (${ctx.audience}) and what you help them with (${ctx.helpWith}).
+- Use ONE CTA only. No persona or user profile—only the plan context above.
+- 200-300 words. Natural, conversational. No corporate jargon.
+- Generate only the post content, no explanations.`;
+  }
+
   async generateText(prompt, options = {}) {
     try {
       const {
