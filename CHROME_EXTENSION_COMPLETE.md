@@ -2,7 +2,7 @@
 
 ## What's Been Built
 
-### **Extension Structure*
+### **Extension Structure
 ```
 chrome-extension/
 ├── manifest.json       # Extension config
