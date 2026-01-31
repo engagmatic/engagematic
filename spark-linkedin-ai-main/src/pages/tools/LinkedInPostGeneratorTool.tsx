@@ -1,4 +1,5 @@
 import { SEO } from "@/components/SEO";
+import { PAGE_SEO } from "@/constants/seo";
 import { SITE_URL, generateFAQSchema, generateBreadcrumbSchema } from "@/constants/seo";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -87,9 +88,9 @@ const LinkedInPostGeneratorTool = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-primary/5 to-background">
       <SEO
-        title="Free LinkedIn Post Generator - AI-Powered Viral Posts | Engagematic"
-        description="Generate viral LinkedIn posts in seconds with AI trained on 50,000+ high-performing posts. Free post generator with 15+ personas, viral hooks, and zero-edit ready content. No signup required."
-        keywords="free linkedin post generator, linkedin post generator ai, linkedin content generator, ai linkedin posts, linkedin post creator, linkedin post generator free, linkedin content generator free, linkedin ai tool, linkedin post maker, linkedin content creator"
+        title={PAGE_SEO.linkedinPostGeneratorTool.title}
+        description={PAGE_SEO.linkedinPostGeneratorTool.description}
+        keywords={PAGE_SEO.linkedinPostGeneratorTool.keywords}
         url={`${SITE_URL}/tools/linkedin-post-generator`}
         structuredData={structuredData}
       />

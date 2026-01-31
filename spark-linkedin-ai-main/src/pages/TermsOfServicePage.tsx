@@ -3,10 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileText, Scale, Shield, AlertTriangle, Users, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import { SEO } from "@/components/SEO";
+import { PAGE_SEO } from "@/constants/seo";
 
 const TermsOfServicePage = () => {
   return (
     <div className="min-h-screen gradient-hero">
+      <SEO {...PAGE_SEO.terms} />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="text-center mb-12">

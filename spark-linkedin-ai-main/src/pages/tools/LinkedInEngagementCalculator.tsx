@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { SEO } from "@/components/SEO";
+import { PAGE_SEO } from "@/constants/seo";
 import { SITE_URL, generateBreadcrumbSchema } from "@/constants/seo";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -336,9 +337,9 @@ export default function LinkedinEngagementToolsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-primary/5 to-background">
       <SEO
-        title="LinkedIn Engagement Rate Calculator (Free) – Measure & Improve Your Posts"
-        description="Free LinkedIn engagement rate calculator and post engagement score tool for creators and marketers. Enter impressions and engagements to get your rate, benchmarks, and actionable tips."
-        keywords="linkedin engagement rate calculator, linkedin engagement rate, linkedin post engagement, free linkedin analytics, linkedin metrics, linkedin engagement calculator"
+        title={PAGE_SEO.linkedinEngagementCalculator.title}
+        description={PAGE_SEO.linkedinEngagementCalculator.description}
+        keywords={PAGE_SEO.linkedinEngagementCalculator.keywords}
         url={`${SITE_URL}/tools/linkedin-engagement-rate-calculator`}
         structuredData={[breadcrumbSchema]}
       />

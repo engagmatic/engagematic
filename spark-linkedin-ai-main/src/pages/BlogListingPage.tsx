@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Search, Calendar, Clock, ArrowRight, Users, TrendingUp, Target, Briefcase, UserCheck } from "lucide-react";
 import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon, premiumOutlineCTAClasses } from "@/styles/premiumButtons";
 import { Link } from "react-router-dom";
+import { SEO } from "@/components/SEO";
+import { PAGE_SEO } from "@/constants/seo";
 
 interface Blog {
   id: string;
@@ -168,6 +170,7 @@ const BlogListingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <SEO {...PAGE_SEO.blog} />
       {/* Header */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-12">

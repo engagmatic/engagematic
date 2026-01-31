@@ -4,10 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Activity, Users, Target, Heart, ArrowRight, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon, premiumOutlineCTAClasses } from "@/styles/premiumButtons";
+import { SEO } from "@/components/SEO";
+import { PAGE_SEO } from "@/constants/seo";
 
 const AboutPage = () => {
   return (
     <div className="min-h-screen gradient-hero overflow-x-hidden">
+      <SEO {...PAGE_SEO.about} />
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="text-center mb-8 sm:mb-12">

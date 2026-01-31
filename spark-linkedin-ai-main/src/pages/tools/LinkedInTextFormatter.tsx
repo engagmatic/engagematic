@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { SEO } from "@/components/SEO";
-import { SITE_URL, generateBreadcrumbSchema } from "@/constants/seo";
+import { PAGE_SEO, SITE_URL, generateBreadcrumbSchema } from "@/constants/seo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -278,9 +278,9 @@ export default function LinkedInTextFormatterPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-primary/5 to-background">
       <SEO
-        title="LinkedIn Text Formatter (Free) – Bold, Italic & More for Posts"
-        description="Format LinkedIn post text with bold, italic, underlined, strikethrough and more for free. Unicode-based styles work in LinkedIn. No login required."
-        keywords="linkedin text formatter, linkedin bold text, linkedin italic, format linkedin post, linkedin post formatter, free linkedin formatter, linkedin unicode text"
+        title={PAGE_SEO.linkedinTextFormatter.title}
+        description={PAGE_SEO.linkedinTextFormatter.description}
+        keywords={PAGE_SEO.linkedinTextFormatter.keywords}
         url={`${SITE_URL}/tools/linkedin-text-formatter`}
         structuredData={[breadcrumbSchema]}
       />

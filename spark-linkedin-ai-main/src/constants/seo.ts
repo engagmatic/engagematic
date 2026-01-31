@@ -180,117 +180,159 @@ export const ALL_KEYWORDS = [
 
 // Default SEO Configuration
 export const DEFAULT_SEO = {
-  title: 'Engagematic - AI LinkedIn Post Generator | Viral Content',
-  description: 'Create viral-worthy LinkedIn posts, comments, and carousels with AI that sounds authentically like you. Join 1000+ creators boosting their LinkedIn presence with Engagematic.',
+  title: 'Engagematic - Free LinkedIn Tools & AI Post Generator | Viral Content',
+  description: 'Free LinkedIn tools: AI post generator, text formatter, engagement calculator & more. Create viral posts in 30 seconds. No signup for free tools. Join 1000+ creators.',
   keywords: ALL_KEYWORDS.join(', '),
   author: 'Engagematic Team',
-  image: `${SITE_URL}/og-default.png`, // Default OG image for all pages
-  imageAlt: 'Engagematic - AI LinkedIn Content Generator',
+  image: `${SITE_URL}/og-default.png`,
+  imageAlt: 'Engagematic - Free LinkedIn Tools & AI Content Generator',
   twitterHandle: '@engagematic',
   locale: 'en_US',
   type: 'website'
 };
 
-// Page-Specific SEO
+// Page-Specific SEO - Optimized for organic traffic & free tools
 export const PAGE_SEO = {
   home: {
-    title: 'Engagematic - AI LinkedIn Post Generator | Best AI Tool',
-    description: 'Transform your LinkedIn presence with AI-powered content generation. Create engaging posts, viral comments, and professional carousels that sound authentically like you. Free trial available. The best AI tools for creating LinkedIn content for businesses. Generate LinkedIn posts with AI, schedule content, and optimize engagement.',
-    keywords: 'LinkedIn post generator, AI LinkedIn tool, viral LinkedIn content, LinkedIn automation, content marketing AI, Engagematic vs Taplio, Engagematic vs Hootsuite, best LinkedIn AI tool, LinkedIn content creator, LinkedIn post scheduler, best AI tools for LinkedIn content, AI services that generate LinkedIn posts, AI platforms for LinkedIn content, AI-powered LinkedIn content personalization, LinkedIn content creation AI, LinkedIn post performance analysis AI, LinkedIn content automation AI, LinkedIn B2B content AI',
+    title: 'Free LinkedIn Tools & AI Post Generator | Viral Posts in 30 Sec | Engagematic',
+    description: 'Use free LinkedIn tools: AI post generator, text formatter, engagement calculator. No signup. Create viral LinkedIn posts in 30 seconds. Used by 1000+ creators & marketers.',
+    keywords: 'free linkedin tools, linkedin post generator free, linkedin text formatter, linkedin engagement calculator, ai linkedin posts, viral linkedin content, linkedin content generator free, best linkedin ai tool, linkedin post creator, linkedin automation',
     canonical: SITE_URL,
-    image: `${SITE_URL}/og-home.png` // Special home page OG image
+    image: `${SITE_URL}/og-home.png`
   },
-  
+
   pricing: {
-    title: 'Engagematic Pricing - Affordable AI Tools',
-    description: 'Choose the perfect plan for your LinkedIn growth. Starter at $12/month or Pro at $24/month. 7-day free trial, no credit card required. Cancel anytime.',
-    keywords: 'LinkedIn tool pricing, AI content generator cost, LinkedIn subscription, content marketing pricing',
+    title: 'Pricing - Free LinkedIn Tools & Pro Plans | Engagematic',
+    description: 'Free LinkedIn tools available now. Pro from $12/mo: unlimited AI posts, comments, content planner. 7-day free trial, no card required.',
+    keywords: 'linkedin tool pricing, free linkedin tools, engagematic pricing, linkedin ai cost',
     canonical: `${SITE_URL}/pricing`
   },
-  
+
   postGenerator: {
-    title: 'AI LinkedIn Post Generator - Viral Posts | Engagematic',
-    description: 'Generate engaging LinkedIn posts with AI trained on 50K+ viral posts. 15 curated personas, smart formatting, zero-edit content. Start creating in seconds. Best AI tool for LinkedIn content creation for businesses and marketing teams.',
-    keywords: 'LinkedIn post generator, AI post creator, viral post generator, LinkedIn content AI, automated post creation, best AI tools for LinkedIn content, AI services that generate LinkedIn posts for marketing, AI platforms that schedule LinkedIn content, AI-powered LinkedIn content personalization, LinkedIn content creation AI, LinkedIn post performance analysis AI, LinkedIn content automation AI, LinkedIn B2B content AI',
+    title: 'AI LinkedIn Post Generator - Free Viral Post Creator | Engagematic',
+    description: 'Generate viral LinkedIn posts with AI in 30 seconds. Free tool: 50K+ viral post training, personas, hooks. No signup. Best free LinkedIn post generator for creators.',
+    keywords: 'free linkedin post generator, ai linkedin post generator, linkedin post creator, viral linkedin posts, linkedin content generator free, linkedin ai tool',
     canonical: `${SITE_URL}/post-generator`
   },
-  
+
   commentGenerator: {
-    title: 'LinkedIn Comment Generator - AI Tool',
-    description: 'Build authentic professional relationships with AI-generated comments. Context-aware, human-like responses that boost your LinkedIn engagement instantly.',
-    keywords: 'LinkedIn comment generator, AI engagement tool, automated comments, LinkedIn networking, comment AI',
+    title: 'Free LinkedIn Comment Generator - AI Engagement Tool | Engagematic',
+    description: 'Free AI LinkedIn comment generator. Write genuine comments that start conversations and grow your network. No signup. Use instantly.',
+    keywords: 'free linkedin comment generator, linkedin comment generator ai, linkedin engagement tool, linkedin comment maker, ai comments linkedin',
     canonical: `${SITE_URL}/comment-generator`
   },
-  
+
   profileAnalyzer: {
-    title: 'LinkedIn Profile Analyzer - Free Score',
-    description: 'Get your LinkedIn profile score and actionable optimization tips. AI-powered analysis to boost visibility, engagement, and professional opportunities.',
-    keywords: 'LinkedIn profile analyzer, profile optimization, LinkedIn score, profile tips, LinkedIn SEO',
+    title: 'LinkedIn Profile Analyzer - Free Score & Optimization | Engagematic',
+    description: 'Free LinkedIn profile analyzer: get your score, headline tips, and optimization advice. AI-powered. No signup for first analysis.',
+    keywords: 'linkedin profile analyzer free, linkedin profile score, linkedin profile checker, linkedin optimization',
     canonical: `${SITE_URL}/profile-analyzer`
   },
 
-  // Free Tools Pages - SEO Optimized
+  // Free Tools - Primary traffic target
   freeTools: {
-    title: 'Free LinkedIn Tools - Post Generator, Text Formatter & More | Engagematic',
-    description: 'Access 100% free LinkedIn tools: Post Generator, Text Formatter, Engagement Calculator, Comment Generator, and Idea Generator. No signup required. Get instant AI-powered LinkedIn content creation tools.',
-    keywords: 'free linkedin tools, free linkedin post generator, free linkedin comment generator, free linkedin idea generator, linkedin tools free, linkedin content generator free, linkedin text formatter',
+    title: 'Free LinkedIn Tools - Post Generator, Formatter, Calculator | No Signup',
+    description: '100% free LinkedIn tools: AI post generator, text formatter (bold/italic), engagement rate calculator, comment & idea generator. No signup. Use now for organic reach.',
+    keywords: 'free linkedin tools, linkedin post generator free, linkedin text formatter free, linkedin engagement calculator free, linkedin comment generator free, linkedin idea generator, linkedin tools no signup',
     canonical: `${SITE_URL}/tools`
   },
 
   linkedinProfileAnalyzerTool: {
-    title: 'Free LinkedIn Profile Analyzer - Get Your Profile Score & Optimization Tips | Engagematic',
-    description: 'Analyze your LinkedIn profile for free. Get instant AI-powered score (0-100), headline optimization, about section rewrite, skills recommendations, and exportable PDF report. No signup required for first analysis.',
-    keywords: 'free linkedin profile analyzer, linkedin profile score, linkedin profile checker, linkedin profile optimization, linkedin profile analyzer free, linkedin profile analyzer tool, linkedin profile analysis, linkedin profile review, linkedin profile audit, linkedin profile grader',
+    title: 'Free LinkedIn Profile Analyzer - Score & Tips | Engagematic',
+    description: 'Free LinkedIn profile analyzer. Get AI score (0-100), headline rewrite, about section tips. No signup. Improve profile for more reach.',
+    keywords: 'free linkedin profile analyzer, linkedin profile score, linkedin profile checker, linkedin optimization free',
     canonical: `${SITE_URL}/tools/linkedin-profile-analyzer`
   },
 
   linkedinPostGeneratorTool: {
-    title: 'Free LinkedIn Post Generator - AI-Powered Viral Posts | Engagematic',
-    description: 'Generate viral LinkedIn posts in seconds with AI trained on 50,000+ high-performing posts. Free post generator with 15+ personas, viral hooks, and zero-edit ready content. No signup required.',
-    keywords: 'free linkedin post generator, linkedin post generator ai, linkedin content generator, ai linkedin posts, linkedin post creator, linkedin post generator free, linkedin content generator free, linkedin ai tool, linkedin post maker, linkedin content creator',
+    title: 'Free LinkedIn Post Generator - AI Viral Posts in 30 Sec | No Signup',
+    description: 'Free LinkedIn post generator. AI trained on 50K+ viral posts. Bold hooks, 15+ personas. No signup. Create viral LinkedIn content now.',
+    keywords: 'free linkedin post generator, linkedin post generator ai, linkedin content generator free, viral linkedin posts, linkedin post creator free',
     canonical: `${SITE_URL}/tools/linkedin-post-generator`
   },
 
   linkedinEngagementCalculator: {
-    title: 'LinkedIn Engagement Rate Calculator (Free) – Measure & Improve Your Posts',
-    description: 'Free LinkedIn engagement rate calculator and post engagement score tool for creators and marketers. Enter impressions and engagements to get your rate, benchmarks, and actionable tips.',
-    keywords: 'linkedin engagement rate calculator, linkedin engagement rate, linkedin post engagement, free linkedin analytics, linkedin metrics, linkedin engagement calculator',
+    title: 'Free LinkedIn Engagement Rate Calculator | Post Score Tool',
+    description: 'Free LinkedIn engagement rate calculator. Enter impressions & engagements, get your rate + post score. Benchmarks & tips. No signup.',
+    keywords: 'linkedin engagement rate calculator free, linkedin engagement rate, linkedin post engagement, free linkedin analytics, linkedin metrics tool',
     canonical: `${SITE_URL}/tools/linkedin-engagement-rate-calculator`
   },
 
   linkedinTextFormatter: {
-    title: 'LinkedIn Text Formatter (Free) – Bold, Italic & More for Posts',
-    description: 'Format LinkedIn post text with bold, italic, underlined, strikethrough and more for free. Unicode-based styles work in LinkedIn. No login required.',
-    keywords: 'linkedin text formatter, linkedin bold text, linkedin italic, format linkedin post, linkedin post formatter, free linkedin formatter, linkedin unicode text',
+    title: 'Free LinkedIn Text Formatter - Bold, Italic, Unicode Styles | No Signup',
+    description: 'Free LinkedIn text formatter. Add bold, italic, underline, strikethrough to posts. Unicode styles work in LinkedIn. No login. Use now.',
+    keywords: 'linkedin text formatter free, linkedin bold text, linkedin italic text, format linkedin post, linkedin unicode text, linkedin post formatter',
     canonical: `${SITE_URL}/tools/linkedin-text-formatter`
   },
   
+  ideaGenerator: {
+    title: 'Free LinkedIn Idea Generator - Viral Post Ideas | Engagematic',
+    description: 'Free LinkedIn post idea generator. Get viral-worthy content angles and post ideas with AI. No signup. Use for content strategy.',
+    keywords: 'linkedin idea generator free, linkedin post ideas, linkedin content ideas, viral linkedin ideas',
+    canonical: `${SITE_URL}/idea-generator`
+  },
+
+  templates: {
+    title: 'LinkedIn Post Templates - Free Copy-Paste | Engagematic',
+    description: 'Free LinkedIn post templates: hooks, CTAs, carousels. Copy-paste and customize. Use with our free LinkedIn tools for best results.',
+    keywords: 'linkedin post templates, linkedin content templates, free linkedin templates',
+    canonical: `${SITE_URL}/templates`
+  },
+
   waitlist: {
-    title: 'Join the Waitlist - Be First to Access Engagematic Premium',
-    description: 'Join 500+ professionals waiting for Engagematic premium features. Get exclusive early bird pricing and priority access when we launch.',
-    keywords: 'Engagematic waitlist, early access, beta signup, LinkedIn tool launch',
+    title: 'Join the Waitlist - Engagematic Premium | Engagematic',
+    description: 'Join the Engagematic waitlist for early access and exclusive pricing on premium LinkedIn AI tools.',
+    keywords: 'Engagematic waitlist, LinkedIn tool early access',
     canonical: `${SITE_URL}/waitlist`
   },
-  
+
   faq: {
-    title: 'FAQ - Frequently Asked Questions | Engagematic',
-    description: 'Find answers to common questions about Engagematic AI content generation, pricing, features, and LinkedIn best practices.',
-    keywords: 'Engagematic FAQ, LinkedIn tool questions, AI content help, support',
+    title: 'FAQ - Free LinkedIn Tools & AI Post Generator | Engagematic',
+    description: 'FAQs about free LinkedIn tools, AI post generator, text formatter, engagement calculator. Pricing, features, and how to get traffic.',
+    keywords: 'free linkedin tools faq, linkedin post generator help, engagematic faq',
     canonical: `${SITE_URL}/faq`
   },
-  
+
   blog: {
-    title: 'Blog - LinkedIn Tips, AI Content Strategy & Creator Growth | Engagematic',
-    description: 'Expert insights on LinkedIn growth, AI content creation, viral post strategies, and creator economy trends. Learn from top LinkedIn creators.',
-    keywords: 'LinkedIn blog, content marketing tips, viral post strategy, LinkedIn growth, creator economy',
-    canonical: `${SITE_URL}/blog`
+    title: 'Blog - LinkedIn Tips, Viral Posts & Free Tools | Engagematic',
+    description: 'LinkedIn growth tips, viral post strategies, and how to use free LinkedIn tools. Content ideas and creator growth.',
+    keywords: 'linkedin blog, linkedin tips, viral linkedin posts, free linkedin tools, linkedin growth',
+    canonical: `${SITE_URL}/blogs`
   },
-  
+
   register: {
-    title: 'Sign Up Free - Start Your 7-Day Trial | Engagematic',
-    description: 'Create your free Engagematic account. No credit card required. Start generating viral LinkedIn content in seconds. Join 1000+ creators.',
-    keywords: 'LinkedIn tool signup, free trial, AI content free, register Engagematic',
+    title: 'Sign Up Free - 7-Day Trial | Free LinkedIn Tools | Engagematic',
+    description: 'Sign up free. No credit card. Get 7-day trial + access to free LinkedIn tools: post generator, formatter, engagement calculator.',
+    keywords: 'free linkedin tools signup, engagematic free trial, linkedin ai signup',
     canonical: `${SITE_URL}/auth/register`
+  },
+
+  about: {
+    title: 'About Engagematic - Free LinkedIn Tools & AI for Creators',
+    description: 'We build free LinkedIn tools and AI that help creators grow. Post generator, text formatter, engagement calculator. No signup for free tools.',
+    keywords: 'about engagematic, linkedin tools for creators, free linkedin ai',
+    canonical: `${SITE_URL}/about`
+  },
+
+  contact: {
+    title: 'Contact - Free LinkedIn Tools Support | Engagematic',
+    description: 'Contact Engagematic for support with free LinkedIn tools, AI post generator, or Pro plans. We reply within 24 hours.',
+    keywords: 'contact engagematic, linkedin tool support',
+    canonical: `${SITE_URL}/contact`
+  },
+
+  privacy: {
+    title: 'Privacy Policy | Engagematic',
+    description: 'Privacy policy for Engagematic free LinkedIn tools and AI post generator. How we use and protect your data.',
+    keywords: 'engagematic privacy, linkedin tool privacy',
+    canonical: `${SITE_URL}/privacy`
+  },
+
+  terms: {
+    title: 'Terms of Service | Engagematic',
+    description: 'Terms of service for Engagematic free LinkedIn tools and AI content platform.',
+    keywords: 'engagematic terms, linkedin tool terms',
+    canonical: `${SITE_URL}/terms`
   }
 };
 

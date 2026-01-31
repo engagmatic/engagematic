@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { HelpCircle, Search, ChevronDown, Mail, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
+import { SEO } from "@/components/SEO";
+import { PAGE_SEO } from "@/constants/seo";
 
 const FAQPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -162,6 +164,7 @@ const FAQPage = () => {
 
   return (
     <div className="min-h-screen gradient-hero">
+      <SEO {...PAGE_SEO.faq} />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">

@@ -3,10 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Shield, Eye, Lock, Database, Users, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import { SEO } from "@/components/SEO";
+import { PAGE_SEO } from "@/constants/seo";
 
 const PrivacyPolicyPage = () => {
   return (
     <div className="min-h-screen gradient-hero">
+      <SEO {...PAGE_SEO.privacy} />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="text-center mb-12">

@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Mail, MessageSquare, Phone, MapPin, Clock, Send, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { SEO } from "@/components/SEO";
+import { PAGE_SEO } from "@/constants/seo";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -121,7 +123,9 @@ const ContactPage = () => {
   }
 
   return (
-    <div className="min-h-screen gradient-hero">
+    <>
+      <SEO {...PAGE_SEO.contact} />
+      <div className="min-h-screen gradient-hero">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -320,6 +324,7 @@ const ContactPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
+import { PAGE_SEO } from "@/constants/seo";
 import { LinkedInOptimizer } from "@/components/LinkedInOptimizer";
 import { PremiumWaitlistModal } from "@/components/PremiumWaitlistModal";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -257,11 +258,7 @@ const IdeaGenerator = () => {
 
   return (
     <div className="w-full bg-gray-50 dark:bg-slate-950 min-h-screen">
-      <SEO 
-        title="LinkedIn Post Idea Generator | Engagematic"
-        description="Generate viral-worthy LinkedIn post ideas with AI. Get specific, actionable content angles ready to develop into full posts."
-        keywords="linkedin ideas, content ideas, post ideas, linkedin content strategy"
-      />
+      <SEO {...PAGE_SEO.ideaGenerator} />
       
       {/* Page Header */}
       <header className="sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 hidden lg:block">

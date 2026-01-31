@@ -1,5 +1,5 @@
 import { SEO } from "@/components/SEO";
-import { SITE_URL, generateFAQSchema, generateBreadcrumbSchema } from "@/constants/seo";
+import { PAGE_SEO, SITE_URL, generateFAQSchema, generateBreadcrumbSchema } from "@/constants/seo";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -175,13 +175,7 @@ const FreeTools = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-primary/5 to-background">
-      <SEO
-        title="Free LinkedIn Tools - Post Generator, Text Formatter & More | Engagematic"
-        description="Access 100% free LinkedIn tools: Post Generator, Text Formatter, Engagement Calculator, Comment Generator, and Idea Generator. No signup required. Get instant AI-powered LinkedIn content creation tools."
-        keywords="free linkedin tools, free linkedin post generator, free linkedin comment generator, free linkedin idea generator, linkedin tools free, linkedin content generator free, linkedin text formatter"
-        url={`${SITE_URL}/tools`}
-        structuredData={structuredData}
-      />
+      <SEO {...PAGE_SEO.freeTools} url={`${SITE_URL}/tools`} structuredData={structuredData} />
 
       {/* Hero Section */}
       <section className="relative py-16 sm:py-20 lg:py-24 overflow-hidden">
