@@ -9,56 +9,64 @@ export function useSubscription() {
   const [error, setError] = useState(null);
   const { toast } = useToast();
 
+  // Helper: treat as auth error (don't show generic subscription error toast)
+  const isAuthError = (msg) => {
+    if (!msg || typeof msg !== "string") return false;
+    const s = msg.toLowerCase();
+    return s.includes("token") || s.includes("authentication") || s.includes("log in") || s.includes("expired") || s.includes("access token");
+  };
+
   // Fetch subscription details
   const fetchSubscription = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Fetch both subscription and usage stats with error handling
+
       const [subscriptionResponse, usageResponse] = await Promise.allSettled([
-        apiClient.request("/subscription").catch(err => ({ success: false, error: err.message })),
-        apiClient.request("/subscription/usage").catch(err => ({ success: false, error: err.message })),
+        apiClient.request("/subscription").catch((err) => ({ success: false, error: err?.message || "Failed to fetch" })),
+        apiClient.request("/subscription/usage").catch((err) => ({ success: false, error: err?.message || "Failed to fetch" })),
       ]);
 
-      const subResult = subscriptionResponse.status === 'fulfilled' ? subscriptionResponse.value : { success: false };
-      const usageResult = usageResponse.status === 'fulfilled' ? usageResponse.value : { success: false };
+      const subResult = subscriptionResponse.status === "fulfilled" ? subscriptionResponse.value : { success: false };
+      const usageResult = usageResponse.status === "fulfilled" ? usageResponse.value : { success: false };
 
-      if (subResult.success && usageResult.success) {
-        // Merge subscription and usage data
-        const mergedData = {
-          ...subResult.data,
-          ...usageResult.data,
-        };
+      // If subscription fetch succeeded, always set subscription so dashboard works
+      if (subResult.success && subResult.data) {
+        const mergedData = usageResult.success && usageResult.data
+          ? { ...subResult.data, ...usageResult.data }
+          : { ...subResult.data };
         setSubscription(mergedData);
-        setUsage(usageResult.data);
-      } else {
-        // Only set error, don't show toast for CORS/network errors (will be handled silently)
-        const errorMsg = subResult.error || usageResult.error || "Failed to fetch subscription";
-        setError(errorMsg);
-        
-        // Only show toast for non-CORS errors
-        if (!errorMsg.includes("CORS") && !errorMsg.includes("fetch") && !errorMsg.includes("Failed to load")) {
-          toast({
-            title: "Error",
-            description: "Failed to fetch subscription details",
-            variant: "destructive",
-          });
-        }
+        if (usageResult.success && usageResult.data) setUsage(usageResult.data);
+        setError(null);
+        return;
       }
+
+      // Subscription fetch failed
+      const errorMsg = subResult.error || usageResult.error || "Failed to fetch subscription";
+      setError(errorMsg);
+
+      // Don't show toast for CORS/network or auth errors (auth flow will redirect or show login)
+      if (errorMsg.includes("CORS") || errorMsg.includes("fetch") || errorMsg.includes("Failed to load")) return;
+      if (isAuthError(errorMsg)) return;
+
+      toast({
+        title: "Error",
+        description: "Failed to fetch subscription details",
+        variant: "destructive",
+      });
     } catch (error) {
       console.error("Subscription fetch error:", error);
-      const errorMsg = error.message || "Failed to fetch subscription";
+      const errorMsg = error?.message || "Failed to fetch subscription";
       setError(errorMsg);
-      
-      // Don't show toast for network/CORS errors
-      if (!errorMsg.includes("CORS") && !errorMsg.includes("fetch") && !errorMsg.includes("Failed to load")) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch subscription details",
-          variant: "destructive",
-        });
-      }
+
+      if (errorMsg.includes("CORS") || errorMsg.includes("fetch") || errorMsg.includes("Failed to load")) return;
+      if (isAuthError(errorMsg)) return;
+
+      toast({
+        title: "Error",
+        description: "Failed to fetch subscription details",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -189,11 +197,10 @@ export function useSubscription() {
     }
   }, [toast]);
 
-  // Load subscription data on mount
+  // Load subscription data on mount (fetchSubscription already gets subscription + usage)
   useEffect(() => {
     fetchSubscription();
-    fetchUsage();
-  }, [fetchSubscription, fetchUsage]);
+  }, [fetchSubscription]);
 
   // Helper functions
   const isTrialActive = subscription?.status === "trial";
@@ -201,8 +208,13 @@ export function useSubscription() {
   const isSubscriptionActive = subscription?.status === "active";
 
   const getTrialDaysRemaining = () => {
-    if (!isTrialActive || !subscription?.trialInfo?.daysRemaining) return 0;
-    return subscription.trialInfo.daysRemaining;
+    if (!isTrialActive) return 0;
+    if (subscription?.trialInfo?.daysRemaining != null) return subscription.trialInfo.daysRemaining;
+    if (subscription?.trialEndDate) {
+      const days = Math.ceil((new Date(subscription.trialEndDate) - new Date()) / (1000 * 60 * 60 * 24));
+      return Math.max(0, days);
+    }
+    return 0;
   };
 
   const getUsagePercentage = (type) => {
