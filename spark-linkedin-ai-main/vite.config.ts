@@ -23,18 +23,24 @@ export default defineConfig(({ mode }) => ({
     minify: "terser",
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ["react", "react-dom"],
-          ui: ["@radix-ui/react-dialog", "@radix-ui/react-select", "@radix-ui/react-toast"],
+        manualChunks: (id) => {
+          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) return "vendor";
+          if (id.includes("node_modules/@radix-ui")) return "ui";
+          if (id.includes("node_modules/react-router")) return "router";
+          if (id.includes("node_modules/lucide-react")) return "icons";
         },
+        chunkFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash][extname]",
       },
     },
     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true,
+        passes: 2,
       },
     },
+    chunkSizeWarningLimit: 600,
   },
   optimizeDeps: {
     include: [
