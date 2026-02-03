@@ -10,7 +10,6 @@ TypeError: pricingService.getPricingConfig is not a function
 2. **Wrong method call**: Called `calculateCustomPrice()` but should be `calculatePrice()`
 
 ## ✅ Fix Applied
-
 ### Fixed in `backend/services/razorpay.js`:
 
 **Line 23** - Changed:
