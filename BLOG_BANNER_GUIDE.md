@@ -6,6 +6,7 @@ The blog management system is now fully integrated into the admin dashboard. All
 ## Available Features in Admin Dashboard
  
 ### ✅ Blog Management Features
+
 1. **Create New Blog Posts** - Click "New Blog Post" button
 2. **Edit Existing Blogs** - Click the edit icon on any blog
 3. **Publish/Unpublish** - Control visibility of blogs
