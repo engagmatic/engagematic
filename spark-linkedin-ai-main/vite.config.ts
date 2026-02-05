@@ -23,13 +23,9 @@ export default defineConfig(({ mode }) => ({
     minify: "terser",
     rollupOptions: {
       output: {
-        // Only split react/react-dom to vendor. Do NOT put @radix-ui in a separate chunk:
-        // Radix uses React.forwardRef and must run with the same React instance as the app.
-        manualChunks: (id) => {
-          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) return "vendor";
-          if (id.includes("node_modules/react-router")) return "router";
-          if (id.includes("node_modules/lucide-react")) return "icons";
-        },
+        // Do NOT use manualChunks that split @radix-ui or app code into a separate chunk.
+        // Those chunks can load with undefined React, causing "Cannot read properties of undefined (reading 'forwardRef')".
+        // Let Vite use default chunking so React and all UI code share the same instance.
         chunkFileNames: "assets/[name]-[hash].js",
         assetFileNames: "assets/[name]-[hash][extname]",
       },
