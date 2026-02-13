@@ -231,9 +231,9 @@ export const PAGE_SEO = {
 
   // Free Tools - Primary traffic target
   freeTools: {
-    title: 'Free LinkedIn Tools - Post Generator, Formatter, Calculator | No Signup',
-    description: '100% free LinkedIn tools: AI post generator, text formatter (bold/italic), engagement rate calculator, comment & idea generator. No signup. Use now for organic reach.',
-    keywords: 'free linkedin tools, linkedin post generator free, linkedin text formatter free, linkedin engagement calculator free, linkedin comment generator free, linkedin idea generator, linkedin tools no signup',
+    title: 'Free LinkedIn Tools - Post Generator, Text Formatter, Engagement Calculator | No Signup',
+    description: '100% free LinkedIn tools: AI post generator, text formatter (bold/italic), engagement rate calculator, comment generator, idea generator. No signup required. Use instantly to grow your LinkedIn presence. Best free LinkedIn tools for creators and marketers.',
+    keywords: 'free linkedin tools, linkedin tools free, linkedin post generator free, linkedin text formatter free, linkedin engagement calculator free, linkedin comment generator free, linkedin idea generator, linkedin tools no signup, free linkedin software, linkedin content tools free, linkedin marketing tools free, linkedin automation tools free, linkedin analytics tools free, linkedin post tools, linkedin content creation tools, linkedin tools online, best free linkedin tools, linkedin tools for creators, linkedin tools for marketers, linkedin productivity tools',
     canonical: `${SITE_URL}/tools`
   },
 
@@ -245,23 +245,23 @@ export const PAGE_SEO = {
   },
 
   linkedinPostGeneratorTool: {
-    title: 'Free LinkedIn Post Generator - AI Viral Posts in 30 Sec | No Signup',
-    description: 'Free LinkedIn post generator. AI trained on 50K+ viral posts. Bold hooks, 15+ personas. No signup. Create viral LinkedIn content now.',
-    keywords: 'free linkedin post generator, linkedin post generator ai, linkedin content generator free, viral linkedin posts, linkedin post creator free',
+    title: 'Free LinkedIn Post Generator AI - Create Viral Posts Instantly | No Signup Required',
+    description: 'Generate viral LinkedIn posts instantly with our free AI post generator. Trained on 50,000+ high-performing posts. No signup needed. Create engaging LinkedIn content in seconds. Best free LinkedIn post generator tool for creators, marketers, and professionals.',
+    keywords: 'linkedin post generator, free linkedin post generator, ai linkedin post generator, linkedin content generator, linkedin post creator, viral linkedin posts, linkedin post maker, linkedin content creator, ai linkedin content, linkedin post generator free online, best linkedin post generator, linkedin ai tool, linkedin content generator free, create linkedin posts, linkedin post writing tool, linkedin post generator ai free, linkedin content creation tool, linkedin post generator tool, linkedin post creator free, linkedin post generator no signup',
     canonical: `${SITE_URL}/tools/linkedin-post-generator`
   },
 
   linkedinEngagementCalculator: {
-    title: 'Free LinkedIn Engagement Rate Calculator | Post Score Tool',
-    description: 'Free LinkedIn engagement rate calculator. Enter impressions & engagements, get your rate + post score. Benchmarks & tips. No signup.',
-    keywords: 'linkedin engagement rate calculator free, linkedin engagement rate, linkedin post engagement, free linkedin analytics, linkedin metrics tool',
+    title: 'LinkedIn Engagement Rate Calculator Free - Calculate Post Performance Instantly',
+    description: 'Free LinkedIn engagement rate calculator. Calculate your LinkedIn post engagement rate instantly. Compare against industry benchmarks. Get post performance score and actionable insights. No signup required. Best free LinkedIn analytics tool.',
+    keywords: 'linkedin engagement rate calculator, linkedin engagement rate, linkedin engagement calculator, linkedin post engagement, linkedin engagement rate calculator free, calculate linkedin engagement, linkedin metrics calculator, linkedin analytics tool, linkedin post performance, linkedin engagement score, linkedin engagement rate tool, free linkedin analytics, linkedin engagement calculator free, linkedin post metrics, linkedin engagement analysis, linkedin engagement benchmark, linkedin post engagement rate, linkedin engagement calculator online, linkedin analytics free, linkedin engagement tool',
     canonical: `${SITE_URL}/tools/linkedin-engagement-rate-calculator`
   },
 
   linkedinTextFormatter: {
-    title: 'Free LinkedIn Text Formatter - Bold, Italic, Unicode Styles | No Signup',
-    description: 'Free LinkedIn text formatter. Add bold, italic, underline, strikethrough to posts. Unicode styles work in LinkedIn. No login. Use now.',
-    keywords: 'linkedin text formatter free, linkedin bold text, linkedin italic text, format linkedin post, linkedin unicode text, linkedin post formatter',
+    title: 'LinkedIn Text Formatter Free - Bold, Italic, Underline Text for LinkedIn Posts',
+    description: 'Free LinkedIn text formatter tool. Format LinkedIn posts with bold, italic, underline, strikethrough using Unicode. Works in LinkedIn posts and messages. No signup required. Best free LinkedIn text formatting tool for professional posts.',
+    keywords: 'linkedin text formatter, linkedin bold text, linkedin italic text, linkedin text formatter free, format linkedin post, linkedin unicode text, linkedin post formatter, linkedin bold text generator, linkedin italic text generator, linkedin text formatting, linkedin bold font, linkedin italic font, linkedin underline text, linkedin strikethrough text, linkedin text style, linkedin post formatting, linkedin text formatter tool, linkedin text formatter free online, linkedin bold text converter, linkedin text editor, linkedin post text formatter, linkedin message formatter, linkedin text formatting tool',
     canonical: `${SITE_URL}/tools/linkedin-text-formatter`
   },
   

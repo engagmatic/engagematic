@@ -101,49 +101,74 @@ export default function LinkedInTextFormatterPage() {
     if (trimmed.length > MAX_HISTORY) trimmed.shift();
     historyRef.current = trimmed;
     historyIndexRef.current = trimmed.length - 1;
+    // Update undo/redo availability
+    setCanUndo(trimmed.length > 1);
+    setCanRedo(false);
   }, []);
 
   const undo = useCallback(() => {
     const arr = historyRef.current;
     let idx = historyIndexRef.current;
-    if (idx <= 0) return;
+    if (idx <= 0) {
+      toast({ title: "Nothing to undo", variant: "destructive" });
+      return;
+    }
     idx -= 1;
     historyIndexRef.current = idx;
     const prev = arr[idx];
     setInput(prev);
-    toast({ title: "Undo" });
+    setCanUndo(idx > 0);
+    setCanRedo(true);
+    toast({ title: "Undone" });
   }, [toast]);
 
   const redo = useCallback(() => {
     const arr = historyRef.current;
     let idx = historyIndexRef.current;
-    if (idx >= arr.length - 1) return;
+    if (idx >= arr.length - 1) {
+      toast({ title: "Nothing to redo", variant: "destructive" });
+      return;
+    }
     idx += 1;
     historyIndexRef.current = idx;
     const next = arr[idx];
     setInput(next);
-    toast({ title: "Redo" });
+    setCanUndo(true);
+    setCanRedo(idx < arr.length - 1);
+    toast({ title: "Redone" });
   }, [toast]);
 
-  const canUndo = historyRef.current.length > 0 && historyIndexRef.current > 0;
-  const canRedo = historyIndexRef.current < historyRef.current.length - 1;
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  // Update undo/redo availability
+  useEffect(() => {
+    setCanUndo(historyRef.current.length > 0 && historyIndexRef.current > 0);
+    setCanRedo(historyIndexRef.current < historyRef.current.length - 1);
+  }, [input]);
 
   const getSelection = useCallback((): { start: number; end: number; text: string } => {
     const el = textareaRef.current;
     if (!el) return { start: 0, end: input.length, text: input };
     const start = el.selectionStart;
     const end = el.selectionEnd;
-    const text = start !== end ? input.slice(start, end) : input;
+    const text = start !== end ? input.slice(start, end) : "";
     return { start, end, text };
   }, [input]);
 
   const replaceSelection = useCallback((newText: string, newCursorStart?: number, newCursorEnd?: number) => {
     const el = textareaRef.current;
+    if (!el) return;
     const { start, end } = getSelection();
     const before = input.slice(0, start);
     const after = input.slice(end);
     const next = before + newText + after;
-    pushHistory(input);
+    
+    // Only push to history if content actually changed
+    if (next !== input) {
+      pushHistory(input);
+    }
+    
     setInput(next);
     requestAnimationFrame(() => {
       if (el) {
@@ -157,12 +182,21 @@ export default function LinkedInTextFormatterPage() {
 
   const applyToSelection = useCallback((fn: (t: string) => string) => {
     const { start, end, text } = getSelection();
-    if (!text.trim()) {
+    // Allow formatting even if only whitespace is selected, but require some selection
+    if (start === end && input.length === 0) {
       toast({ title: "Select some text first", variant: "destructive" });
       return;
     }
+    // If no text is selected but there's content, format the entire input
+    if (start === end && input.length > 0) {
+      const formatted = fn(input);
+      pushHistory(input);
+      setInput(formatted);
+      toast({ title: "Formatting applied to all text" });
+      return;
+    }
     replaceSelection(fn(text));
-  }, [getSelection, replaceSelection, toast]);
+  }, [input, getSelection, replaceSelection, pushHistory, toast]);
 
   const insertAtCursor = useCallback((insert: string) => {
     const el = textareaRef.current;
@@ -222,6 +256,124 @@ export default function LinkedInTextFormatterPage() {
     }, 800);
     return () => clearTimeout(t);
   }, [input, pushHistory]);
+
+  // Keyboard shortcuts handler
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle shortcuts when textarea is focused
+      const textarea = textareaRef.current;
+      if (!textarea || document.activeElement !== textarea) return;
+
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const ctrlKey = isMac ? e.metaKey : e.ctrlKey;
+      const shiftKey = e.shiftKey;
+
+      // Ctrl+A / Cmd+A: Select All
+      if (ctrlKey && e.key === 'a' && !shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        textarea.select();
+        return;
+      }
+
+      // Ctrl+Z / Cmd+Z: Undo
+      if (ctrlKey && e.key === 'z' && !shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        const arr = historyRef.current;
+        const idx = historyIndexRef.current;
+        if (idx > 0) {
+          undo();
+        } else {
+          toast({ title: "Nothing to undo", variant: "destructive" });
+        }
+        return;
+      }
+
+      // Ctrl+Y or Ctrl+Shift+Z / Cmd+Y or Cmd+Shift+Z: Redo
+      if ((ctrlKey && e.key === 'y') || (ctrlKey && e.key === 'z' && shiftKey)) {
+        e.preventDefault();
+        e.stopPropagation();
+        const arr = historyRef.current;
+        const idx = historyIndexRef.current;
+        if (idx < arr.length - 1) {
+          redo();
+        } else {
+          toast({ title: "Nothing to redo", variant: "destructive" });
+        }
+        return;
+      }
+
+      // Ctrl+B / Cmd+B: Bold
+      if (ctrlKey && e.key === 'b' && !shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        applyToSelection(toBold);
+        return;
+      }
+
+      // Ctrl+I / Cmd+I: Italic
+      if (ctrlKey && e.key === 'i' && !shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        applyToSelection(toItalic);
+        return;
+      }
+
+      // Ctrl+U / Cmd+U: Underline
+      if (ctrlKey && e.key === 'u' && !shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        applyToSelection(toUnderline);
+        return;
+      }
+
+      // Ctrl+Shift+X / Cmd+Shift+X: Strikethrough
+      if (ctrlKey && shiftKey && e.key === 'X') {
+        e.preventDefault();
+        e.stopPropagation();
+        applyToSelection(toStrikethrough);
+        return;
+      }
+
+      // Ctrl+K / Cmd+K: Insert Link
+      if (ctrlKey && e.key === 'k' && !shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleLinkInsert();
+        return;
+      }
+
+      // Ctrl+Shift+L / Cmd+Shift+L: Bullet List
+      if (ctrlKey && shiftKey && e.key === 'L') {
+        e.preventDefault();
+        e.stopPropagation();
+        applyToSelection(toBulletPoints);
+        return;
+      }
+
+      // Ctrl+Shift+N / Cmd+Shift+N: Numbered List
+      if (ctrlKey && shiftKey && e.key === 'N') {
+        e.preventDefault();
+        e.stopPropagation();
+        applyToSelection(toNumberedList);
+        return;
+      }
+
+      // Ctrl+Shift+E / Cmd+Shift+E: Clear Formatting
+      if (ctrlKey && shiftKey && e.key === 'E') {
+        e.preventDefault();
+        e.stopPropagation();
+        handleClearFormat();
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [undo, redo, applyToSelection, handleClearFormat, handleLinkInsert, toast]);
 
   const previewContent = input.trim()
     ? input
@@ -296,11 +448,10 @@ export default function LinkedInTextFormatterPage() {
                 100% Free · No login required
               </Badge>
               <h1 className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                LinkedIn Text Formatter
+                LinkedIn Text Formatter Free
               </h1>
               <p className="text-lg text-muted-foreground mb-6 max-w-xl">
-                Easily format your LinkedIn post with bold, italic, underlined,
-                strikethrough and more. Use the toolbar or pick a style below—copy and paste into LinkedIn.
+                Format LinkedIn posts with bold, italic, underline, strikethrough text using Unicode. Free LinkedIn text formatter tool works in LinkedIn posts and messages. No signup required. Best free LinkedIn text formatting tool for professional posts.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary" className="font-normal">
@@ -328,16 +479,16 @@ export default function LinkedInTextFormatterPage() {
               {/* Toolbar */}
               <div className="flex flex-wrap items-center gap-0.5 p-1.5 rounded-t-lg border border-b-0 border-border bg-muted/50">
                 <div className="flex items-center gap-0.5 border-r border-border pr-1.5 mr-1.5">
-                  <ToolbarButton title="Bold" onClick={() => applyToSelection(toBold)}>
+                  <ToolbarButton title="Bold (Ctrl+B)" onClick={() => applyToSelection(toBold)}>
                     <Bold className="h-4 w-4" />
                   </ToolbarButton>
-                  <ToolbarButton title="Italic" onClick={() => applyToSelection(toItalic)}>
+                  <ToolbarButton title="Italic (Ctrl+I)" onClick={() => applyToSelection(toItalic)}>
                     <Italic className="h-4 w-4" />
                   </ToolbarButton>
-                  <ToolbarButton title="Underline" onClick={() => applyToSelection(toUnderline)}>
+                  <ToolbarButton title="Underline (Ctrl+U)" onClick={() => applyToSelection(toUnderline)}>
                     <UnderlineIcon className="h-4 w-4" />
                   </ToolbarButton>
-                  <ToolbarButton title="Strikethrough" onClick={() => applyToSelection(toStrikethrough)}>
+                  <ToolbarButton title="Strikethrough (Ctrl+Shift+X)" onClick={() => applyToSelection(toStrikethrough)}>
                     <Strikethrough className="h-4 w-4" />
                   </ToolbarButton>
                 </div>
@@ -367,7 +518,7 @@ export default function LinkedInTextFormatterPage() {
                       </div>
                     </PopoverContent>
                   </Popover>
-                  <ToolbarButton title="Insert link" onClick={handleLinkInsert}>
+                  <ToolbarButton title="Insert link (Ctrl+K)" onClick={handleLinkInsert}>
                     <LinkIcon className="h-4 w-4" />
                   </ToolbarButton>
                   <ToolbarButton title="Insert image placeholder" onClick={() => insertAtCursor("[Image]")}>
@@ -375,21 +526,29 @@ export default function LinkedInTextFormatterPage() {
                   </ToolbarButton>
                 </div>
                 <div className="flex items-center gap-0.5 border-r border-border pr-1.5 mr-1.5">
-                  <ToolbarButton title="Undo" onClick={undo}>
+                  <ToolbarButton 
+                    title={`Undo (Ctrl+Z${navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? ' / Cmd+Z' : ''})`} 
+                    onClick={undo}
+                    disabled={!canUndo}
+                  >
                     <Undo2 className="h-4 w-4" />
                   </ToolbarButton>
-                  <ToolbarButton title="Redo" onClick={redo}>
+                  <ToolbarButton 
+                    title={`Redo (Ctrl+Y${navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? ' / Cmd+Y' : ''} or Ctrl+Shift+Z)`} 
+                    onClick={redo}
+                    disabled={!canRedo}
+                  >
                     <Redo2 className="h-4 w-4" />
                   </ToolbarButton>
-                  <ToolbarButton title="Clear formatting" onClick={handleClearFormat}>
+                  <ToolbarButton title="Clear formatting (Ctrl+Shift+E)" onClick={handleClearFormat}>
                     <Eraser className="h-4 w-4" />
                   </ToolbarButton>
                 </div>
                 <div className="flex items-center gap-0.5">
-                  <ToolbarButton title="Bullet list" onClick={() => applyToSelection(toBulletPoints)}>
+                  <ToolbarButton title="Bullet list (Ctrl+Shift+L)" onClick={() => applyToSelection(toBulletPoints)}>
                     <List className="h-4 w-4" />
                   </ToolbarButton>
-                  <ToolbarButton title="Numbered list" onClick={() => applyToSelection(toNumberedList)}>
+                  <ToolbarButton title="Numbered list (Ctrl+Shift+N)" onClick={() => applyToSelection(toNumberedList)}>
                     <ListOrdered className="h-4 w-4" />
                   </ToolbarButton>
                 </div>
@@ -408,11 +567,38 @@ export default function LinkedInTextFormatterPage() {
                     lastPushedRef.current = input;
                   }
                 }}
+                onKeyDown={(e) => {
+                  // Allow default behavior for most keys, shortcuts are handled globally
+                  // But prevent default for shortcuts we handle
+                  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+                  const ctrlKey = isMac ? e.metaKey : e.ctrlKey;
+                  const shiftKey = e.shiftKey;
+
+                  // Prevent browser default for shortcuts we handle
+                  if (
+                    (ctrlKey && (e.key === 'a' || e.key === 'z' || e.key === 'y' || e.key === 'b' || e.key === 'i' || e.key === 'u' || e.key === 'k')) ||
+                    (ctrlKey && shiftKey && (e.key === 'Z' || e.key === 'X' || e.key === 'L' || e.key === 'N' || e.key === 'E'))
+                  ) {
+                    // Let the global handler take care of it
+                    return;
+                  }
+                }}
                 className="min-h-[220px] resize-none font-mono text-sm rounded-t-none border-t-0"
+                autoFocus={false}
               />
-              <p className="text-xs text-muted-foreground mt-2">
-                Select text and use the toolbar to apply bold, italic, lists, or paste a style from below.
-              </p>
+              <div className="mt-2 space-y-1">
+                <p className="text-xs text-muted-foreground">
+                  Select text and use the toolbar or keyboard shortcuts.
+                </p>
+                <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
+                  <span><kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px]">Ctrl+A</kbd> Select All</span>
+                  <span><kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px]">Ctrl+Z</kbd> Undo</span>
+                  <span><kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px]">Ctrl+Y</kbd> Redo</span>
+                  <span><kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px]">Ctrl+B</kbd> Bold</span>
+                  <span><kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px]">Ctrl+I</kbd> Italic</span>
+                  <span><kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px]">Ctrl+U</kbd> Underline</span>
+                </div>
+              </div>
             </div>
 
             {/* Right: LinkedIn-style preview */}
@@ -509,6 +695,80 @@ export default function LinkedInTextFormatterPage() {
               </Card>
             );
           })}
+        </div>
+      </section>
+
+      {/* SEO Content Section */}
+      <section className="py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+          <div className="prose prose-lg max-w-none dark:prose-invert">
+            <h2 className="text-3xl font-bold mb-6">What is a LinkedIn Text Formatter?</h2>
+            <p className="text-muted-foreground mb-4">
+              A LinkedIn text formatter is a tool that helps you format text for LinkedIn posts and messages using Unicode characters. Since LinkedIn doesn't support native text formatting like bold or italic, our free LinkedIn text formatter uses Unicode symbols to create formatted text that displays correctly on LinkedIn.
+            </p>
+            <p className="text-muted-foreground mb-4">
+              Our LinkedIn text formatter free tool allows you to create bold text, italic text, underlined text, strikethrough text, and various other text styles for your LinkedIn posts. Simply type or paste your text, select formatting options, and copy the formatted text to paste directly into LinkedIn.
+            </p>
+
+            <h3 className="text-2xl font-bold mt-8 mb-4">How to Format LinkedIn Text</h3>
+            <p className="text-muted-foreground mb-4">
+              Formatting LinkedIn text is easy with our LinkedIn text formatter tool:
+            </p>
+            <ol className="list-decimal pl-6 space-y-2 text-muted-foreground mb-4">
+              <li><strong>Type or paste your text</strong> into the LinkedIn text formatter editor</li>
+              <li><strong>Select text</strong> and use the toolbar to apply formatting (bold, italic, underline, strikethrough)</li>
+              <li><strong>Choose a style</strong> from our pre-formatted styles or create custom formatting</li>
+              <li><strong>Copy the formatted text</strong> and paste it directly into your LinkedIn post or message</li>
+            </ol>
+            <p className="text-muted-foreground mb-4">
+              Our LinkedIn post formatter works seamlessly with LinkedIn's platform. The Unicode characters used by our LinkedIn text formatter are recognized by LinkedIn, so your formatted text will display correctly when you post.
+            </p>
+
+            <h3 className="text-2xl font-bold mt-8 mb-4">LinkedIn Bold Text Generator</h3>
+            <p className="text-muted-foreground mb-4">
+              Create bold text for LinkedIn posts using our LinkedIn bold text generator. Our LinkedIn text formatter uses Unicode characters to create bold text that stands out in your LinkedIn posts. Simply select your text and apply bold formatting, then copy and paste into LinkedIn.
+            </p>
+            <p className="text-muted-foreground mb-4">
+              Whether you need LinkedIn bold text, LinkedIn italic text, or other formatting styles, our LinkedIn text formatter free tool provides all the formatting options you need. No signup required, completely free to use.
+            </p>
+
+            <h3 className="text-2xl font-bold mt-8 mb-4">LinkedIn Italic Text and Other Styles</h3>
+            <p className="text-muted-foreground mb-4">
+              Our LinkedIn text formatter supports multiple text styles:
+            </p>
+            <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-4">
+              <li><strong>LinkedIn Bold Text:</strong> Make important words stand out with bold formatting</li>
+              <li><strong>LinkedIn Italic Text:</strong> Add emphasis with italic text formatting</li>
+              <li><strong>LinkedIn Underline Text:</strong> Highlight key points with underlined text</li>
+              <li><strong>LinkedIn Strikethrough Text:</strong> Show corrections or updates with strikethrough</li>
+              <li><strong>LinkedIn Text Styles:</strong> Use various Unicode styles like script, sans-serif, and more</li>
+            </ul>
+
+            <h3 className="text-2xl font-bold mt-8 mb-4">Why Use Our LinkedIn Text Formatter?</h3>
+            <p className="text-muted-foreground mb-4">
+              Our free LinkedIn text formatter offers several advantages:
+            </p>
+            <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-4">
+              <li><strong>No Signup Required:</strong> Use our LinkedIn text formatter free without creating an account</li>
+              <li><strong>Multiple Formatting Options:</strong> Bold, italic, underline, strikethrough, and more</li>
+              <li><strong>Real-Time Preview:</strong> See how your formatted text will look on LinkedIn</li>
+              <li><strong>Easy to Use:</strong> Simple interface with keyboard shortcuts for quick formatting</li>
+              <li><strong>Works in Posts & Messages:</strong> Format text for both LinkedIn posts and direct messages</li>
+              <li><strong>Copy & Paste Ready:</strong> Formatted text is ready to paste directly into LinkedIn</li>
+            </ul>
+
+            <h3 className="text-2xl font-bold mt-8 mb-4">Format LinkedIn Posts Like a Pro</h3>
+            <p className="text-muted-foreground mb-4">
+              Professional LinkedIn posts often use formatting to make content more engaging and readable. Our LinkedIn text formatter helps you create professional-looking posts with proper formatting. Whether you're creating LinkedIn posts for personal branding, business marketing, or professional networking, our LinkedIn post formatter makes it easy to format your text.
+            </p>
+            <p className="text-muted-foreground mb-4">
+              Use our LinkedIn text formatter to create bold headlines, italicize important points, underline key information, and format your LinkedIn content for maximum impact. Our LinkedIn text formatting tool is trusted by thousands of professionals, creators, and marketers.
+            </p>
+
+            <p className="text-muted-foreground mt-6">
+              Start using our free LinkedIn text formatter today. Format your LinkedIn posts with bold, italic, underline, and strikethrough text. No signup required, completely free LinkedIn text formatting tool.
+            </p>
+          </div>
         </div>
       </section>
 
