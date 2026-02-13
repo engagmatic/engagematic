@@ -141,7 +141,7 @@ export const useCreditPayment = () => {
         amount: razorpayAmount,
         currency: orderData.currency,
         name: 'Engagematic',
-        description: `${orderData.planType} Plan - ${credits.posts} posts, ${credits.comments} comments, ${credits.ideas} ideas`,
+        description: `${orderData.planType} Plan - ${credits.posts} posts, ${credits.comments} comments, ${credits.ideas === -1 ? 'unlimited' : credits.ideas} ideas`,
         order_id: orderData.orderId,
         notes: {
           credits: JSON.stringify(credits),
@@ -163,10 +163,19 @@ export const useCreditPayment = () => {
               window.location.href = '/dashboard';
             } else {
               toast.error('Payment verification failed. Please contact support.');
+              setIsProcessing(false);
             }
           } catch (error) {
             console.error('Payment verification error:', error);
             toast.error('Payment verification failed. Please contact support.');
+            setIsProcessing(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            // User closed the payment modal without paying
+            console.log('Payment modal closed by user');
+            setIsProcessing(false);
           }
         }
       });

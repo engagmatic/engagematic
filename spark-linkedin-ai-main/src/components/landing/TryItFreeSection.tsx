@@ -29,7 +29,7 @@ export const TryItFreeSection = () => {
           
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight tracking-tight max-w-xl mx-auto">
             Experience{" "}
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <span className="text-gradient-premium-world-class">
               Real Value
             </span>
             {" "}Before You Commit

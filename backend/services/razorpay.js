@@ -38,41 +38,50 @@ class RazorpayService {
       const pricing = pricingConfigs[currency] || pricingConfigs["USD"];
 
       // Check if this matches preset plans
+      // Note: ideas can be -1 (unlimited) for starter/pro plans
       const presets = {
-        starter: { posts: 15, comments: 30, ideas: 30 },
-        pro: { posts: 60, comments: 80, ideas: 80 },
-        elite: { posts: 200, comments: 300, ideas: 200 },
+        starter: { posts: 15, comments: 30, ideas: [30, -1] }, // Accept both 30 and -1 (unlimited)
+        pro: { posts: 60, comments: 80, ideas: [80, -1] }, // Accept both 80 and -1 (unlimited)
+        elite: { posts: 200, comments: 300, ideas: [200] },
       };
 
       let amount;
       let planType = "custom";
 
+      // Check for Starter plan (ideas can be 30 or -1 for unlimited)
       if (
         credits.posts === presets.starter.posts &&
         credits.comments === presets.starter.comments &&
-        credits.ideas === presets.starter.ideas
+        (presets.starter.ideas.includes(credits.ideas) || credits.ideas === -1)
       ) {
         amount =
           billingPeriod === "yearly"
             ? pricing.starterPrice * 10
             : pricing.starterPrice; // 10 months for yearly
         planType = "starter";
-      } else if (
+        console.log("✅ Detected Starter plan - using preset price:", amount);
+      } 
+      // Check for Pro plan (ideas can be 80 or -1 for unlimited)
+      else if (
         credits.posts === presets.pro.posts &&
         credits.comments === presets.pro.comments &&
-        credits.ideas === presets.pro.ideas
+        (presets.pro.ideas.includes(credits.ideas) || credits.ideas === -1)
       ) {
         amount =
           billingPeriod === "yearly" ? pricing.proPrice * 10 : pricing.proPrice; // 10 months for yearly
         planType = "pro";
-      } else if (
+        console.log("✅ Detected Pro plan - using preset price:", amount);
+      } 
+      // Check for Elite plan
+      else if (
         credits.posts === presets.elite.posts &&
         credits.comments === presets.elite.comments &&
-        credits.ideas === presets.elite.ideas
+        presets.elite.ideas.includes(credits.ideas)
       ) {
         amount =
           billingPeriod === "yearly" ? (pricing.elitePrice || 1299) * 10 : (pricing.elitePrice || 1299);
         planType = "elite";
+        console.log("✅ Detected Elite plan - using preset price:", amount);
       } else if (billingPeriod === "one-time") {
         // Bulk Pack: one-time purchase - price based on posts selected
         // Pricing logic matches frontend:

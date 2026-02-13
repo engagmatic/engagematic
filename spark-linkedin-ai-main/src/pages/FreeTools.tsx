@@ -186,7 +186,7 @@ const FreeTools = () => {
               <Sparkles className="w-3 h-3 mr-1" />
               100% Free Tools
             </Badge>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-gradient-premium-world-class">
               Free LinkedIn Tools
             </h1>
             <p className="text-xl text-muted-foreground mb-8">

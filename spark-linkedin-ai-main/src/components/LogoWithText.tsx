@@ -41,7 +41,7 @@ export const LogoWithText = ({
         {/* <Activity className={`${activityIconSizes[textSize]} text-white animate-pulse`} /> */}
       {/* </div> */}
       <img src='/favicon.ico' alt="Engagematic" />
-      <span className={`${sizeClasses[textSize]} font-bold`}>
+      <span className={`${sizeClasses[textSize]} font-bold text-gradient-premium-world-class`}>
         Engagematic
       </span>
     </div>

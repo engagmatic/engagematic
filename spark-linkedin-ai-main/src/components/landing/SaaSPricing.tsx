@@ -84,6 +84,7 @@ export const SaaSPricing = () => {
   const [couponData, setCouponData] = useState<any>(null);
   const [bulkCredits, setBulkCredits] = useState({ posts: 9, comments: 7, ideas: 7 }); // Slider values for Bulk Pack (9 posts = ₹125 minimum)
   const [showBulkSlider, setShowBulkSlider] = useState(false); // Control slider visibility
+  const [processingPlanId, setProcessingPlanId] = useState<PlanType | null>(null); // Track which plan is being processed
   const navigate = useNavigate();
   const { processCreditPayment, isProcessing, isLoaded } = useCreditPayment();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -207,7 +208,13 @@ export const SaaSPricing = () => {
     }
   };
 
-  const handlePlanSelect = async (planId: PlanType) => {
+  const handlePlanSelect = async (planId: PlanType, event?: React.MouseEvent) => {
+    // Stop event propagation to prevent Card onClick from triggering
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+
     console.log('Plan selected:', planId);
 
     if (!isAuthenticated) {
@@ -221,9 +228,25 @@ export const SaaSPricing = () => {
       return;
     }
 
+    // Prevent multiple simultaneous payment attempts
+    if (isProcessing || processingPlanId !== null) {
+      toast.info('Payment is already being processed. Please wait...');
+      return;
+    }
+
+    // Set processing state for this specific plan
+    setProcessingPlanId(planId);
+
     try {
       const plan = plans.find(p => p.id === planId);
-      if (!plan) return;
+      if (!plan) {
+        console.error('Plan not found:', planId);
+        setProcessingPlanId(null);
+        return;
+      }
+
+      // Update selected plan visually
+      setSelectedPlan(planId);
 
       let credits;
       
@@ -235,18 +258,12 @@ export const SaaSPricing = () => {
           ideas: bulkCredits.ideas
         };
       } else {
-        // Monthly/yearly plans
+        // Monthly/yearly plans - use exact plan limits
         credits = {
           posts: billingInterval === 'yearly' ? plan.yearlyLimits.posts : plan.limits.posts,
           comments: billingInterval === 'yearly' ? plan.yearlyLimits.comments : plan.limits.comments,
           ideas: billingInterval === 'yearly' ? plan.yearlyLimits.ideas : plan.limits.ideas
         };
-      }
-
-      // Check if Razorpay is properly configured
-      if (!isLoaded) {
-        toast.error('Payment system is currently unavailable. Please contact support.');
-        return;
       }
 
       // For bulk pack, use one-time billing, otherwise use selected interval
@@ -258,11 +275,22 @@ export const SaaSPricing = () => {
       
       const billingType = planId === 'bulk' ? 'one-time' : billingInterval;
       
+      console.log('Processing payment with:', {
+        planId,
+        credits,
+        currency,
+        billingType,
+        expectedPrice: planId === 'bulk' ? getBulkPackPrice() : getPlanPrice(plan)
+      });
+      
       // Process payment with Razorpay
-      await processCreditPayment(credits, currency, billingType);
+      await processCreditPayment(credits, currency, billingType, couponData);
     } catch (error) {
       console.error('Subscription error:', error);
-      toast.error('Payment is currently unavailable. Please contact support or try again later.');
+      toast.error(error instanceof Error ? error.message : 'Payment is currently unavailable. Please contact support or try again later.');
+    } finally {
+      // Clear processing state
+      setProcessingPlanId(null);
     }
   };
 
@@ -273,7 +301,7 @@ export const SaaSPricing = () => {
         <div className="text-center mb-12 space-y-3">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
             Simple, Transparent{" "}
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <span className="text-gradient-premium-world-class">
               Pricing
             </span>
           </h2>
@@ -349,7 +377,12 @@ export const SaaSPricing = () => {
             {plans.map((plan) => (
               <Card 
                 key={plan.id}
-                onClick={() => setSelectedPlan(plan.id)}
+                onClick={(e) => {
+                  // Only set selected plan if clicking on card itself, not on button
+                  if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.card-content')) {
+                    setSelectedPlan(plan.id);
+                  }
+                }}
                 className={`relative transition-all duration-300 hover:shadow-lg cursor-pointer ${
                   plan.popular 
                     ? 'border-primary shadow-md scale-105 bg-gradient-to-b from-white to-blue-50/20' 
@@ -364,7 +397,7 @@ export const SaaSPricing = () => {
                   </div>
                 )}
 
-                <div className="p-6 space-y-5">
+                <div className="p-6 space-y-5 card-content">
                   {/* Plan Header */}
                   <div className="text-center space-y-2">
                     <div className="flex justify-center">
@@ -554,13 +587,18 @@ export const SaaSPricing = () => {
                   {/* CTA Button */}
                   <div className="pt-3">
                     <Button 
-                      onClick={() => handlePlanSelect(plan.id)}
-                      disabled={isProcessing || (isAuthenticated && !isLoaded)}
-                      className={`${premiumCTAClasses} ${(isProcessing || (isAuthenticated && !isLoaded)) ? 'pointer-events-none opacity-60' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent Card onClick
+                        e.preventDefault(); // Prevent any default behavior
+                        handlePlanSelect(plan.id, e);
+                      }}
+                      disabled={isProcessing || processingPlanId !== null || (isAuthenticated && !isLoaded)}
+                      className={`${premiumCTAClasses} ${(isProcessing || processingPlanId !== null || (isAuthenticated && !isLoaded)) ? 'pointer-events-none opacity-60' : ''}`}
                     >
                       <span className={premiumCTAHighlight} />
                       <span className="relative">
-                        {isProcessing ? 'Processing...' : 
+                        {processingPlanId === plan.id ? 'Processing...' :
+                         isProcessing ? 'Processing...' : 
                          (isAuthenticated && !isLoaded) ? 'Loading...' : 
                          !isAuthenticated ? 'Start Free Trial' : 
                          `Upgrade to ${plan.name}`}

@@ -185,7 +185,7 @@ export const CreditSliderPricing = () => {
         <div className="text-center mb-8 sm:mb-12 space-y-3 sm:space-y-4">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold px-4">
             Customize Your{" "}
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <span className="text-gradient-premium-world-class">
               Perfect Plan
             </span>
           </h2>

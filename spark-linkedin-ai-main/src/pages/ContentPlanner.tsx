@@ -352,7 +352,7 @@ export const ContentPlanner = () => {
         </div>
         {/* Header */}
         <div className="text-center mb-8 space-y-3">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gradient-premium-world-class">
             Hook → Outcome Content Planner
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">

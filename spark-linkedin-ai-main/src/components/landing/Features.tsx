@@ -50,8 +50,8 @@ export const Features = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header Section */}
         <div className="text-center mb-12 sm:mb-16 lg:mb-20 space-y-3 animate-fade-in-up">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
-            What You Get
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+            <span className="text-gradient-premium-world-class">What You Get</span>
           </h2>
           <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
             Everything you need to sound like you—not like everyone else.

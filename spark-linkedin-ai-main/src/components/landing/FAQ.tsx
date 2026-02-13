@@ -39,7 +39,7 @@ export const FAQ = () => {
         <div className="text-center mb-8 sm:mb-12 space-y-3 sm:space-y-4">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold px-4">
             Frequently Asked{" "}
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Questions</span>
+            <span className="text-gradient-premium-world-class">Questions</span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground px-4">
             Everything you need to know about Engagematic

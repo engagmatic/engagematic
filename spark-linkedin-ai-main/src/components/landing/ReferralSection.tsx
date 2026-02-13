@@ -57,7 +57,7 @@ export default function ReferralSection() {
             {/* Heading */}
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
               Refer Friends,{" "}
-              <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <span className="text-gradient-premium-world-class">
                 Get Free Months
               </span>
             </h2>

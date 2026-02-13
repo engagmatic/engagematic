@@ -60,7 +60,7 @@ export const BlogSection = () => {
             </div>
             <h2 className="text-4xl lg:text-5xl font-bold">
               Expert{" "}
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <span className="text-gradient-premium-world-class">
                 Insights
               </span>
             </h2>

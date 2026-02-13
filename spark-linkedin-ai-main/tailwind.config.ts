@@ -61,6 +61,13 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Premium gradient colors from logo
+        premium: {
+          indigo: "#3F00FF", // Deep indigo blue from logo
+          fuchsia: "#FF00FF", // Vibrant fuchsia/magenta from logo
+          "indigo-light": "#5F20FF",
+          "fuchsia-light": "#FF20FF",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -98,6 +105,14 @@ export default {
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "heartbeat": "heartbeat 2s ease-in-out infinite",
         "fade-in-up": "fade-in-up 0.6s ease-out",
+        "gradient-shift": "gradient-shift 4s ease infinite",
+        "gradient-shift-slow": "gradient-shift 6s ease infinite",
+      },
+      backgroundImage: {
+        "gradient-premium": "linear-gradient(to right, #3F00FF, #FF00FF)",
+        "gradient-premium-horizontal": "linear-gradient(to right, #3F00FF, #FF00FF)",
+        "gradient-premium-vertical": "linear-gradient(to bottom, #3F00FF, #FF00FF)",
+        "gradient-premium-diagonal": "linear-gradient(135deg, #3F00FF, #FF00FF)",
       },
     },
   },

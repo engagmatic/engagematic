@@ -73,14 +73,12 @@ export const Hero = () => {
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight px-4">
             Never Run Out of{" "}
             <span 
-              className={`inline-block bg-gradient-to-r from-blue-600 via-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-sm transition-all duration-500 ${
+              className={`inline-block text-gradient-premium-world-class transition-all duration-500 ${
                 isAnimating ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
               }`}
               style={{ 
                 minWidth: '200px', 
-                display: 'inline-block',
-                backgroundSize: '200% 200%',
-                animation: 'gradient-shift 4s ease infinite'
+                display: 'inline-block'
               }}
             >
               {ROTATING_WORDS[currentWordIndex]}

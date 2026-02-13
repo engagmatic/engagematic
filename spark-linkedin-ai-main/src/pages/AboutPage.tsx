@@ -16,7 +16,7 @@ const AboutPage = () => {
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-2">
             About{" "}
-            <span className="gradient-pulse bg-clip-text text-transparent">Engagematic</span>
+            <span className="text-gradient-premium-world-class">Engagematic</span>
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
             We're on a mission to help professionals build authentic, engaging LinkedIn presences that drive real business results.

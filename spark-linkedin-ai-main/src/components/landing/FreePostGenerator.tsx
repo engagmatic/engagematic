@@ -383,7 +383,7 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
           </Badge>
           <h3 className="text-base sm:text-lg font-bold text-foreground">
             Generate Your First{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-gradient-premium-world-class">
               Viral Post
             </span>
           </h3>

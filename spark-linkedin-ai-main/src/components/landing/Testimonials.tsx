@@ -175,7 +175,7 @@ export const Testimonials = () => {
             <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 fill-yellow-500" />
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold">
               What Our Users{" "}
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Say About Us</span>
+              <span className="text-gradient-premium-world-class">Say About Us</span>
             </h2>
             <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 fill-yellow-500" />
           </div>

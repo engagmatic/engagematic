@@ -38,7 +38,7 @@ export const ToolsShowcase = () => {
       <div className="space-y-2">
         <h3 className="text-xl sm:text-2xl font-bold text-foreground">
           This is Just the{" "}
-          <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <span className="text-gradient-premium-world-class">
             Beginning
           </span>
         </h3>

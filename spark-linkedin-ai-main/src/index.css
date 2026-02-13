@@ -270,7 +270,7 @@ body {
   @apply -translate-y-1 shadow-xl;
 }
 
-/* Gradient text animation */
+/* Premium Gradient Text Styles */
 @keyframes gradient-shift {
   0%, 100% {
     background-position: 0% 50%;
@@ -283,6 +283,64 @@ body {
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradient-shift 3s ease infinite;
+}
+
+/* Premium gradient text utility - matches logo gradient */
+.text-gradient-premium {
+  background: linear-gradient(to right, #3F00FF, #FF00FF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+
+/* Premium gradient text with animation */
+.text-gradient-premium-animated {
+  background: linear-gradient(90deg, #3F00FF 0%, #7F40FF 50%, #FF00FF 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+  animation: gradient-shift 4s ease infinite;
+}
+
+/* Premium gradient text - smooth version */
+.text-gradient-premium-smooth {
+  background: linear-gradient(to right, #3F00FF, #7F40FF, #FF00FF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+}
+
+/* Premium gradient text - enhanced with glow */
+.text-gradient-premium-glow {
+  background: linear-gradient(to right, #3F00FF, #FF00FF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+  filter: drop-shadow(0 0 8px rgba(63, 0, 255, 0.3));
+}
+
+/* Premium gradient text - world class with subtle animation */
+.text-gradient-premium-world-class {
+  background: linear-gradient(90deg, #3F00FF 0%, #5F20FF 25%, #9F60FF 50%, #DF80FF 75%, #FF00FF 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+  animation: gradient-shift 5s ease infinite;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 /* Glass morphism effect */
