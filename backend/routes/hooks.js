@@ -5,6 +5,7 @@ import { authenticateToken, checkPlanAccess } from "../middleware/auth.js";
 import { validateObjectId } from "../middleware/validation.js";
 import { body } from "express-validator";
 import googleAIService from "../services/googleAI.js";
+import { config } from "../config/index.js";
 
 const router = express.Router();
 
@@ -288,39 +289,89 @@ router.get(
       }
     ]`;
 
-      const aiResponse = await googleAIService.generateText(prompt);
+      let aiResponse;
+      try {
+        aiResponse = await googleAIService.generateText(prompt, {
+          temperature: 0.9,
+          maxOutputTokens: 2000,
+        });
+      } catch (aiError) {
+        console.error("❌ Google AI error during trending hooks generation:", {
+          message: aiError.message,
+          stack: aiError.stack,
+          topic,
+          industry,
+        });
+        // Fall through to fallback
+        throw new Error(`AI service error: ${aiError.message}`);
+      }
 
       if (!aiResponse || !aiResponse.text || !aiResponse.text.trim()) {
         throw new Error("AI response is empty");
       }
 
       const aiText = aiResponse.text;
+      console.log("✅ AI response received for trending hooks, length:", aiText.length);
 
       // Parse AI response
       let trendingHooks;
       try {
         // Clean the response and extract JSON
-        const cleanedResponse = aiText
+        let cleanedResponse = aiText
           .replace(/```json\n?/g, "")
           .replace(/```\n?/g, "")
           .trim();
+
+        // Try to extract JSON array if wrapped in other text
+        const jsonMatch = cleanedResponse.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          cleanedResponse = jsonMatch[0];
+        }
+
         trendingHooks = JSON.parse(cleanedResponse);
+
+        // Validate parsed hooks structure
+        if (!Array.isArray(trendingHooks)) {
+          throw new Error("Parsed response is not an array");
+        }
+
+        // Validate each hook has required fields
+        trendingHooks = trendingHooks
+          .filter((hook) => hook && hook.text && hook.text.trim().length > 0)
+          .map((hook) => ({
+            text: hook.text.trim(),
+            category: hook.category || ["story", "question", "statement", "challenge", "insight"][Math.floor(Math.random() * 5)],
+            trending: true,
+          }))
+          .slice(0, 10); // Limit to 10 hooks
+
       } catch (parseError) {
-        console.error("Failed to parse AI response:", parseError);
+        console.error("⚠️ Failed to parse AI response as JSON, trying text parsing:", parseError.message);
         // Fallback: create hooks from response text
         const lines = aiText
           .split("\n")
-          .filter((line) => line.trim().length > 10 && line.trim().length < 80);
-        trendingHooks = lines.slice(0, 10).map((line, index) => ({
-          text: line
-            .trim()
+          .map((line) => line.trim())
+          .filter((line) => {
+            const cleaned = line.replace(/^\d+\.\s*/, "").replace(/^[-*•]\s*/, "").replace(/^["']|["']$/g, "");
+            return cleaned.length >= 10 && cleaned.length <= 80;
+          });
+
+        if (lines.length === 0) {
+          throw new Error("Could not extract hooks from AI response");
+        }
+
+        trendingHooks = lines.slice(0, 10).map((line, index) => {
+          const cleaned = line
             .replace(/^\d+\.\s*/, "")
-            .replace(/^[-*]\s*/, ""),
-          category: ["story", "question", "statement", "challenge", "insight"][
-            index % 5
-          ],
-          trending: true,
-        }));
+            .replace(/^[-*•]\s*/, "")
+            .replace(/^["']|["']$/g, "")
+            .trim();
+          return {
+            text: cleaned,
+            category: ["story", "question", "statement", "challenge", "insight"][index % 5],
+            trending: true,
+          };
+        });
       }
 
       // Ensure we have valid hooks
@@ -328,11 +379,24 @@ router.get(
         throw new Error("No valid hooks generated");
       }
 
+      // Validate hook text length and filter invalid ones
+      trendingHooks = trendingHooks
+        .filter((hook) => {
+          const text = hook.text || "";
+          return text.length >= 10 && text.length <= 80;
+        })
+        .slice(0, 10);
+
+      if (trendingHooks.length === 0) {
+        throw new Error("All generated hooks were invalid");
+      }
+
       // Add metadata
+      const timestamp = Date.now();
       const hooksWithMetadata = trendingHooks.map((hook, index) => ({
-        _id: `trending_${Date.now()}_${index}`,
+        _id: `trending_${timestamp}_${index}`,
         text: hook.text,
-        category: hook.category,
+        category: hook.category || "story",
         trending: true,
         generatedAt: new Date(),
         usageCount: 0,
@@ -340,37 +404,57 @@ router.get(
         isActive: true,
       }));
 
+      console.log(`✅ Generated ${hooksWithMetadata.length} trending hooks successfully`);
+
       res.json({
         success: true,
         data: {
           hooks: hooksWithMetadata,
           generatedAt: new Date(),
           source: "ai-generated",
+          count: hooksWithMetadata.length,
         },
       });
     } catch (error) {
-      console.error("Generate trending hooks error:", error);
+      console.error("❌ Generate trending hooks error:", {
+        message: error.message,
+        stack: error.stack,
+        topic,
+        industry,
+      });
 
       // Fallback to popular hooks if AI fails
       try {
+        console.log("🔄 Attempting fallback to popular hooks...");
         const fallbackHooks = await Hook.find({ isActive: true })
           .sort({ usageCount: -1, createdAt: -1 })
-          .limit(10);
+          .limit(10)
+          .lean(); // Use lean() for better performance
 
-        res.json({
-          success: true,
-          data: {
-            hooks: fallbackHooks,
-            generatedAt: new Date(),
-            source: "fallback-popular",
-          },
-        });
+        if (fallbackHooks && fallbackHooks.length > 0) {
+          console.log(`✅ Using ${fallbackHooks.length} fallback hooks`);
+          res.json({
+            success: true,
+            data: {
+              hooks: fallbackHooks,
+              generatedAt: new Date(),
+              source: "fallback-popular",
+              count: fallbackHooks.length,
+              warning: "AI generation failed, showing popular hooks instead",
+            },
+          });
+          return;
+        }
       } catch (fallbackError) {
-        res.status(500).json({
-          success: false,
-          message: "Failed to generate trending hooks",
-        });
+        console.error("❌ Fallback also failed:", fallbackError.message);
       }
+
+      // Last resort: return error with helpful message
+      res.status(500).json({
+        success: false,
+        message: "Failed to generate trending hooks. Please try again in a moment.",
+        error: config.NODE_ENV === "development" ? error.message : undefined,
+      });
     }
   }
 );

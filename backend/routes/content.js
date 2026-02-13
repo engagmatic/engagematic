@@ -169,16 +169,31 @@ router.post(
         }).select("content").limit(10); // Limit to 10 posts for prompt length
       }
 
-      const aiResponse = await googleAIService.generatePost(
-        topic,
-        hook.text,
-        persona,
-        req.body.linkedinInsights || null,
-        profileInsights,
-        userProfile, // Pass user profile for deep personalization
-        postFormatting, // User's formatting preference
-        trainingPosts // User's selected training posts (premium)
-      );
+      let aiResponse;
+      try {
+        aiResponse = await googleAIService.generatePost(
+          topic,
+          hook.text,
+          persona,
+          req.body.linkedinInsights || null,
+          profileInsights,
+          userProfile, // Pass user profile for deep personalization
+          postFormatting, // User's formatting preference
+          trainingPosts // User's selected training posts (premium)
+        );
+      } catch (aiError) {
+        console.error("❌ Google AI error during post generation:", {
+          message: aiError.message,
+          stack: aiError.stack,
+          topic: topic?.substring(0, 50),
+        });
+        throw new Error(`AI service error: ${aiError.message}`);
+      }
+
+      // Validate AI response
+      if (!aiResponse || !aiResponse.content) {
+        throw new Error("Invalid response from AI service - no content generated");
+      }
 
       console.log("✅ AI response received:", {
         contentLength: aiResponse.content?.length,
@@ -187,52 +202,104 @@ router.post(
       });
 
       // Save generated content
-      const content = new Content({
-        userId,
-        type: "post",
-        content: aiResponse.content,
-        topic,
-        hookId: hookIdStr,
-        personaId: personaId || null, // May be null for sample personas
-        engagementScore: aiResponse.engagementScore,
-        tokensUsed: aiResponse.tokensUsed,
-      });
+      let content;
+      try {
+        content = new Content({
+          userId,
+          type: "post",
+          content: aiResponse.content,
+          topic,
+          hookId: hookIdStr,
+          personaId: personaId || null, // May be null for sample personas
+          engagementScore: aiResponse.engagementScore,
+          tokensUsed: aiResponse.tokensUsed,
+        });
 
-      await content.save();
+        await content.save();
+      } catch (saveError) {
+        console.error("❌ Error saving content:", saveError);
+        // Still return the content even if save fails
+        content = {
+          _id: `temp-${Date.now()}`,
+          userId,
+          type: "post",
+          content: aiResponse.content,
+          topic,
+          hookId: hookIdStr,
+          personaId: personaId || null,
+          engagementScore: aiResponse.engagementScore,
+          tokensUsed: aiResponse.tokensUsed,
+          createdAt: new Date(),
+        };
+        console.warn("⚠️ Content not saved to database, but returning generated content");
+      }
 
-      // Increment usage
-      // Record usage in both systems
-      await usageService.incrementUsage(userId, "posts", aiResponse.tokensUsed);
-      await subscriptionService.recordUsage(userId, "generate_post");
+      // Increment usage (non-blocking)
+      try {
+        await usageService.incrementUsage(userId, "posts", aiResponse.tokensUsed);
+        await subscriptionService.recordUsage(userId, "generate_post");
+      } catch (usageError) {
+        console.error("⚠️ Failed to track usage (non-critical):", usageError.message);
+        // Don't fail the request if usage tracking fails
+      }
 
       // Update hook usage count (skip for trending hooks - they're not in the database)
       if (!hookIdStr.startsWith("trending_")) {
-        await Hook.findByIdAndUpdate(hookIdStr, { $inc: { usageCount: 1 } });
+        try {
+          await Hook.findByIdAndUpdate(hookIdStr, { $inc: { usageCount: 1 } });
+        } catch (hookError) {
+          console.warn("⚠️ Failed to update hook usage count (non-critical):", hookError.message);
+        }
       }
 
       // Get updated subscription info
-      const subscription = await subscriptionService.getUserSubscription(
-        userId
-      );
+      let subscription;
+      try {
+        subscription = await subscriptionService.getUserSubscription(userId);
+      } catch (subError) {
+        console.warn("⚠️ Failed to get subscription info (non-critical):", subError.message);
+        subscription = { usage: {}, tokens: {}, limits: {} };
+      }
 
       res.json({
         success: true,
         message: "Post generated successfully",
         data: {
           content: content,
-          quota: await usageService.checkQuotaExceeded(userId, "posts"),
+          quota: await usageService.checkQuotaExceeded(userId, "posts").catch(() => ({ exceeded: false })),
           subscription: {
-            usage: subscription.usage,
-            tokens: subscription.tokens,
-            limits: subscription.limits,
+            usage: subscription.usage || {},
+            tokens: subscription.tokens || {},
+            limits: subscription.limits || {},
           },
         },
       });
     } catch (error) {
-      console.error("Post generation error:", error);
+      console.error("❌ Post generation error:", {
+        message: error.message,
+        stack: error.stack,
+        userId,
+        topic: topic?.substring(0, 50),
+      });
+      
+      // Provide more helpful error messages
+      let errorMessage = "Failed to generate post";
+      if (error.message.includes("AI service")) {
+        errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
+      } else if (error.message.includes("quota") || error.message.includes("limit")) {
+        errorMessage = error.message;
+      } else if (error.message.includes("Hook not found")) {
+        errorMessage = "Selected hook is no longer available. Please select another hook.";
+      } else if (error.message.includes("Persona not found")) {
+        errorMessage = "Selected persona is no longer available. Please select another persona.";
+      } else {
+        errorMessage = error.message || errorMessage;
+      }
+
       res.status(500).json({
         success: false,
-        message: "Failed to generate post",
+        message: errorMessage,
+        error: config.NODE_ENV === "development" ? error.message : undefined,
       });
     }
   }
@@ -552,69 +619,139 @@ router.post(
         userId
       );
 
-      const aiResponse = await googleAIService.generateComment(
-        postContent,
-        persona,
-        profileInsights,
-        commentType
-      );
+      let aiResponse;
+      try {
+        aiResponse = await googleAIService.generateComment(
+          postContent,
+          persona,
+          profileInsights,
+          commentType
+        );
+      } catch (aiError) {
+        console.error("❌ Google AI error during comment generation:", {
+          message: aiError.message,
+          stack: aiError.stack,
+          postContentLength: postContent?.length,
+        });
+        throw new Error(`AI service error: ${aiError.message}`);
+      }
+
+      // Validate AI response
+      if (!aiResponse) {
+        throw new Error("Invalid response from AI service");
+      }
+
+      // Extract comments - handle both array and single comment formats
+      let comments = [];
+      if (aiResponse.comments && Array.isArray(aiResponse.comments)) {
+        comments = aiResponse.comments.map((c) =>
+          typeof c === "string" ? c : c.text || c
+        );
+      } else if (aiResponse.content) {
+        // Single comment response
+        comments = [typeof aiResponse.content === "string" ? aiResponse.content : aiResponse.content.text || aiResponse.content];
+      }
+
+      if (comments.length === 0) {
+        throw new Error("No comments were generated");
+      }
 
       console.log("✅ AI comment response received:", {
-        contentLength: aiResponse.content?.length,
+        commentsCount: comments.length,
         tokensUsed: aiResponse.tokensUsed,
       });
 
       // Save generated content (save the first comment as the main content)
-      const firstComment =
-        aiResponse.comments && aiResponse.comments[0]
-          ? typeof aiResponse.comments[0] === "string"
-            ? aiResponse.comments[0]
-            : aiResponse.comments[0].text
-          : aiResponse.content;
+      const firstComment = comments[0];
 
-      const content = new Content({
-        userId,
-        type: "comment",
-        content: firstComment,
-        originalPostContent: postContent,
-        personaId: personaId || null, // May be null for sample personas
-        tokensUsed: aiResponse.tokensUsed,
-      });
+      let content;
+      try {
+        content = new Content({
+          userId,
+          type: "comment",
+          content: firstComment,
+          originalPostContent: postContent,
+          personaId: personaId || null, // May be null for sample personas
+          tokensUsed: aiResponse.tokensUsed,
+        });
 
-      await content.save();
+        await content.save();
+      } catch (saveError) {
+        console.error("❌ Error saving content:", saveError);
+        // Still return the content even if save fails
+        content = {
+          _id: `temp-${Date.now()}`,
+          userId,
+          type: "comment",
+          content: firstComment,
+          originalPostContent: postContent,
+          personaId: personaId || null,
+          tokensUsed: aiResponse.tokensUsed,
+          createdAt: new Date(),
+        };
+        console.warn("⚠️ Content not saved to database, but returning generated comments");
+      }
 
-      // Record usage in both systems
-      await usageService.incrementUsage(
-        userId,
-        "comments",
-        aiResponse.tokensUsed
-      );
-      await subscriptionService.recordUsage(userId, "generate_comment");
+      // Record usage in both systems (non-blocking)
+      try {
+        await usageService.incrementUsage(
+          userId,
+          "comments",
+          aiResponse.tokensUsed
+        );
+        await subscriptionService.recordUsage(userId, "generate_comment");
+      } catch (usageError) {
+        console.error("⚠️ Failed to track usage (non-critical):", usageError.message);
+        // Don't fail the request if usage tracking fails
+      }
 
       // Get updated subscription info
-      const subscription = await subscriptionService.getUserSubscription(
-        userId
-      );
+      let subscription;
+      try {
+        subscription = await subscriptionService.getUserSubscription(userId);
+      } catch (subError) {
+        console.warn("⚠️ Failed to get subscription info (non-critical):", subError.message);
+        subscription = { usage: {}, tokens: {}, limits: {} };
+      }
 
       res.json({
         success: true,
         message: "Comments generated successfully",
         data: {
-          comments: aiResponse.comments,
+          comments: comments,
           content: content,
-          quota: await usageService.checkQuotaExceeded(userId, "comments"),
+          quota: await usageService.checkQuotaExceeded(userId, "comments").catch(() => ({ exceeded: false })),
           subscription: {
-            usage: subscription.usage,
-            tokens: subscription.tokens,
-            limits: subscription.limits,
+            usage: subscription.usage || {},
+            tokens: subscription.tokens || {},
+            limits: subscription.limits || {},
           },
         },
       });
     } catch (error) {
-      console.error("Comment generation error:", error);
+      console.error("❌ Comment generation error:", {
+        message: error.message,
+        stack: error.stack,
+        userId,
+        postContentLength: postContent?.length,
+      });
+      
+      // Provide more helpful error messages
+      let errorMessage = "Failed to generate comment";
+      if (error.message.includes("AI service")) {
+        errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
+      } else if (error.message.includes("quota") || error.message.includes("limit")) {
+        errorMessage = error.message;
+      } else if (error.message.includes("Persona not found")) {
+        errorMessage = "Selected persona is no longer available. Please select another persona.";
+      } else {
+        errorMessage = error.message || errorMessage;
+      }
+
       res.status(500).json({
         success: false,
-        message: "Failed to generate comment",
+        message: errorMessage,
+        error: config.NODE_ENV === "development" ? error.message : undefined,
       });
     }
   }
@@ -1126,20 +1263,70 @@ router.post(
       );
 
       // Generate ideas using Google AI
-      const response = await googleAIService.generateText(ideaPrompt, {
-        temperature: 0.9,
-        maxOutputTokens: 3000,
-      });
+      let response;
+      try {
+        response = await googleAIService.generateText(ideaPrompt, {
+          temperature: 0.9,
+          maxOutputTokens: 3000,
+        });
+      } catch (aiError) {
+        console.error("❌ Google AI error during idea generation:", {
+          message: aiError.message,
+          stack: aiError.stack,
+        });
+        throw new Error(`AI service error: ${aiError.message}`);
+      }
+
+      // Validate response
+      if (!response || !response.text) {
+        throw new Error("Invalid response from AI service");
+      }
 
       // Parse the response into structured ideas
-      const ideas = parseIdeasFromResponse(response.text, angle);
+      let ideas;
+      try {
+        ideas = parseIdeasFromResponse(response.text, angle);
+      } catch (parseError) {
+        console.error("❌ Error parsing ideas from response:", parseError);
+        // Fallback: return at least one idea with the topic
+        ideas = [
+          {
+            id: `idea-${Date.now()}-fallback`,
+            title: `Post about ${topic.substring(0, 30)}`,
+            hook: `Here's what I learned about ${topic.substring(0, 40)}`,
+            angle: angle,
+            framework: [
+              "Introduction and context",
+              "Main insight or lesson",
+              "Supporting examples",
+              "Actionable takeaway",
+              "Call to action",
+            ],
+            whyItWorks: "Creates engagement through relevance",
+            developmentNotes: "Add personal examples and data",
+            engagementPotential: "High",
+            bestFor: targetAudience,
+          },
+        ];
+        console.warn("⚠️ Using fallback idea due to parsing error");
+      }
+
+      // Ensure we have at least one idea
+      if (!ideas || ideas.length === 0) {
+        throw new Error("No ideas were generated");
+      }
 
       // Track ideas usage separately
-      await usageService.incrementUsage(
-        userId,
-        "ideas",
-        response.tokensUsed || 150
-      );
+      try {
+        await usageService.incrementUsage(
+          userId,
+          "ideas",
+          response.tokensUsed || 150
+        );
+      } catch (usageError) {
+        console.error("⚠️ Failed to track usage (non-critical):", usageError.message);
+        // Don't fail the request if usage tracking fails
+      }
 
       console.log(`✅ Generated ${ideas.length} ideas successfully`);
 
@@ -1149,11 +1336,27 @@ router.post(
         data: { ideas },
       });
     } catch (error) {
-      console.error("Idea generation error:", error);
+      console.error("❌ Idea generation error:", {
+        message: error.message,
+        stack: error.stack,
+        userId,
+        topic: topic?.substring(0, 50),
+      });
+      
+      // Provide more helpful error messages
+      let errorMessage = "Failed to generate ideas";
+      if (error.message.includes("AI service")) {
+        errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
+      } else if (error.message.includes("quota") || error.message.includes("limit")) {
+        errorMessage = error.message;
+      } else {
+        errorMessage = error.message || errorMessage;
+      }
+
       res.status(500).json({
         success: false,
-        message: "Failed to generate ideas",
-        error: error.message,
+        message: errorMessage,
+        error: config.NODE_ENV === "development" ? error.message : undefined,
       });
     }
   }

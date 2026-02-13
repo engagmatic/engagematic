@@ -5,6 +5,7 @@ import helmet from "helmet";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
 import { config } from "./config/index.js";
+import { validateEnvironmentVariables, validateOptionalEnvironmentVariables } from "./utils/envValidation.js";
 
 // Import routes
 import authRoutes from "./routes/auth.js";
@@ -204,16 +205,106 @@ app.use((error, req, res, next) => {
   });
 });
 
-// Database connection
+// Database connection with improved error handling
 const connectDB = async () => {
   try {
-    await mongoose.connect(config.MONGODB_URI, {
+    // Validate MongoDB URI before attempting connection
+    if (!config.MONGODB_URI || config.MONGODB_URI.trim() === "") {
+      throw new Error("MONGODB_URI is not set in environment variables");
+    }
+
+    console.log("🔄 Attempting to connect to MongoDB...");
+    console.log(`   Database: ${config.DB_NAME}`);
+    console.log(`   URI: ${config.MONGODB_URI.replace(/\/\/[^:]+:[^@]+@/, "//***:***@")}`); // Hide credentials in logs
+
+    const connectionOptions = {
       dbName: config.DB_NAME,
+      serverSelectionTimeoutMS: 10000, // 10 seconds timeout
+      socketTimeoutMS: 45000, // 45 seconds socket timeout
+      connectTimeoutMS: 10000, // 10 seconds connection timeout
+      maxPoolSize: 10, // Maximum number of connections in the pool
+      minPoolSize: 2, // Minimum number of connections in the pool
+      retryWrites: true,
+      w: "majority",
+    };
+
+    await mongoose.connect(config.MONGODB_URI, connectionOptions);
+
+    // Set up connection event listeners for better monitoring
+    mongoose.connection.on("error", (err) => {
+      console.error("❌ MongoDB connection error:", {
+        message: err.message,
+        name: err.name,
+        code: err.code,
+        codeName: err.codeName,
+      });
     });
-    console.log("✅ MongoDB connected successfully");
+
+    mongoose.connection.on("disconnected", () => {
+      console.warn("⚠️  MongoDB disconnected. Attempting to reconnect...");
+    });
+
+    mongoose.connection.on("reconnected", () => {
+      console.log("✅ MongoDB reconnected successfully");
+    });
+
+    mongoose.connection.on("connected", () => {
+      console.log("✅ MongoDB connected successfully");
+      console.log(`   Host: ${mongoose.connection.host}`);
+      console.log(`   Port: ${mongoose.connection.port}`);
+      console.log(`   Database: ${mongoose.connection.name}`);
+      console.log(`   Ready State: ${mongoose.connection.readyState}`);
+    });
+
+    // Log connection state
+    console.log(`✅ MongoDB connection established`);
+    console.log(`   Ready State: ${mongoose.connection.readyState}`);
   } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
-    process.exit(1);
+    console.error("❌ MongoDB connection failed:");
+    console.error(`   Error: ${error.message}`);
+    console.error(`   Error Name: ${error.name}`);
+    
+    if (error.code) {
+      console.error(`   Error Code: ${error.code}`);
+    }
+    
+    if (error.codeName) {
+      console.error(`   Error Code Name: ${error.codeName}`);
+    }
+
+    // Provide helpful error messages based on error type
+    if (error.message.includes("authentication failed")) {
+      console.error("\n💡 Troubleshooting:");
+      console.error("   - Check your MongoDB username and password");
+      console.error("   - Verify your MONGODB_URI includes correct credentials");
+    } else if (error.message.includes("ENOTFOUND") || error.message.includes("getaddrinfo")) {
+      console.error("\n💡 Troubleshooting:");
+      console.error("   - Check your internet connection");
+      console.error("   - Verify the MongoDB host address in MONGODB_URI");
+      console.error("   - Check if MongoDB Atlas IP whitelist includes your server IP");
+    } else if (error.message.includes("timeout")) {
+      console.error("\n💡 Troubleshooting:");
+      console.error("   - Check your network connection");
+      console.error("   - Verify MongoDB server is accessible");
+      console.error("   - Check firewall settings");
+    } else if (error.message.includes("MONGODB_URI")) {
+      console.error("\n💡 Troubleshooting:");
+      console.error("   - Set MONGODB_URI in your .env file");
+      console.error("   - Format: mongodb+srv://username:password@cluster.mongodb.net/dbname");
+    }
+
+    // Don't exit immediately in development - allow retry
+    if (config.NODE_ENV === "production") {
+      console.error("\n⚠️  Production mode: Exiting due to database connection failure");
+      process.exit(1);
+    } else {
+      console.error("\n⚠️  Development mode: Server will continue but database features will not work");
+      // In development, we might want to allow the server to start without DB
+      // but log a warning
+    }
+    
+    // Re-throw to allow caller to handle
+    throw error;
   }
 };
 
@@ -252,6 +343,21 @@ const initializeDefaultHooks = async () => {
 // Start server
 const startServer = async () => {
   try {
+    // Validate environment variables in production
+    const isProduction = config.NODE_ENV === "production";
+    try {
+      validateEnvironmentVariables(isProduction);
+      validateOptionalEnvironmentVariables();
+    } catch (validationError) {
+      console.error("❌ Environment validation failed:", validationError.message);
+      if (isProduction) {
+        console.error("⚠️  Production mode: Cannot start server without required environment variables");
+        process.exit(1);
+      } else {
+        console.warn("⚠️  Development mode: Continuing with warnings");
+      }
+    }
+
     await connectDB();
     await initializeDefaultHooks();
 
