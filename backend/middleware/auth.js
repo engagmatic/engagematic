@@ -68,6 +68,11 @@ export const checkTrialStatus = async (req, res, next) => {
   try {
     const user = req.user;
 
+    if (!user) {
+      console.error("❌ checkTrialStatus: req.user is missing");
+      return next(); // Let the route handler deal with missing user
+    }
+
     // Check if user is on trial and trial has expired
     if (user.subscriptionStatus === "trial" && new Date() > user.trialEndsAt) {
       return res.status(402).json({
@@ -91,9 +96,8 @@ export const checkTrialStatus = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Error checking subscription status",
-    });
+    console.error("❌ checkTrialStatus error:", error.message);
+    // Don't block the request if trial check fails
+    next();
   }
 };

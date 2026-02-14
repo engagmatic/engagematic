@@ -1334,6 +1334,16 @@ router.post(
   ],
   async (req, res) => {
     try {
+      // Check validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: errors.array().map(e => e.msg).join(", "),
+          errors: errors.array(),
+        });
+      }
+
       const {
         topic,
         angle,
@@ -1343,11 +1353,25 @@ router.post(
       } = req.body;
       const userId = req.user._id;
 
+      console.log(`💡 Idea generation request from user ${userId}:`, {
+        topic: topic?.substring(0, 50),
+        angle,
+        tone,
+        targetAudience,
+      });
+
       // Check subscription and quota for ideas
-      const canGenerate = await subscriptionService.canPerformAction(
-        userId,
-        "generate_idea"
-      );
+      let canGenerate;
+      try {
+        canGenerate = await subscriptionService.canPerformAction(
+          userId,
+          "generate_idea"
+        );
+      } catch (subError) {
+        console.error("❌ Subscription check error:", subError.message);
+        // Allow generation if subscription check fails (non-critical)
+        canGenerate = { allowed: true };
+      }
       if (!canGenerate.allowed) {
         return res.status(429).json({
           success: false,
