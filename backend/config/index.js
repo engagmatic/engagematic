@@ -24,9 +24,14 @@ export const config = {
     process.env.JWT_SECRET ||
     "your-super-secret-admin-jwt-key-change-this-in-production",
 
-  // Google AI
-  GOOGLE_AI_API_KEY:
-    process.env.GOOGLE_AI_API_KEY || "AIzaSyB_x5suyfwTsNkJcRy0qmEoEp9viuawxec",
+  // Google AI (from .env only - no hardcoded fallback)
+  // Supports multiple comma-separated keys for automatic rotation on quota limits
+  GOOGLE_AI_API_KEY: process.env.GOOGLE_AI_API_KEY || "",
+  GOOGLE_AI_API_KEYS: (process.env.GOOGLE_AI_API_KEYS || process.env.GOOGLE_AI_API_KEY || "")
+    .split(",")
+    .map((k) => k.trim())
+    .filter(Boolean),
+  _GOOGLE_AI_API_KEY_FROM_ENV: !!process.env.GOOGLE_AI_API_KEY,
   
 
   // Razorpay - Live Keys

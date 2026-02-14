@@ -1,13 +1,217 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { config } from "../config/index.js";
 
+// Gemini 2.0 Flash (available in current API). Override with GEMINI_MODEL in .env.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+const GEMINI_FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL || "gemini-2.0-flash-lite";
+
+function maskApiKey(key) {
+  if (!key || key.length < 12) return "(too short to mask)";
+  return key.slice(0, 8) + "..." + key.slice(-4);
+}
+
 class GoogleAIService {
   constructor() {
-    this.apiKey = config.GOOGLE_AI_API_KEY;
-    this.genAI = new GoogleGenerativeAI(this.apiKey);
-    this.model = this.genAI.getGenerativeModel({
-      model: "gemini-flash-latest",
+    // ── Multi-key rotation support ──
+    // Set GOOGLE_AI_API_KEYS=key1,key2,key3 in .env for automatic rotation
+    // Falls back to single GOOGLE_AI_API_KEY if GOOGLE_AI_API_KEYS is not set
+    this.apiKeys = config.GOOGLE_AI_API_KEYS || [];
+    if (this.apiKeys.length === 0) {
+      throw new Error(
+        "No Google AI API keys configured. Set GOOGLE_AI_API_KEY (or GOOGLE_AI_API_KEYS=key1,key2,...) in your .env\n" +
+        "Get a free key at https://aistudio.google.com/apikey"
+      );
+    }
+
+    this.currentKeyIndex = 0;
+    // Track which keys are temporarily exhausted (keyIndex -> expiry timestamp)
+    this.exhaustedKeys = new Map();
+
+    console.log(`[Google AI] ${this.apiKeys.length} API key(s) loaded:`);
+    this.apiKeys.forEach((key, i) => {
+      console.log(`  Key #${i + 1}: ${maskApiKey(key)}`);
     });
+
+    // Initialize with the first key
+    this._initModels(this.apiKeys[0]);
+    console.log(`[Google AI] Active key: #1 (${maskApiKey(this.apiKeys[0])})`);
+    console.log(`[Google AI] Models: primary=${GEMINI_MODEL}, fallback=${GEMINI_FALLBACK_MODEL}`);
+  }
+
+  _initModels(apiKey) {
+    this.apiKey = apiKey;
+    this.genAI = new GoogleGenerativeAI(apiKey);
+    this.model = this.genAI.getGenerativeModel({ model: GEMINI_MODEL });
+    this.fallbackModel = this.genAI.getGenerativeModel({ model: GEMINI_FALLBACK_MODEL });
+  }
+
+  /**
+   * Rotate to the next available API key.
+   * Returns true if a fresh key was found, false if all keys are exhausted.
+   */
+  _rotateKey() {
+    const now = Date.now();
+
+    // Clean up expired exhaustion entries (keys that should be available again)
+    for (const [idx, expiresAt] of this.exhaustedKeys) {
+      if (now >= expiresAt) {
+        this.exhaustedKeys.delete(idx);
+      }
+    }
+
+    // Mark current key as exhausted for 60 seconds
+    this.exhaustedKeys.set(this.currentKeyIndex, now + 60_000);
+
+    // Find the next available key
+    for (let i = 1; i <= this.apiKeys.length; i++) {
+      const nextIdx = (this.currentKeyIndex + i) % this.apiKeys.length;
+      if (!this.exhaustedKeys.has(nextIdx)) {
+        this.currentKeyIndex = nextIdx;
+        this._initModels(this.apiKeys[nextIdx]);
+        console.log(`🔄 Rotated to API key #${nextIdx + 1} (${maskApiKey(this.apiKeys[nextIdx])})`);
+        return true;
+      }
+    }
+
+    console.error("❌ All API keys are exhausted. No keys available to rotate to.");
+    return false;
+  }
+
+  _isModelNotFound(err) {
+    const msg = err?.message || "";
+    return msg.includes("404") || msg.includes("not found") || msg.includes("is not supported");
+  }
+
+  _isRateLimitError(err) {
+    const msg = String(err?.message || "");
+    return (
+      err?.response?.status === 429 ||
+      msg.includes("429") ||
+      /quota|rate limit|resource exhausted|too many requests/i.test(msg)
+    );
+  }
+
+  _isQuotaZeroError(err) {
+    const msg = String(err?.message || "");
+    return msg.includes("limit: 0") || msg.includes("limit:0");
+  }
+
+  _delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async _generateWithFallback(requestOptions, preferLiteFirst = false) {
+    const maxRetries = 3;
+    const baseDelayMs = 2000;
+    // Track how many full key rotations we've attempted
+    let keyRotationAttempts = 0;
+    const maxKeyRotations = this.apiKeys.length;
+
+    const tryModel = async (modelInstance, modelName) => {
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const result = await modelInstance.generateContent(requestOptions);
+          return { result, model: modelName };
+        } catch (err) {
+          const isRetryable = this._isRateLimitError(err) || err?.response?.status === 503;
+
+          // If quota is completely zero, don't waste time retrying - rotate key immediately
+          if (this._isQuotaZeroError(err) && this.apiKeys.length > 1) {
+            console.warn(`⚠️ Key #${this.currentKeyIndex + 1} quota=0, rotating immediately...`);
+            throw err; // Let the outer handler rotate
+          }
+
+          if (isRetryable && attempt < maxRetries) {
+            const delayMs = baseDelayMs * Math.pow(2, attempt);
+            console.warn(
+              `⚠️ AI rate limit/overload (${modelName}), retrying in ${delayMs / 1000}s (attempt ${attempt + 1}/${maxRetries})`
+            );
+            await this._delay(delayMs);
+            continue;
+          }
+          throw err;
+        }
+      }
+    };
+
+    const tryWithCurrentKey = async () => {
+      const tryPrimaryThenFallback = async () => {
+        try {
+          return await tryModel(this.model, GEMINI_MODEL);
+        } catch (err) {
+          if (this._isModelNotFound(err)) {
+            console.warn("⚠️ Primary model unavailable, trying fallback:", GEMINI_FALLBACK_MODEL);
+            return await tryModel(this.fallbackModel, GEMINI_FALLBACK_MODEL);
+          }
+          if (this._isRateLimitError(err)) {
+            console.warn("⚠️ Primary model rate limited, trying fallback:", GEMINI_FALLBACK_MODEL);
+            return await tryModel(this.fallbackModel, GEMINI_FALLBACK_MODEL);
+          }
+          throw err;
+        }
+      };
+
+      const tryLiteThenPrimary = async () => {
+        try {
+          return await tryModel(this.fallbackModel, GEMINI_FALLBACK_MODEL);
+        } catch (err) {
+          if (this._isRateLimitError(err)) {
+            console.warn("⚠️ Lite model rate limited, trying primary:", GEMINI_MODEL);
+            return await tryModel(this.model, GEMINI_MODEL);
+          }
+          throw err;
+        }
+      };
+
+      return preferLiteFirst ? tryLiteThenPrimary() : tryPrimaryThenFallback();
+    };
+
+    // Main loop: try current key, rotate on quota exhaustion
+    while (keyRotationAttempts <= maxKeyRotations) {
+      try {
+        return await tryWithCurrentKey();
+      } catch (err) {
+        if (this._isRateLimitError(err) && keyRotationAttempts < maxKeyRotations) {
+          const rotated = this._rotateKey();
+          if (rotated) {
+            keyRotationAttempts++;
+            console.log(`🔄 Key rotation attempt ${keyRotationAttempts}/${maxKeyRotations}, trying again...`);
+            continue;
+          }
+        }
+        throw err;
+      }
+    }
+  }
+
+  /**
+   * Safely get text from Gemini response. Throws with a clear message if blocked or empty.
+   */
+  _getResponseText(result) {
+    const response = result.response;
+    if (!response) {
+      throw new Error("No response from AI");
+    }
+    const candidate = response.candidates?.[0];
+    const promptFeedback = response.promptFeedback;
+    if (promptFeedback?.blockReason) {
+      throw new Error(
+        `Prompt was blocked (${promptFeedback.blockReason}). Try rephrasing your input.`
+      );
+    }
+    if (!candidate?.content?.parts?.length) {
+      const reason = candidate?.finishReason || "unknown";
+      throw new Error(
+        `AI response was blocked or empty (finishReason: ${reason}). Please try again.`
+      );
+    }
+    try {
+      return response.text();
+    } catch (e) {
+      throw new Error(
+        "AI returned no usable text. The response may have been blocked. Please try again."
+      );
+    }
   }
 
   async generatePost(
@@ -18,8 +222,10 @@ class GoogleAIService {
     profileInsights = null,
     userProfile = null,
     postFormatting = "plain",
-    trainingPosts = []
+    trainingPosts = [],
+    options = {}
   ) {
+    const preferLiteFirst = !!options.preferLiteFirst;
     try {
       console.log("🤖 Generating post with Google AI...");
       console.log("Topic:", topic);
@@ -49,20 +255,24 @@ class GoogleAIService {
         trainingPosts
       );
 
-      const result = await this.model.generateContent({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.8,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 2048, // Increased from 1024 to ensure complete posts
+      const maxOutputTokens = options.maxOutputTokens ?? 2048;
+      const { result } = await this._generateWithFallback(
+        {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.8,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens,
+          },
         },
-      });
+        preferLiteFirst
+      );
 
       console.log("✅ Google AI response received");
-      const response = await result.response;
-      const generatedText = response.text();
+      const generatedText = this._getResponseText(result);
       const engagementScore = this.calculateEngagementScore(generatedText);
+      const tokensUsed = result.response?.usageMetadata?.totalTokenCount || 150;
 
       console.log(
         "✅ Post generated successfully, length:",
@@ -72,14 +282,22 @@ class GoogleAIService {
       return {
         content: generatedText,
         engagementScore,
-        tokensUsed: response.usageMetadata?.totalTokenCount || 150,
+        tokensUsed,
       };
     } catch (error) {
       console.error("❌ Google AI API Error:", {
         message: error.message,
         apiKey: this.apiKey ? "Set" : "Missing",
       });
-      throw new Error("Failed to generate post content: " + error.message);
+      let hint = "";
+      if (/403|404|leaked|revoked|not found|invalid/i.test(error.message)) {
+        hint = " Create a new API key at https://aistudio.google.com/apikey and set GOOGLE_AI_API_KEY in backend/.env";
+      } else if (/429|quota|rate limit|limit: 0/i.test(error.message)) {
+        hint = this.apiKeys.length > 1
+          ? " All API keys exhausted. Add more keys to GOOGLE_AI_API_KEYS in .env (create at https://aistudio.google.com/apikey with different Google accounts)"
+          : " Gemini API quota exhausted. Add more API keys: set GOOGLE_AI_API_KEYS=key1,key2,key3 in .env (create keys with different Google accounts at https://aistudio.google.com/apikey)";
+      }
+      throw new Error("Failed to generate post content: " + error.message + hint);
     }
   }
 
@@ -99,7 +317,7 @@ class GoogleAIService {
         goal: goal || "calls",
       });
 
-      const result = await this.model.generateContent({
+      const { result } = await this._generateWithFallback({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.8,
@@ -109,17 +327,20 @@ class GoogleAIService {
         },
       });
 
-      const response = await result.response;
-      const generatedText = response.text();
+      const generatedText = this._getResponseText(result);
       const engagementScore = this.calculateEngagementScore(generatedText);
+      const tokensUsed = result.response?.usageMetadata?.totalTokenCount || 150;
       return {
         content: generatedText,
         engagementScore,
-        tokensUsed: response.usageMetadata?.totalTokenCount || 150,
+        tokensUsed,
       };
     } catch (error) {
       console.error("❌ generatePostFromPlanContext error:", error.message);
-      throw new Error("Failed to generate post from plan: " + error.message);
+      const hint = /403|404|leaked|revoked|not found|invalid/i.test(error.message)
+        ? " Create a new API key at https://aistudio.google.com/apikey and set GOOGLE_AI_API_KEY in backend/.env"
+        : "";
+      throw new Error("Failed to generate post from plan: " + error.message + hint);
     }
   }
 
@@ -156,7 +377,7 @@ RULES:
 
       console.log("🤖 Generating text with Google AI...");
 
-      const result = await this.model.generateContent({
+      const { result } = await this._generateWithFallback({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           temperature,
@@ -167,19 +388,21 @@ RULES:
       });
 
       console.log("✅ Google AI response received");
-      const response = await result.response;
-      const generatedText = response.text();
-
+      const generatedText = this._getResponseText(result);
+      const tokensUsed = result.response?.usageMetadata?.totalTokenCount || 150;
       return {
         text: generatedText,
-        tokensUsed: response.usageMetadata?.totalTokenCount || 150,
+        tokensUsed,
       };
     } catch (error) {
       console.error("❌ Google AI Text Generation Error:", {
         message: error.message,
         apiKey: this.apiKey ? "Set" : "Missing",
       });
-      throw new Error(`Google AI Error: ${error.message}`);
+      const hint = /403|404|leaked|revoked|not found|invalid/i.test(error.message)
+        ? " Create a new API key at https://aistudio.google.com/apikey and set GOOGLE_AI_API_KEY in backend/.env"
+        : "";
+      throw new Error(`Google AI Error: ${error.message}` + hint);
     }
   }
 
@@ -202,33 +425,35 @@ RULES:
         commentType
       );
 
-      const result = await this.model.generateContent({
+      const { result } = await this._generateWithFallback({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.8,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 2048, // Increased to ensure complete comments
+          maxOutputTokens: 2048,
         },
       });
 
-      const response = await result.response;
-      const generatedText = response.text();
+      const generatedText = this._getResponseText(result);
+      const tokensUsed = result.response?.usageMetadata?.totalTokenCount || 0;
 
       console.log("AI comment response received");
       console.log("Generated text length:", generatedText.length);
 
-      // Parse multiple comments from the response
       const comments = this.parseGeneratedComments(generatedText);
 
       return {
-        content: comments, // Return array of comments
-        comments: comments, // Also include for compatibility
-        tokensUsed: response.usageMetadata?.totalTokenCount || 0,
+        content: comments,
+        comments,
+        tokensUsed,
       };
     } catch (error) {
       console.error("Google AI API Error:", error.message);
-      throw new Error("Failed to generate comment content");
+      const hint = /403|404|leaked|revoked|not found|invalid/i.test(error.message)
+        ? " Create a new API key at https://aistudio.google.com/apikey and set GOOGLE_AI_API_KEY in backend/.env"
+        : "";
+      throw new Error("Failed to generate comment content: " + error.message + hint);
     }
   }
 
@@ -242,14 +467,19 @@ RULES:
     postFormatting = "plain",
     trainingPosts = []
   ) {
+    const hookText =
+      typeof hook === "string"
+        ? hook
+        : (hook?.text ?? hook?.title ?? "Here's what changed everything:");
+    const p = persona || {};
     let basePrompt = `You are a LinkedIn content creator with the following persona:
-    
-Name: ${persona.name}
-Industry: ${persona.industry}
-Experience Level: ${persona.experience}
-Tone: ${persona.tone}
-Writing Style: ${persona.writingStyle}
-Description: ${persona.description}`;
+
+Name: ${p.name || "Professional"}
+Industry: ${p.industry || "Business"}
+Experience Level: ${p.experience || "Mid-level"}
+Tone: ${p.tone || "professional"}
+Writing Style: ${p.writingStyle || "clear and engaging"}
+Description: ${p.description || "Thought leader sharing actionable insights"}`;
 
     // Add user profile for DEEP personalization with contextual relevance
     if (
@@ -325,7 +555,7 @@ LinkedIn Profile Insights:
 
 Create a VIRAL-WORTHY, high-engagement LinkedIn post about: "${topic}"
 
-Start with this exact hook: "${hook}"
+Start with this exact hook: "${hookText}"
 
 🎯 ENGAGEMENT GOAL: ${engagementGoal.description}
 **Your post must achieve**: ${engagementGoal.objectives.join(", ")}
@@ -370,7 +600,7 @@ Numbered or bulleted list with bold first 3 words per point; one clear takeaway 
 🔥 VIRAL CONTENT STRATEGY - Apply these proven patterns:
 
 **1. HOOK OPTIMIZATION (First 125 characters are CRITICAL):**
-- Your hook "${hook}" must create IMMEDIATE curiosity, emotion, or cognitive dissonance
+- Your hook "${hookText}" must create IMMEDIATE curiosity, emotion, or cognitive dissonance
 - Prefer the viral hook templates above when they fit the topic
 - Use one of these viral patterns:
   * Contrarian take: Challenge common belief
@@ -397,9 +627,9 @@ Numbered or bulleted list with bold first 3 words per point; one clear takeaway 
 - Include conversational fillers naturally: "Here's the thing...", "Look, I get it...", "The reality is..."
 
 **4. VOICE & PERSONA ALIGNMENT:**
-- Write in ${persona.name}'s voice (${persona.tone} tone, ${persona.writingStyle} style)
-- Match their career stage: ${persona.experience} professionals speak differently than entry-level
-- Reflect their industry context: ${persona.industry} professionals have specific pain points
+- Write in ${p.name}'s voice (${p.tone} tone, ${p.writingStyle} style)
+- Match their career stage: ${p.experience} professionals speak differently than entry-level
+- Reflect their industry context: ${p.industry} professionals have specific pain points
 - Be genuinely helpful - provide REAL insights people can act on today
 - Share specific examples, numbers, or personal experiences (make it relatable)
 
@@ -460,7 +690,7 @@ ${trainingPosts.length > 0 ? `STUDY these examples of the user's preferred writi
 ✅ ONE CTA or ONE engagement question only (no multiple CTAs)
 ✅ Natural, conversational tone, Grade 6-8 readability (simple, direct)
 ✅ Scannable format (line breaks, bullets, white space)
-✅ Authentic voice matching ${persona.name}'s style
+✅ Authentic voice matching ${p.name}'s style
 
 GENERATE A POST THAT:
 - Gets saved/bookmarked (high value)
@@ -606,24 +836,54 @@ JSON ONLY.`;
 
   parseGeneratedComments(generatedText) {
     try {
-      console.log("🔍 Parsing comments from:", generatedText);
+      console.log("🔍 Parsing comments from:", generatedText?.substring(0, 300));
+
+      if (!generatedText || typeof generatedText !== "string" || generatedText.trim().length === 0) {
+        throw new Error("Empty or invalid generated text");
+      }
 
       // Remove markdown code blocks if present
       let cleanText = generatedText
-        .replace(/```json\n?/g, "")
+        .replace(/```json\n?/gi, "")
         .replace(/```\n?/g, "")
         .trim();
 
       // Try to extract JSON array from the text
-      const jsonMatch = cleanText.match(/\[[\s\S]*\]/);
+      const jsonMatch = cleanText.match(/\[[\s\S]*?\]/);
       if (jsonMatch) {
         cleanText = jsonMatch[0];
       }
 
-      console.log("🧹 Cleaned text:", cleanText);
+      console.log("🧹 Cleaned text:", cleanText?.substring(0, 200));
 
       // Parse JSON
-      const comments = JSON.parse(cleanText);
+      let comments;
+      try {
+        comments = JSON.parse(cleanText);
+      } catch (jsonError) {
+        // Try fixing common JSON issues
+        let fixedText = cleanText
+          .replace(/,\s*\]/g, "]") // Remove trailing commas
+          .replace(/'/g, '"') // Replace single quotes with double quotes
+          .replace(/\n/g, " ") // Remove newlines
+          .replace(/\t/g, " "); // Remove tabs
+        
+        // Try again with fixed text
+        const retryMatch = fixedText.match(/\[[\s\S]*?\]/);
+        if (retryMatch) {
+          fixedText = retryMatch[0];
+        }
+        
+        try {
+          comments = JSON.parse(fixedText);
+        } catch (retryError) {
+          throw jsonError; // Throw original error
+        }
+      }
+
+      if (!Array.isArray(comments)) {
+        throw new Error("Parsed result is not an array");
+      }
 
       // Validate and format comments with engagement scores
       const formattedComments = comments
@@ -704,107 +964,10 @@ JSON ONLY.`;
         }
       }
 
-      // Return fallback comments with engagement scores
-      console.log("🔄 Using fallback comments");
-      return [
-        {
-          text: "This resonates so much! I've experienced the exact same journey. The moment you shift from perfection to authenticity, everything changes. Thanks for sharing this insight!",
-          engagementScore: 8.5,
-          type: "personal_story",
-        },
-        {
-          text: "Incredibly valuable perspective. Your point about consistency over perfection is something I needed to hear today. Saving this for future reference!",
-          engagementScore: 7.8,
-          type: "value_add",
-        },
-        {
-          text: "Love this! The authenticity piece is so underrated. People connect with real stories, not polished corporate speak. Keep sharing these gems!",
-          engagementScore: 9.2,
-          type: "enthusiastic_support",
-        },
-      ];
+      throw new Error(
+        "Could not parse generated comments. Please try again."
+      );
     }
-  }
-
-  generateMockPost(topic, hook, persona) {
-    // Generate realistic mock content based on topic, hook, and persona
-    const industry = persona.industry || "Technology";
-    const experience = persona.experience || "Senior";
-    const tone = persona.tone || "professional";
-
-    const mockPosts = [
-      `${hook}
-
-After ${experience.toLowerCase()} years in ${industry.toLowerCase()}, I've learned that ${topic.toLowerCase()} isn't just about technical skills—it's about understanding the bigger picture.
-
-Here's what changed everything for me:
-
-• **Focus on impact over perfection** - Early in my career, I spent weeks perfecting code that nobody used. Now I ship fast, iterate quickly, and measure real impact.
-
-• **Build relationships, not just products** - The best ${industry.toLowerCase()} professionals I know aren't just technically brilliant—they're amazing collaborators who bring people together.
-
-• **Embrace continuous learning** - The ${industry.toLowerCase()} landscape changes fast. What worked yesterday might be obsolete tomorrow.
-
-The key insight? Success in ${industry.toLowerCase()} isn't about knowing everything—it's about knowing how to learn and adapt.
-
-What's been your biggest learning moment in ${industry.toLowerCase()}? I'd love to hear your story in the comments below.
-
-#${industry.replace(/\s+/g, "")} #CareerGrowth #ProfessionalDevelopment`,
-
-      `${hook}
-
-${topic} has been a game-changer in my ${industry.toLowerCase()} journey.
-
-As a ${experience.toLowerCase()} ${industry.toLowerCase()} professional, I've seen firsthand how this approach transforms not just projects, but entire teams.
-
-Here's what I've discovered:
-
-→ **The 80/20 rule applies everywhere** - Focus on the 20% of work that drives 80% of results
-→ **Communication is everything** - Technical skills matter, but clear communication matters more
-→ **Fail fast, learn faster** - Every mistake is a stepping stone to mastery
-
-The most successful ${industry.toLowerCase()} leaders I know share one trait: they never stop asking "Why?"
-
-Why are we building this?
-Why does this approach work?
-Why should our users care?
-
-This curiosity-driven mindset has opened doors I never knew existed.
-
-What questions are you asking in your ${industry.toLowerCase()} career right now?
-
-#${industry.replace(/\s+/g, "")} #Leadership #Innovation`,
-
-      `${hook}
-
-${topic} taught me more about ${industry.toLowerCase()} than any course or certification ever could.
-
-After ${experience.toLowerCase()} years in this field, I can confidently say: the best learning happens in the trenches, not in textbooks.
-
-Here's my framework for success:
-
-**1. Start with the problem, not the solution**
-Too many ${industry.toLowerCase()} professionals jump straight to building without understanding the real need.
-
-**2. Build in public**
-Share your journey, your failures, your wins. The ${industry.toLowerCase()} community is incredibly supportive when you're authentic.
-
-**3. Measure what matters**
-Vanity metrics are everywhere. Focus on impact, not impressions.
-
-**4. Never stop learning**
-The ${industry.toLowerCase()} landscape evolves daily. What's cutting-edge today might be standard practice tomorrow.
-
-The biggest lesson? Success in ${industry.toLowerCase()} isn't about being the smartest person in the room—it's about being the most curious.
-
-What's the most valuable lesson you've learned in your ${industry.toLowerCase()} career?
-
-#${industry.replace(/\s+/g, "")} #CareerAdvice #ProfessionalGrowth`,
-    ];
-
-    // Select a random mock post
-    const randomIndex = Math.floor(Math.random() * mockPosts.length);
-    return mockPosts[randomIndex];
   }
 
   /**
@@ -933,11 +1096,17 @@ IMPORTANT:
 
 Return ONLY valid JSON, no markdown formatting.`;
 
-      const result = await this.model.generateContent(prompt);
-      const response = result.response.text();
-      
+      const { result } = await this._generateWithFallback({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 1024,
+        },
+      });
+      const responseText = this._getResponseText(result);
+
       // Extract JSON from response (handle markdown code blocks if present)
-      let jsonStr = response.trim();
+      let jsonStr = responseText.trim();
       if (jsonStr.includes('```json')) {
         jsonStr = jsonStr.split('```json')[1].split('```')[0].trim();
       } else if (jsonStr.includes('```')) {
@@ -1008,28 +1177,7 @@ Return ONLY valid JSON, no markdown formatting.`;
       };
     } catch (error) {
       console.error("❌ Content optimization analysis error:", error);
-      
-      // Fallback to calculated analysis if AI fails
-      const fallbackScore = this.calculateEngagementScore(content);
-      const now = new Date();
-      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-      const optimalDay = now.getDay() >= 2 && now.getDay() <= 4 ? days[now.getDay()] : "Tuesday";
-      
-      return {
-        success: true,
-        data: {
-          viralityScore: fallbackScore,
-          engagementPrediction: fallbackScore >= 80 ? "Very High" : fallbackScore >= 60 ? "High" : "Medium",
-          bestTimeToPost: `${optimalDay} 9:00 AM`,
-          optimalDay: optimalDay,
-          peakHours: ["9:00 AM", "12:00 PM"],
-          audienceActivity: audience || "General professionals",
-          keyStrengths: [],
-          improvementAreas: [],
-          estimatedReach: "Medium",
-          recommendations: []
-        }
-      };
+      throw new Error("AI content analysis failed. Please try again.");
     }
   }
 }

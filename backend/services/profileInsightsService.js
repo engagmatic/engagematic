@@ -28,42 +28,45 @@ class ProfileInsightsService {
    * Extract content generation insights from profile analysis
    */
   async getContentInsights(userId) {
-    const analysis = await this.getLatestAnalysis(userId);
+    try {
+      const analysis = await this.getLatestAnalysis(userId);
 
-    if (!analysis) {
+      if (!analysis || !analysis.profileData) {
+        return null;
+      }
+
+      const pd = analysis.profileData;
+      const rec = analysis.recommendations || {};
+      return {
+        headline: pd.headline || "",
+        industry: pd.industry || "",
+        location: pd.location || "",
+        experience: pd.experience || "",
+        skills: Array.isArray(pd.skills) ? pd.skills : [],
+
+        recommendedKeywords: Array.isArray(rec.keywords) ? rec.keywords : [],
+        aboutSection: rec.aboutSection || "",
+        topSkills: Array.isArray(rec.skills) ? rec.skills.slice(0, 5) : [],
+
+        scores: analysis.scores || {},
+
+        writingStyle: this.inferWritingStyle(analysis),
+        contentFocus: this.inferContentFocus(analysis),
+        expertiseLevel: this.inferExpertiseLevel(analysis),
+      };
+    } catch (err) {
+      console.warn("Profile insights getContentInsights error:", err.message);
       return null;
     }
-
-    // Extract useful data for content personalization
-    return {
-      // Profile Data
-      headline: analysis.profileData.headline,
-      industry: analysis.profileData.industry,
-      location: analysis.profileData.location,
-      experience: analysis.profileData.experience,
-      skills: analysis.profileData.skills || [],
-
-      // Recommendations for better content
-      recommendedKeywords: analysis.recommendations.keywords || [],
-      aboutSection: analysis.recommendations.aboutSection,
-      topSkills: analysis.recommendations.skills?.slice(0, 5) || [],
-
-      // Analysis scores for personalization
-      scores: analysis.scores,
-
-      // Derived insights
-      writingStyle: this.inferWritingStyle(analysis),
-      contentFocus: this.inferContentFocus(analysis),
-      expertiseLevel: this.inferExpertiseLevel(analysis),
-    };
   }
 
   /**
    * Infer writing style from profile analysis
    */
   inferWritingStyle(analysis) {
-    const about = analysis.profileData.about || "";
-    const headline = analysis.profileData.headline || "";
+    const pd = analysis?.profileData || {};
+    const about = pd.about || "";
+    const headline = pd.headline || "";
     const combined = `${headline} ${about}`.toLowerCase();
 
     // Analyze language patterns
@@ -91,9 +94,10 @@ class ProfileInsightsService {
    * Infer content focus areas from profile
    */
   inferContentFocus(analysis) {
-    const skills = analysis.profileData.skills || [];
-    const industry = analysis.profileData.industry || "";
-    const about = analysis.profileData.about || "";
+    const pd = analysis?.profileData || {};
+    const skills = Array.isArray(pd.skills) ? pd.skills : [];
+    const industry = pd.industry || "";
+    const about = pd.about || "";
 
     const focuses = [];
 
@@ -124,25 +128,21 @@ class ProfileInsightsService {
    * Infer expertise level
    */
   inferExpertiseLevel(analysis) {
-    const headline = (analysis.profileData.headline || "").toLowerCase();
-    
+    const pd = analysis?.profileData || {};
+    const headline = (pd.headline || "").toLowerCase();
+
     // Handle experience as array (new format) or string (legacy)
     let experienceText = "";
-    if (Array.isArray(analysis.profileData.experience)) {
-      // Convert array of experience objects to searchable text
-      experienceText = analysis.profileData.experience
+    if (Array.isArray(pd.experience)) {
+      experienceText = pd.experience
         .map(exp => `${exp.title || ""} ${exp.company || ""} ${exp.description || ""}`)
         .join(" ")
         .toLowerCase();
     } else {
-      // Legacy string format
-      experienceText = (analysis.profileData.experience || "").toLowerCase();
+      experienceText = (pd.experience || "").toLowerCase();
     }
 
-    // Count experience entries for senior level detection
-    const experienceCount = Array.isArray(analysis.profileData.experience) 
-      ? analysis.profileData.experience.length 
-      : 0;
+    const experienceCount = Array.isArray(pd.experience) ? pd.experience.length : 0;
 
     // Senior level indicators
     if (
@@ -175,20 +175,24 @@ class ProfileInsightsService {
       return null;
     }
 
+    const contentFocus = Array.isArray(insights.contentFocus) ? insights.contentFocus : ["professional development"];
+    const topSkills = Array.isArray(insights.topSkills) ? insights.topSkills : [];
+    const recommendedKeywords = Array.isArray(insights.recommendedKeywords) ? insights.recommendedKeywords : [];
+
     return `
 PROFILE CONTEXT (Use this to personalize the content):
 - Industry: ${insights.industry || "General Professional"}
-- Experience Level: ${insights.expertiseLevel}
-- Writing Style Preference: ${insights.writingStyle}
-- Content Focus Areas: ${insights.contentFocus.join(", ")}
-- Top Skills: ${insights.topSkills.join(", ")}
-- Key Topics/Keywords: ${insights.recommendedKeywords.join(", ")}
+- Experience Level: ${insights.expertiseLevel || "Mid-level"}
+- Writing Style Preference: ${insights.writingStyle || "professional"}
+- Content Focus Areas: ${contentFocus.join(", ")}
+- Top Skills: ${topSkills.join(", ")}
+- Key Topics/Keywords: ${recommendedKeywords.join(", ")}
 
 PERSONALIZATION INSTRUCTIONS:
-- Match the ${insights.writingStyle} tone
-- Focus on ${insights.contentFocus.join(" and ")} topics
+- Match the ${insights.writingStyle || "professional"} tone
+- Focus on ${contentFocus.join(" and ")} topics
 - Use industry terminology from: ${insights.industry || "professional services"}
-- Reflect ${insights.expertiseLevel} experience level
+- Reflect ${insights.expertiseLevel || "mid-level"} experience level
 - Incorporate relevant keywords naturally
     `.trim();
   }

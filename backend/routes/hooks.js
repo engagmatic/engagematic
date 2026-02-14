@@ -392,9 +392,9 @@ router.get(
       }
 
       // Add metadata
-      const timestamp = Date.now();
+      const hooksTimestamp = Date.now();
       const hooksWithMetadata = trendingHooks.map((hook, index) => ({
-        _id: `trending_${timestamp}_${index}`,
+        _id: `trending_${hooksTimestamp}_${index}`,
         text: hook.text,
         category: hook.category || "story",
         trending: true,

@@ -181,10 +181,14 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
         throw new Error(response.message || "Failed to generate post");
       }
     } catch (error: any) {
-      console.error("Generation error:", error);
+      const msg = error?.message || "";
+      const isQuota = /429|quota|rate limit/i.test(msg);
+      if (!isQuota) console.error("Generation error:", error);
       toast({
-        title: "Generation failed",
-        description: error.message || "Could not generate post. Please try again.",
+        title: isQuota ? "Rate limit reached" : "Generation failed",
+        description: isQuota
+          ? "The free AI quota is used for now. Please try again in about a minute."
+          : (msg.slice(0, 120) + (msg.length > 120 ? "…" : "")),
         variant: "destructive",
       });
     } finally {

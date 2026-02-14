@@ -9,9 +9,11 @@ const getApiUrl = () => {
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     
-    // Production domain
-    if (hostname === 'www.linkedinpulse.com' || hostname === 'linkedinpulse.com') {
-      return 'https://spark-linkedin-ai.onrender.com/api';
+    // Production backend (Render)
+    const productionApi = 'https://spark-linkedin-ai.onrender.com/api';
+    if (hostname === 'www.linkedinpulse.com' || hostname === 'linkedinpulse.com' ||
+        hostname === 'www.engagematic.com' || hostname === 'engagematic.com') {
+      return productionApi;
     }
     
     // Local development
@@ -110,9 +112,9 @@ class ApiClient {
         console.error("❌ API Error Response:", {
           status: response.status,
           endpoint,
-          message: data.message,
-          errors: data.errors,
-          details: data.details,
+          message: data?.message,
+          errors: data?.errors,
+          details: data?.details,
         });
 
         // Provide more specific error messages
@@ -140,16 +142,14 @@ class ApiClient {
         } else if (response.status === 404) {
           throw new Error(data.message || "Resource not found");
         } else if (response.status === 500) {
-          // Include error details from backend if available
-          const errorDetails = data.error || data.message || "Server error. Please try again later.";
-          // Create error with both message and error field for better debugging
-          const error = new Error(data.message || errorDetails);
-          error.error = data.error;
+          const errorDetails = data?.error || data?.message || "Server error. Please try again later.";
+          const error = new Error(data?.message || errorDetails);
+          error.error = data?.error;
           throw error;
         }
 
         throw new Error(
-          data.message || `HTTP error! status: ${response.status}`
+          data?.message || `HTTP error! status: ${response.status}`
         );
       }
 
@@ -315,6 +315,13 @@ class ApiClient {
     return this.request("/content/comments/generate", {
       method: "POST",
       body: JSON.stringify(commentData),
+    });
+  }
+
+  async generateIdeas(payload) {
+    return this.request("/content/generate-ideas", {
+      method: "POST",
+      body: JSON.stringify(payload),
     });
   }
 

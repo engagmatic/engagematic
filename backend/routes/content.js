@@ -15,6 +15,7 @@ import {
 import { body, validationResult } from "express-validator";
 import linkedinProfileService from "../services/linkedinProfileService.js";
 import profileInsightsService from "../services/profileInsightsService.js";
+import { config } from "../config/index.js";
 import axios from "axios";
 import * as cheerio from "cheerio";
 
@@ -127,7 +128,13 @@ router.post(
       // Fetch full user to get formatting preference and training posts
       const User = (await import("../models/User.js")).default;
       const user = await User.findById(userId);
-      
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found. Please log in again.",
+        });
+      }
+
       const userProfile = {
         jobTitle: user.profile?.jobTitle || null,
         company: user.profile?.company || null,
@@ -152,21 +159,28 @@ router.post(
         personaTone: persona.tone,
       });
 
-      // Get profile insights for enhanced personalization
-      const profileInsights = await profileInsightsService.buildEnhancedContext(
-        userId
-      );
+      // Get profile insights for enhanced personalization (non-blocking)
+      let profileInsights = null;
+      try {
+        profileInsights = await profileInsightsService.buildEnhancedContext(
+          userId
+        );
+      } catch (insightsError) {
+        console.warn("⚠️ Profile insights skipped (non-critical):", insightsError.message);
+      }
 
       // Get user's formatting preference and training posts
       const postFormatting = user.profile?.postFormatting || "plain";
       let trainingPosts = [];
-      
-      // Fetch training posts if user has selected any (premium feature)
-      if (user.persona?.trainingPostIds && user.persona.trainingPostIds.length > 0) {
-        trainingPosts = await Content.find({
-          _id: { $in: user.persona.trainingPostIds },
-          userId: userId,
-        }).select("content").limit(10); // Limit to 10 posts for prompt length
+      try {
+        if (user.persona?.trainingPostIds && user.persona.trainingPostIds.length > 0) {
+          trainingPosts = await Content.find({
+            _id: { $in: user.persona.trainingPostIds },
+            userId: userId,
+          }).select("content").limit(10); // Limit to 10 posts for prompt length
+        }
+      } catch (trainErr) {
+        console.warn("⚠️ Training posts fetch skipped:", trainErr.message);
       }
 
       let aiResponse;
@@ -275,25 +289,29 @@ router.post(
         },
       });
     } catch (error) {
+      const reqTopic = req.body?.topic;
+      const reqUserId = req.user?._id;
       console.error("❌ Post generation error:", {
         message: error.message,
         stack: error.stack,
-        userId,
-        topic: topic?.substring(0, 50),
+        userId: reqUserId,
+        topic: reqTopic?.substring(0, 50),
       });
-      
+
       // Provide more helpful error messages
       let errorMessage = "Failed to generate post";
-      if (error.message.includes("AI service")) {
+      if (error.message?.includes("AI service")) {
         errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
-      } else if (error.message.includes("quota") || error.message.includes("limit")) {
+      } else if (error.message?.includes("quota") || error.message?.includes("limit")) {
         errorMessage = error.message;
-      } else if (error.message.includes("Hook not found")) {
+      } else if (error.message?.includes("Hook not found")) {
         errorMessage = "Selected hook is no longer available. Please select another hook.";
-      } else if (error.message.includes("Persona not found")) {
+      } else if (error.message?.includes("Persona not found")) {
         errorMessage = "Selected persona is no longer available. Please select another persona.";
-      } else {
-        errorMessage = error.message || errorMessage;
+      } else if (error.message?.includes("API")) {
+        errorMessage = "AI service error. Please check your API key or try again.";
+      } else if (error.message) {
+        errorMessage = config.NODE_ENV === "development" ? error.message : "Failed to generate post. Please try again.";
       }
 
       res.status(500).json({
@@ -368,7 +386,13 @@ router.post(
       // Fetch full user to get formatting preference and training posts
       const User = (await import("../models/User.js")).default;
       const user = await User.findById(userId);
-      
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found. Please log in again.",
+        });
+      }
+
       const userProfile = {
         jobTitle: user.profile?.jobTitle || null,
         company: user.profile?.company || null,
@@ -393,33 +417,55 @@ router.post(
         personaTone: persona.tone,
       });
 
-      // Get profile insights for enhanced personalization
-      const profileInsights = await profileInsightsService.buildEnhancedContext(
-        userId
-      );
+      // Get profile insights for enhanced personalization (non-blocking)
+      let profileInsights = null;
+      try {
+        profileInsights = await profileInsightsService.buildEnhancedContext(
+          userId
+        );
+      } catch (insightsError) {
+        console.warn("⚠️ Profile insights skipped (non-critical):", insightsError.message);
+      }
 
       // Get user's formatting preference and training posts
       const postFormatting = user.profile?.postFormatting || "plain";
       let trainingPosts = [];
-      
-      // Fetch training posts if user has selected any (premium feature)
-      if (user.persona?.trainingPostIds && user.persona.trainingPostIds.length > 0) {
-        trainingPosts = await Content.find({
-          _id: { $in: user.persona.trainingPostIds },
-          userId: userId,
-        }).select("content").limit(10); // Limit to 10 posts for prompt length
+      try {
+        if (user.persona?.trainingPostIds && user.persona.trainingPostIds.length > 0) {
+          trainingPosts = await Content.find({
+            _id: { $in: user.persona.trainingPostIds },
+            userId: userId,
+          }).select("content").limit(10); // Limit to 10 posts for prompt length
+        }
+      } catch (trainErr) {
+        console.warn("⚠️ Training posts fetch skipped:", trainErr.message);
       }
 
-      const aiResponse = await googleAIService.generatePost(
-        topic,
-        hook.text,
-        persona,
-        req.body.linkedinInsights || null,
-        profileInsights,
-        userProfile, // Pass user profile for deep personalization
-        postFormatting, // User's formatting preference
-        trainingPosts // User's selected training posts (premium)
-      );
+      let aiResponse;
+      try {
+        aiResponse = await googleAIService.generatePost(
+          topic,
+          hook.text,
+          persona,
+          req.body.linkedinInsights || null,
+          profileInsights,
+          userProfile, // Pass user profile for deep personalization
+          postFormatting, // User's formatting preference
+          trainingPosts // User's selected training posts (premium)
+        );
+      } catch (aiError) {
+        console.error("❌ Google AI error during custom post generation:", {
+          message: aiError.message,
+          stack: aiError.stack,
+          topic: topic?.substring(0, 50),
+        });
+        throw new Error(`AI service error: ${aiError.message}`);
+      }
+
+      // Validate AI response
+      if (!aiResponse || !aiResponse.content) {
+        throw new Error("Invalid response from AI service - no content generated");
+      }
 
       console.log("✅ AI response received:", {
         contentLength: aiResponse.content?.length,
@@ -428,49 +474,87 @@ router.post(
       });
 
       // Save generated content (don't save hook since it's not from database)
-      const content = new Content({
-        userId,
-        type: "post",
-        content: aiResponse.content,
-        topic,
-        hookId: null, // No hook for custom posts
-        personaId: personaId || null, // May be null for sample personas
-        engagementScore: aiResponse.engagementScore,
-        tokensUsed: aiResponse.tokensUsed,
-      });
+      let content;
+      try {
+        content = new Content({
+          userId,
+          type: "post",
+          content: aiResponse.content,
+          topic,
+          hookId: null, // No hook for custom posts
+          personaId: personaId || null, // May be null for sample personas
+          engagementScore: aiResponse.engagementScore,
+          tokensUsed: aiResponse.tokensUsed,
+        });
 
-      await content.save();
+        await content.save();
+      } catch (saveError) {
+        console.error("❌ Error saving custom post content:", saveError);
+        // Still return the content even if save fails
+        content = {
+          _id: `temp-${Date.now()}`,
+          userId,
+          type: "post",
+          content: aiResponse.content,
+          topic,
+          hookId: null,
+          personaId: personaId || null,
+          engagementScore: aiResponse.engagementScore,
+          tokensUsed: aiResponse.tokensUsed,
+          createdAt: new Date(),
+        };
+        console.warn("⚠️ Custom post not saved to database, but returning generated content");
+      }
 
-      // Increment usage
-      // Record usage in both systems
-      await usageService.incrementUsage(userId, "posts", aiResponse.tokensUsed);
-      await subscriptionService.recordUsage(userId, "generate_post");
-
-      // Don't update hook usage count for custom posts
+      // Increment usage (non-blocking)
+      try {
+        await usageService.incrementUsage(userId, "posts", aiResponse.tokensUsed);
+        await subscriptionService.recordUsage(userId, "generate_post");
+      } catch (usageError) {
+        console.error("⚠️ Failed to track usage for custom post (non-critical):", usageError.message);
+      }
 
       // Get updated subscription info
-      const subscription = await subscriptionService.getUserSubscription(
-        userId
-      );
+      let subscription;
+      try {
+        subscription = await subscriptionService.getUserSubscription(userId);
+      } catch (subError) {
+        console.warn("⚠️ Failed to get subscription info (non-critical):", subError.message);
+        subscription = { usage: {}, tokens: {}, limits: {} };
+      }
 
       res.json({
         success: true,
         message: "Post generated successfully",
         data: {
           content: content,
-          quota: await usageService.checkQuotaExceeded(userId, "posts"),
+          quota: await usageService.checkQuotaExceeded(userId, "posts").catch(() => ({ exceeded: false })),
           subscription: {
-            usage: subscription.usage,
-            tokens: subscription.tokens,
-            limits: subscription.limits,
+            usage: subscription.usage || {},
+            tokens: subscription.tokens || {},
+            limits: subscription.limits || {},
           },
         },
       });
     } catch (error) {
-      console.error("Post generation error:", error);
+      console.error("❌ Custom post generation error:", {
+        message: error.message,
+        stack: error.stack,
+      });
+
+      let errorMessage = "Failed to generate post";
+      if (error.message && error.message.includes("AI service")) {
+        errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
+      } else if (error.message && (error.message.includes("quota") || error.message.includes("limit"))) {
+        errorMessage = error.message;
+      } else if (error.message) {
+        errorMessage = config.NODE_ENV === "development" ? error.message : "Failed to generate post. Please try again.";
+      }
+
       res.status(500).json({
         success: false,
-        message: "Failed to generate post",
+        message: errorMessage,
+        error: config.NODE_ENV === "development" ? error.message : undefined,
       });
     }
   }
@@ -506,46 +590,101 @@ router.post(
       }
 
       const hookText = title && title.length >= 5 ? title : topic.split("\n")[0]?.slice(0, 100) || topic.slice(0, 100);
-      const aiResponse = await googleAIService.generatePostFromPlanContext(
-        topic,
-        hookText,
-        planContext
-      );
+      
+      let aiResponse;
+      try {
+        aiResponse = await googleAIService.generatePostFromPlanContext(
+          topic,
+          hookText,
+          planContext
+        );
+      } catch (aiError) {
+        console.error("❌ Google AI error during plan post generation:", {
+          message: aiError.message,
+          topic: topic?.substring(0, 50),
+        });
+        throw new Error(`AI service error: ${aiError.message}`);
+      }
 
-      const content = new Content({
-        userId,
-        type: "post",
-        content: aiResponse.content,
-        topic,
-        hookId: null,
-        personaId: null,
-        engagementScore: aiResponse.engagementScore,
-        tokensUsed: aiResponse.tokensUsed,
-      });
-      await content.save();
+      if (!aiResponse || !aiResponse.content) {
+        throw new Error("Invalid response from AI service - no content generated");
+      }
 
-      await usageService.incrementUsage(userId, "posts", aiResponse.tokensUsed);
-      await subscriptionService.recordUsage(userId, "generate_post");
+      let content;
+      try {
+        content = new Content({
+          userId,
+          type: "post",
+          content: aiResponse.content,
+          topic,
+          hookId: null,
+          personaId: null,
+          engagementScore: aiResponse.engagementScore,
+          tokensUsed: aiResponse.tokensUsed,
+        });
+        await content.save();
+      } catch (saveError) {
+        console.error("❌ Error saving plan post:", saveError);
+        content = {
+          _id: `temp-${Date.now()}`,
+          userId,
+          type: "post",
+          content: aiResponse.content,
+          topic,
+          hookId: null,
+          personaId: null,
+          engagementScore: aiResponse.engagementScore,
+          tokensUsed: aiResponse.tokensUsed,
+          createdAt: new Date(),
+        };
+      }
 
-      const subscription = await subscriptionService.getUserSubscription(userId);
+      // Non-blocking usage tracking
+      try {
+        await usageService.incrementUsage(userId, "posts", aiResponse.tokensUsed);
+        await subscriptionService.recordUsage(userId, "generate_post");
+      } catch (usageError) {
+        console.error("⚠️ Failed to track usage for plan post (non-critical):", usageError.message);
+      }
+
+      let subscription;
+      try {
+        subscription = await subscriptionService.getUserSubscription(userId);
+      } catch (subError) {
+        console.warn("⚠️ Failed to get subscription info (non-critical):", subError.message);
+        subscription = { usage: {}, tokens: {}, limits: {} };
+      }
+
       res.json({
         success: true,
         message: "Post generated from content plan",
         data: {
           content: content,
-          quota: await usageService.checkQuotaExceeded(userId, "posts"),
+          quota: await usageService.checkQuotaExceeded(userId, "posts").catch(() => ({ exceeded: false })),
           subscription: {
-            usage: subscription.usage,
-            tokens: subscription.tokens,
-            limits: subscription.limits,
+            usage: subscription.usage || {},
+            tokens: subscription.tokens || {},
+            limits: subscription.limits || {},
           },
         },
       });
     } catch (error) {
-      console.error("Generate from plan error:", error);
+      console.error("❌ Generate from plan error:", {
+        message: error.message,
+        stack: error.stack,
+      });
+
+      let errorMessage = "Failed to generate post from plan";
+      if (error.message && error.message.includes("AI service")) {
+        errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
+      } else if (error.message) {
+        errorMessage = config.NODE_ENV === "development" ? error.message : errorMessage;
+      }
+
       res.status(500).json({
         success: false,
-        message: error.message || "Failed to generate post from plan",
+        message: errorMessage,
+        error: config.NODE_ENV === "development" ? error.message : undefined,
       });
     }
   }
@@ -608,16 +747,21 @@ router.post(
       // Generate content using Google AI
       console.log("💬 Calling Google AI for comment generation...");
       console.log("Data:", {
-        postContent: postContent.substring(0, 100) + "...",
+        postContent: postContent?.substring(0, 100) + "...",
         personaName: persona.name,
         personaTone: persona.tone,
         commentType: commentType || "value_add",
       });
 
-      // Get profile insights for enhanced personalization
-      const profileInsights = await profileInsightsService.buildEnhancedContext(
-        userId
-      );
+      // Get profile insights for enhanced personalization (non-blocking)
+      let profileInsights = null;
+      try {
+        profileInsights = await profileInsightsService.buildEnhancedContext(
+          userId
+        );
+      } catch (insightsError) {
+        console.warn("⚠️ Profile insights skipped for comment gen (non-critical):", insightsError.message);
+      }
 
       let aiResponse;
       try {
@@ -625,7 +769,7 @@ router.post(
           postContent,
           persona,
           profileInsights,
-          commentType
+          commentType || "value_add"
         );
       } catch (aiError) {
         console.error("❌ Google AI error during comment generation:", {
@@ -638,22 +782,51 @@ router.post(
 
       // Validate AI response
       if (!aiResponse) {
-        throw new Error("Invalid response from AI service");
+        throw new Error("Invalid response from AI service - no response returned");
       }
 
-      // Extract comments - handle both array and single comment formats
+      // Extract comments - handle both array and single comment formats, preserve engagement scores
       let comments = [];
       if (aiResponse.comments && Array.isArray(aiResponse.comments)) {
-        comments = aiResponse.comments.map((c) =>
-          typeof c === "string" ? c : c.text || c
-        );
+        comments = aiResponse.comments.map((c) => {
+          if (typeof c === "string") {
+            return { text: c, engagementScore: 7.5, type: commentType || "value_add" };
+          }
+          return {
+            text: c.text || String(c),
+            engagementScore: c.engagementScore || 7.5,
+            type: c.type || commentType || "value_add",
+          };
+        });
       } else if (aiResponse.content) {
         // Single comment response
-        comments = [typeof aiResponse.content === "string" ? aiResponse.content : aiResponse.content.text || aiResponse.content];
+        if (typeof aiResponse.content === "string") {
+          comments = [{ text: aiResponse.content, engagementScore: 7.5, type: commentType || "value_add" }];
+        } else if (Array.isArray(aiResponse.content)) {
+          comments = aiResponse.content.map((c) => {
+            if (typeof c === "string") {
+              return { text: c, engagementScore: 7.5, type: commentType || "value_add" };
+            }
+            return {
+              text: c.text || String(c),
+              engagementScore: c.engagementScore || 7.5,
+              type: c.type || commentType || "value_add",
+            };
+          });
+        } else {
+          comments = [{
+            text: aiResponse.content.text || String(aiResponse.content),
+            engagementScore: aiResponse.content.engagementScore || 7.5,
+            type: aiResponse.content.type || commentType || "value_add",
+          }];
+        }
       }
 
+      // Filter out empty comments
+      comments = comments.filter((c) => c && c.text && c.text.trim().length > 0);
+
       if (comments.length === 0) {
-        throw new Error("No comments were generated");
+        throw new Error("No comments were generated. Please try again.");
       }
 
       console.log("✅ AI comment response received:", {
@@ -662,14 +835,14 @@ router.post(
       });
 
       // Save generated content (save the first comment as the main content)
-      const firstComment = comments[0];
+      const firstCommentText = typeof comments[0] === "string" ? comments[0] : comments[0]?.text || String(comments[0]);
 
       let content;
       try {
         content = new Content({
           userId,
           type: "comment",
-          content: firstComment,
+          content: firstCommentText,
           originalPostContent: postContent,
           personaId: personaId || null, // May be null for sample personas
           tokensUsed: aiResponse.tokensUsed,
@@ -677,19 +850,19 @@ router.post(
 
         await content.save();
       } catch (saveError) {
-        console.error("❌ Error saving content:", saveError);
+        console.error("❌ Error saving comment content:", saveError);
         // Still return the content even if save fails
         content = {
           _id: `temp-${Date.now()}`,
           userId,
           type: "comment",
-          content: firstComment,
+          content: firstCommentText,
           originalPostContent: postContent,
           personaId: personaId || null,
           tokensUsed: aiResponse.tokensUsed,
           createdAt: new Date(),
         };
-        console.warn("⚠️ Content not saved to database, but returning generated comments");
+        console.warn("⚠️ Comment not saved to database, but returning generated comments");
       }
 
       // Record usage in both systems (non-blocking)
@@ -729,23 +902,29 @@ router.post(
         },
       });
     } catch (error) {
+      const reqUserId = req.user?._id;
+      const reqPostContent = req.body?.postContent;
       console.error("❌ Comment generation error:", {
         message: error.message,
         stack: error.stack,
-        userId,
-        postContentLength: postContent?.length,
+        userId: reqUserId,
+        postContentLength: reqPostContent?.length,
       });
       
       // Provide more helpful error messages
       let errorMessage = "Failed to generate comment";
-      if (error.message.includes("AI service")) {
+      if (error.message?.includes("AI service")) {
         errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
-      } else if (error.message.includes("quota") || error.message.includes("limit")) {
+      } else if (error.message?.includes("quota") || error.message?.includes("limit")) {
         errorMessage = error.message;
-      } else if (error.message.includes("Persona not found")) {
+      } else if (error.message?.includes("Persona not found")) {
         errorMessage = "Selected persona is no longer available. Please select another persona.";
-      } else {
-        errorMessage = error.message || errorMessage;
+      } else if (error.message?.includes("parse") || error.message?.includes("Parse")) {
+        errorMessage = "Could not parse generated comments. Please try again.";
+      } else if (error.message?.includes("API")) {
+        errorMessage = "AI service error. Please check your API key or try again.";
+      } else if (error.message) {
+        errorMessage = config.NODE_ENV === "development" ? error.message : errorMessage;
       }
 
       res.status(500).json({
@@ -1115,60 +1294,12 @@ router.post(
         });
       }
 
-      // LinkedIn Profile Analyzer temporarily disabled - return mock data
+      // LinkedIn Profile Analyzer requires real data source integration
       // TODO: Integrate RapidAPI, ProxyCurl, or LinkedIn Official API
-      const mockProfileData = {
-        profileUrl,
-        name: "Profile Analysis",
-        headline: "LinkedIn Profile Analyzer",
-        summary:
-          "This feature is being upgraded to use a more reliable data source.",
-        location: "Global",
-        industry: "Technology",
-        connections: "500+",
-        profileCompleteness: 85,
-        profileScore: 78,
-        strengths: [
-          "Professional headline is clear",
-          "Profile summary is engaging",
-          "Good use of keywords",
-        ],
-        improvements: [
-          "Add more recent experience",
-          "Include relevant skills",
-          "Add a professional photo",
-        ],
-        contentStrategy: {
-          postingFrequency: "2-3 times per week",
-          bestPostingTimes: ["8-10 AM", "12-2 PM", "5-7 PM"],
-          contentMix: {
-            educational: "40%",
-            personal: "30%",
-            promotional: "20%",
-            curated: "10%",
-          },
-        },
-        growthTips: [
-          "Complete your profile to 100% (LinkedIn favors complete profiles)",
-          "Post consistently 2-3x per week for maximum reach",
-          "Engage with others' content before posting (warm up the algorithm)",
-          "Use industry-specific hashtags to increase discoverability",
-          "Add rich media (images, videos, PDFs) to boost engagement by 3x",
-        ],
-        analyzedAt: new Date().toISOString(),
-        scrapingMethod: "mock-data",
-        status: "temporarily-disabled",
-      };
-
-      // Record usage
-      await subscriptionService.recordUsage(userId, "analyze_linkedin");
-
-      res.json({
-        success: true,
-        message:
-          "LinkedIn profile analysis completed (using enhanced mock data)",
-        data: mockProfileData,
-        note: "This feature is being upgraded to use a more reliable data source. Check back soon for real-time analysis!",
+      return res.status(503).json({
+        success: false,
+        message: "LinkedIn Profile Analyzer is currently unavailable. Real-time profile analysis requires API integration (coming soon).",
+        code: "FEATURE_UNAVAILABLE",
       });
     } catch (error) {
       console.error("❌ LinkedIn profile analysis error:", error);
@@ -1287,33 +1418,35 @@ router.post(
       try {
         ideas = parseIdeasFromResponse(response.text, angle);
       } catch (parseError) {
-        console.error("❌ Error parsing ideas from response:", parseError);
-        // Fallback: return at least one idea with the topic
-        ideas = [
-          {
-            id: `idea-${Date.now()}-fallback`,
-            title: `Post about ${topic.substring(0, 30)}`,
-            hook: `Here's what I learned about ${topic.substring(0, 40)}`,
-            angle: angle,
-            framework: [
-              "Introduction and context",
-              "Main insight or lesson",
-              "Supporting examples",
-              "Actionable takeaway",
-              "Call to action",
-            ],
-            whyItWorks: "Creates engagement through relevance",
-            developmentNotes: "Add personal examples and data",
-            engagementPotential: "High",
-            bestFor: targetAudience,
-          },
-        ];
-        console.warn("⚠️ Using fallback idea due to parsing error");
+        console.error("❌ Error parsing ideas from response:", parseError.message);
+        console.error("Raw response text:", response.text?.substring(0, 500));
+        
+        // Fallback: try to extract ideas line by line
+        try {
+          const lines = response.text.split("\n").filter(l => l.trim().length > 10);
+          if (lines.length >= 3) {
+            ideas = lines.slice(0, 6).map((line, idx) => ({
+              id: `idea-${Date.now()}-${idx}`,
+              title: line.replace(/^[#*\-\d.]+\s*/, "").substring(0, 80),
+              hook: line.replace(/^[#*\-\d.]+\s*/, "").substring(0, 50),
+              angle: angle === "all" ? "mixed" : angle,
+              framework: ["Opening context", "Main insight", "Actionable takeaway"],
+              whyItWorks: "Relevant to your topic",
+              developmentNotes: "Expand with personal examples",
+              engagementPotential: "High",
+              bestFor: "LinkedIn professionals",
+            }));
+            console.log(`✅ Fallback parsing: extracted ${ideas.length} ideas from raw text`);
+          } else {
+            throw new Error("Could not parse generated ideas. Please try again.");
+          }
+        } catch (fallbackError) {
+          throw new Error("Could not parse generated ideas. Please try again.");
+        }
       }
 
-      // Ensure we have at least one idea
       if (!ideas || ideas.length === 0) {
-        throw new Error("No ideas were generated");
+        throw new Error("No ideas were generated. Please try a different topic or angle.");
       }
 
       // Track ideas usage separately
@@ -1336,21 +1469,25 @@ router.post(
         data: { ideas },
       });
     } catch (error) {
+      const reqTopic = req.body?.topic;
+      const reqUserId = req.user?._id;
       console.error("❌ Idea generation error:", {
         message: error.message,
         stack: error.stack,
-        userId,
-        topic: topic?.substring(0, 50),
+        userId: reqUserId,
+        topic: reqTopic?.substring(0, 50),
       });
       
       // Provide more helpful error messages
       let errorMessage = "Failed to generate ideas";
-      if (error.message.includes("AI service")) {
+      if (error.message?.includes("AI service")) {
         errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
-      } else if (error.message.includes("quota") || error.message.includes("limit")) {
+      } else if (error.message?.includes("quota") || error.message?.includes("limit")) {
         errorMessage = error.message;
-      } else {
-        errorMessage = error.message || errorMessage;
+      } else if (error.message?.includes("parse") || error.message?.includes("Parse")) {
+        errorMessage = "Could not parse generated ideas. Please try again with a different topic.";
+      } else if (error.message) {
+        errorMessage = config.NODE_ENV === "development" ? error.message : errorMessage;
       }
 
       res.status(500).json({
@@ -1657,75 +1794,11 @@ function parseIdeasFromResponse(response, angle) {
     }
   });
 
-  // Fallback if parsing failed
   if (ideas.length === 0) {
-    console.warn("⚠️ Failed to parse ideas from response, generating fallback");
-    return generateFallbackIdeas(angle);
+    throw new Error("No ideas could be parsed from the response");
   }
 
   return ideas;
-}
-
-// Fallback ideas if AI parsing fails
-function generateFallbackIdeas(angle) {
-  return [
-    {
-      id: `fallback-${Date.now()}-1`,
-      title: "Share Your Personal Journey",
-      hook: "3 years ago, I was struggling with [challenge]. Today, everything changed.",
-      angle: "Story",
-      framework: [
-        "The specific challenge you faced",
-        "What you tried that didn't work",
-        "The turning point or realization",
-        "How you implemented the change",
-        "The results and lessons learned",
-      ],
-      whyItWorks:
-        "Personal transformation stories create emotional connection and relatability",
-      developmentNotes:
-        "Use specific numbers, dates, and details to make it authentic",
-      engagementPotential: "High",
-      bestFor: "Anyone with a transformation story to share",
-    },
-    {
-      id: `fallback-${Date.now()}-2`,
-      title: "Ask a Thought-Provoking Question",
-      hook: "What if the conventional wisdom about [topic] is actually wrong?",
-      angle: "Question",
-      framework: [
-        "Present the conventional belief",
-        "Introduce your contrarian perspective",
-        "Provide evidence or reasoning",
-        "Invite others to share their views",
-        "Ask follow-up questions",
-      ],
-      whyItWorks:
-        "Questions that challenge assumptions spark debate and comments",
-      developmentNotes:
-        "Choose a topic where there are legitimate different perspectives",
-      engagementPotential: "Very High",
-      bestFor: "Thought leaders and industry experts",
-    },
-    {
-      id: `fallback-${Date.now()}-3`,
-      title: "Share Your Best Lessons",
-      hook: "After [X years/experiences], here are the only [number] things that matter:",
-      angle: "Listicle",
-      framework: [
-        "Brief context about your experience",
-        "Lesson 1 with specific example",
-        "Lesson 2 with specific example",
-        "Lesson 3 with specific example",
-        "Summary and call-to-action",
-      ],
-      whyItWorks: "Lists promise quick, actionable value and are easy to scan",
-      developmentNotes:
-        "Use odd numbers (3, 5, 7) and make each point actionable",
-      engagementPotential: "High",
-      bestFor: "Professionals with experience to share",
-    },
-  ];
 }
 
 // Free post generation endpoint (no auth required) - for landing page "try before signup"
@@ -1835,10 +1908,10 @@ const selectContextualHook = async (personaData, goal, topic, audience) => {
       }
     }
     
-    // Fallback: Get any active hook
+    // Fallback: Get any active hook from DB (still real data)
     const fallbackHook = await Hook.findOne({ isActive: true });
     if (fallbackHook) {
-      console.log("⚠️ Using fallback hook:", fallbackHook.text);
+      console.log("⚠️ Using fallback hook from DB:", fallbackHook.text);
       return {
         _id: fallbackHook._id,
         text: fallbackHook.text,
@@ -1846,21 +1919,11 @@ const selectContextualHook = async (personaData, goal, topic, audience) => {
       };
     }
     
-    // Final fallback: Default hook
-    console.log("⚠️ Using default hook (no hooks in database)");
-    return {
-      _id: "default_free_hook",
-      text: "Here's what changed everything:",
-      category: "story",
-    };
+    // No hooks in database at all - throw error instead of using fake default
+    throw new Error("No hooks available in database. Please seed hooks first.");
   } catch (error) {
     console.error("Error selecting contextual hook:", error);
-    // Fallback to default
-    return {
-      _id: "default_free_hook",
-      text: "Here's what changed everything:",
-      category: "story",
-    };
+    throw error;
   }
 };
 
@@ -1943,6 +2006,7 @@ router.post("/posts/generate-free", async (req, res) => {
     }
 
     // Generate post using Google AI service (free posts - no personalization)
+    // Use lite model first to avoid rate limits on free tier
     const aiResponse = await googleAIService.generatePost(
       topic.trim(),
       hook.text,
@@ -1951,7 +2015,8 @@ router.post("/posts/generate-free", async (req, res) => {
       null, // profileInsights
       null, // userProfile
       "plain", // Default formatting for free posts
-      [] // No training posts for free users
+      [], // No training posts for free users
+      { preferLiteFirst: true, maxOutputTokens: 1024 }
     );
 
     // Track usage (store in cache with expiration)
@@ -2001,10 +2066,15 @@ router.post("/posts/generate-free", async (req, res) => {
     });
   } catch (error) {
     console.error("Free post generation error:", error);
-    res.status(500).json({
+    const isQuota = /429|quota|rate limit|limit: 0/i.test(error.message);
+    const message = isQuota
+      ? "AI service is temporarily at capacity. Please try again in a minute."
+      : (error.message || "Failed to generate post");
+    const status = isQuota ? 429 : 500;
+    res.status(status).json({
       success: false,
-      message: error.message || "Failed to generate post",
-      error: process.env.NODE_ENV === "development" ? error.stack : undefined,
+      message,
+      error: process.env.NODE_ENV === "development" && !isQuota ? error.stack : undefined,
     });
   }
 });

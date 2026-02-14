@@ -15,8 +15,7 @@ import { PremiumWaitlistModal } from "@/components/PremiumWaitlistModal";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UpgradePopup } from "@/components/UpgradePopup";
 import { TestimonialPopup } from "@/components/TestimonialPopup";
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import apiClient from "@/services/api";
 
 // Content angles with icons
 const CONTENT_ANGLES = [
@@ -160,23 +159,13 @@ const IdeaGenerator = () => {
     setSelectedIdea(null);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/content/generate-ideas`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          topic: topic.trim(),
-          angle: selectedAngle === "custom" ? customAngle.trim() : selectedAngle,
-          customAngle: selectedAngle === "custom" ? customAngle.trim() : undefined,
-          tone,
-          targetAudience,
-        }),
+      const result = await apiClient.generateIdeas({
+        topic: topic.trim(),
+        angle: selectedAngle === "custom" ? customAngle.trim() : selectedAngle,
+        customAngle: selectedAngle === "custom" ? customAngle.trim() : undefined,
+        tone,
+        targetAudience,
       });
-
-      const result = await response.json();
 
       if (result.success && result.data.ideas) {
         setIdeas(result.data.ideas);

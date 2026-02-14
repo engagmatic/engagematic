@@ -411,19 +411,7 @@ class LinkedInProfileAnalyzer {
       };
     } catch (error) {
       console.error("❌ Error generating comprehensive analysis:", error);
-      
-      // Fallback analysis when AI fails
-      return {
-        profileStrengthScore: this.calculateProfileScore(profileData),
-        keyStrengths: this.generateFallbackStrengths(profileData),
-        areasForImprovement: this.generateFallbackImprovements(profileData),
-        specificRecommendations: this.generateFallbackRecommendations(profileData),
-        contentStrategy: this.generateFallbackContentStrategy(profileData),
-        industryInsights: this.generateFallbackIndustryInsights(profileData),
-        personalBrandingRecommendations: this.generateFallbackBrandingRecommendations(profileData),
-        analysisType: "comprehensive_fallback",
-        generatedAt: new Date().toISOString(),
-      };
+      throw new Error("AI-powered profile analysis failed. Please try again.");
     }
   }
 
@@ -603,109 +591,8 @@ class LinkedInProfileAnalyzer {
     return Math.min(score, 100);
   }
 
-  generateFallbackStrengths(profileData) {
-    const strengths = [];
-
-    if (profileData.experience && profileData.experience.length > 0) {
-      strengths.push("Strong professional experience");
-    }
-    if (profileData.skills && profileData.skills.length > 5) {
-      strengths.push("Comprehensive skill set");
-    }
-    if (profileData.about && profileData.about.length > 100) {
-      strengths.push("Detailed professional summary");
-    }
-    if (profileData.education && profileData.education.length > 0) {
-      strengths.push("Educational background listed");
-    }
-
-    return strengths.length > 0 ? strengths : ["Profile has basic information"];
-  }
-
-  generateFallbackImprovements(profileData) {
-    const improvements = [];
-
-    if (!profileData.headline || profileData.headline === "N/A") {
-      improvements.push("Add a compelling professional headline");
-    }
-    if (!profileData.about || profileData.about.length < 50) {
-      improvements.push("Expand your professional summary");
-    }
-    if (!profileData.skills || profileData.skills.length < 5) {
-      improvements.push("Add more relevant skills");
-    }
-    if (!profileData.experience || profileData.experience.length === 0) {
-      improvements.push("Add your work experience");
-    }
-
-    return improvements.length > 0
-      ? improvements
-      : ["Profile looks good overall"];
-  }
-
-  generateFallbackRecommendations(profileData) {
-    return {
-      headline: [
-        "Create a compelling headline that highlights your expertise",
-        "Include key skills and industry focus",
-        "Keep it under 120 characters for optimal display",
-      ],
-      about: [
-        "Write a compelling professional summary",
-        "Highlight your key achievements and skills",
-        "Include a call-to-action for networking",
-      ],
-      experience: [
-        "Add detailed job descriptions",
-        "Include quantifiable achievements",
-        "Use action verbs to describe responsibilities",
-      ],
-      skills: [
-        "Add industry-relevant skills",
-        "Include both technical and soft skills",
-        "Get endorsements from colleagues",
-      ],
-    };
-  }
-
-  generateFallbackContentStrategy(profileData) {
-    return {
-      contentThemes: [
-        "Professional insights",
-        "Industry trends",
-        "Career advice",
-      ],
-      postingFrequency: "2-3 times per week",
-      engagementTips: [
-        "Share valuable industry insights",
-        "Engage with others' content",
-        "Use relevant hashtags",
-      ],
-    };
-  }
-
-  generateFallbackIndustryInsights(profileData) {
-    return {
-      trends: [
-        "Remote work is becoming standard",
-        "Digital skills are increasingly important",
-        "Networking remains crucial for career growth",
-      ],
-      opportunities:
-        "Focus on building digital presence and professional network",
-      competitiveEdge:
-        "Develop unique skills and maintain active professional engagement",
-    };
-  }
-
-  generateFallbackBrandingRecommendations(profileData) {
-    return [
-      "Maintain consistent professional messaging",
-      "Share thought leadership content",
-      "Engage authentically with your network",
-      "Keep profile information up-to-date",
-    ];
-  }
+  // All fallback methods removed - only real AI-generated analysis is returned.
+  // If AI fails, an error is thrown instead of returning fabricated data.
 
   async close() {
     try {

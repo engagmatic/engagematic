@@ -398,9 +398,7 @@ const PostGenerator = () => {
     if (result.success) {
       console.log('✅ Post generated successfully!', result);
       // Content is now stored in generatedContent from the hook
-      // Generate creative suggestions after successful post generation
-      generateCreativeSuggestions(topic);
-      
+
       // Refresh subscription to get updated usage
       await fetchSubscription();
       
