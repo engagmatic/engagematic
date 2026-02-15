@@ -240,26 +240,24 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
               <div className="relative">
                 <Label className="text-xs sm:text-sm font-semibold mb-1.5 block">Generated Post</Label>
                 <div 
-                  className="relative p-4 sm:p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-lg border-2 border-slate-200 dark:border-slate-700 min-h-[180px] sm:min-h-[200px] max-h-[400px] sm:max-h-[500px] overflow-y-auto"
+                  className="relative p-4 sm:p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-lg border-2 border-slate-200 dark:border-slate-700 min-h-[200px] sm:min-h-[240px] max-h-[60vh] overflow-y-auto"
                   style={{
                     scrollbarWidth: 'thin',
                     scrollbarColor: 'rgba(59, 91, 255, 0.3) transparent'
                   }}
                 >
                   <div 
-                    className="text-xs sm:text-sm leading-relaxed break-words overflow-wrap-anywhere pr-2"
+                    className="text-xs sm:text-sm leading-relaxed pr-2 pb-4"
                     style={{
                       wordBreak: 'break-word',
                       overflowWrap: 'anywhere',
                       whiteSpace: 'pre-wrap',
                       fontFamily: 'system-ui, -apple-system, sans-serif',
-                      lineHeight: '1.6'
+                      lineHeight: '1.7'
                     }}
                   >
                     {formatForLinkedIn(generatedPost.content)}
                   </div>
-                  {/* Gradient overlay for premium look */}
-                  <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-slate-50 dark:from-slate-900 to-transparent pointer-events-none" />
                 </div>
               </div>
 

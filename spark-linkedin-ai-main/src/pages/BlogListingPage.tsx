@@ -126,6 +126,37 @@ const blogs: Blog[] = [
     publishDate: "2025-01-15",
     banner: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=400&fit=crop&crop=center",
     slug: "sales-reps-guide"
+  },
+  {
+    id: "ai-solutions-boost-linkedin-engagement-automated-posts",
+    title: "AI Solutions That Help Boost LinkedIn Engagement with Automated Posts (2026 Guide)",
+    excerpt: "Discover the best AI-powered solutions for boosting LinkedIn engagement in 2026. Learn how tools like Engagematic help you create authentic, high-performing content.",
+    category: "usecase",
+    targetAudience: "LinkedIn Creators",
+    readTime: "14 min read",
+    publishDate: "2026-02-15",
+    banner: "/blog-banners/blog-banner-ai-solutions-linkedin.png",
+    slug: "ai-solutions-boost-linkedin-engagement-automated-posts"
+  },
+  {
+    id: "best-ai-tools-crafting-engaging-linkedin-posts",
+    title: "What Are the Best AI Tools for Crafting Engaging LinkedIn Posts? (2026 Roundup)",
+    excerpt: "We tested over a dozen AI writing tools for LinkedIn. Here's our ranked comparison of the best platforms for creating engaging, professional LinkedIn content.",
+    category: "comparison",
+    readTime: "13 min read",
+    publishDate: "2026-02-15",
+    banner: "/blog-banners/blog-banner-best-ai-tools-linkedin.png",
+    slug: "best-ai-tools-crafting-engaging-linkedin-posts"
+  },
+  {
+    id: "top-platforms-ai-powered-linkedin-content-creation",
+    title: "Top Platforms for AI-Powered LinkedIn Content Creation (2026 Comparison)",
+    excerpt: "We tested every major AI-powered LinkedIn content creation platform. Here's our comprehensive comparison ranked by content quality, features, and pricing.",
+    category: "comparison",
+    readTime: "15 min read",
+    publishDate: "2026-02-15",
+    banner: "/blog-banners/blog-banner-top-platforms-linkedin.png",
+    slug: "top-platforms-ai-powered-linkedin-content-creation"
   }
 ];
 
@@ -233,6 +264,8 @@ const BlogListingPage = () => {
                 <img
                   src={blog.banner || "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=400&fit=crop&crop=center"}
                   alt={blog.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />

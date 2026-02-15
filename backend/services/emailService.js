@@ -15,6 +15,39 @@ class EmailService {
     this.initialized = false;
     this.fromEmail = process.env.EMAIL_FROM || "hello@engagematic.com";
     this.fromName = process.env.EMAIL_FROM_NAME || "Engagematic";
+    this.maxRetries = 3;
+    this.retryDelayMs = 1000; // 1 second base delay (doubles each retry)
+  }
+
+  /**
+   * Validate email address format
+   */
+  isValidEmail(email) {
+    if (!email || typeof email !== "string") return false;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email.trim()) && email.length <= 254;
+  }
+
+  /**
+   * Retry helper with exponential backoff
+   */
+  async withRetry(fn, retries = this.maxRetries) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        const isLastAttempt = attempt === retries;
+        const isRetryable = error.statusCode >= 500 || error.code === "ECONNRESET" || error.code === "ETIMEDOUT";
+
+        if (isLastAttempt || !isRetryable) {
+          throw error;
+        }
+
+        const delay = this.retryDelayMs * Math.pow(2, attempt - 1);
+        console.warn(`⚠️  Email send attempt ${attempt}/${retries} failed, retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
   }
 
   /**
@@ -147,6 +180,12 @@ class EmailService {
     }
 
     try {
+      // Validate email address format
+      if (!this.isValidEmail(to)) {
+        console.warn(`Invalid email address: ${to}`);
+        return { success: false, reason: "invalid_email" };
+      }
+
       // Check if user can receive this email
       const canSend = await this.canSendEmail(userId, emailType);
       if (!canSend) {
@@ -194,35 +233,46 @@ class EmailService {
         metadata,
       });
 
-      // Send email using Resend API
-      const { data, error } = await this.resend.emails.send({
-        from: `${this.fromName} <${this.fromEmail}>`,
-        to: [to],
-        subject,
-        html,
-      });
+      // Send email using Resend API with retry logic for transient failures
+      const sendResult = await this.withRetry(async () => {
+        const { data, error } = await this.resend.emails.send({
+          from: `${this.fromName} <${this.fromEmail}>`,
+          to: [to],
+          subject,
+          html,
+          // Add List-Unsubscribe header for better deliverability
+          headers: {
+            "List-Unsubscribe": `<${unsubscribeUrl}>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+          },
+        });
 
-      if (error) {
-        throw new Error(error.message || "Failed to send email via Resend");
-      }
+        if (error) {
+          const err = new Error(error.message || "Failed to send email via Resend");
+          err.statusCode = error.statusCode || 500;
+          throw err;
+        }
+
+        return data;
+      });
 
       // Update log with success
       await EmailLog.findByIdAndUpdate(emailLog._id, {
         status: "sent",
-        providerId: data?.id || "resend",
+        providerId: sendResult?.id || "resend",
         sentAt: new Date(),
       });
 
-      console.log(`✅ Email sent: ${emailType} to ${to} (ID: ${data?.id})`);
+      console.log(`✅ Email sent: ${emailType} to ${to} (ID: ${sendResult?.id})`);
       return {
         success: true,
-        messageId: data?.id,
+        messageId: sendResult?.id,
         emailLogId: emailLog._id,
       };
     } catch (error) {
-      console.error(`❌ Error sending email ${emailType} to ${to}:`, error);
+      console.error(`❌ Error sending email ${emailType} to ${to}:`, error.message);
 
-      // Log failure
+      // Log failure with error details
       try {
         await EmailLog.create({
           userId,
@@ -231,7 +281,11 @@ class EmailService {
           subject,
           status: "failed",
           error: error.message,
-          metadata,
+          metadata: {
+            ...metadata,
+            errorCode: error.statusCode || error.code,
+            retried: true,
+          },
         });
       } catch (logError) {
         console.error("Error logging email failure:", logError);

@@ -27,7 +27,7 @@ const FreeTools = lazy(() => import("./pages/FreeTools"));
 const LinkedInProfileAnalyzerTool = lazy(() => import("./pages/tools/LinkedInProfileAnalyzerTool"));
 const LinkedInPostGeneratorTool = lazy(() => import("./pages/tools/LinkedInPostGeneratorTool"));
 const LinkedInEngagementCalculator = lazy(() => import("./pages/tools/LinkedInEngagementCalculator"));
-import LinkedInTextFormatter from "./pages/tools/LinkedInTextFormatter";
+const LinkedInTextFormatter = lazy(() => import("./pages/tools/LinkedInTextFormatter"));
 import { ErrorBoundary } from "./components/ErrorBoundary";
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
@@ -49,20 +49,28 @@ const BlogPage = lazy(() => import("./pages/BlogPage"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const PostDetailPage = lazy(() => import("./pages/PostDetailPage"));
 const PricingRedirect = lazy(() => import("./pages/PricingRedirect"));
-// Admin Pages
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import UserManagement from "./pages/admin/UserManagement";
-import AffiliateManagement from "./pages/admin/AffiliateManagement";
-import TestimonialsManagement from "./pages/admin/TestimonialsManagement";
-import BlogManagement from "./pages/admin/BlogManagement";
-import Analytics from "./pages/admin/Analytics";
-import EmailAnalytics from "./pages/admin/EmailAnalytics";
+// Admin Pages — lazy loaded (only accessed by admins, saves ~80KB from main bundle)
+const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
+const AffiliateManagement = lazy(() => import("./pages/admin/AffiliateManagement"));
+const TestimonialsManagement = lazy(() => import("./pages/admin/TestimonialsManagement"));
+const BlogManagement = lazy(() => import("./pages/admin/BlogManagement"));
+const Analytics = lazy(() => import("./pages/admin/Analytics"));
+const EmailAnalytics = lazy(() => import("./pages/admin/EmailAnalytics"));
 import { ProtectedAdminRoute } from "./components/admin/ProtectedAdminRoute";
-// Roadmap and Changelog removed
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes — avoid unnecessary refetches
+      gcTime: 10 * 60 * 1000, // 10 minutes — keep cache in memory
+      retry: 2, // Retry failed requests twice
+      refetchOnWindowFocus: false, // Don't refetch when user switches tabs
+    },
+  },
+});
 
 // Loading component for lazy loaded routes
 const PageLoader = () => (

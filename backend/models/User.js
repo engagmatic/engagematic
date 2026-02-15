@@ -200,6 +200,9 @@ const userSchema = new mongoose.Schema(
 userSchema.index({ subscriptionId: 1 });
 userSchema.index({ email: 1, isActive: 1 }); // Compound index for login queries
 userSchema.index({ isActive: 1 }); // For filtering active users
+userSchema.index({ createdAt: -1 }); // Email scheduler: onboarding queries
+userSchema.index({ subscriptionStatus: 1, trialEndsAt: 1 }); // Email scheduler: trial expiry queries
+userSchema.index({ lastLoginAt: 1, isActive: 1 }); // Email scheduler: re-engagement queries
 
 const User = mongoose.model("User", userSchema);
 

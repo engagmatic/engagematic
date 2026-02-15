@@ -44,10 +44,25 @@ import affiliateScheduler from "./services/affiliateScheduler.js";
 
 const app = express();
 
-// Security middleware
+// Security middleware — CSP enabled conditionally
 app.use(
   helmet({
-    contentSecurityPolicy: false, // Disable CSP for development
+    contentSecurityPolicy: config.NODE_ENV === "production" ? {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com", "https://www.google-analytics.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "https:", "blob:"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        connectSrc: ["'self'", "https://www.google-analytics.com", "https://www.googletagmanager.com", config.FRONTEND_URL],
+        frameSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    } : false, // Disable CSP in development for easier debugging
+    // Additional security headers
+    crossOriginEmbedderPolicy: false, // Allow embedding external images
+    crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
 
@@ -133,11 +148,41 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-// app.use(limiter);
+app.use(limiter);
 
 // Body parsing middleware (optimized for performance)
 app.use(express.json({ limit: "5mb" })); // Reduced from 10mb
 app.use(express.urlencoded({ extended: true, limit: "5mb" })); // Reduced from 10mb
+
+// Enable ETag generation for response caching
+app.set("etag", "strong");
+
+// Cache-Control headers for API responses
+app.use((req, res, next) => {
+  // GET requests to public/read-only endpoints can be cached briefly
+  if (req.method === "GET") {
+    // Public blog/pricing endpoints: cache for 5 minutes
+    if (req.path.startsWith("/api/blog/public") || req.path.startsWith("/api/pricing")) {
+      res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
+    }
+    // Testimonials: cache for 10 minutes
+    else if (req.path.startsWith("/api/testimonials") && !req.path.includes("admin")) {
+      res.set("Cache-Control", "public, max-age=600, stale-while-revalidate=1200");
+    }
+    // Health check: no caching
+    else if (req.path === "/health") {
+      res.set("Cache-Control", "no-cache");
+    }
+    // All other GET API routes: private, short cache
+    else if (req.path.startsWith("/api/")) {
+      res.set("Cache-Control", "private, max-age=0, must-revalidate");
+    }
+  } else {
+    // POST/PUT/DELETE: never cache
+    res.set("Cache-Control", "no-store");
+  }
+  next();
+});
 
 // Health check endpoint
 app.get("/health", (req, res) => {

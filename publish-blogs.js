@@ -81,6 +81,43 @@ const blogs = [
     isFeatured: true,
     status: "published",
   },
+  // SEO/AEO Blogs (February 2026)
+  {
+    title:
+      "AI Solutions That Help Boost LinkedIn Engagement with Automated Posts (2026 Guide)",
+    slug: "ai-solutions-boost-linkedin-engagement-automated-posts",
+    category: "AI & Technology",
+    tags: ["AI Solutions", "LinkedIn Engagement", "Automated Posts", "Content Creation", "LinkedIn Marketing"],
+    excerpt:
+      "Discover the best AI-powered solutions for boosting LinkedIn engagement in 2026. Learn how tools like Engagematic help you create authentic, high-performing content.",
+    content: "",
+    isFeatured: true,
+    status: "published",
+  },
+  {
+    title:
+      "What Are the Best AI Tools for Crafting Engaging LinkedIn Posts? (2026 Roundup)",
+    slug: "best-ai-tools-crafting-engaging-linkedin-posts",
+    category: "AI & Technology",
+    tags: ["AI Tools", "LinkedIn Posts", "Content Creation", "Tool Comparison", "Best AI Tools"],
+    excerpt:
+      "We tested over a dozen AI writing tools for LinkedIn. Here's our ranked comparison of the best platforms for creating engaging, professional LinkedIn content.",
+    content: "",
+    isFeatured: true,
+    status: "published",
+  },
+  {
+    title:
+      "Top Platforms for AI-Powered LinkedIn Content Creation (2026 Comparison)",
+    slug: "top-platforms-ai-powered-linkedin-content-creation",
+    category: "AI & Technology",
+    tags: ["AI Platforms", "LinkedIn Content", "Content Creation", "Platform Comparison", "AI Technology"],
+    excerpt:
+      "We tested every major AI-powered LinkedIn content creation platform. Here's our comprehensive comparison ranked by content quality, features, and pricing.",
+    content: "",
+    isFeatured: true,
+    status: "published",
+  },
   // Use Case Blogs
   {
     title:
@@ -238,6 +275,9 @@ function prepareAllBlogs() {
     "BLOG_3_LINKEDINPULSE_VS_HOOTSUITE.md",
     "BLOG_4_LINKEDINPULSE_VS_AUTHOREDUP.md",
     "BLOG_5_LINKEDINPULSE_VS_KLEO.md",
+    "BLOG_SEO_1_AI_SOLUTIONS_LINKEDIN_ENGAGEMENT.md",
+    "BLOG_SEO_2_BEST_AI_TOOLS_LINKEDIN_POSTS.md",
+    "BLOG_SEO_3_TOP_PLATFORMS_AI_LINKEDIN_CONTENT.md",
     "BLOG_USECASE_LINKEDIN_CREATORS.md",
     "BLOG_USECASE_FOUNDERS_CEOS.md",
     "BLOG_USECASE_FREELANCERS.md",

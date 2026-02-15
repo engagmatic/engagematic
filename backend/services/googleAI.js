@@ -345,6 +345,11 @@ class GoogleAIService {
   }
 
   buildPostPromptFromPlanContext(topic, hook, ctx) {
+    // Use dynamic format selection for plan-context posts too
+    const planPersona = { industry: "", tone: "professional", experience: "" };
+    const planGoal = { description: ctx.goal || "engagement", objectives: [] };
+    const dynamicFormat = this.selectDynamicPostFormat(topic, planPersona, planGoal, hook);
+
     return `You are a LinkedIn content creator. Write ONLY based on the following content plan context. Do NOT use any other persona or voice.
 
 CONTENT PLAN CONTEXT (use this only):
@@ -357,12 +362,17 @@ ${ctx.promotion ? `- Promotion/offer: ${ctx.promotion}` : ""}
 Create a viral-worthy LinkedIn post about: "${topic}"
 Start with this exact hook: "${hook}"
 
+🎨 POST FORMAT: ${dynamicFormat.name}
+${dynamicFormat.instructions}
+
+FORMATTING:
+${dynamicFormat.formattingRules}
+
 RULES:
-- MAX 66 characters per line. No paragraphs, only line breaks.
-- Bold the first 3 words of each major point.
 - Tone and purpose must match the audience (${ctx.audience}) and what you help them with (${ctx.helpWith}).
 - Use ONE CTA only. No persona or user profile—only the plan context above.
 - 200-300 words. Natural, conversational. No corporate jargon.
+- Follow the ${dynamicFormat.name} structure above — DO NOT default to a generic list format.
 - Generate only the post content, no explanations.`;
   }
 
@@ -455,6 +465,319 @@ RULES:
         : "";
       throw new Error("Failed to generate comment content: " + error.message + hint);
     }
+  }
+
+  /**
+   * Dynamically select a post format/structure based on topic, persona, and goal.
+   * Ensures every generated post feels unique and contextually appropriate.
+   */
+  selectDynamicPostFormat(topic, persona, engagementGoal, hookText) {
+    const t = (topic || "").toLowerCase();
+    const industry = (persona.industry || "").toLowerCase();
+    const tone = (persona.tone || "professional").toLowerCase();
+    const experience = (persona.experience || "").toLowerCase();
+    const goalDesc = (engagementGoal?.description || "").toLowerCase();
+
+    // ── 7 distinct post formats ──
+    const formats = {
+
+      // 1. STORYTELLING — personal narrative arc
+      storytelling: {
+        name: "Storytelling / Personal Narrative",
+        formattingStyle: "Flowing narrative with line breaks between beats",
+        instructions: `
+**STRUCTURE — Tell a story, don't list tips:**
+
+1. HOOK (the exact hook provided) — drop the reader into the middle of a moment
+2. SETUP (2-3 lines): Paint the scene. Where were you? What was happening? Make it vivid and specific.
+3. TENSION (2-3 lines): What went wrong, what was at stake, what surprised you?
+4. TURNING POINT (1-2 lines): The insight, realization, or decision that changed things.
+5. RESOLUTION (2-3 lines): What happened after. Use specific results if possible.
+6. TAKEAWAY (1-2 lines): The lesson — stated simply, not preachily.
+7. CLOSING QUESTION: One reflective question that invites the reader to share their own story.
+
+**KEY RULES:**
+- Write in FIRST PERSON — this is YOUR story (even if fictional, make it feel lived-in)
+- Use sensory details and specific moments, not abstract summaries
+- Show emotion — what you felt, not just what happened
+- NO numbered lists, NO bullet points, NO frameworks — this is a narrative
+- Vary line lengths: short punchy lines mixed with longer descriptive ones
+- Use paragraph-style blocks (2-3 sentences) separated by blank lines
+`,
+        formattingRules: `
+- Use line breaks between story beats (not after every sentence)
+- **Bold** only the turning-point insight or the single most powerful line
+- No bullet points or numbered lists — pure narrative flow
+- Emojis: 0-2 max, only if they enhance emotional beats
+- Sentence variety: mix 4-word punches with 20-word scene-setting
+`
+      },
+
+      // 2. FRAMEWORK / LIST — structured, scannable
+      framework: {
+        name: "Framework / Actionable List",
+        formattingStyle: "Numbered or bulleted list with bold key phrases",
+        instructions: `
+**STRUCTURE — Deliver a clear, actionable framework:**
+
+1. HOOK (the exact hook provided) — promise a specific result or reveal
+2. CONTEXT (1-2 lines): Why this matters NOW. Anchor it to a real problem.
+3. FRAMEWORK (3-7 items): Each point follows this pattern:
+   → **Bold key phrase** (3-5 words) — then explain in 1 line
+   → Make each point independently valuable
+   → Progress logically (first do X, then Y, then Z)
+4. BONUS or PRO TIP (1 line): One unexpected insight that elevates the whole list
+5. CTA: One specific question or call to action
+
+**KEY RULES:**
+- Each list item must be SPECIFIC and ACTIONABLE (not vague advice)
+- Use → or numbered items, NOT generic bullet points (•)
+- Bold the first phrase of each item for scannability
+- Keep each point to 1-2 lines max — dense value, no padding
+- Give the framework a memorable NAME if possible (e.g., "The 3R Method")
+`,
+        formattingRules: `
+- Use → or 1. 2. 3. for list items
+- **Bold** the key phrase that starts each point
+- Short lines — max 70 chars per line for mobile readability
+- White space between items
+- Emojis: 2-4 max, use as bullet markers or emphasis (🎯, →, ⚡)
+`
+      },
+
+      // 3. CONTRARIAN / HOT TAKE — challenges conventional wisdom
+      contrarian: {
+        name: "Contrarian / Hot Take",
+        formattingStyle: "Bold opening, punchy lines, debate-inviting",
+        instructions: `
+**STRUCTURE — Challenge a common belief:**
+
+1. HOOK (the exact hook provided) — state the contrarian position boldly
+2. THE COMMON BELIEF (1-2 lines): What most people think / do / say
+3. WHY IT'S WRONG (2-3 lines): Your counter-argument with evidence or experience
+4. THE ALTERNATIVE (2-3 lines): What you do instead and why it works better
+5. PROOF (1-2 lines): A specific result, number, or example that backs your take
+6. THE NUANCE (1 line): Acknowledge when the common advice DOES work (shows intellectual honesty)
+7. DEBATE PROMPT: Ask a polarizing question — "Agree or disagree?"
+
+**KEY RULES:**
+- Take a REAL stance — don't hedge with "it depends" in the opening
+- Be respectful but direct — confident, not arrogant
+- Use specific examples, not hypotheticals
+- The goal is to make people STOP and THINK, then comment
+- Show your receipts — numbers, timelines, outcomes
+- End with genuine curiosity about opposing views
+`,
+        formattingRules: `
+- Short, punchy lines — many under 40 characters for impact
+- **Bold** the contrarian claim and the proof/result
+- Use line breaks generously — each statement gets its own line
+- No numbered lists — this is persuasive writing, not a tutorial
+- Emojis: 0-2 max (this format relies on words, not decoration)
+`
+      },
+
+      // 4. BEFORE/AFTER — transformation story with data
+      beforeAfter: {
+        name: "Before/After Transformation",
+        formattingStyle: "Clear contrast between old and new states",
+        instructions: `
+**STRUCTURE — Show a transformation with proof:**
+
+1. HOOK (the exact hook provided) — hint at the transformation
+2. THE "BEFORE" (2-3 lines): Paint the pain. What was broken, slow, frustrating? Use specific details.
+3. THE CATALYST (1-2 lines): What triggered the change? A moment, a realization, a tool, a mentor.
+4. THE "AFTER" (2-3 lines): Show the new reality. Use numbers if possible.
+5. THE HOW (2-4 lines): 2-3 key changes that made the difference — brief, specific
+6. THE UNEXPECTED LESSON (1-2 lines): Something surprising you learned through the process
+7. INVITATION: Ask readers about their own transformation or challenge
+
+**KEY RULES:**
+- Make the contrast STARK — before should feel painful, after should feel liberating
+- Use specific metrics or timelines (not "things got better" but "revenue grew 40% in 3 months")
+- The catalyst should feel relatable — something anyone could experience
+- Be honest about what was HARD during the transition
+- This format works for personal, team, company, or industry transformations
+`,
+        formattingRules: `
+- Use clear visual separation between BEFORE and AFTER sections
+- **Bold** the key metrics and transformation moments
+- Mix short emotional lines with longer descriptive ones
+- You can use → for the "how" steps
+- Emojis: 1-3, strategically placed (📉→📈 works well for contrast)
+`
+      },
+
+      // 5. MICRO-LESSON / QUICK INSIGHT — short, dense, high-value
+      microLesson: {
+        name: "Micro-Lesson / Quick Insight",
+        formattingStyle: "Ultra-concise, every word counts",
+        instructions: `
+**STRUCTURE — Deliver ONE powerful insight in minimal words:**
+
+1. HOOK (the exact hook provided) — drop the insight immediately
+2. THE INSIGHT (2-3 lines): State the core idea clearly. No buildup needed.
+3. WHY IT MATTERS (1-2 lines): Connect it to a real-world outcome
+4. THE EXAMPLE (2-3 lines): One vivid, specific illustration
+5. THE ONE-LINER (1 line): Distill the whole post into a quotable, shareable sentence
+6. MICRO-CTA: A simple, direct question or save prompt
+
+**KEY RULES:**
+- This post should be UNDER 200 words — brevity IS the point
+- ONE idea only — don't try to cover multiple concepts
+- The quotable one-liner should be something people screenshot and share
+- Think "fortune cookie meets TED talk" — profound but accessible
+- No preamble, no "let me tell you about..." — get to the point
+- Every sentence must justify its existence
+`,
+        formattingRules: `
+- Very short lines — many under 30 characters
+- **Bold** only the one-liner / quotable line
+- Maximum white space — let the words breathe
+- No lists, no bullets — just clean, spaced lines
+- Emojis: 0-1 (less is more for this format)
+`
+      },
+
+      // 6. DATA-DRIVEN / ANALYTICAL — numbers tell the story
+      dataDriven: {
+        name: "Data-Driven Insight",
+        formattingStyle: "Numbers-forward, analytical yet accessible",
+        instructions: `
+**STRUCTURE — Let data tell the story:**
+
+1. HOOK (the exact hook provided) — lead with a surprising number or stat
+2. THE DATA POINT (1-2 lines): Present the key finding or observation
+3. THE CONTEXT (2-3 lines): Why this number matters. What does it mean for the reader?
+4. THE BREAKDOWN (3-5 lines): Analyze 2-3 specific aspects or implications
+5. THE COUNTERINTUITIVE ANGLE (1-2 lines): Something the data reveals that surprises people
+6. THE ACTIONABLE TAKEAWAY (1-2 lines): What should the reader DO with this information?
+7. DISCUSSION PROMPT: Ask readers to share their own data/experience
+
+**KEY RULES:**
+- Use SPECIFIC numbers (not "most people" but "73% of professionals")
+- Numbers can be from experience, observation, or general industry knowledge
+- Make data HUMAN — don't just cite stats, explain what they mean for real people
+- Compare and contrast: "While X grew by 40%, Y dropped by 15%"
+- Credit sources when possible (adds credibility)
+- Balance analytical tone with conversational accessibility
+`,
+        formattingRules: `
+- **Bold** all key numbers and statistics
+- Use line breaks to separate data points from analysis
+- → or • for breakdown items
+- Short analytical lines — not academic paragraphs
+- Emojis: 2-3 data-relevant ones (📊 📈 💰 🔢)
+`
+      },
+
+      // 7. CONVERSATIONAL / REFLECTIVE — authentic musing
+      conversational: {
+        name: "Conversational Reflection",
+        formattingStyle: "Casual, flowing, like thinking out loud",
+        instructions: `
+**STRUCTURE — Think out loud with the reader:**
+
+1. HOOK (the exact hook provided) — start mid-thought, like you're continuing a conversation
+2. THE OBSERVATION (2-3 lines): Something you noticed, experienced, or realized recently
+3. THE DEEPER LAYER (2-3 lines): Peel back WHY this matters. Get philosophical or practical.
+4. THE PERSONAL CONNECTION (2-3 lines): How this connects to YOUR journey. Be real.
+5. THE READER MIRROR (1-2 lines): Reflect it back — "Maybe you've felt this too..."
+6. THE OPEN ENDING (1-2 lines): Don't wrap it up neatly. Leave it open. Invite continued thought.
+
+**KEY RULES:**
+- Write like you're TALKING, not writing — incomplete thoughts are okay
+- Use rhetorical questions throughout (not just at the end)
+- Show your thinking process — "I used to think X. Now I think Y."
+- Be vulnerable — uncertainty and growth are engaging
+- NO definitive advice — this is an exploration, not a lecture
+- Let the reader draw their own conclusion
+- Contractions, casual language, even one-word lines for emphasis
+`,
+        formattingRules: `
+- Flowing paragraphs (2-3 sentences) with line breaks between them
+- NO bold — or bold only ONE phrase in the entire post
+- NO lists, NO frameworks — pure conversational flow
+- Varied sentence lengths: some 3 words. Some 25.
+- Emojis: 0-1 (this format is about raw words)
+- Can use ... or — for natural pause effects
+`
+      }
+    };
+
+    // ── Smart format selection based on context signals ──
+
+    // Topic-based signals
+    const isStoryTopic = /mistake|learn|fail|journey|experience|reali[sz]|moment|happened|changed|my |i was|i did|when i|years ago|looking back/i.test(t);
+    const isListTopic = /tips|steps|ways|strategies|how to|methods|rules|habits|practices|framework|checklist|playbook/i.test(t);
+    const isContrarianTopic = /myth|wrong|stop|don't|overrated|unpopular|truth|actually|opposite|against|controversial|hot take|disagree|lie/i.test(t);
+    const isTransformTopic = /before|after|transform|result|grew|increase|improv|went from|changed|scaled|doubled|tripled|boost/i.test(t);
+    const isDataTopic = /data|stat|number|percent|research|study|survey|metric|analytics|trend|report|growth|decline|benchmark/i.test(t);
+    const isReflectTopic = /think|wonder|question|realize|notice|feel|believe|lately|thought|reflect|curious|observ|pattern/i.test(t);
+    const isQuickTopic = /one thing|single|simple|quick|reminder|note|truth|fact|reality|secret/i.test(t);
+
+    // Score each format
+    const scores = {
+      storytelling: 0,
+      framework: 0,
+      contrarian: 0,
+      beforeAfter: 0,
+      microLesson: 0,
+      dataDriven: 0,
+      conversational: 0,
+    };
+
+    // Topic signals (strongest weight)
+    if (isStoryTopic) scores.storytelling += 4;
+    if (isListTopic) scores.framework += 4;
+    if (isContrarianTopic) scores.contrarian += 4;
+    if (isTransformTopic) scores.beforeAfter += 4;
+    if (isDataTopic) scores.dataDriven += 4;
+    if (isReflectTopic) scores.conversational += 3;
+    if (isQuickTopic) scores.microLesson += 3;
+
+    // Persona tone signals
+    if (/storytell|narrative|personal|authentic|vulnerable/i.test(tone)) scores.storytelling += 2;
+    if (/analytical|strategic|structured|methodical/i.test(tone)) { scores.framework += 2; scores.dataDriven += 1; }
+    if (/bold|provocative|direct|edgy|blunt/i.test(tone)) scores.contrarian += 2;
+    if (/casual|friendly|warm|conversational|relaxed/i.test(tone)) scores.conversational += 2;
+    if (/concise|minimal|crisp|sharp/i.test(tone)) scores.microLesson += 2;
+    if (/inspirational|motivational|empowering/i.test(tone)) { scores.storytelling += 1; scores.beforeAfter += 1; }
+
+    // Experience-level signals
+    if (/senior|executive|director|vp|chief|lead|head/i.test(experience)) {
+      scores.storytelling += 1; scores.contrarian += 1; scores.conversational += 1;
+    }
+    if (/entry|junior|early|new|intern/i.test(experience)) {
+      scores.microLesson += 1; scores.framework += 1;
+    }
+
+    // Goal signals
+    if (/thought leader|authority|brand/i.test(goalDesc)) { scores.contrarian += 1; scores.dataDriven += 1; }
+    if (/engage|comment|discuss/i.test(goalDesc)) { scores.conversational += 1; scores.contrarian += 1; }
+    if (/educat|teach|train/i.test(goalDesc)) { scores.framework += 2; scores.dataDriven += 1; }
+    if (/inspir|motivat/i.test(goalDesc)) { scores.storytelling += 1; scores.beforeAfter += 1; }
+
+    // Add randomness to prevent same-topic-same-format predictability
+    // Use a hash of the topic to get consistent-but-varied randomness
+    const topicHash = [...t].reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const formatKeys = Object.keys(scores);
+    // Boost 2 random formats slightly based on topic hash
+    scores[formatKeys[topicHash % formatKeys.length]] += 2;
+    scores[formatKeys[(topicHash * 3 + 7) % formatKeys.length]] += 1;
+
+    // Find the format with the highest score
+    let bestFormat = "framework"; // default fallback
+    let bestScore = -1;
+    for (const [key, score] of Object.entries(scores)) {
+      if (score > bestScore) {
+        bestScore = score;
+        bestFormat = key;
+      }
+    }
+
+    console.log("🎨 Dynamic format selection:", { bestFormat, scores });
+    return formats[bestFormat];
   }
 
   buildPostPrompt(
@@ -550,6 +873,9 @@ LinkedIn Profile Insights:
 
     // Determine engagement goal based on user profile
     const engagementGoal = this.determineEngagementGoal(userProfile, persona);
+
+    // Dynamically select post format based on topic, persona, and goal
+    const dynamicFormat = this.selectDynamicPostFormat(topic, p, engagementGoal, hookText);
     
     basePrompt += `
 
@@ -560,145 +886,70 @@ Start with this exact hook: "${hookText}"
 🎯 ENGAGEMENT GOAL: ${engagementGoal.description}
 **Your post must achieve**: ${engagementGoal.objectives.join(", ")}
 
-📌 VIRAL HOOK TEMPLATES (use or adapt these formulas for maximum stop-the-scroll):
-1. "How to [achieve result] in [exact timeframe]"
-2. "Stop [common practice] if you want [desired outcome]"
-3. "The [number] [adjective] [noun] framework"
-4. "Why [popular belief] is actually wrong"
-5. "[Result] without [expected requirement]"
-6. "I was wrong about [topic]"
-7. "The truth about [industry myth]"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎨 DYNAMIC POST FORMAT: ${dynamicFormat.name}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📌 BODY CONTENT RULES (STRICT):
-- MAX LINE LENGTH: 66 characters per line - each line stands alone visually
-- LINE STRUCTURE: Main point → Supporting point → Detail (hierarchy)
-- READABILITY: Grade 6-8 level - simple, direct language
-- PARAGRAPHS: None - use only line breaks between lines/blocks
-- BOLDING: Bold the first 3 words of each major point for scannability
+${dynamicFormat.instructions}
 
-📌 ENGAGEMENT ELEMENTS:
-- QUESTION TYPES (use one): "Which point resonates most?" | "What would you add?" | "Agree or disagree?" | "What's your biggest challenge with this?"
-- CALL-TO-ACTION: Use ONE only. Choose from: "Save this for later" | "Follow for more" | "Comment below" | "Share with someone who needs this"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 FORMATTING STYLE: ${dynamicFormat.formattingStyle}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📌 CONTENT MATRIX (1 core idea → pick one format):
-- How-To Guide | Personal Story | Mistake Analysis | Quick Tip List | Before/After Case Study
-- CONVERT: Stories → numbered lessons | Guides → personal experiences | Tips → frameworks | Data → stories | Questions → guides
+${dynamicFormat.formattingRules}
 
-📌 CURRENT VIRAL PATTERNS (apply one per post):
-
-**Pattern A - "Anti-Pattern" Post:**
-1. Identify common advice → 2. Explain why it's flawed → 3. Offer counter-intuitive solution → 4. Share personal proof (numbers if possible) → 5. Ask for dissenting opinions
-Example vibe: "Stop posting daily. Here's why: [reason] When I cut from 7 to 3 posts/week: Engagement ↑ X%. Am I crazy or does this resonate?"
-
-**Pattern B - "Specific Result" Post:**
-1. Exact achievement in headline → 2. Timeframe specified → 3. 3-5 specific actions taken → 4. One surprising lesson → 5. Question about reader's goals
-Use exact numbers, include timeframe, show vulnerability (struggles), end with forward-looking question.
-
-**Pattern C - "Framework/List" Post:**
-Numbered or bulleted list with bold first 3 words per point; one clear takeaway per line; max 66 chars per line; end with single CTA.
-
-🔥 VIRAL CONTENT STRATEGY - Apply these proven patterns:
-
-**1. HOOK OPTIMIZATION (First 125 characters are CRITICAL):**
-- Your hook "${hookText}" must create IMMEDIATE curiosity, emotion, or cognitive dissonance
-- Prefer the viral hook templates above when they fit the topic
-- Use one of these viral patterns:
-  * Contrarian take: Challenge common belief
-  * Personal revelation: "I made a mistake that cost me..."
-  * Surprising stat: "90% of people don't know..."
-  * Emotional trigger: "This changed everything for me..."
-  * Question that makes people pause: "What if everything you know about X is wrong?"
-- First sentence MUST stop the scroll - make them think "Wait, what?"
-
-**2. ENGAGEMENT TRIGGERS (Include 3-4 of these):**
-- **Emotional resonance**: Tap into frustration, excitement, fear, hope, or pride
-- **Relatability**: "If you've ever...", "We've all been there..."
-- **Specificity**: Use exact numbers, dates, names, or scenarios (not vague)
-- **Vulnerability**: Share a real struggle, failure, or learning moment
-- **Controversy (tasteful)**: Take a stance that makes people think
-- **Value promise**: "Here's what I learned that saved me 10 hours/week..."
-
-**3. NATURAL LANGUAGE & AUTHENTICITY:**
-- Write like a REAL professional, not an AI - avoid phrases like "delve into", "in conclusion", "furthermore", "moreover"
-- Use natural language, contractions (I'm, you're, it's), and conversational flow
-- NO corporate jargon or buzzwords ("synergy", "leverage", "paradigm shift", "disrupt")
-- Sound 100% authentic - like you're sharing insights over coffee, not writing a business report
-- Use "I" statements for personal stories, "you" for direct engagement
-- Include conversational fillers naturally: "Here's the thing...", "Look, I get it...", "The reality is..."
-
-**4. VOICE & PERSONA ALIGNMENT:**
-- Write in ${p.name}'s voice (${p.tone} tone, ${p.writingStyle} style)
-- Match their career stage: ${p.experience} professionals speak differently than entry-level
-- Reflect their industry context: ${p.industry} professionals have specific pain points
-- Be genuinely helpful - provide REAL insights people can act on today
-- Share specific examples, numbers, or personal experiences (make it relatable)
-
-**5. STRUCTURE FOR MAXIMUM ENGAGEMENT:**
-- **Hook** (max 125 chars): Stop the scroll with curiosity/emotion
-- **Body**: NO paragraphs - only line breaks. Max 66 characters per line. Each line stands alone. Hierarchy: main point → supporting point → detail
-- **Bold**: First 3 words of each major point for scannability
-- **Story/Insight**: 3-5 lines or bullets - specific, actionable, relatable (66 chars max per line)
-- **CTA**: ONE only - one question OR one CTA (e.g. "Save this for later" or "Comment below")
-
-**6. FORMATTING & VISUAL APPEAL (Based on user preference: ${postFormatting}):**
+**User formatting preference: ${postFormatting}**
 ${postFormatting === "bold" ? 
-  "- Use **bold** extensively (8-10 KEY PHRASES) for emphasis - this is the user's preferred style\n- Make key insights, numbers, and action items stand out with bold formatting\n- Bold the most shareable quotes and takeaways" : 
+  "- Use **bold** extensively (8-10 KEY PHRASES) for emphasis\n- Make key insights and action items stand out with bold" : 
   postFormatting === "italic" ? 
-  "- Use *italics* strategically for quotes, emphasis, and subtle highlights\n- Prefer italics over bold for a more refined, elegant tone\n- Use for internal thoughts or emphasis" : 
+  "- Use *italics* strategically for quotes, emphasis, and subtle highlights\n- Prefer italics over bold for a refined, elegant tone" : 
   postFormatting === "emoji" ? 
-  "- Use emojis liberally (5-8 total) for visual appeal - this is the user's preferred style\n- Place emojis strategically: after impactful statements, before key insights, and in CTAs\n- Use context-specific emojis (🎯📊💰🔥⚡💡🚀) not generic ones (✨🌟⭐)\n- Emojis increase engagement by 25% - use them wisely" : 
-  "- Use **bold** for 3-5 KEY PHRASES that deserve emphasis (e.g., **game-changing**, **critical mistake**, **biggest lesson**)\n- Use emojis sparingly (1-3 max) and only where they add genuine value\n- Bold numbers, key insights, and action items"}
-- No paragraphs - use line breaks only. Max 66 characters per line for readability
-- Use bullet points (→ or •) for lists - makes content scannable
-- Bold the first 3 words of each major point. White space between blocks
+  "- Use emojis liberally (5-8 total) for visual energy\n- Place emojis after impactful statements and before key insights\n- Use context-specific emojis (🎯📊💰🔥⚡💡🚀) not generic ones" : 
+  "- Use **bold** for 3-5 KEY PHRASES that deserve emphasis\n- Use emojis sparingly (1-3 max) only where they add value"}
 
-**7. VALUE-FIRST CONTENT (Every sentence must earn its place):**
-- Offer actionable advice, avoid generic content
-- Introduce helpful resources or next steps in every post
-- Every insight should be something the reader can use TODAY
-- No fluff - if it doesn't add value, cut it
-- Include specific examples, frameworks, or tactics
-- Make it shareable - would someone want to save/bookmark this?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔥 AUTHENTICITY & VOICE RULES (NON-NEGOTIABLE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**8. GOAL-DRIVEN ENGAGEMENT:**
+**Voice & Persona:**
+- Write in ${p.name}'s voice (${p.tone} tone, ${p.writingStyle} style)
+- Match their career stage: ${p.experience || "professional"} speaks with appropriate authority
+- Reflect ${p.industry || "their"} industry context — use real pain points, jargon, and scenarios
+
+**Natural Language:**
+- NEVER use AI-sounding phrases: "delve into", "in conclusion", "furthermore", "leverage", "paradigm shift"
+- Use contractions naturally (I'm, you're, it's, don't, won't)
+- Sound like a REAL person sharing over coffee, not writing a report
+- Vary sentence length — mix punchy 5-word lines with 15-word observations
+- Use "I" for personal experience, "you" when addressing the reader directly
+
+**Engagement Triggers (weave in 3-4 naturally):**
+- Emotional resonance (frustration, excitement, hope, relief)
+- Relatability ("If you've ever...", "We've all been there...")
+- Specificity (exact numbers, dates, scenarios — not vague claims)
+- Vulnerability (real struggles, failures, learning moments)
+- Value (insights people can use TODAY)
+
+${trainingPosts.length > 0 ? `**PERSONA TRAINING — Learn from user's writing style:**\n${trainingPosts.map((post, idx) => `Example ${idx + 1}:\n${post.content?.substring(0, 200)}...`).join('\n\n')}\n\nMATCH the tone, structure, and voice from these examples. Learn their sentence rhythm, structure preferences, and CTA style.` : ""}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ FINAL RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Goal-Driven CTA:**
 ${engagementGoal.ctaStrategy}
-- Use ONE CTA only: e.g. "Save this for later" | "Follow for more" | "Comment below" | "Share with someone who needs this"
-- OR one engagement question: "Which point resonates most?" | "What would you add?" | "Agree or disagree?" | "What's your biggest challenge with this?"
-- Never stack multiple CTAs - one clear ask only
+- Use ONE CTA or ONE question only — never stack multiple asks
+- Make it feel natural, not salesy
 
-**9. PERSONA TRAINING (Learn from user's saved posts):**
-${trainingPosts.length > 0 ? `STUDY these examples of the user's preferred writing style:\n${trainingPosts.map((post, idx) => `Example ${idx + 1}:\n${post.content?.substring(0, 200)}...`).join('\n\n')}\n\nMATCH the tone, structure, and voice from these examples in your generated content\nLearn their preferred sentence length, paragraph structure, and CTA style\nNotice what made these posts successful - replicate those patterns` : ""}
-
-**10. LENGTH & COMPLETION:**
-- **LENGTH**: 200-300 words (sweet spot for engagement)
-- COMPLETE THE ENTIRE POST - never cut off mid-sentence
-- Every paragraph should build on the previous one
-- End strong - your last sentence is what people remember
-
-**11. LINKEDIN-READY OUTPUT:**
-- Format must be copy-paste ready - no encoding issues, clean text
-- Preserve bold (**text**) for easy copying to LinkedIn
-- No hashtags unless specifically requested (they look spammy)
-- Every word should add value - zero fluff, zero filler
-
-**12. VIRAL CHECKLIST (Before finalizing, ensure your post has):**
-✅ Hook that stops the scroll (first 125 chars); prefer viral hook templates when they fit
-✅ Max 66 characters per line; line breaks only (no paragraph blocks)
-✅ Bold first 3 words of each major point
-✅ At least 3 engagement triggers (emotion, relatability, specificity, vulnerability, value)
-✅ Specific examples/numbers (not vague)
-✅ ONE CTA or ONE engagement question only (no multiple CTAs)
-✅ Natural, conversational tone, Grade 6-8 readability (simple, direct)
-✅ Scannable format (line breaks, bullets, white space)
-✅ Authentic voice matching ${p.name}'s style
+**Length:** 200-300 words. Complete the ENTIRE post — never cut off mid-sentence.
+**Output:** Copy-paste ready. Preserve **bold** formatting. No hashtags unless requested.
+**Quality:** Every sentence earns its place. Zero fluff. Would someone save/bookmark this?
 
 GENERATE A POST THAT:
-- Gets saved/bookmarked (high value)
-- Gets shared (relatable/controversial)
-- Gets commented on (asks questions, invites discussion)
-- Gets liked (emotional resonance)
+- Gets saved (high value), shared (relatable), commented on (invites discussion), liked (emotional)
 - Looks INDISTINGUISHABLE from a top 1% LinkedIn creator
-- Requires ZERO editing - ready to post immediately`;
+- Follows the ${dynamicFormat.name} format above — DO NOT default to a generic list format
+- Requires ZERO editing — ready to post immediately`;
 
     if (linkedinInsights?.contentStrategy?.contentTypes) {
       basePrompt += `
