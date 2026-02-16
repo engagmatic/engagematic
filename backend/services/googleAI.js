@@ -91,6 +91,19 @@ class GoogleAIService {
     );
   }
 
+  _isLeakedOrRevokedKeyError(err) {
+    const msg = String(err?.message || "");
+    return (
+      err?.response?.status === 403 ||
+      msg.includes("403") ||
+      /leaked|revoked|invalid.*api.*key|api.*key.*invalid/i.test(msg)
+    );
+  }
+
+  _isRotatableError(err) {
+    return this._isRateLimitError(err) || this._isLeakedOrRevokedKeyError(err);
+  }
+
   _isQuotaZeroError(err) {
     const msg = String(err?.message || "");
     return msg.includes("limit: 0") || msg.includes("limit:0");
@@ -115,10 +128,16 @@ class GoogleAIService {
         } catch (err) {
           const isRetryable = this._isRateLimitError(err) || err?.response?.status === 503;
 
+          // If key is leaked/revoked (403), skip retries and rotate immediately
+          if (this._isLeakedOrRevokedKeyError(err) && this.apiKeys.length > 1) {
+            console.warn(`⚠️ Key #${this.currentKeyIndex + 1} leaked/revoked (403), rotating immediately...`);
+            throw err;
+          }
+
           // If quota is completely zero, don't waste time retrying - rotate key immediately
           if (this._isQuotaZeroError(err) && this.apiKeys.length > 1) {
             console.warn(`⚠️ Key #${this.currentKeyIndex + 1} quota=0, rotating immediately...`);
-            throw err; // Let the outer handler rotate
+            throw err;
           }
 
           if (isRetryable && attempt < maxRetries) {
@@ -139,6 +158,8 @@ class GoogleAIService {
         try {
           return await tryModel(this.model, GEMINI_MODEL);
         } catch (err) {
+          // For leaked/revoked keys, both models share the same key — bubble up to rotate
+          if (this._isLeakedOrRevokedKeyError(err)) throw err;
           if (this._isModelNotFound(err)) {
             console.warn("⚠️ Primary model unavailable, trying fallback:", GEMINI_FALLBACK_MODEL);
             return await tryModel(this.fallbackModel, GEMINI_FALLBACK_MODEL);
@@ -155,6 +176,8 @@ class GoogleAIService {
         try {
           return await tryModel(this.fallbackModel, GEMINI_FALLBACK_MODEL);
         } catch (err) {
+          // For leaked/revoked keys, both models share the same key — bubble up to rotate
+          if (this._isLeakedOrRevokedKeyError(err)) throw err;
           if (this._isRateLimitError(err)) {
             console.warn("⚠️ Lite model rate limited, trying primary:", GEMINI_MODEL);
             return await tryModel(this.model, GEMINI_MODEL);
@@ -166,16 +189,17 @@ class GoogleAIService {
       return preferLiteFirst ? tryLiteThenPrimary() : tryPrimaryThenFallback();
     };
 
-    // Main loop: try current key, rotate on quota exhaustion
+    // Main loop: try current key, rotate on quota exhaustion or leaked key
     while (keyRotationAttempts <= maxKeyRotations) {
       try {
         return await tryWithCurrentKey();
       } catch (err) {
-        if (this._isRateLimitError(err) && keyRotationAttempts < maxKeyRotations) {
+        if (this._isRotatableError(err) && keyRotationAttempts < maxKeyRotations) {
           const rotated = this._rotateKey();
           if (rotated) {
             keyRotationAttempts++;
-            console.log(`🔄 Key rotation attempt ${keyRotationAttempts}/${maxKeyRotations}, trying again...`);
+            const reason = this._isLeakedOrRevokedKeyError(err) ? "leaked/revoked" : "rate limited";
+            console.log(`🔄 Key rotation attempt ${keyRotationAttempts}/${maxKeyRotations} (${reason}), trying next key...`);
             continue;
           }
         }

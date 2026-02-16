@@ -21,6 +21,42 @@ import * as cheerio from "cheerio";
 
 const router = express.Router();
 
+/**
+ * Classify AI generation errors and return appropriate HTTP status + user-facing message.
+ */
+function classifyAIError(error, fallbackMessage = "Failed to generate content") {
+  const msg = error?.message || "";
+  const isQuota = /429|quota|rate limit|limit: 0|too many requests/i.test(msg);
+  const isLeaked = /403|leaked|revoked|invalid.*api.*key/i.test(msg);
+  const isBlocked = /blocked|safety|harmful/i.test(msg);
+  const isHookMissing = /hook not found/i.test(msg);
+  const isPersonaMissing = /persona not found/i.test(msg);
+  const isParseFail = /parse|could not parse/i.test(msg);
+
+  if (isLeaked) {
+    return { status: 503, message: "AI service is temporarily unavailable. Please try again later." };
+  }
+  if (isQuota) {
+    return { status: 429, message: "AI service is at capacity. Please try again in a minute." };
+  }
+  if (isBlocked) {
+    return { status: 400, message: "Content was blocked by safety filters. Please rephrase your topic." };
+  }
+  if (isHookMissing) {
+    return { status: 400, message: "Selected hook is no longer available. Please select another hook." };
+  }
+  if (isPersonaMissing) {
+    return { status: 400, message: "Selected persona is no longer available. Please select another persona." };
+  }
+  if (isParseFail) {
+    return { status: 500, message: "Could not parse AI response. Please try again." };
+  }
+  return {
+    status: 500,
+    message: config.NODE_ENV === "development" ? msg : fallbackMessage,
+  };
+}
+
 // Log share clicks (for analytics)
 router.post("/share-log", authenticateToken, async (req, res) => {
   try {
@@ -298,25 +334,10 @@ router.post(
         topic: reqTopic?.substring(0, 50),
       });
 
-      // Provide more helpful error messages
-      let errorMessage = "Failed to generate post";
-      if (error.message?.includes("AI service")) {
-        errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
-      } else if (error.message?.includes("quota") || error.message?.includes("limit")) {
-        errorMessage = error.message;
-      } else if (error.message?.includes("Hook not found")) {
-        errorMessage = "Selected hook is no longer available. Please select another hook.";
-      } else if (error.message?.includes("Persona not found")) {
-        errorMessage = "Selected persona is no longer available. Please select another persona.";
-      } else if (error.message?.includes("API")) {
-        errorMessage = "AI service error. Please check your API key or try again.";
-      } else if (error.message) {
-        errorMessage = config.NODE_ENV === "development" ? error.message : "Failed to generate post. Please try again.";
-      }
-
-      res.status(500).json({
+      const { status, message } = classifyAIError(error, "Failed to generate post. Please try again.");
+      res.status(status).json({
         success: false,
-        message: errorMessage,
+        message,
         error: config.NODE_ENV === "development" ? error.message : undefined,
       });
     }
@@ -542,18 +563,10 @@ router.post(
         stack: error.stack,
       });
 
-      let errorMessage = "Failed to generate post";
-      if (error.message && error.message.includes("AI service")) {
-        errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
-      } else if (error.message && (error.message.includes("quota") || error.message.includes("limit"))) {
-        errorMessage = error.message;
-      } else if (error.message) {
-        errorMessage = config.NODE_ENV === "development" ? error.message : "Failed to generate post. Please try again.";
-      }
-
-      res.status(500).json({
+      const { status, message } = classifyAIError(error, "Failed to generate post. Please try again.");
+      res.status(status).json({
         success: false,
-        message: errorMessage,
+        message,
         error: config.NODE_ENV === "development" ? error.message : undefined,
       });
     }
@@ -674,16 +687,10 @@ router.post(
         stack: error.stack,
       });
 
-      let errorMessage = "Failed to generate post from plan";
-      if (error.message && error.message.includes("AI service")) {
-        errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
-      } else if (error.message) {
-        errorMessage = config.NODE_ENV === "development" ? error.message : errorMessage;
-      }
-
-      res.status(500).json({
+      const { status, message } = classifyAIError(error, "Failed to generate post from plan. Please try again.");
+      res.status(status).json({
         success: false,
-        message: errorMessage,
+        message,
         error: config.NODE_ENV === "development" ? error.message : undefined,
       });
     }
@@ -911,25 +918,10 @@ router.post(
         postContentLength: reqPostContent?.length,
       });
       
-      // Provide more helpful error messages
-      let errorMessage = "Failed to generate comment";
-      if (error.message?.includes("AI service")) {
-        errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
-      } else if (error.message?.includes("quota") || error.message?.includes("limit")) {
-        errorMessage = error.message;
-      } else if (error.message?.includes("Persona not found")) {
-        errorMessage = "Selected persona is no longer available. Please select another persona.";
-      } else if (error.message?.includes("parse") || error.message?.includes("Parse")) {
-        errorMessage = "Could not parse generated comments. Please try again.";
-      } else if (error.message?.includes("API")) {
-        errorMessage = "AI service error. Please check your API key or try again.";
-      } else if (error.message) {
-        errorMessage = config.NODE_ENV === "development" ? error.message : errorMessage;
-      }
-
-      res.status(500).json({
+      const { status, message } = classifyAIError(error, "Failed to generate comments. Please try again.");
+      res.status(status).json({
         success: false,
-        message: errorMessage,
+        message,
         error: config.NODE_ENV === "development" ? error.message : undefined,
       });
     }
@@ -1502,21 +1494,10 @@ router.post(
         topic: reqTopic?.substring(0, 50),
       });
       
-      // Provide more helpful error messages
-      let errorMessage = "Failed to generate ideas";
-      if (error.message?.includes("AI service")) {
-        errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
-      } else if (error.message?.includes("quota") || error.message?.includes("limit")) {
-        errorMessage = error.message;
-      } else if (error.message?.includes("parse") || error.message?.includes("Parse")) {
-        errorMessage = "Could not parse generated ideas. Please try again with a different topic.";
-      } else if (error.message) {
-        errorMessage = config.NODE_ENV === "development" ? error.message : errorMessage;
-      }
-
-      res.status(500).json({
+      const { status, message } = classifyAIError(error, "Failed to generate ideas. Please try again.");
+      res.status(status).json({
         success: false,
-        message: errorMessage,
+        message,
         error: config.NODE_ENV === "development" ? error.message : undefined,
       });
     }
@@ -2091,14 +2072,22 @@ router.post("/posts/generate-free", async (req, res) => {
   } catch (error) {
     console.error("Free post generation error:", error);
     const isQuota = /429|quota|rate limit|limit: 0/i.test(error.message);
-    const message = isQuota
-      ? "AI service is temporarily at capacity. Please try again in a minute."
-      : (error.message || "Failed to generate post");
-    const status = isQuota ? 429 : 500;
+    const isLeaked = /403|leaked|revoked/i.test(error.message);
+    let message, status;
+    if (isQuota) {
+      message = "AI service is temporarily at capacity. Please try again in a minute.";
+      status = 429;
+    } else if (isLeaked) {
+      message = "AI service configuration issue. The team has been notified. Please try again later.";
+      status = 503;
+    } else {
+      message = error.message || "Failed to generate post";
+      status = 500;
+    }
     res.status(status).json({
       success: false,
       message,
-      error: process.env.NODE_ENV === "development" && !isQuota ? error.stack : undefined,
+      error: process.env.NODE_ENV === "development" && !isQuota && !isLeaked ? error.stack : undefined,
     });
   }
 });

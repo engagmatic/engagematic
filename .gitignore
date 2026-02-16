@@ -1,0 +1,36 @@
+# ─── Environment variables (NEVER commit these) ───
+.env
+.env.*
+.env.local
+.env.production
+**/.env
+**/.env.*
+
+# ─── Credentials & secrets ───
+**/credentials*.json
+**/ga-service-account.json
+**/service-account*.json
+*.pem
+*.key
+*.cert
+
+# ─── Debug/setup files that may contain secrets ───
+FIX_ENV_FILES.*
+RAZORPAY_DEBUG_SETUP.md
+IMPLEMENTATION_SUMMARY.md
+**/POST_GENERATOR_TEST.md
+
+# ─── Dependencies ───
+**/node_modules/
+
+# ─── OS files ───
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── IDE ───
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
