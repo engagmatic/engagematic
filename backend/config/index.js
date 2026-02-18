@@ -57,6 +57,10 @@ export const config = {
   // SerpApi (Fallback option - Free tier: 100 searches/month)
   SERPAPI_KEY: process.env.SERPAPI_KEY || "",
 
+  // Google OAuth
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || "",
+
   // Email Configuration
   EMAIL_FROM: process.env.EMAIL_FROM || "hello@engagematic.com",
   EMAIL_FROM_NAME: process.env.EMAIL_FROM_NAME || "Engagematic",

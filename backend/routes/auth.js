@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
 import User from "../models/User.js";
 import Persona from "../models/Persona.js";
 import { authenticateToken } from "../middleware/auth.js";
@@ -14,6 +15,7 @@ import emailService from "../services/emailService.js";
 import referralService from "../services/referralService.js";
 
 const router = express.Router();
+const googleClient = new OAuth2Client(config.GOOGLE_CLIENT_ID);
 
 // Register new user - OPTIMIZED FOR SPEED
 router.post("/register", validateUserRegistration, async (req, res) => {
@@ -185,13 +187,180 @@ router.post("/register", validateUserRegistration, async (req, res) => {
   }
 });
 
+// Google OAuth — verify token, create or log in user
+router.post("/google", async (req, res) => {
+  try {
+    const { credential, access_token, referralCode } = req.body;
+
+    if (!credential && !access_token) {
+      return res.status(400).json({
+        success: false,
+        message: "Google credential or access token is required",
+      });
+    }
+
+    if (!config.GOOGLE_CLIENT_ID) {
+      return res.status(500).json({
+        success: false,
+        message: "Google OAuth is not configured on the server",
+      });
+    }
+
+    let googleId, email, name, picture;
+
+    if (credential) {
+      // Verify Google ID token (from GoogleLogin component)
+      let ticket;
+      try {
+        ticket = await googleClient.verifyIdToken({
+          idToken: credential,
+          audience: config.GOOGLE_CLIENT_ID,
+        });
+      } catch (verifyErr) {
+        console.error("Google token verification failed:", verifyErr.message);
+        return res.status(401).json({
+          success: false,
+          message: "Invalid Google token",
+        });
+      }
+      const payload = ticket.getPayload();
+      googleId = payload.sub;
+      email = payload.email;
+      name = payload.name;
+      picture = payload.picture;
+    } else {
+      // Verify access token (from useGoogleLogin hook / custom button)
+      try {
+        const userInfoRes = await fetch(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
+          { headers: { Authorization: `Bearer ${access_token}` } }
+        );
+        if (!userInfoRes.ok) {
+          throw new Error(`Google userinfo returned ${userInfoRes.status}`);
+        }
+        const profile = await userInfoRes.json();
+        googleId = profile.sub;
+        email = profile.email;
+        name = profile.name;
+        picture = profile.picture;
+      } catch (fetchErr) {
+        console.error("Google access token verification failed:", fetchErr.message);
+        return res.status(401).json({
+          success: false,
+          message: "Invalid Google access token",
+        });
+      }
+    }
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Google account does not have an email address",
+      });
+    }
+
+    // Check if user already exists (by googleId or email)
+    let user = await User.findOne({
+      $or: [{ googleId }, { email: email.toLowerCase() }],
+    });
+
+    let isNewUser = false;
+
+    if (user) {
+      // Existing user — link Google account if they signed up with email/password
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.authProvider = user.authProvider === "local" ? "local" : "google";
+        if (picture && !user.avatar) user.avatar = picture;
+        await user.save();
+      }
+
+      // Update last login (fire and forget)
+      User.updateOne(
+        { _id: user._id },
+        { lastLoginAt: new Date() }
+      ).catch((err) => console.error("Failed to update lastLoginAt:", err));
+    } else {
+      // New user — create account
+      isNewUser = true;
+      user = new User({
+        name: name || email.split("@")[0],
+        email: email.toLowerCase(),
+        authProvider: "google",
+        googleId,
+        avatar: picture || null,
+        trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+      await user.save();
+
+      // Background tasks for new user (don't block response)
+      Promise.all([
+        subscriptionService.createTrialSubscription(user._id)
+          .then(() => console.log("✅ Trial subscription created (Google):", user._id))
+          .catch((err) => console.error("⚠️ Failed to create subscription:", err)),
+
+        referralCode
+          ? referralService.processReferralSignup(user, referralCode)
+              .then((r) => r.success && console.log(`✅ Referral processed for ${user.email}`))
+              .catch((err) => console.error("⚠️ Referral error:", err))
+          : Promise.resolve(null),
+
+        referralService.generateReferralCode(user)
+          .catch((err) => console.error("⚠️ Referral code gen error:", err)),
+
+        emailService.sendWelcomeEmail(user)
+          .then(() => console.log(`✅ Welcome email sent to ${user.email}`))
+          .catch((err) => console.error("⚠️ Welcome email error:", err)),
+      ]).catch((err) => console.error("⚠️ Background tasks error:", err));
+    }
+
+    // Generate JWT
+    const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, {
+      expiresIn: config.JWT_EXPIRE,
+    });
+
+    const subscription = isNewUser
+      ? {
+          plan: "trial",
+          status: "trial",
+          trialEndDate: user.trialEndsAt,
+          limits: { postsPerMonth: 7, commentsPerMonth: 14, ideasPerMonth: -1 },
+        }
+      : undefined;
+
+    res.status(isNewUser ? 201 : 200).json({
+      success: true,
+      message: isNewUser ? "Account created with Google" : "Logged in with Google",
+      isNewUser,
+      data: {
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+          profile: user.profile,
+          persona: user.persona,
+        },
+        token,
+        ...(subscription ? { subscription } : {}),
+      },
+    });
+  } catch (error) {
+    console.error("Google auth error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Google authentication failed",
+    });
+  }
+});
+
 // Login user - OPTIMIZED FOR SPEED
 router.post("/login", validateUserLogin, async (req, res) => {
   try {
     const { email, password } = req.body;
 
     // Find user by email - only select needed fields for faster query
-    const user = await User.findOne({ email }).select("_id name email password isActive lastLoginAt profile persona");
+    const user = await User.findOne({ email }).select("_id name email password authProvider isActive lastLoginAt profile persona");
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -204,6 +373,14 @@ router.post("/login", validateUserLogin, async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "Account is deactivated",
+      });
+    }
+
+    // Google-only users don't have a password
+    if (user.authProvider === "google" && !user.password) {
+      return res.status(401).json({
+        success: false,
+        message: "This account uses Google Sign-In. Please sign in with Google.",
       });
     }
 

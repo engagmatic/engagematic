@@ -7,7 +7,7 @@ class TrialService {
     this.trialLimits = {
       posts: 7, // 1 post per day for 7 days
       comments: 14, // 2 comments per day for 7 days
-      ideas: 14, // 2 ideas per day for 7 days
+      ideas: -1, // UNLIMITED ideas for all users
     };
   }
 
@@ -109,6 +109,7 @@ class TrialService {
 
         case "generate_idea":
           if (
+            subscription.limits.ideasPerMonth !== -1 &&
             subscription.usage.ideasGenerated >=
             subscription.limits.ideasPerMonth
           ) {
@@ -204,11 +205,9 @@ class TrialService {
             subscription.limits.commentsPerMonth -
               subscription.usage.commentsGenerated
           ),
-          ideas: Math.max(
-            0,
-            subscription.limits.ideasPerMonth -
-              subscription.usage.ideasGenerated
-          ),
+          ideas: subscription.limits.ideasPerMonth === -1
+            ? -1
+            : Math.max(0, subscription.limits.ideasPerMonth - subscription.usage.ideasGenerated),
         },
         trialEndDate: trialEndDate,
       };
@@ -242,7 +241,8 @@ class TrialService {
    * Calculate tokens for given limits
    */
   calculateTokens(limits) {
-    return limits.posts * 5 + limits.comments * 3 + limits.ideas * 4;
+    const ideaTokens = limits.ideas === -1 ? 100 : limits.ideas * 4;
+    return limits.posts * 5 + limits.comments * 3 + ideaTokens;
   }
 
   /**

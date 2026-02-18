@@ -3,7 +3,7 @@ import { OnboardingModal } from "@/components/OnboardingModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { LogoWithText } from "@/components/LogoWithText";
-import { LayoutDashboard, Home, User, LogOut, Lightbulb, FileText, MessageSquare, Menu, X, Calendar, Loader2 } from "lucide-react";
+import { LayoutDashboard, Home, User, LogOut, Lightbulb, FileText, MessageSquare, Menu, X, Calendar, Loader2, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSubscription } from "@/hooks/useSubscription";
 
@@ -30,11 +30,11 @@ export const DashboardLayout = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const navigationItems = [
-    { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/idea-generator", label: "Idea Generator", icon: Lightbulb },
-    { path: "/post-generator", label: "Post Generator", icon: FileText },
-    { path: "/comment-generator", label: "Comment Generator", icon: MessageSquare },
-    { path: "/content-planner", label: "Content Planner", icon: Calendar },
+    { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard, premiumOnly: false },
+    { path: "/idea-generator", label: "Idea Generator", icon: Lightbulb, premiumOnly: false },
+    { path: "/post-generator", label: "Post Generator", icon: FileText, premiumOnly: false },
+    { path: "/comment-generator", label: "Comment Generator", icon: MessageSquare, premiumOnly: false },
+    { path: "/content-planner", label: "Content Planner", icon: Calendar, premiumOnly: true },
   ] as const;
 
   // Save sidebar state to localStorage
@@ -155,12 +155,17 @@ export const DashboardLayout = () => {
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
+            const isLocked = item.premiumOnly && !hasPaidPlan;
 
             return (
               <button
                 key={item.path}
                 onClick={() => {
-                  navigate(item.path);
+                  if (isLocked) {
+                    navigate('/plan-management');
+                  } else {
+                    navigate(item.path);
+                  }
                   setMobileSidebarOpen(false);
                 }}
                 className={`
@@ -168,16 +173,29 @@ export const DashboardLayout = () => {
                   transition-all duration-200
                   ${sidebarOpen ? "" : "lg:justify-center lg:px-2"}
                   ${
-                    isActive
+                    isActive && !isLocked
                       ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                      : isLocked
+                      ? "text-gray-400 dark:text-gray-500 hover:bg-amber-50 dark:hover:bg-amber-950/20"
                       : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
                   }
                 `}
-                title={!sidebarOpen ? item.label : ""}
+                title={!sidebarOpen ? (isLocked ? `${item.label} (Premium)` : item.label) : ""}
               >
                 <Icon className="h-5 w-5 flex-shrink-0" />
                 {sidebarOpen && (
-                  <span className="font-medium">{item.label}</span>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className={`font-medium ${isLocked ? 'text-gray-400 dark:text-gray-500' : ''}`}>{item.label}</span>
+                    {isLocked && (
+                      <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wide flex-shrink-0">
+                        <Crown className="h-3 w-3" />
+                        Pro
+                      </span>
+                    )}
+                  </div>
+                )}
+                {!sidebarOpen && isLocked && (
+                  <Crown className="h-3 w-3 text-amber-500 absolute -top-1 -right-1" />
                 )}
               </button>
             );

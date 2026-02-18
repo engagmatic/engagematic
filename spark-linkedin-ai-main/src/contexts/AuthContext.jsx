@@ -147,6 +147,28 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const googleLogin = async (accessToken, referralCode) => {
+    dispatch({ type: "LOGIN_START" });
+    try {
+      const response = await apiClient.googleAuth(accessToken, referralCode);
+      if (response.success) {
+        dispatch({
+          type: "LOGIN_SUCCESS",
+          payload: {
+            user: response.data.user,
+            token: response.data.token,
+          },
+        });
+        return { success: true, isNewUser: response.isNewUser };
+      } else {
+        throw new Error(response.message || "Google sign-in failed");
+      }
+    } catch (error) {
+      dispatch({ type: "LOGIN_FAILURE", payload: error.message });
+      return { success: false, error: error.message };
+    }
+  };
+
   const logout = async () => {
     try {
       await apiClient.logout();
@@ -192,6 +214,7 @@ export function AuthProvider({ children }) {
     ...state,
     login,
     register,
+    googleLogin,
     logout,
     updateProfile,
     clearError,

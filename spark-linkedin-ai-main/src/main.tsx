@@ -1,7 +1,10 @@
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import App from "./App.tsx";
 import "./index.css";
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 // Apply fonts and render app
 const rootElement = document.getElementById("root");
@@ -16,6 +19,8 @@ document.documentElement.style.setProperty('--font-geist-mono', '"Courier New", 
 // Render the app immediately (don't wait for fonts)
 createRoot(rootElement).render(
   <HelmetProvider>
-    <App />
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <App />
+    </GoogleOAuthProvider>
   </HelmetProvider>
 );

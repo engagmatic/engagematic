@@ -221,6 +221,19 @@ class ApiClient {
     return response;
   }
 
+  async googleAuth(accessToken, referralCode) {
+    const response = await this.request("/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ access_token: accessToken, referralCode }),
+    });
+
+    if (response.success && response.data.token) {
+      this.setToken(response.data.token);
+    }
+
+    return response;
+  }
+
   async logout() {
     const response = await this.request("/auth/logout", {
       method: "POST",

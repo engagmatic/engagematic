@@ -119,9 +119,9 @@ export const CreditTrackingStatus = () => {
   const commentsPercentage = commentsLimit > 0 ? (commentsUsed / commentsLimit) * 100 : 0;
 
   const ideasUsed = subscription.usage?.ideasGenerated || 0;
-  const ideasLimit = subscription.limits?.ideasPerMonth || 25;
-  const isIdeasUnlimited = ideasLimit === -1;
-  const ideasPercentage = isIdeasUnlimited ? 0 : (ideasLimit > 0 ? (ideasUsed / ideasLimit) * 100 : 0);
+  const ideasLimit = subscription.limits?.ideasPerMonth ?? 25;
+  const isIdeasUnlimited = true;
+  const ideasPercentage = 0;
 
   const getUsageColor = (percentage: number) => {
     if (percentage >= 90) return 'text-red-600';
@@ -265,26 +265,16 @@ export const CreditTrackingStatus = () => {
                   Ideas
                 </span>
               </div>
-              <span className={`text-lg font-bold ${getUsageColor(ideasPercentage)}`}>
-                {isIdeasUnlimited ? `${ideasUsed} (Unlimited)` : `${ideasUsed}/${ideasLimit}`}
+              <span className="text-lg font-bold text-emerald-600">
+                ∞
               </span>
             </div>
-            {!isIdeasUnlimited && (
-              <>
-                <Progress 
-                  value={ideasPercentage} 
-                  className="h-2 bg-slate-100 dark:bg-slate-800"
-                />
-                <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
-                  {ideasLimit - ideasUsed} remaining this month
-                </p>
-              </>
-            )}
-            {isIdeasUnlimited && (
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 font-medium">
-                Unlimited ideas available
-              </p>
-            )}
+            <div className="flex items-center gap-1.5 mt-1">
+              <div className="h-2 flex-1 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400 opacity-60" />
+            </div>
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 font-medium">
+              Unlimited for all users
+            </p>
           </div>
         </div>
       </div>
@@ -302,7 +292,7 @@ export const CreditTrackingStatus = () => {
                 Experience the platform risk-free
               </h4>
               <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                You have <strong>{getTrialDaysRemaining()} days</strong> to explore all features. Generate up to <strong>{postsLimit} posts</strong>, <strong>{commentsLimit} comments</strong>, and <strong>{isIdeasUnlimited ? 'unlimited' : ideasLimit} content ideas</strong> to discover how Engagematic transforms your content strategy.
+                You have <strong>{getTrialDaysRemaining()} days</strong> to explore all features. Generate up to <strong>{postsLimit} posts</strong>, <strong>{commentsLimit} comments</strong>, and <strong>unlimited content ideas</strong> to discover how Engagematic transforms your content strategy.
               </p>
             </div>
           </div>

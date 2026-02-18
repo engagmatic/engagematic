@@ -183,7 +183,7 @@ userSubscriptionSchema.pre("save", function (next) {
       case "trial":
         this.limits.postsPerMonth = 3; // 3 posts for free trial
         this.limits.commentsPerMonth = 10; // 10 comments for free trial
-        this.limits.ideasPerMonth = 10; // 10 ideas for free trial
+        this.limits.ideasPerMonth = -1; // UNLIMITED ideas for all users
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = 1; // 1 profile analysis for free trial
@@ -411,7 +411,7 @@ userSubscriptionSchema.statics.createTrial = function (userId) {
     limits: {
       postsPerMonth: 3,
       commentsPerMonth: 10,
-      ideasPerMonth: 10,
+      ideasPerMonth: -1,
       templatesAccess: true,
       linkedinAnalysis: true,
       profileAnalyses: -1,

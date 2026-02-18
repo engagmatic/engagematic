@@ -167,10 +167,9 @@ class UsageService {
             0,
             limits.commentsPerMonth - currentUsage.commentsGenerated
           ),
-          ideas: Math.max(
-            0,
-            (limits.ideasPerMonth || 0) - (currentUsage.ideasGenerated || 0)
-          ),
+          ideas: limits.ideasPerMonth === -1
+            ? -1
+            : Math.max(0, (limits.ideasPerMonth || 0) - (currentUsage.ideasGenerated || 0)),
         },
         growth: {
           posts: Math.round(postsGrowth),
