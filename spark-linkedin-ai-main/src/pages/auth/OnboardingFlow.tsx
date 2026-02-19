@@ -14,8 +14,6 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
-
 // Quick selection data
 const QUICK_ROLES = [
   { value: "marketer", label: "Marketer", icon: "📈", industry: "Marketing", experience: "mid" },
@@ -215,26 +213,20 @@ const OnboardingFlow = () => {
                   </div>
 
                   {/* Google Sign-Up */}
-                  {GOOGLE_CLIENT_ID && (
-                    <>
-                      <GoogleSignInButton
-                        clientId={GOOGLE_CLIENT_ID}
-                        onSuccess={handleGoogleSuccess}
-                        onError={() => toast({ title: "Google sign-in failed", description: "Could not connect to Google.", variant: "destructive" })}
-                        text="Continue with Google"
-                        loadingText="Creating account..."
-                        disabled={isLoading || isGoogleLoading}
-                      />
-                      <div className="relative my-4">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-slate-200 dark:border-slate-700" />
-                        </div>
-                        <div className="relative flex justify-center">
-                          <span className="bg-card px-4 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">or</span>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                  <GoogleSignInButton
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => toast({ title: "Google sign-in failed", description: "Could not connect to Google.", variant: "destructive" })}
+                    variant="signup"
+                    disabled={isLoading || isGoogleLoading}
+                  />
+                  <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+                    </div>
+                    <div className="relative flex justify-center">
+                      <span className="bg-card px-4 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">or</span>
+                    </div>
+                  </div>
 
                   <div className="space-y-4">
                     <div>

@@ -3,9 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Loader2, Eye, EyeOff, Check, User, Sparkles, Lightbulb, Shield
-} from "lucide-react";
+import { Loader2, Eye, EyeOff, Check, User, Sparkles, Lightbulb, Shield } from "lucide-react";
 import { LogoWithText } from "@/components/LogoWithText";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
@@ -13,16 +11,12 @@ import { useToast } from "@/hooks/use-toast";
 import { PERSONA_PRESETS, isPersonaSlug, type PersonaSlug } from "@/constants/personaPresets";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
-
 const Register = () => {
-  const [formData, setFormData] = useState({
-    name: "", email: "", password: "", confirmPassword: ""
-  });
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [gBusy, setGBusy] = useState(false);
   const [errors, setErrors] = useState<any>({});
   const [personaSlug, setPersonaSlug] = useState<PersonaSlug | null>(null);
 
@@ -31,31 +25,28 @@ const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleChange = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev: any) => ({ ...prev, [field]: undefined }));
+  const handleChange = (field: string, value: string) => {
+    setFormData((p) => ({ ...p, [field]: value }));
+    if (errors[field]) setErrors((p: any) => ({ ...p, [field]: undefined }));
   };
 
   const validateForm = (): boolean => {
-    const newErrors: any = {};
-    if (!formData.name.trim()) newErrors.name = "Name is required";
-    if (!formData.email.trim()) newErrors.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Please enter a valid email address";
-    if (!formData.password) newErrors.password = "Password is required";
-    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
-    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const e: any = {};
+    if (!formData.name.trim()) e.name = "Name is required";
+    if (!formData.email.trim()) e.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) e.email = "Invalid email";
+    if (!formData.password) e.password = "Password is required";
+    else if (formData.password.length < 6) e.password = "At least 6 characters";
+    if (formData.password !== formData.confirmPassword) e.confirmPassword = "Passwords don't match";
+    setErrors(e);
+    return !Object.keys(e).length;
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !isLoading && validateForm()) handleSubmit();
-  };
+  const handleKeyDown = (e: React.KeyboardEvent) => { if (e.key === "Enter" && !isLoading && validateForm()) handleSubmit(); };
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const slugParam = params.get("persona");
-    setPersonaSlug(isPersonaSlug(slugParam) ? slugParam : null);
+    const p = new URLSearchParams(location.search).get("persona");
+    setPersonaSlug(isPersonaSlug(p) ? p : null);
   }, [location.search]);
 
   const selectedPersona = personaSlug ? PERSONA_PRESETS[personaSlug] : null;
@@ -65,47 +56,41 @@ const Register = () => {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      const result = await register({
+      const r = await register({
         name: formData.name, email: formData.email, password: formData.password,
         ...(selectedPersona?.profile ? { profile: selectedPersona.profile } : {}),
         ...(selectedPersona?.persona ? { persona: selectedPersona.persona } : {}),
       });
-      if (result.success) {
-        toast({ title: "Welcome to Engagematic!", description: "Your account has been created. Let's set up your profile." });
+      if (r.success) {
+        toast({ title: "Welcome to Engagematic!", description: "Account created. Let's set up your profile." });
         await new Promise((r) => setTimeout(r, 100));
         navigate(location.state?.returnTo || "/dashboard");
       } else {
-        toast({ title: "Registration failed", description: result.error || "Failed to create account", variant: "destructive" });
-      }
-    } catch (error: any) {
-      toast({ title: "Registration failed", description: error.message || "An unexpected error occurred", variant: "destructive" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGoogleSuccess = async (accessToken: string) => {
-    setIsGoogleLoading(true);
-    try {
-      const params = new URLSearchParams(location.search);
-      const refCode = params.get("ref") || undefined;
-      const result = await googleLogin(accessToken, refCode);
-      if (result.success) {
-        toast({
-          title: result.isNewUser ? "Welcome to Engagematic!" : "Welcome back!",
-          description: result.isNewUser ? "Account created — let's personalize your experience." : "Signed in with Google successfully.",
-        });
-        await new Promise((r) => setTimeout(r, 100));
-        navigate(location.state?.returnTo || "/dashboard");
-      } else {
-        toast({ title: "Google sign-up failed", description: result.error || "Something went wrong", variant: "destructive" });
+        toast({ title: "Registration failed", description: r.error || "Failed to create account", variant: "destructive" });
       }
     } catch (err: any) {
-      toast({ title: "Google sign-up failed", description: err.message || "An unexpected error occurred", variant: "destructive" });
-    } finally {
-      setIsGoogleLoading(false);
-    }
+      toast({ title: "Registration failed", description: err.message || "Unexpected error", variant: "destructive" });
+    } finally { setIsLoading(false); }
   };
+
+  const onGoogle = async (accessToken: string) => {
+    setGBusy(true);
+    try {
+      const ref = new URLSearchParams(location.search).get("ref") || undefined;
+      const r = await googleLogin(accessToken, ref);
+      if (r.success) {
+        toast({ title: r.isNewUser ? "Welcome to Engagematic!" : "Welcome back!", description: r.isNewUser ? "Account created — let's personalize your experience." : "Signed in with Google." });
+        await new Promise((r) => setTimeout(r, 100));
+        navigate(location.state?.returnTo || "/dashboard");
+      } else {
+        toast({ title: "Google sign-up failed", description: r.error || "Something went wrong", variant: "destructive" });
+      }
+    } catch (err: any) {
+      toast({ title: "Google sign-up failed", description: err.message || "Unexpected error", variant: "destructive" });
+    } finally { setGBusy(false); }
+  };
+
+  const anyBusy = isLoading || gBusy;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-background via-primary/5 to-background">
@@ -120,9 +105,7 @@ const Register = () => {
           <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-left shadow-sm dark:border-blue-900/60 dark:bg-blue-950/40 animate-in fade-in slide-in-from-top-2">
             <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-blue-700 dark:text-blue-200">{selectedPersona.label}</div>
             <div className="mt-2 text-sm font-semibold text-blue-900 dark:text-blue-100">{selectedPersona.stat}</div>
-            {selectedPersona.lines.map((line, i) => (
-              <p key={i} className="mt-1 text-sm text-blue-900/80 dark:text-blue-100/80">{line}</p>
-            ))}
+            {selectedPersona.lines.map((line, i) => <p key={i} className="mt-1 text-sm text-blue-900/80 dark:text-blue-100/80">{line}</p>)}
             <p className="mt-3 text-xs font-medium uppercase tracking-[0.26em] text-blue-600/80 dark:text-blue-300/80">We'll preload this playbook into your workspace.</p>
           </div>
         )}
@@ -136,79 +119,65 @@ const Register = () => {
             <p className="text-sm sm:text-base text-muted-foreground">Create your account in seconds</p>
           </div>
 
-          {/* Google Sign-Up */}
-          {GOOGLE_CLIENT_ID && (
-            <>
-              <GoogleSignInButton
-                clientId={GOOGLE_CLIENT_ID}
-                onSuccess={handleGoogleSuccess}
-                onError={() => toast({ title: "Google sign-up failed", description: "Could not connect to Google.", variant: "destructive" })}
-                text="Sign up with Google"
-                loadingText="Creating account..."
-                disabled={isLoading || isGoogleLoading}
-                size="large"
-              />
-              <div className="flex items-center justify-center gap-4 mt-3 mb-1">
-                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70"><Shield className="h-3 w-3" /><span>Secure</span></div>
-                <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70"><Sparkles className="h-3 w-3" /><span>7-day free trial</span></div>
-                <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                <div className="text-[11px] text-muted-foreground/70">No credit card</div>
-              </div>
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-slate-700" /></div>
-                <div className="relative flex justify-center">
-                  <span className="bg-card px-4 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">or sign up with email</span>
-                </div>
-              </div>
-            </>
-          )}
+          {/* Google */}
+          <GoogleSignInButton onSuccess={onGoogle}
+            onError={() => toast({ title: "Google sign-up failed", description: "Could not connect to Google.", variant: "destructive" })}
+            variant="signup" disabled={anyBusy} />
+
+          {/* Trust signals */}
+          <div className="flex items-center justify-center gap-4 mt-3 mb-1">
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/60"><Shield className="h-3 w-3" /><span>Secure</span></div>
+            <div className="w-1 h-1 rounded-full bg-muted-foreground/20" />
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/60"><Sparkles className="h-3 w-3" /><span>7-day free trial</span></div>
+            <div className="w-1 h-1 rounded-full bg-muted-foreground/20" />
+            <div className="text-[11px] text-muted-foreground/60">No credit card</div>
+          </div>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-slate-700" /></div>
+            <div className="relative flex justify-center"><span className="bg-card px-4 text-xs font-medium uppercase tracking-wider text-muted-foreground/60">or sign up with email</span></div>
+          </div>
 
           <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-5">
             <div className="grid md:grid-cols-2 gap-4 sm:gap-5">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
-                <Input id="name" type="text" placeholder="John Doe" value={formData.name}
-                  onChange={(e) => handleChange("name", e.target.value)}
-                  className={`h-11 transition-all ${errors.name ? "border-red-500" : "focus:border-blue-500"}`}
-                  disabled={isLoading} autoComplete="name" />
-                {errors.name && <p className="text-xs text-red-500 animate-in fade-in">{errors.name}</p>}
+                <Input id="name" placeholder="John Doe" value={formData.name} onChange={(e) => handleChange("name", e.target.value)}
+                  className={`h-11 ${errors.name ? "border-red-500" : ""}`} disabled={anyBusy} autoComplete="name" />
+                {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
-                <Input id="email" type="email" placeholder="john@example.com" value={formData.email}
-                  onChange={(e) => handleChange("email", e.target.value)}
-                  className={`h-11 transition-all ${errors.email ? "border-red-500" : "focus:border-blue-500"}`}
-                  disabled={isLoading} autoComplete="email" />
-                {errors.email && <p className="text-xs text-red-500 animate-in fade-in">{errors.email}</p>}
+                <Input id="email" type="email" placeholder="john@example.com" value={formData.email} onChange={(e) => handleChange("email", e.target.value)}
+                  className={`h-11 ${errors.email ? "border-red-500" : ""}`} disabled={anyBusy} autoComplete="email" />
+                {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                 <div className="relative">
                   <Input id="password" type={showPassword ? "text" : "password"} placeholder="Create a secure password"
                     value={formData.password} onChange={(e) => handleChange("password", e.target.value)}
-                    className={`h-11 transition-all ${errors.password ? "border-red-500" : "focus:border-blue-500"}`}
-                    disabled={isLoading} autoComplete="new-password" />
+                    className={`h-11 ${errors.password ? "border-red-500" : ""}`} disabled={anyBusy} autoComplete="new-password" />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)} disabled={isLoading}>
+                    onClick={() => setShowPassword(!showPassword)} disabled={anyBusy}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
-                {errors.password && <p className="text-xs text-red-500 animate-in fade-in">{errors.password}</p>}
+                {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
                 <div className="relative">
                   <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} placeholder="Confirm your password"
                     value={formData.confirmPassword} onChange={(e) => handleChange("confirmPassword", e.target.value)}
-                    className={`h-11 transition-all ${errors.confirmPassword ? "border-red-500" : "focus:border-blue-500"}`}
-                    disabled={isLoading} autoComplete="new-password" />
+                    className={`h-11 ${errors.confirmPassword ? "border-red-500" : ""}`} disabled={anyBusy} autoComplete="new-password" />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)} disabled={isLoading}>
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)} disabled={anyBusy}>
                     {showConfirmPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
-                {errors.confirmPassword && <p className="text-xs text-red-500 animate-in fade-in">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
               </div>
             </div>
 
@@ -216,21 +185,20 @@ const Register = () => {
               <Check className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <p className="text-xs sm:text-sm text-blue-900 dark:text-blue-100">Your password is encrypted and secure. We'll never store it in plain text.</p>
             </div>
-
             <div className="flex items-start gap-3 p-3 sm:p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
               <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 mt-0.5 flex-shrink-0" />
               <p className="text-xs sm:text-sm text-purple-900 dark:text-purple-100">After signup, you'll complete your profile setup to personalize your AI experience.</p>
             </div>
 
-            <Button type="submit" disabled={isLoading} size="lg"
+            <Button type="submit" disabled={anyBusy} size="lg"
               className="w-full gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 text-base sm:text-lg font-semibold py-6 sm:py-7">
-              {isLoading ? (<><Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />Creating account...</>) : (<><Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />Create Account</>)}
+              {isLoading ? (<><Loader2 className="h-5 w-5 animate-spin" />Creating account...</>) : (<><Sparkles className="h-5 w-5" />Create Account</>)}
             </Button>
           </form>
         </Card>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-muted-foreground">Already have an account?{" "}<Link to="/auth/login" className="text-primary hover:underline font-medium transition-colors">Sign in</Link></p>
+          <p className="text-sm text-muted-foreground">Already have an account?{" "}<Link to="/auth/login" className="text-primary hover:underline font-medium">Sign in</Link></p>
           <p className="text-xs text-muted-foreground mt-2">By signing up, you agree to our Terms of Service and Privacy Policy</p>
         </div>
       </div>
