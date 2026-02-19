@@ -1,6 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
-import { useGoogleLogin } from "@react-oauth/google";
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 interface GoogleSignInButtonProps {
   onSuccess: (accessToken: string) => void;
@@ -20,22 +21,78 @@ export function GoogleSignInButton({
   size = "default",
 }: GoogleSignInButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [sdkReady, setSdkReady] = useState(false);
 
-  const login = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      setIsLoading(true);
-      onSuccess(tokenResponse.access_token);
-    },
-    onError: () => {
-      setIsLoading(false);
-      onError?.();
-    },
-  });
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+
+    const checkGoogle = () => {
+      if ((window as any).google?.accounts?.oauth2) {
+        setSdkReady(true);
+        return true;
+      }
+      return false;
+    };
+
+    if (checkGoogle()) return;
+
+    // Load the Google Identity Services script if not present
+    if (!document.querySelector('script[src="https://accounts.google.com/gsi/client"]')) {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        // Give it a moment to initialize
+        setTimeout(checkGoogle, 200);
+      };
+      document.head.appendChild(script);
+    }
+
+    // Poll for readiness (the script might already be loading from another source)
+    const interval = setInterval(() => {
+      if (checkGoogle()) clearInterval(interval);
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleClick = useCallback(() => {
-    if (isLoading || disabled) return;
-    login();
-  }, [isLoading, disabled, login]);
+    if (isLoading || disabled || !sdkReady) return;
+
+    const google = (window as any).google;
+    if (!google?.accounts?.oauth2) {
+      onError?.();
+      return;
+    }
+
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: "email profile",
+      callback: (response: any) => {
+        if (response.access_token) {
+          setIsLoading(true);
+          onSuccess(response.access_token);
+        } else {
+          setIsLoading(false);
+          onError?.();
+        }
+      },
+      error_callback: () => {
+        setIsLoading(false);
+        onError?.();
+      },
+    });
+
+    client.requestAccessToken();
+  }, [isLoading, disabled, sdkReady, onSuccess, onError]);
+
+  // Reset loading when disabled changes (parent finished processing)
+  useEffect(() => {
+    if (!disabled) setIsLoading(false);
+  }, [disabled]);
+
+  if (!GOOGLE_CLIENT_ID) return null;
 
   const heightClass = size === "large" ? "h-[52px] sm:h-14" : "h-12";
   const radiusClass = size === "large" ? "rounded-xl" : "rounded-lg";
@@ -44,7 +101,7 @@ export function GoogleSignInButton({
     <button
       type="button"
       onClick={handleClick}
-      disabled={isLoading || disabled}
+      disabled={isLoading || disabled || !sdkReady}
       className={`group relative w-full flex items-center justify-center gap-3 ${heightClass} px-6 ${radiusClass} border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-[15px] transition-all duration-300 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-[0_4px_20px_rgba(66,133,244,0.18)] dark:hover:shadow-[0_4px_20px_rgba(66,133,244,0.3)] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed overflow-hidden`}
     >
       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/0 to-blue-500/0 group-hover:from-blue-50/60 group-hover:via-transparent group-hover:to-red-50/40 dark:group-hover:from-blue-500/5 dark:group-hover:via-transparent dark:group-hover:to-red-500/5 transition-all duration-500" />
