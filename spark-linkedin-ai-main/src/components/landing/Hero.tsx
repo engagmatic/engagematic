@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Play, Sparkles, Star } from "lucide-react";
+import { ArrowRight, Sparkles, Star } from "lucide-react";
 import heroImage from "@/assets/hero-pulse.jpg";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
