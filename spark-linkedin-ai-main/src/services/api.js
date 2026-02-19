@@ -221,10 +221,10 @@ class ApiClient {
     return response;
   }
 
-  async googleAuth(credentialOrToken, referralCode) {
+  async googleAuth(accessToken, referralCode) {
     const response = await this.request("/auth/google", {
       method: "POST",
-      body: JSON.stringify({ credential: credentialOrToken, referralCode }),
+      body: JSON.stringify({ access_token: accessToken, referralCode }),
     });
 
     if (response.success && response.data.token) {

@@ -71,7 +71,7 @@ const Login = () => {
           {/* Google */}
           <GoogleSignInButton
             onSuccess={onGoogle}
-            onError={() => toast({ title: "Google sign-in failed", description: "Could not connect to Google.", variant: "destructive" })}
+            onError={(detail) => toast({ title: "Google sign-in failed", description: detail || "Could not connect to Google.", variant: "destructive" })}
             variant="login"
             disabled={anyBusy}
           />

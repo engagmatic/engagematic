@@ -121,7 +121,7 @@ const Register = () => {
 
           {/* Google */}
           <GoogleSignInButton onSuccess={onGoogle}
-            onError={() => toast({ title: "Google sign-up failed", description: "Could not connect to Google.", variant: "destructive" })}
+            onError={(detail) => toast({ title: "Google sign-up failed", description: detail || "Could not connect to Google.", variant: "destructive" })}
             variant="signup" disabled={anyBusy} />
 
           {/* Trust signals */}
