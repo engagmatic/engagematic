@@ -1,4 +1,4 @@
-import { useState, useEffect, Component, type ReactNode, lazy, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,16 +12,9 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
-const GoogleSignInButton = lazy(() =>
-  import("@/components/GoogleSignInButton").then((m) => ({ default: m.GoogleSignInButton }))
-);
-
-class GoogleButtonBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
-  state = { hasError: false };
-  static getDerivedStateFromError() { return { hasError: true }; }
-  render() { return this.state.hasError ? null : this.props.children; }
-}
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 // Quick selection data
 const QUICK_ROLES = [
@@ -221,17 +214,17 @@ const OnboardingFlow = () => {
                     <p className="text-muted-foreground">Let's get you started quickly</p>
                   </div>
 
-                  {/* Google Sign-Up — safe wrapper */}
-                  <GoogleButtonBoundary>
-                    <Suspense fallback={null}>
+                  {/* Google Sign-Up */}
+                  {GOOGLE_CLIENT_ID && (
+                    <>
                       <GoogleSignInButton
+                        clientId={GOOGLE_CLIENT_ID}
                         onSuccess={handleGoogleSuccess}
                         onError={() => toast({ title: "Google sign-in failed", description: "Could not connect to Google.", variant: "destructive" })}
                         text="Continue with Google"
                         loadingText="Creating account..."
                         disabled={isLoading || isGoogleLoading}
                       />
-
                       <div className="relative my-4">
                         <div className="absolute inset-0 flex items-center">
                           <div className="w-full border-t border-slate-200 dark:border-slate-700" />
@@ -240,8 +233,8 @@ const OnboardingFlow = () => {
                           <span className="bg-card px-4 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">or</span>
                         </div>
                       </div>
-                    </Suspense>
-                  </GoogleButtonBoundary>
+                    </>
+                  )}
 
                   <div className="space-y-4">
                     <div>

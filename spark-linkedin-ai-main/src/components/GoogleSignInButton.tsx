@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Loader2 } from "lucide-react";
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
-
 interface GoogleSignInButtonProps {
+  clientId: string;
   onSuccess: (accessToken: string) => void;
   onError?: () => void;
   text?: string;
@@ -13,6 +12,7 @@ interface GoogleSignInButtonProps {
 }
 
 export function GoogleSignInButton({
+  clientId,
   onSuccess,
   onError,
   text = "Continue with Google",
@@ -22,13 +22,19 @@ export function GoogleSignInButton({
 }: GoogleSignInButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [sdkReady, setSdkReady] = useState(false);
+  const mounted = useRef(true);
 
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID) return;
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!clientId) return;
 
     const checkGoogle = () => {
       if ((window as any).google?.accounts?.oauth2) {
-        setSdkReady(true);
+        if (mounted.current) setSdkReady(true);
         return true;
       }
       return false;
@@ -36,29 +42,30 @@ export function GoogleSignInButton({
 
     if (checkGoogle()) return;
 
-    // Load the Google Identity Services script if not present
+    // Load the Google Identity Services script if not already present
     if (!document.querySelector('script[src="https://accounts.google.com/gsi/client"]')) {
       const script = document.createElement("script");
       script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
       script.defer = true;
-      script.onload = () => {
-        // Give it a moment to initialize
-        setTimeout(checkGoogle, 200);
-      };
+      script.onload = () => setTimeout(checkGoogle, 300);
       document.head.appendChild(script);
     }
 
-    // Poll for readiness (the script might already be loading from another source)
     const interval = setInterval(() => {
       if (checkGoogle()) clearInterval(interval);
     }, 500);
 
-    return () => clearInterval(interval);
-  }, []);
+    const timeout = setTimeout(() => clearInterval(interval), 10000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [clientId]);
 
   const handleClick = useCallback(() => {
-    if (isLoading || disabled || !sdkReady) return;
+    if (isLoading || disabled || !sdkReady || !clientId) return;
 
     const google = (window as any).google;
     if (!google?.accounts?.oauth2) {
@@ -67,32 +74,31 @@ export function GoogleSignInButton({
     }
 
     const client = google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: "email profile",
+      client_id: clientId,
+      scope: "email profile openid",
       callback: (response: any) => {
         if (response.access_token) {
-          setIsLoading(true);
+          if (mounted.current) setIsLoading(true);
           onSuccess(response.access_token);
         } else {
-          setIsLoading(false);
+          if (mounted.current) setIsLoading(false);
           onError?.();
         }
       },
       error_callback: () => {
-        setIsLoading(false);
+        if (mounted.current) setIsLoading(false);
         onError?.();
       },
     });
 
     client.requestAccessToken();
-  }, [isLoading, disabled, sdkReady, onSuccess, onError]);
+  }, [isLoading, disabled, sdkReady, clientId, onSuccess, onError]);
 
-  // Reset loading when disabled changes (parent finished processing)
   useEffect(() => {
-    if (!disabled) setIsLoading(false);
+    if (!disabled && mounted.current) setIsLoading(false);
   }, [disabled]);
 
-  if (!GOOGLE_CLIENT_ID) return null;
+  if (!clientId) return null;
 
   const heightClass = size === "large" ? "h-[52px] sm:h-14" : "h-12";
   const radiusClass = size === "large" ? "rounded-xl" : "rounded-lg";

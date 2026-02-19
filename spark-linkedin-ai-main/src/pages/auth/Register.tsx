@@ -1,4 +1,4 @@
-import { useState, useEffect, Component, type ReactNode, lazy, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,16 +11,9 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { PERSONA_PRESETS, isPersonaSlug, type PersonaSlug } from "@/constants/personaPresets";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
-const GoogleSignInButton = lazy(() =>
-  import("@/components/GoogleSignInButton").then((m) => ({ default: m.GoogleSignInButton }))
-);
-
-class GoogleButtonBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
-  state = { hasError: false };
-  static getDerivedStateFromError() { return { hasError: true }; }
-  render() { return this.state.hasError ? null : this.props.children; }
-}
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -72,12 +65,10 @@ const Register = () => {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      const personaPayload = selectedPersona?.persona;
-      const profilePayload = selectedPersona?.profile;
       const result = await register({
         name: formData.name, email: formData.email, password: formData.password,
-        ...(profilePayload ? { profile: profilePayload } : {}),
-        ...(personaPayload ? { persona: personaPayload } : {}),
+        ...(selectedPersona?.profile ? { profile: selectedPersona.profile } : {}),
+        ...(selectedPersona?.persona ? { persona: selectedPersona.persona } : {}),
       });
       if (result.success) {
         toast({ title: "Welcome to Engagematic!", description: "Your account has been created. Let's set up your profile." });
@@ -119,7 +110,6 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-background via-primary/5 to-background">
       <div className="w-full max-w-2xl">
-        {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
           <LogoWithText textSize="lg" className="mb-4 justify-center" />
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">Create your AI-powered LinkedIn presence</h1>
@@ -137,7 +127,6 @@ const Register = () => {
           </div>
         )}
 
-        {/* Main Card */}
         <Card className="p-5 sm:p-6 md:p-8 shadow-2xl border-2 border-blue-100/50 dark:border-blue-900/50 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="text-center mb-6">
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-4 shadow-lg animate-in zoom-in duration-300">
@@ -147,10 +136,11 @@ const Register = () => {
             <p className="text-sm sm:text-base text-muted-foreground">Create your account in seconds</p>
           </div>
 
-          {/* Google Sign-Up — safe: hidden if SDK unavailable */}
-          <GoogleButtonBoundary>
-            <Suspense fallback={null}>
+          {/* Google Sign-Up */}
+          {GOOGLE_CLIENT_ID && (
+            <>
               <GoogleSignInButton
+                clientId={GOOGLE_CLIENT_ID}
                 onSuccess={handleGoogleSuccess}
                 onError={() => toast({ title: "Google sign-up failed", description: "Could not connect to Google.", variant: "destructive" })}
                 text="Sign up with Google"
@@ -158,31 +148,21 @@ const Register = () => {
                 disabled={isLoading || isGoogleLoading}
                 size="large"
               />
-
-              {/* Trust Signals */}
               <div className="flex items-center justify-center gap-4 mt-3 mb-1">
-                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70">
-                  <Shield className="h-3 w-3" /><span>Secure</span>
-                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70"><Shield className="h-3 w-3" /><span>Secure</span></div>
                 <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70">
-                  <Sparkles className="h-3 w-3" /><span>7-day free trial</span>
-                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70"><Sparkles className="h-3 w-3" /><span>7-day free trial</span></div>
                 <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
                 <div className="text-[11px] text-muted-foreground/70">No credit card</div>
               </div>
-
-              {/* Divider */}
               <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200 dark:border-slate-700" />
-                </div>
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-slate-700" /></div>
                 <div className="relative flex justify-center">
                   <span className="bg-card px-4 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">or sign up with email</span>
                 </div>
               </div>
-            </Suspense>
-          </GoogleButtonBoundary>
+            </>
+          )}
 
           <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-5">
             <div className="grid md:grid-cols-2 gap-4 sm:gap-5">
@@ -244,20 +224,13 @@ const Register = () => {
 
             <Button type="submit" disabled={isLoading} size="lg"
               className="w-full gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 text-base sm:text-lg font-semibold py-6 sm:py-7">
-              {isLoading ? (
-                <><Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />Creating account...</>
-              ) : (
-                <><Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />Create Account</>
-              )}
+              {isLoading ? (<><Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />Creating account...</>) : (<><Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />Create Account</>)}
             </Button>
           </form>
         </Card>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link to="/auth/login" className="text-primary hover:underline font-medium transition-colors">Sign in</Link>
-          </p>
+          <p className="text-sm text-muted-foreground">Already have an account?{" "}<Link to="/auth/login" className="text-primary hover:underline font-medium transition-colors">Sign in</Link></p>
           <p className="text-xs text-muted-foreground mt-2">By signing up, you agree to our Terms of Service and Privacy Policy</p>
         </div>
       </div>

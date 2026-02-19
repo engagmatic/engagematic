@@ -1,4 +1,4 @@
-import { useState, Component, type ReactNode } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,18 +8,9 @@ import { LogoWithText } from "@/components/LogoWithText";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
-// Lazy-load Google button so the page never crashes if the SDK is missing
-import { lazy, Suspense } from "react";
-const GoogleSignInButton = lazy(() =>
-  import("@/components/GoogleSignInButton").then((m) => ({ default: m.GoogleSignInButton }))
-);
-
-class GoogleButtonBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
-  state = { hasError: false };
-  static getDerivedStateFromError() { return { hasError: true }; }
-  render() { return this.state.hasError ? null : this.props.children; }
-}
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -41,19 +32,12 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     const result = await login(formData);
-
     if (result.success) {
       toast({ title: "Welcome back!", description: "You're successfully logged in" });
-      const returnTo = location.state?.returnTo || "/dashboard";
-      navigate(returnTo);
+      navigate(location.state?.returnTo || "/dashboard");
     } else {
-      toast({
-        title: "Login failed",
-        description: result.error || "Invalid email or password",
-        variant: "destructive",
-      });
+      toast({ title: "Login failed", description: result.error || "Invalid email or password", variant: "destructive" });
     }
     setIsLoading(false);
   };
@@ -65,12 +49,9 @@ const Login = () => {
       if (result.success) {
         toast({
           title: result.isNewUser ? "Welcome to Engagematic!" : "Welcome back!",
-          description: result.isNewUser
-            ? "Your account has been created with Google."
-            : "Signed in with Google successfully.",
+          description: result.isNewUser ? "Your account has been created with Google." : "Signed in with Google successfully.",
         });
-        const returnTo = location.state?.returnTo || "/dashboard";
-        navigate(returnTo);
+        navigate(location.state?.returnTo || "/dashboard");
       } else {
         toast({ title: "Google sign-in failed", description: result.error || "Something went wrong", variant: "destructive" });
       }
@@ -91,20 +72,17 @@ const Login = () => {
         </div>
 
         <Card className="p-8 shadow-lg border-2">
-          {/* Google Sign-In — loads safely, hidden if SDK unavailable */}
-          <GoogleButtonBoundary>
-            <Suspense fallback={null}>
+          {/* Google Sign-In */}
+          {GOOGLE_CLIENT_ID && (
+            <>
               <GoogleSignInButton
+                clientId={GOOGLE_CLIENT_ID}
                 onSuccess={handleGoogleSuccess}
-                onError={() =>
-                  toast({ title: "Google sign-in failed", description: "Could not connect to Google.", variant: "destructive" })
-                }
+                onError={() => toast({ title: "Google sign-in failed", description: "Could not connect to Google.", variant: "destructive" })}
                 text="Continue with Google"
                 loadingText="Signing in..."
                 disabled={isLoading || isGoogleLoading}
               />
-
-              {/* Divider */}
               <div className="relative my-7">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-slate-200 dark:border-slate-700" />
@@ -113,45 +91,33 @@ const Login = () => {
                   <span className="bg-card px-4 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">or</span>
                 </div>
               </div>
-            </Suspense>
-          </GoogleButtonBoundary>
+            </>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">Email</Label>
-              <Input
-                id="email" name="email" type="email" placeholder="you@example.com"
-                value={formData.email} onChange={handleChange} required disabled={isLoading} className="h-11"
-              />
+              <Input id="email" name="email" type="email" placeholder="you@example.com"
+                value={formData.email} onChange={handleChange} required disabled={isLoading} className="h-11" />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-medium">Password</Label>
               <div className="relative">
-                <Input
-                  id="password" name="password" type={showPassword ? "text" : "password"}
+                <Input id="password" name="password" type={showPassword ? "text" : "password"}
                   placeholder="Enter your password" value={formData.password}
-                  onChange={handleChange} required disabled={isLoading} className="h-11"
-                />
-                <Button
-                  type="button" variant="ghost" size="sm"
+                  onChange={handleChange} required disabled={isLoading} className="h-11" />
+                <Button type="button" variant="ghost" size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)} disabled={isLoading}
-                >
+                  onClick={() => setShowPassword(!showPassword)} disabled={isLoading}>
                   {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                 </Button>
               </div>
             </div>
 
-            <Button
-              type="submit" disabled={isLoading}
-              className="w-full h-11 text-[15px] font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-300"
-            >
-              {isLoading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Signing in...</>
-              ) : (
-                "Sign In"
-              )}
+            <Button type="submit" disabled={isLoading}
+              className="w-full h-11 text-[15px] font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-300">
+              {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Signing in...</>) : "Sign In"}
             </Button>
           </form>
 
