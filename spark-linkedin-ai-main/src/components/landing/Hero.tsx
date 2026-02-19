@@ -108,14 +108,11 @@ export const Hero = () => {
             </Button>
             <Button 
               variant="outline"
-              onClick={() => {
-                const featuresSection = document.getElementById('features');
-                featuresSection?.scrollIntoView({ behavior: 'smooth' });
-              }}
+              onClick={() => navigate("/auth/register")}
               className="group h-12 sm:h-12 px-8 sm:px-10 bg-white hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-gray-900 dark:text-gray-100 font-semibold text-[15px] sm:text-base border border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto"
             >
-              Learn More
-              <Play className="ml-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
+              Sign Up
+              <ArrowRight className="ml-2 h-4 w-4 text-gray-600 dark:text-gray-400 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
 

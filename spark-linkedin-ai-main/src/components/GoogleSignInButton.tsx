@@ -1,149 +1,49 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 
 const GOOGLE_CLIENT_ID =
   import.meta.env.VITE_GOOGLE_CLIENT_ID ||
   "502515400049-lb7r6k1qd6lqaqjjdqn0vu8b9ocoing9.apps.googleusercontent.com";
 
 interface Props {
-  onSuccess: (accessToken: string) => void;
+  onSuccess?: (accessToken: string) => void;
   onError?: (detail?: string) => void;
   label?: string;
   disabled?: boolean;
   variant?: "login" | "signup";
 }
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        oauth2: {
-          initTokenClient: (config: any) => { requestAccessToken: () => void };
-        };
-      };
-    };
-  }
-}
-
-function loadGsiScript(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (window.google?.accounts?.oauth2) {
-      resolve();
-      return;
-    }
-    const existing = document.querySelector(
-      'script[src="https://accounts.google.com/gsi/client"]'
-    );
-    if (existing) {
-      const poll = setInterval(() => {
-        if (window.google?.accounts?.oauth2) {
-          clearInterval(poll);
-          resolve();
-        }
-      }, 100);
-      setTimeout(() => { clearInterval(poll); reject(new Error("timeout")); }, 10000);
-      return;
-    }
-    const s = document.createElement("script");
-    s.src = "https://accounts.google.com/gsi/client";
-    s.async = true;
-    s.defer = true;
-    s.onload = () => {
-      const poll = setInterval(() => {
-        if (window.google?.accounts?.oauth2) {
-          clearInterval(poll);
-          resolve();
-        }
-      }, 100);
-      setTimeout(() => { clearInterval(poll); reject(new Error("timeout")); }, 10000);
-    };
-    s.onerror = () => reject(new Error("Failed to load Google SDK"));
-    document.head.appendChild(s);
+function getGoogleOAuthURL() {
+  const redirectUri = window.location.origin + "/auth/google/callback";
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: redirectUri,
+    response_type: "code",
+    scope: "email profile openid",
+    access_type: "offline",
+    prompt: "select_account",
   });
+  return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
 
 export function GoogleSignInButton({
-  onSuccess,
-  onError,
-  label,
   disabled = false,
   variant = "login",
 }: Props) {
-  const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [loadError, setLoadError] = useState("");
-  const alive = useRef(true);
 
-  useEffect(() => {
-    alive.current = true;
-    loadGsiScript()
-      .then(() => {
-        if (alive.current) setReady(true);
-      })
-      .catch((err) => {
-        if (alive.current) setLoadError(err.message);
-      });
-    return () => { alive.current = false; };
-  }, []);
-
-  useEffect(() => {
-    if (!disabled && alive.current) setBusy(false);
-  }, [disabled]);
-
-  const text =
-    label ?? (variant === "signup" ? "Sign up with Google" : "Continue with Google");
+  const text = variant === "signup" ? "Sign up with Google" : "Continue with Google";
 
   const handleClick = useCallback(() => {
-    if (!ready || busy || disabled) return;
+    if (disabled || busy) return;
     setBusy(true);
-    try {
-      const client = window.google!.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: "email profile openid",
-        callback: (res: any) => {
-          if (res.access_token) {
-            onSuccess(res.access_token);
-          } else {
-            if (alive.current) setBusy(false);
-            onError?.(res.error || "no_token");
-          }
-        },
-        error_callback: (err: any) => {
-          if (alive.current) setBusy(false);
-          const errType = err?.type || "unknown";
-          if (errType === "popup_closed") {
-            onError?.("You closed the Google popup. Please try again.");
-          } else if (errType === "popup_failed_to_open") {
-            onError?.("Popup was blocked by your browser. Please allow popups for this site.");
-          } else {
-            onError?.(`Google error: ${errType}`);
-          }
-        },
-      });
-      client.requestAccessToken();
-    } catch (e: any) {
-      if (alive.current) setBusy(false);
-      onError?.(e?.message || "Failed to start Google sign-in");
-    }
-  }, [ready, busy, disabled, onSuccess, onError]);
-
-  if (loadError) {
-    return (
-      <button
-        type="button"
-        disabled
-        className="w-full flex items-center justify-center gap-3 h-[52px] rounded-xl
-          border border-red-200 bg-red-50 text-red-500 font-medium text-sm cursor-not-allowed"
-      >
-        Google Sign-In unavailable ({loadError})
-      </button>
-    );
-  }
+    window.location.href = getGoogleOAuthURL();
+  }, [disabled, busy]);
 
   return (
     <button
       type="button"
       onClick={handleClick}
-      disabled={busy || disabled || !ready}
+      disabled={busy || disabled}
       className="group relative w-full flex items-center justify-center gap-3 h-[52px] rounded-xl
         border border-slate-200/80 dark:border-slate-700/80
         bg-white dark:bg-slate-900
@@ -171,9 +71,7 @@ export function GoogleSignInButton({
         </svg>
       )}
 
-      <span className="relative">
-        {!ready && !busy ? "Loading Google..." : busy ? "Please wait..." : text}
-      </span>
+      <span className="relative">{busy ? "Redirecting to Google..." : text}</span>
     </button>
   );
 }

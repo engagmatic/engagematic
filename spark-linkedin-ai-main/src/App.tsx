@@ -14,6 +14,7 @@ import { DashboardLayout } from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+const GoogleCallback = lazy(() => import("./pages/auth/GoogleCallback"));
 
 // Lazy load heavy components for better performance
 const PostGenerator = lazy(() => import("./pages/PostGenerator"));
@@ -96,6 +97,7 @@ const App = () => (
                 {/* Public auth pages without layout */}
                 <Route path="/auth/login" element={<Login />} />
                 <Route path="/auth/register" element={<Register />} />
+                <Route path="/auth/google/callback" element={<Suspense fallback={<PageLoader />}><GoogleCallback /></Suspense>} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Register />} />
                 <Route path="/testimonial" element={<TestimonialCollection />} />

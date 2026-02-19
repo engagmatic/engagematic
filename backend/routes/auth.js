@@ -190,12 +190,12 @@ router.post("/register", validateUserRegistration, async (req, res) => {
 // Google OAuth — verify token, create or log in user
 router.post("/google", async (req, res) => {
   try {
-    const { credential, access_token, referralCode } = req.body;
+    const { credential, access_token, code, redirect_uri, referralCode } = req.body;
 
-    if (!credential && !access_token) {
+    if (!credential && !access_token && !code) {
       return res.status(400).json({
         success: false,
-        message: "Google credential or access token is required",
+        message: "Google credential, access token, or authorization code is required",
       });
     }
 
@@ -208,7 +208,32 @@ router.post("/google", async (req, res) => {
 
     let googleId, email, name, picture;
 
-    if (credential) {
+    if (code) {
+      // Exchange authorization code for tokens (redirect flow — works on all devices)
+      try {
+        const codeClient = new OAuth2Client(
+          config.GOOGLE_CLIENT_ID,
+          config.GOOGLE_CLIENT_SECRET,
+          redirect_uri || config.FRONTEND_URL + "/auth/google/callback"
+        );
+        const { tokens } = await codeClient.getToken(code);
+        const ticket = await googleClient.verifyIdToken({
+          idToken: tokens.id_token,
+          audience: config.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        googleId = payload.sub;
+        email = payload.email;
+        name = payload.name;
+        picture = payload.picture;
+      } catch (codeErr) {
+        console.error("Google code exchange failed:", codeErr.message);
+        return res.status(401).json({
+          success: false,
+          message: "Invalid Google authorization code",
+        });
+      }
+    } else if (credential) {
       // Verify Google ID token (from GoogleLogin component)
       let ticket;
       try {

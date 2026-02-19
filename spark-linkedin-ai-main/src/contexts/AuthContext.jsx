@@ -147,10 +147,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const googleLogin = async (accessToken, referralCode) => {
+  const googleLogin = async (tokenOrCode, referralCode, redirectUri) => {
     dispatch({ type: "LOGIN_START" });
     try {
-      const response = await apiClient.googleAuth(accessToken, referralCode);
+      const response = await apiClient.googleAuth(tokenOrCode, referralCode, redirectUri);
       if (response.success) {
         dispatch({
           type: "LOGIN_SUCCESS",
