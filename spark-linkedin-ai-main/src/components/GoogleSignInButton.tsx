@@ -79,26 +79,31 @@ export function GoogleSignInButton({ onSuccess, onError, label, disabled = false
 
   const handleClick = useCallback(() => {
     if (!ready || busy || disabled) return;
+    console.log("[GoogleSignInButton] Button clicked, initiating OAuth flow...");
     try {
       const client = window.google!.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
         scope: "email profile openid",
         callback: (res: any) => {
+          console.log("[GoogleSignInButton] OAuth callback:", res.error || "success");
           if (res.access_token) {
             if (alive.current) setBusy(true);
             onSuccess(res.access_token);
           } else {
+            console.error("[GoogleSignInButton] No access_token in response:", JSON.stringify(res));
             if (alive.current) setBusy(false);
             onError?.();
           }
         },
-        error_callback: () => {
+        error_callback: (err: any) => {
+          console.error("[GoogleSignInButton] error_callback fired:", JSON.stringify(err));
           if (alive.current) setBusy(false);
           onError?.();
         },
       });
       client.requestAccessToken();
-    } catch {
+    } catch (e: any) {
+      console.error("[GoogleSignInButton] catch error:", e?.message || e);
       onError?.();
     }
   }, [ready, busy, disabled, onSuccess, onError]);
