@@ -211,10 +211,11 @@ router.post("/google", async (req, res) => {
     if (code) {
       // Exchange authorization code for tokens (redirect flow — works on all devices)
       try {
+        const baseUrl = (config.FRONTEND_URL || "").replace(/\/$/, "");
         const codeClient = new OAuth2Client(
           config.GOOGLE_CLIENT_ID,
           config.GOOGLE_CLIENT_SECRET,
-          redirect_uri || config.FRONTEND_URL + "/auth/google/callback"
+          redirect_uri || `${baseUrl}/auth/google/callback`
         );
         const { tokens } = await codeClient.getToken(code);
         const ticket = await googleClient.verifyIdToken({

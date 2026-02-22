@@ -13,7 +13,9 @@ interface Props {
 }
 
 function getGoogleOAuthURL() {
-  const redirectUri = window.location.origin + "/auth/google/callback";
+  // Must match EXACTLY one of the Authorized redirect URIs in Google Cloud Console (no trailing slash).
+  const origin = window.location.origin.replace(/\/$/, "");
+  const redirectUri = `${origin}/auth/google/callback`;
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
     redirect_uri: redirectUri,

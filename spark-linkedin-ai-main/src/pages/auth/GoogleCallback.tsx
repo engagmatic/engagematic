@@ -30,7 +30,8 @@ const GoogleCallback = () => {
     }
 
     const referralCode = localStorage.getItem("engagematic_ref") || undefined;
-    const redirectUri = window.location.origin + "/auth/google/callback";
+    const origin = window.location.origin.replace(/\/$/, "");
+    const redirectUri = `${origin}/auth/google/callback`;
 
     (async () => {
       try {
