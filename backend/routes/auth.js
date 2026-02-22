@@ -210,12 +210,20 @@ router.post("/google", async (req, res) => {
 
     if (code) {
       // Exchange authorization code for tokens (redirect flow — works on all devices)
+      if (!config.GOOGLE_CLIENT_SECRET) {
+        console.error("GOOGLE_CLIENT_SECRET is not set on the server");
+        return res.status(500).json({
+          success: false,
+          message: "Google OAuth is not fully configured on the server (missing client secret)",
+        });
+      }
+      const baseUrl = (config.FRONTEND_URL || "").replace(/\/$/, "");
+      const effectiveRedirectUri = (redirect_uri && redirect_uri.trim()) || `${baseUrl}/auth/google/callback`;
       try {
-        const baseUrl = (config.FRONTEND_URL || "").replace(/\/$/, "");
         const codeClient = new OAuth2Client(
           config.GOOGLE_CLIENT_ID,
           config.GOOGLE_CLIENT_SECRET,
-          redirect_uri || `${baseUrl}/auth/google/callback`
+          effectiveRedirectUri
         );
         const { tokens } = await codeClient.getToken(code);
         const ticket = await googleClient.verifyIdToken({
@@ -228,10 +236,15 @@ router.post("/google", async (req, res) => {
         name = payload.name;
         picture = payload.picture;
       } catch (codeErr) {
-        console.error("Google code exchange failed:", codeErr.message);
+        const errMsg = codeErr.message || String(codeErr);
+        console.error("Google code exchange failed:", errMsg, "redirect_uri:", effectiveRedirectUri);
+        const isRedirectMismatch = /redirect_uri_mismatch|redirect_uri/i.test(errMsg);
+        const userMessage = isRedirectMismatch
+          ? "Google sign-in failed: redirect URI mismatch. Add this exact URL to Authorized redirect URIs in Google Cloud Console: " + effectiveRedirectUri
+          : "Google sign-in failed. Please try again or use email/password.";
         return res.status(401).json({
           success: false,
-          message: "Invalid Google authorization code",
+          message: userMessage,
         });
       }
     } else if (credential) {

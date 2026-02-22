@@ -52,12 +52,20 @@ const GoogleCallback = () => {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/5">
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-4 max-w-md">
           <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto">
             <span className="text-red-500 text-2xl">✕</span>
           </div>
-          <h2 className="text-xl font-semibold text-red-600">{error}</h2>
-          <p className="text-muted-foreground text-sm">Redirecting to login...</p>
+          <h2 className="text-xl font-semibold text-red-600">Google sign-in failed</h2>
+          <p className="text-muted-foreground text-sm">{error}</p>
+          <p className="text-muted-foreground text-xs">Redirecting to login shortly, or click below.</p>
+          <button
+            type="button"
+            onClick={() => navigate("/auth/login")}
+            className="text-primary font-medium text-sm hover:underline"
+          >
+            Back to login
+          </button>
         </div>
       </div>
     );

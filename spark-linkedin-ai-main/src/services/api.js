@@ -136,7 +136,8 @@ class ApiClient {
           
           throw new Error(fullErrorMsg);
         } else if (response.status === 401) {
-          throw new Error("Authentication required. Please log in again.");
+          const msg = data?.message || "Authentication required. Please log in again.";
+          throw new Error(msg);
         } else if (response.status === 403) {
           throw new Error(data.message || "Access denied");
         } else if (response.status === 404) {

@@ -41,4 +41,18 @@ http://localhost:5173
 
 ---
 
+## If you get 401 Unauthorized from the backend
+
+The backend (Render) must have these **Environment Variables** set:
+
+| Variable | Example | Required |
+|----------|---------|----------|
+| `GOOGLE_CLIENT_ID` | `502515400049-xxx.apps.googleusercontent.com` | Yes |
+| `GOOGLE_CLIENT_SECRET` | `GOCSPX-xxx` | Yes |
+| `FRONTEND_URL` | `https://engagematic.com` (no trailing slash) | Yes (for fallback redirect_uri) |
+
+Without `GOOGLE_CLIENT_SECRET`, the server cannot exchange the authorization code for a token and returns 401.
+
+---
+
 **Important:** The redirect URI must match **exactly** (including `http` vs `https`, and no trailing slash). The app sends: `{origin}/auth/google/callback` (e.g. `https://engagematic.com/auth/google/callback`).
