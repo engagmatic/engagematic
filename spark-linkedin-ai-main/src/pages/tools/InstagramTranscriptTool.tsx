@@ -160,7 +160,7 @@ export default function InstagramTranscriptTool() {
   const faqData = [
     {
       question: "Is this transcript tool really free?",
-      answer: "Yes! You can generate up to 3 transcripts completely free without creating an account. If you need to generate more, you can sign up for a free or premium account to access higher limits.",
+      answer: "Yes! You can generate up to 5 transcripts completely free without creating an account. If you need to generate more, you can sign up for a free or premium account to access higher limits.",
     },
     {
       question: "How long does the transcription process take?",
@@ -182,7 +182,7 @@ export default function InstagramTranscriptTool() {
     <div className="min-h-screen bg-gradient-to-b from-background via-purple-500/5 to-background">
       <SEO
         title="Free Instagram Transcript Generator – Reels, Post, IGTV | Engagematic"
-        description="Paste any Instagram Reel, Post, or IGTV URL and get a full high-accuracy text transcript instantly. Free, fast Cloud AI transcription with no signup required for up to 3 transcripts."
+        description="Paste any Instagram Reel, Post, or IGTV URL and get a full high-accuracy text transcript instantly. Free, fast Cloud AI transcription with no signup required for up to 5 transcripts."
         keywords="instagram transcript generator, transcribe instagram reel, instagram to text free, gemini audio transcription, transcribe reel online, instagram audio extractor"
         url={`${SITE_URL}/tools/instagram-transcript-generator`}
         structuredData={[breadcrumbSchema, faqSchema]}
@@ -194,7 +194,7 @@ export default function InstagramTranscriptTool() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-4xl text-center">
           <Badge className="mb-4 bg-purple-500/10 text-purple-600 border-purple-500/20 inline-flex items-center gap-1.5 py-1 px-3">
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-            3 Free Transcripts · Cloud Fast · No Account Required
+            5 Free Transcripts · Cloud Fast · No Account Required
           </Badge>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-5 text-gradient-premium-world-class tracking-tight leading-tight">
             Instagram Transcript Generator
@@ -405,7 +405,7 @@ export default function InstagramTranscriptTool() {
                       Instantly repurpose Instagram scripts into highly optimized LinkedIn content in our editor.
                     </p>
                   </div>
-                  <Link to="/post-generator" className="w-full sm:w-auto">
+                  <Link to="/post-generator" state={{ prefilledTopic: transcript }} className="w-full sm:w-auto">
                     <Button size="sm" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white gap-1 hover:brightness-105 active:scale-95 transition-all">
                       Go to Post Generator
                       <ArrowRight className="w-3.5 h-3.5" />

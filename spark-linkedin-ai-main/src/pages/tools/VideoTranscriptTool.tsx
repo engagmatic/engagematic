@@ -628,7 +628,7 @@ const VideoTranscriptTool = () => {
                       Use Engagematic's AI to generate high-performing LinkedIn content from your video transcript.
                     </p>
                   </div>
-                  <Link to="/post-generator">
+                  <Link to="/post-generator" state={{ prefilledTopic: transcript }}>
                     <Button size="sm" className="gap-1.5 whitespace-nowrap bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
                       Try Post Generator
                       <ArrowRight className="w-3.5 h-3.5" />
