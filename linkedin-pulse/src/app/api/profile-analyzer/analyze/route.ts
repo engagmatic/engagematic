@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     
     // Profile analysis succeeded - use ONLY real profile data
     console.log("✅ Profile analyzed successfully - using real profile data")
-    let validatedInput = {
+    let validatedInput: any = {
       persona: body.persona || "Job Seeker",
       headline: profileData.data.headline, // ONLY real profile data
       about: profileData.data.about, // ONLY real profile data

@@ -18,11 +18,11 @@ interface ResultsDisplayProps {
 }
 
 export function ResultsDisplay({ data, onReset, showUpgrade = false }: ResultsDisplayProps) {
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState<string | false>(false)
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string, key: string = "default") => {
     navigator.clipboard.writeText(text)
-    setCopied(true)
+    setCopied(key)
     toast.success("Copied to clipboard!")
     setTimeout(() => setCopied(false), 2000)
   }
