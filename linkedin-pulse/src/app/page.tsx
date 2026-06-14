@@ -2,6 +2,15 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Sparkles, TrendingUp, Target } from "lucide-react"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Optimize Your LinkedIn Profile - Free Analyzer & AI Recommendations | Engagematic",
+  description: "Boost your LinkedIn visibility and grow your professional presence with AI-powered insights. Analyze your headline and about section for free.",
+  alternates: {
+    canonical: "https://www.engagematic.com/tools/profile-analyzer",
+  },
+}
 
 export default function Home() {
   return (

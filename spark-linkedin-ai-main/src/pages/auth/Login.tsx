@@ -9,6 +9,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
+import { SEO } from "@/components/SEO";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -40,6 +41,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/5">
+      <SEO title="Sign In | Engagematic" noindex={true} />
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <LogoWithText textSize="lg" className="mb-4 justify-center" />

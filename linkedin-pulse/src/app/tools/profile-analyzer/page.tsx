@@ -21,8 +21,64 @@ export default function ProfileAnalyzerPage() {
     setShowUpgrade(false)
   }
 
+  const toolSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Free LinkedIn Profile Analyzer",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "1250",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "description": "Get instant AI-powered analysis of your LinkedIn profile. Discover your profile score, receive personalized optimization tips, and boost your visibility. 100% free, no signup required.",
+    "url": "https://www.engagematic.com/tools/profile-analyzer"
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.engagematic.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Tools",
+        "item": "https://www.engagematic.com/tools"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Profile Analyzer",
+        "item": "https://www.engagematic.com/tools/profile-analyzer"
+      }
+    ]
+  };
+
   return (
     <div className="container mx-auto py-12 px-4">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(toolSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold tracking-tight mb-2">

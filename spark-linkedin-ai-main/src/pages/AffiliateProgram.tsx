@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import { SEO } from "@/components/SEO";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -66,22 +66,12 @@ export default function AffiliateProgram() {
 
   return (
     <>
-      <Helmet>
-        <title>Affiliate Program - Earn 10% Recurring Commissions | Engagematic</title>
-        <meta
-          name="description"
-          content="Join Engagematic Affiliate Program. Earn 10% recurring monthly commissions for every subscription. Share with students, creators, and professionals. Transparent tracking, instant payouts."
-        />
-        <meta
-          name="keywords"
-          content="affiliate program, LinkedIn tools referral, student affiliate, creator rewards, SaaS commission, referral program, earn money online"
-        />
-        <meta property="og:title" content="Engagematic Affiliate Program - Earn 10% Monthly" />
-        <meta property="og:description" content="Share Engagematic and earn 10% recurring commissions every month. Perfect for students, creators, and LinkedIn professionals." />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <link rel="canonical" href={`${window.location.origin}/affiliate`} />
-      </Helmet>
+      <SEO
+        title="Affiliate Program - Earn 10% Recurring Commissions | Engagematic"
+        description="Join Engagematic Affiliate Program. Earn 10% recurring monthly commissions for every subscription. Share with students, creators, and professionals. Transparent tracking, instant payouts."
+        keywords="affiliate program, LinkedIn tools referral, student affiliate, creator rewards, SaaS commission, referral program, earn money online"
+        url="/affiliate"
+      />
 
       <div className="min-h-screen bg-gradient-to-b from-purple-50/50 via-white to-blue-50/50">
         {/* Hero Section */}

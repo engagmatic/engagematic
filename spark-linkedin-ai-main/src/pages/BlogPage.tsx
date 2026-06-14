@@ -6,6 +6,8 @@ import { ArrowLeft, Calendar, Clock, Share2, Users, TrendingUp, Target, Briefcas
 import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon, premiumOutlineCTAClasses } from "@/styles/premiumButtons";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { SEO } from "@/components/SEO";
+import { generateArticleSchema } from "@/constants/seo";
 
 interface BlogContent {
   id: string;
@@ -1422,6 +1424,26 @@ const BlogPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <SEO 
+        title={`${blog.title} | Engagematic`}
+        description={blog.excerpt}
+        keywords={blog.tags.join(', ')}
+        image={blog.banner}
+        url={`/blogs/${blog.slug}`}
+        type="article"
+        author="Engagematic Team"
+        publishedTime={blog.publishDate}
+        modifiedTime={blog.publishDate}
+        structuredData={generateArticleSchema({
+          title: blog.title,
+          description: blog.excerpt,
+          author: "Engagematic Team",
+          datePublished: blog.publishDate,
+          dateModified: blog.publishDate,
+          image: blog.banner.startsWith('http') ? blog.banner : `https://www.engagematic.com${blog.banner}`,
+          url: `https://www.engagematic.com/blogs/${blog.slug}`
+        })}
+      />
       {/* Header */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-8">

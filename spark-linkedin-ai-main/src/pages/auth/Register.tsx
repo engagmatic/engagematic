@@ -10,6 +10,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { PERSONA_PRESETS, isPersonaSlug, type PersonaSlug } from "@/constants/personaPresets";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
+import { SEO } from "@/components/SEO";
 
 const Register = () => {
   const [formData, setFormData] = useState({ name: "", email: "", password: "", confirmPassword: "" });
@@ -74,6 +75,7 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-background via-primary/5 to-background">
+      <SEO title="Sign Up | Engagematic" noindex={true} />
       <div className="w-full max-w-2xl">
         <div className="text-center mb-6 sm:mb-8">
           <LogoWithText textSize="lg" className="mb-4 justify-center" />

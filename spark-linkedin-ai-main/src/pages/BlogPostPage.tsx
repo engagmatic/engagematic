@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar, User, Clock, ArrowLeft, Share2, Bookmark, Eye } from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { SEO } from "@/components/SEO";
+import { generateArticleSchema } from "@/constants/seo";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const API_BASE = `${API_URL}`;
@@ -118,6 +120,26 @@ const BlogPostPage = () => {
 
   return (
     <div className="min-h-screen gradient-hero">
+      <SEO 
+        title={`${blogPost.title} | Engagematic`}
+        description={blogPost.excerpt}
+        keywords={blogPost.seo?.keywords?.join(', ') || blogPost.category}
+        image={blogPost.bannerImage}
+        url={`/blogs/${blogPost.slug}`}
+        type="article"
+        author={blogPost.author.name}
+        publishedTime={blogPost.publishedAt || blogPost.createdAt}
+        modifiedTime={blogPost.publishedAt || blogPost.createdAt}
+        structuredData={generateArticleSchema({
+          title: blogPost.title,
+          description: blogPost.excerpt,
+          author: blogPost.author.name,
+          datePublished: blogPost.publishedAt || blogPost.createdAt,
+          dateModified: blogPost.publishedAt || blogPost.createdAt,
+          image: blogPost.bannerImage || `https://www.engagematic.com/og-default.png`,
+          url: `https://www.engagematic.com/blogs/${blogPost.slug}`
+        })}
+      />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Back Button */}
         <Link to="/blogs">
