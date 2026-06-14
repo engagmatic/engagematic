@@ -18,13 +18,13 @@ GOOGLE_AI_API_KEY=your_new_key_here
 
 **Important:** If you see "API key was reported as leaked" or "404 model not found", create a **new** key and update `.env`.
 
-## 3. Models (default: Gemini 2.0)
+## 3. Models (default: Gemini 2.5)
 
-The app uses **gemini-2.0-flash** (fallback: **gemini-2.0-flash-lite**). These work with the current Google AI API. To override:
+The app uses **gemini-2.5-flash** (fallback: **gemini-2.5-pro**). These work with the current Google AI API. To override:
 
 ```env
-GEMINI_MODEL=gemini-2.0-flash-lite
-GEMINI_FALLBACK_MODEL=gemini-2.0-flash
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_FALLBACK_MODEL=gemini-2.5-pro
 ```
 
 ## 4. Rate limits (429)

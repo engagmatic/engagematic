@@ -1,9 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { config } from "../config/index.js";
 
-// Gemini 2.0 Flash (available in current API). Override with GEMINI_MODEL in .env.
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-const GEMINI_FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL || "gemini-2.0-flash-lite";
+// Gemini 2.5 Flash. Override with GEMINI_MODEL in .env.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const GEMINI_FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL || "gemini-2.5-pro";
 
 function maskApiKey(key) {
   if (!key || key.length < 12) return "(too short to mask)";

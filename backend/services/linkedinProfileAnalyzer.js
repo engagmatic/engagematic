@@ -6,7 +6,7 @@ class LinkedInProfileAnalyzer {
     this.browser = null;
     this.page = null;
     this.genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+    this.model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   }
 
   async initialize() {

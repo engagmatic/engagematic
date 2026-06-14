@@ -4,13 +4,13 @@ const key = process.env.GOOGLE_AI_API_KEY;
 console.log("Key (last 4):", key ? key.slice(-4) : "missing");
 
 const res = await fetch(
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + key,
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + key,
   {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [{ parts: [{ text: "Say hello in one word." }] }],
-      generationConfig: { maxOutputTokens: 10 },
+      generationConfig: { maxOutputTokens: 100 },
     }),
   }
 );

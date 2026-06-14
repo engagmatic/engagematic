@@ -93,7 +93,7 @@ export async function analyzeProfile(
     }
     
     // Use available model or fallback to user's choice or default
-    const modelName = process.env.GEMINI_MODEL || availableModel || "gemini-pro"
+    const modelName = process.env.GEMINI_MODEL || availableModel || "gemini-2.5-flash"
     
     // Initialize model with systemInstruction
     const model = genAI.getGenerativeModel({
