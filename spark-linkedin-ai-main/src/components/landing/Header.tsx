@@ -55,6 +55,7 @@ export const Header = () => {
     { path: '/idea-generator', label: 'Ideas', icon: Lightbulb },
     { path: '/post-generator', label: 'Posts', icon: FileText },
     { path: '/comment-generator', label: 'Comments', icon: MessageSquare },
+    { path: '/tools/instagram-transcript-generator', label: 'Instagram', icon: Instagram },
   ];
 
   // Check if we're on a dashboard route (hide header navigation for sidebar layout)
