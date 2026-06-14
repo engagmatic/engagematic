@@ -38,6 +38,135 @@ export const Header = () => {
     }
   };
 
+  const FreeToolsDropdownContent = () => (
+    <DropdownMenuContent align="start" sideOffset={8} className="w-72 rounded-xl border-2 border-border/80 bg-background shadow-xl p-2">
+      <div className="px-3 py-2 mb-1 border-b border-border/60">
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary">LinkedIn Free Tools</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5">No signup · Use instantly</p>
+      </div>
+      <DropdownMenuItem asChild>
+        <Link to="/tools" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10"><FileText className="h-4 w-4 text-primary" /></span>
+          <span className="font-medium">All LinkedIn Free Tools</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link to="/tools/linkedin-post-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10"><FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" /></span>
+          <span className="font-medium">LinkedIn Post Generator</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link to="/tools/linkedin-engagement-rate-calculator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10"><BarChart3 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /></span>
+          <span className="font-medium">LinkedIn Engagement Calculator</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link to="/tools/linkedin-text-formatter" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/10"><Type className="h-4 w-4 text-purple-600 dark:text-purple-400" /></span>
+          <span className="font-medium">LinkedIn Text Formatter</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link to="/tools/video-transcript-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10"><FileVideo className="h-4 w-4 text-cyan-600 dark:text-cyan-400" /></span>
+          <span className="font-medium">Video Transcript Generator</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link to="/tools/instagram-transcript-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/10"><Instagram className="h-4 w-4 text-purple-600 dark:text-purple-400" /></span>
+          <span className="font-medium">Instagram Transcriber</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link to="/#free-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10"><MessageSquare className="h-4 w-4 text-amber-600 dark:text-amber-400" /></span>
+          <span className="font-medium">LinkedIn Comment Generator</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link to="/#free-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-pink-500/10"><Lightbulb className="h-4 w-4 text-pink-600 dark:text-pink-400" /></span>
+          <span className="font-medium">LinkedIn Idea Generator</span>
+        </Link>
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  );
+
+  const MobileFreeToolsList = () => (
+    <div className="space-y-3">
+      <p className="text-xs font-semibold uppercase tracking-wider text-primary px-1">LinkedIn Free Tools</p>
+      <div className="space-y-1 rounded-lg border border-border/60 bg-muted/30 p-2">
+        <Link 
+          to="/tools"
+          onClick={() => setMobileMenuOpen(false)}
+          className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm font-medium text-foreground hover:bg-background/80 transition-colors"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10"><FileText className="h-4 w-4 text-primary" /></span>
+          All LinkedIn Free Tools
+        </Link>
+        <Link 
+          to="/tools/linkedin-post-generator"
+          onClick={() => setMobileMenuOpen(false)}
+          className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10"><FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" /></span>
+          LinkedIn Post Generator
+        </Link>
+        <Link 
+          to="/tools/linkedin-engagement-rate-calculator"
+          onClick={() => setMobileMenuOpen(false)}
+          className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10"><BarChart3 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /></span>
+          LinkedIn Engagement Calculator
+        </Link>
+        <Link 
+          to="/tools/linkedin-text-formatter"
+          onClick={() => setMobileMenuOpen(false)}
+          className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/10"><Type className="h-4 w-4 text-purple-600 dark:text-purple-400" /></span>
+          LinkedIn Text Formatter
+        </Link>
+        <Link 
+          to="/tools/video-transcript-generator"
+          onClick={() => setMobileMenuOpen(false)}
+          className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10"><FileVideo className="h-4 w-4 text-cyan-600 dark:text-cyan-400" /></span>
+          Video Transcript Generator
+        </Link>
+        <Link 
+          to="/tools/instagram-transcript-generator"
+          onClick={() => setMobileMenuOpen(false)}
+          className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/10"><Instagram className="h-4 w-4 text-purple-600 dark:text-purple-400" /></span>
+          Instagram Transcriber
+        </Link>
+        <Link 
+          to="/#free-generator"
+          onClick={() => { setMobileMenuOpen(false); scrollToSection('free-generator'); }}
+          className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10"><MessageSquare className="h-4 w-4 text-amber-600 dark:text-amber-400" /></span>
+          LinkedIn Comment Generator
+        </Link>
+        <Link 
+          to="/#free-generator"
+          onClick={() => { setMobileMenuOpen(false); scrollToSection('free-generator'); }}
+          className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-pink-500/10"><Lightbulb className="h-4 w-4 text-pink-600 dark:text-pink-400" /></span>
+          LinkedIn Idea Generator
+        </Link>
+      </div>
+    </div>
+  );
+
   const handleLogout = async () => {
     setIsLoggingOut(true);
     await logout();
@@ -75,6 +204,14 @@ export const Header = () => {
             <>
               {isAuthenticated ? (
                 <nav className="hidden md:flex items-center gap-1">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50">
+                      Free Tools
+                      <ChevronDown className="h-4 w-4 opacity-70" />
+                    </DropdownMenuTrigger>
+                    <FreeToolsDropdownContent />
+                  </DropdownMenu>
+
                   {navItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
@@ -102,60 +239,7 @@ export const Header = () => {
                       Free Tools
                       <ChevronDown className="h-4 w-4 opacity-70" />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" sideOffset={8} className="w-72 rounded-xl border-2 border-border/80 bg-background shadow-xl p-2">
-                      <div className="px-3 py-2 mb-1 border-b border-border/60">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-primary">LinkedIn Free Tools</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">No signup · Use instantly</p>
-                      </div>
-                      <DropdownMenuItem asChild>
-                        <Link to="/tools" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10"><FileText className="h-4 w-4 text-primary" /></span>
-                          <span className="font-medium">All LinkedIn Free Tools</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/tools/linkedin-post-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10"><FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" /></span>
-                          <span className="font-medium">LinkedIn Post Generator</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/tools/linkedin-engagement-rate-calculator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10"><BarChart3 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /></span>
-                          <span className="font-medium">LinkedIn Engagement Calculator</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/tools/linkedin-text-formatter" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/10"><Type className="h-4 w-4 text-purple-600 dark:text-purple-400" /></span>
-                          <span className="font-medium">LinkedIn Text Formatter</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/tools/video-transcript-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10"><FileVideo className="h-4 w-4 text-cyan-600 dark:text-cyan-400" /></span>
-                          <span className="font-medium">Video Transcript Generator</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/tools/instagram-transcript-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/10"><Instagram className="h-4 w-4 text-purple-600 dark:text-purple-400" /></span>
-                          <span className="font-medium">Instagram Transcriber</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/#free-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10"><MessageSquare className="h-4 w-4 text-amber-600 dark:text-amber-400" /></span>
-                          <span className="font-medium">LinkedIn Comment Generator</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/#free-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-pink-500/10"><Lightbulb className="h-4 w-4 text-pink-600 dark:text-pink-400" /></span>
-                          <span className="font-medium">LinkedIn Idea Generator</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
+                    <FreeToolsDropdownContent />
                   </DropdownMenu>
                   <button 
                     onClick={() => scrollToSection('features')}
@@ -260,142 +344,77 @@ export const Header = () => {
                         })}
                       </nav>
 
-                    {/* Logout Button */}
-                    <div className="pt-4 border-t mt-auto">
-                      <Button 
-                        variant="outline" 
-                        onClick={handleLogout}
-                        disabled={isLoggingOut}
-                        className="w-full gap-2"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        {isLoggingOut ? 'Signing out...' : 'Logout'}
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <nav className="flex flex-col gap-4">
-                      <div className="space-y-3">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-primary px-1">LinkedIn Free Tools</p>
-                        <div className="space-y-1 rounded-lg border border-border/60 bg-muted/30 p-2">
-                          <Link 
-                            to="/tools"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm font-medium text-foreground hover:bg-background/80 transition-colors"
-                          >
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10"><FileText className="h-4 w-4 text-primary" /></span>
-                            All LinkedIn Free Tools
-                          </Link>
-                          <Link 
-                            to="/tools/linkedin-post-generator"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
-                          >
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10"><FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" /></span>
-                            LinkedIn Post Generator
-                          </Link>
-                          <Link 
-                            to="/tools/linkedin-engagement-rate-calculator"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
-                          >
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10"><BarChart3 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /></span>
-                            LinkedIn Engagement Calculator
-                          </Link>
-                          <Link 
-                            to="/tools/linkedin-text-formatter"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
-                          >
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/10"><Type className="h-4 w-4 text-purple-600 dark:text-purple-400" /></span>
-                            LinkedIn Text Formatter
-                          </Link>
-                          <Link 
-                            to="/tools/video-transcript-generator"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
-                          >
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10"><FileVideo className="h-4 w-4 text-cyan-600 dark:text-cyan-400" /></span>
-                            Video Transcript Generator
-                          </Link>
-                          <Link 
-                            to="/tools/instagram-transcript-generator"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
-                          >
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/10"><Instagram className="h-4 w-4 text-purple-600 dark:text-purple-400" /></span>
-                            Instagram Transcriber
-                          </Link>
-                          <Link 
-                            to="/#free-generator"
-                            onClick={() => { setMobileMenuOpen(false); scrollToSection('free-generator'); }}
-                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
-                          >
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10"><MessageSquare className="h-4 w-4 text-amber-600 dark:text-amber-400" /></span>
-                            LinkedIn Comment Generator
-                          </Link>
-                          <Link 
-                            to="/#free-generator"
-                            onClick={() => { setMobileMenuOpen(false); scrollToSection('free-generator'); }}
-                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
-                          >
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-pink-500/10"><Lightbulb className="h-4 w-4 text-pink-600 dark:text-pink-400" /></span>
-                            LinkedIn Idea Generator
-                          </Link>
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => scrollToSection('features')}
-                        className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
-                      >
-                        Features
-                      </button>
-                      <button 
-                        onClick={() => scrollToSection('pricing')}
-                        className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
-                      >
-                        Pricing
-                      </button>
-                      <Link 
-                        to="/blogs"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
-                      >
-                        Blog
-                      </Link>
-                      <button 
-                        onClick={() => scrollToSection('faq')}
-                        className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
-                      >
-                        FAQ
-                      </button>
-                    </nav>
+                      {/* Free Tools in Mobile Menu */}
+                      <MobileFreeToolsList />
 
-                    <div className="flex flex-col gap-3 pt-4 border-t">
-                      <Button 
-                        onClick={() => {
-                          navigate('/auth/login');
-                          setMobileMenuOpen(false);
-                        }}
-                        variant="ghost"
-                        className="w-full"
-                      >
-                        Sign In
-                      </Button>
-                      <Button 
-                        onClick={() => {
-                          handleStartFree();
-                          setMobileMenuOpen(false);
-                        }}
-                        className={`${premiumCTAClasses} w-full`}
-                      >
-                        <span className={premiumCTAHighlight} />
-                        <span className="relative">Start Free Trial</span>
-                        <ArrowRight className={premiumCTAIcon} />
-                      </Button>
-                    </div>
-                  </>
+                      {/* Logout Button */}
+                      <div className="pt-4 border-t mt-auto">
+                        <Button 
+                          variant="outline" 
+                          onClick={handleLogout}
+                          disabled={isLoggingOut}
+                          className="w-full gap-2"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          {isLoggingOut ? 'Signing out...' : 'Logout'}
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <nav className="flex flex-col gap-4">
+                        <MobileFreeToolsList />
+                        <button 
+                          onClick={() => scrollToSection('features')}
+                          className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
+                        >
+                          Features
+                        </button>
+                        <button 
+                          onClick={() => scrollToSection('pricing')}
+                          className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
+                        >
+                          Pricing
+                        </button>
+                        <Link 
+                          to="/blogs"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
+                        >
+                          Blog
+                        </Link>
+                        <button 
+                          onClick={() => scrollToSection('faq')}
+                          className="text-left text-lg font-medium text-foreground/80 hover:text-foreground transition-smooth"
+                        >
+                          FAQ
+                        </button>
+                      </nav>
+
+                      <div className="flex flex-col gap-3 pt-4 border-t">
+                        <Button 
+                          onClick={() => {
+                            navigate('/auth/login');
+                            setMobileMenuOpen(false);
+                          }}
+                          variant="ghost"
+                          className="w-full"
+                        >
+                          Sign In
+                        </Button>
+                        <Button 
+                          onClick={() => {
+                            handleStartFree();
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`${premiumCTAClasses} w-full`}
+                        >
+                          <span className={premiumCTAHighlight} />
+                          <span className="relative">Start Free Trial</span>
+                          <ArrowRight className={premiumCTAIcon} />
+                        </Button>
+                      </div>
+                    </>
                   )}
                 </div>
               </SheetContent>

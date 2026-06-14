@@ -14,7 +14,10 @@ const isClerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 export default isClerkConfigured
   ? clerkMiddleware(async (auth, request) => {
       if (!isPublicRoute(request)) {
-        await auth.protect()
+        const authObj = auth()
+        if (authObj && typeof (authObj as any).protect === 'function') {
+          (authObj as any).protect()
+        }
       }
     })
   : (request: NextRequest) => {

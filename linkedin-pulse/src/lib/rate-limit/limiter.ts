@@ -42,6 +42,10 @@ export async function checkRateLimit(
       }
     )
 
+    if (!limitDoc) {
+      throw new Error("Failed to retrieve rate limit record")
+    }
+
     const requestCount = limitDoc.requestCount || 0
     const limit = isPaidUser ? PAID_LIMIT : FREE_LIMIT
     const allowed = requestCount <= limit
