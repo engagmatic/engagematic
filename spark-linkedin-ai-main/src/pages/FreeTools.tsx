@@ -3,9 +3,9 @@ import { PAGE_SEO, SITE_URL, generateFAQSchema, generateBreadcrumbSchema } from 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  FileText, 
-  MessageSquare, 
+import {
+  FileText,
+  MessageSquare,
   Lightbulb,
   CheckCircle2,
   ArrowRight,
@@ -14,7 +14,9 @@ import {
   TrendingUp,
   Users,
   BarChart3,
-  Type
+  Type,
+  FileVideo,
+  Instagram
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -59,7 +61,7 @@ const freeTools = [
   {
     id: "text-formatter",
     name: "LinkedIn Text Formatter",
-    description: "Format LinkedIn post text with bold, italic, underlined, strikethrough and more using Unicode. Copy and paste into posts or messages—no native formatting needed.",
+    description: "Format LinkedIn post text with bold, italic, underlined, strikethrough and more using Unicode. Copy and paste into posts or messages-no native formatting needed.",
     icon: Type,
     url: "/tools/linkedin-text-formatter",
     features: [
@@ -109,17 +111,53 @@ const freeTools = [
     keywords: "free linkedin idea generator, linkedin content ideas, linkedin post ideas, linkedin content inspiration",
     monthlySearches: "6,000+",
     color: "from-orange-500 to-amber-500"
+  },
+  {
+    id: "video-transcript",
+    name: "Free Video Transcript Generator",
+    description: "Convert any video to text instantly. Paste a YouTube link, public MP4 URL, or upload a file. Get a clean transcript in seconds - powered by AI.",
+    icon: FileVideo,
+    url: "/tools/video-transcript-generator",
+    features: [
+      "YouTube & public video URLs",
+      "File upload (MP4, MOV, WEBM)",
+      "12+ language support",
+      "Copy or download as .txt",
+      "In-memory caching for speed",
+      "1 free transcription without signup"
+    ],
+    keywords: "free video transcript generator, video to text, youtube transcript, mp4 to text, video transcription free",
+    monthlySearches: "12,000+",
+    color: "from-cyan-500 to-blue-500"
+  },
+  {
+    id: "instagram-transcript",
+    name: "Free Instagram Transcript Generator",
+    description: "Extract and transcribe speech from any Instagram Reel, Post, or IGTV to text instantly. 100% free with high-accuracy Cloud AI.",
+    icon: Instagram,
+    url: "/tools/instagram-transcript-generator",
+    features: [
+      "Instagram Reels, Posts & IGTV URLs",
+      "High-accuracy cloud speech recognition",
+      "No signup or account required",
+      "12+ language support & Auto-detect",
+      "Copy or download transcript as .txt",
+      "100% free with unlimited access"
+    ],
+    keywords: "instagram transcript generator, transcribe instagram reel, instagram to text free, transcribe reel online",
+    monthlySearches: "15,000+",
+    color: "from-purple-500 to-pink-500"
   }
 ];
 
 const faqData = [
   {
     question: "Are these LinkedIn tools really free?",
-    answer: "Yes! All our LinkedIn tools offer free access. The Post Generator, Comment Generator, and Idea Generator offer free usage without requiring signup. You can upgrade to premium plans for unlimited access and advanced features."
+    answer: "Yes! All our LinkedIn tools offer free access. The Post Generator, Comment Generator, Idea Generator, and Video Transcript tool offer free usage. You can upgrade to premium plans for unlimited access and advanced features."
   },
   {
     question: "Do I need to create an account to use free tools?",
-    answer: "No account required for most free tools! You can use the LinkedIn Post Generator, Comment Generator, and Idea Generator without signing up. Create a free account to save your work and unlock more features."
+    answer: "No account required for most free tools! You can use the LinkedIn Post Generator, Comment Generator, Idea Generator, and Video Transcript tool (1 free) without signing up. Create a free account to unlock more features."
   },
   {
     question: "What makes these LinkedIn tools different from others?",
@@ -190,7 +228,7 @@ const FreeTools = () => {
               Free LinkedIn Tools
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Boost your LinkedIn presence with our suite of free AI-powered tools. 
+              Boost your LinkedIn presence with our suite of free AI-powered tools.
               No credit card required. Start optimizing your profile and creating engaging content today.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">

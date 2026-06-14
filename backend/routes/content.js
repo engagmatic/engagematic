@@ -1787,7 +1787,7 @@ ${angleInstruction}
 5. Use specific numbers, details, and concrete examples
 6. Make hooks that create curiosity, controversy, emotion, or utility
 
-**HOOK ARCHITECTURE (NON-NEGOTIABLE — 80% of performance is the hook):**
+**HOOK ARCHITECTURE (NON-NEGOTIABLE - 80% of performance is the hook):**
 - Treat the first 1–2 lines (the **Hook**) as 80% of the post's performance.
 - Every idea MUST start from a strong hook that fits one or more of these 8 archetypes:
 
@@ -2119,7 +2119,7 @@ router.post("/posts/generate-free", async (req, res) => {
     }
 
     // Validate input
-    const { topic, hookId, persona: personaData, audience, goal } = req.body;
+    const { topic, hookId, customHookText, persona: personaData, audience, goal } = req.body;
 
     if (!topic || typeof topic !== "string" || topic.trim().length < 10 || topic.trim().length > 500) {
       return res.status(400).json({
@@ -2138,7 +2138,9 @@ router.post("/posts/generate-free", async (req, res) => {
     // Smart hook selection based on context (persona, goal, topic, audience)
     // Always select contextually for free posts to ensure variety and relevance
     let hook;
-    if (hookId && hookId !== "default_free_hook" && hookId !== null && hookId !== undefined) {
+    if (customHookText && typeof customHookText === "string") {
+      hook = { text: customHookText, _id: "custom_free_hook" };
+    } else if (hookId && hookId !== "default_free_hook" && hookId !== null && hookId !== undefined) {
       // Only use provided hookId if it's a valid database ID (for future flexibility)
       hook = await Hook.findById(hookId);
       if (!hook || !hook.isActive) {

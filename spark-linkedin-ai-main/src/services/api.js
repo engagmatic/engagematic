@@ -83,9 +83,11 @@ class ApiClient {
       token = this.getToken();
     }
 
+    const isFormData = options.body instanceof FormData;
+    
     const config = {
       headers: {
-        "Content-Type": "application/json",
+        ...(!isFormData && { "Content-Type": "application/json" }),
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
@@ -539,6 +541,15 @@ class ApiClient {
     );
   }
 
+  // Generate custom AI hooks based on the user's own topic — free for all users
+  async generateCustomHooks(topic) {
+    return this.request("/hooks/generate", {
+      method: "POST",
+      body: JSON.stringify({ topic }),
+    });
+  }
+
+
   // Trial management methods
   async getTrialStatus() {
     return this.request("/trial/status");
@@ -811,6 +822,30 @@ class ApiClient {
     });
   }
 
+  // Feedback methods
+  async submitFeedback(feedbackData) {
+    return this.request("/feedback", {
+      method: "POST",
+      body: JSON.stringify(feedbackData),
+    });
+  }
+
+  async getFeedback(targetId) {
+    return this.request(`/feedback/${targetId}`);
+  }
+
+  // Email preference methods
+  async getEmailPreferences() {
+    return this.request("/email/my-preferences");
+  }
+
+  async updateEmailPreferences(preferencesData) {
+    return this.request("/email/my-preferences", {
+      method: "POST",
+      body: JSON.stringify(preferencesData),
+    });
+  }
+
   // Payment methods
   async createCreditOrder(orderData) {
     return this.request("/payment/create-credit-order", {
@@ -935,6 +970,32 @@ class ApiClient {
   async deleteEmailTemplate(id) {
     return await this.request(`/admin/email-templates/${id}`, {
       method: "DELETE",
+    });
+  }
+
+  // Transcript methods
+  async transcribeUrl(url, lang) {
+    return this.request("/transcript/url", {
+      method: "POST",
+      body: JSON.stringify({ url, lang }),
+    });
+  }
+
+  async transcribeUpload(file, lang) {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (lang) formData.append("lang", lang);
+    
+    return this.request("/transcript/upload", {
+      method: "POST",
+      body: formData,
+    });
+  }
+
+  async transcribeInstagramLocal(url, model, lang, mode = "cloud") {
+    return this.request("/transcript/local", {
+      method: "POST",
+      body: JSON.stringify({ url, model, lang, mode }),
     });
   }
 }

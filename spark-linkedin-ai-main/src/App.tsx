@@ -29,6 +29,8 @@ const LinkedInProfileAnalyzerTool = lazy(() => import("./pages/tools/LinkedInPro
 const LinkedInPostGeneratorTool = lazy(() => import("./pages/tools/LinkedInPostGeneratorTool"));
 const LinkedInEngagementCalculator = lazy(() => import("./pages/tools/LinkedInEngagementCalculator"));
 const LinkedInTextFormatter = lazy(() => import("./pages/tools/LinkedInTextFormatter"));
+const VideoTranscriptTool = lazy(() => import("./pages/tools/VideoTranscriptTool"));
+const InstagramTranscriptTool = lazy(() => import("./pages/tools/InstagramTranscriptTool"));
 import { ErrorBoundary } from "./components/ErrorBoundary";
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
@@ -50,7 +52,7 @@ const BlogPage = lazy(() => import("./pages/BlogPage"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const PostDetailPage = lazy(() => import("./pages/PostDetailPage"));
 const PricingRedirect = lazy(() => import("./pages/PricingRedirect"));
-// Admin Pages — lazy loaded (only accessed by admins, saves ~80KB from main bundle)
+// Admin Pages - lazy loaded (only accessed by admins, saves ~80KB from main bundle)
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
@@ -65,8 +67,8 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes — avoid unnecessary refetches
-      gcTime: 10 * 60 * 1000, // 10 minutes — keep cache in memory
+      staleTime: 5 * 60 * 1000, // 5 minutes - avoid unnecessary refetches
+      gcTime: 10 * 60 * 1000, // 10 minutes - keep cache in memory
       retry: 2, // Retry failed requests twice
       refetchOnWindowFocus: false, // Don't refetch when user switches tabs
     },
@@ -174,6 +176,8 @@ const App = () => (
                   <Route path="/tools/linkedin-post-generator" element={<LinkedInPostGeneratorTool />} />
                   <Route path="/tools/linkedin-engagement-rate-calculator" element={<LinkedInEngagementCalculator />} />
                   <Route path="/tools/linkedin-text-formatter" element={<ErrorBoundary><LinkedInTextFormatter /></ErrorBoundary>} />
+                  <Route path="/tools/instagram-transcript-generator" element={<InstagramTranscriptTool />} />
+                  <Route path="/tools/video-transcript-generator" element={<VideoTranscriptTool />} />
                   
                   {/* Dashboard routes with onboarding modal */}
                   <Route element={<DashboardLayout />}>

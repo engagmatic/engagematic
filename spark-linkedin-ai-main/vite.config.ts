@@ -12,6 +12,14 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: true, // Show errors in browser so blank page is debuggable
     },
+    proxy: {
+      // Forward all /api/* requests to the Express backend
+      "/api": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   plugins: [
     react(),
@@ -42,7 +50,7 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         // SAFE chunking strategy: Only split truly independent vendor libraries.
-        // Do NOT split @radix-ui or React ecosystem — they must share the same React instance.
+        // Do NOT split @radix-ui or React ecosystem - they must share the same React instance.
         manualChunks(id) {
           // Split large, independent vendor libraries into separate chunks
           if (id.includes("node_modules/framer-motion")) {
