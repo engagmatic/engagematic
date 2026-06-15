@@ -288,31 +288,24 @@ router.post("/url", async (req, res) => {
   const { subscription } = authData || {};
 
   // Rate limiting & Quota Check
-  if (isAuth && subscription) {
-    const canPerform = subscription.canPerformAction("generate_transcript");
-    if (!canPerform.allowed) {
-      if (canPerform.reason.includes("Trial transcription limit reached") || canPerform.reason.includes("limit reached")) {
-        return res.status(402).json({
-          success: false,
-          error: "QUOTA_EXCEEDED",
-          message: canPerform.reason,
-          action: "upgrade"
-        });
-      }
-      return res.status(403).json({
+  if (isAuth) {
+    const LOGGED_IN_LIMIT = 10;
+    const userKey = `user_${authData.user._id}`;
+    if (!checkAndIncrementRateLimit(userKey, LOGGED_IN_LIMIT)) {
+      return res.status(429).json({
         success: false,
-        error: "FORBIDDEN",
-        message: canPerform.reason
+        error: "RATE_LIMIT",
+        message: "You've hit the daily transcription limit (10 per day). Please try again tomorrow."
       });
     }
   } else {
-    // 1 without sign up
-    const ANONYMOUS_LIMIT = 1; 
+    // 3 without sign up
+    const ANONYMOUS_LIMIT = 3; 
     if (!checkAndIncrementRateLimit(ip, ANONYMOUS_LIMIT)) {
       return res.status(429).json({
         success: false,
         error: "RATE_LIMIT",
-        message: `You've hit the limit for anonymous users (1 transcription). Please sign in for higher limits.`,
+        message: `You've hit the limit for anonymous users (3 transcriptions). Please sign in for higher limits.`,
       });
     }
   }
@@ -411,28 +404,28 @@ router.post("/upload", (req, res, next) => {
   const { subscription } = authData || {};
 
   // Rate limiting & Quota Check
-  if (isAuth && subscription) {
-    const canPerform = subscription.canPerformAction("generate_transcript");
-    if (!canPerform.allowed) {
+  if (isAuth) {
+    const LOGGED_IN_LIMIT = 10;
+    const userKey = `user_${authData.user._id}`;
+    if (!checkAndIncrementRateLimit(userKey, LOGGED_IN_LIMIT)) {
       // Clean up uploaded file
       try { fs.unlinkSync(filePath); } catch {}
-      return res.status(402).json({
+      return res.status(429).json({
         success: false,
-        error: "QUOTA_EXCEEDED",
-        message: canPerform.reason,
-        action: "upgrade"
+        error: "RATE_LIMIT",
+        message: "You've hit the daily transcription limit (10 per day). Please try again tomorrow."
       });
     }
   } else {
-    // 1 without sign up
-    const ANONYMOUS_LIMIT = 1;
+    // 3 without sign up
+    const ANONYMOUS_LIMIT = 3;
     if (!checkAndIncrementRateLimit(ip, ANONYMOUS_LIMIT)) {
       // Clean up uploaded file
       try { fs.unlinkSync(filePath); } catch {}
       return res.status(429).json({
         success: false,
         error: "RATE_LIMIT",
-        message: `You've hit the limit for anonymous users (1 transcription). Please sign in for higher limits.`,
+        message: `You've hit the limit for anonymous users (3 transcriptions). Please sign in for higher limits.`,
       });
     }
   }
@@ -637,31 +630,24 @@ router.post("/local", async (req, res) => {
   const { subscription } = authData || {};
 
   // Rate limiting & Quota Check
-  if (isAuth && subscription) {
-    const canPerform = subscription.canPerformAction("generate_transcript");
-    if (!canPerform.allowed) {
-      if (canPerform.reason.includes("Trial transcription limit reached") || canPerform.reason.includes("limit reached")) {
-        return res.status(402).json({
-          success: false,
-          error: "QUOTA_EXCEEDED",
-          message: canPerform.reason,
-          action: "upgrade"
-        });
-      }
-      return res.status(403).json({
+  if (isAuth) {
+    const LOGGED_IN_LIMIT = 10;
+    const userKey = `user_${authData.user._id}`;
+    if (!checkAndIncrementRateLimit(userKey, LOGGED_IN_LIMIT)) {
+      return res.status(429).json({
         success: false,
-        error: "FORBIDDEN",
-        message: canPerform.reason
+        error: "RATE_LIMIT",
+        message: "You've hit the daily transcription limit (10 per day). Please try again tomorrow."
       });
     }
   } else {
-    // 5 without sign up
-    const ANONYMOUS_LIMIT = 5; 
+    // 3 without sign up
+    const ANONYMOUS_LIMIT = 3; 
     if (!checkAndIncrementRateLimit(ip, ANONYMOUS_LIMIT)) {
       return res.status(429).json({
         success: false,
         error: "RATE_LIMIT",
-        message: `You've hit the limit for anonymous users (5 transcriptions). Please sign in for higher limits.`,
+        message: `You've hit the limit for anonymous users (3 transcriptions). Please sign in for higher limits.`,
       });
     }
   }
