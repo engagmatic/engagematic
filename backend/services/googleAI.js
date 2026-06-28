@@ -96,7 +96,7 @@ class GoogleAIService {
     return (
       err?.response?.status === 403 ||
       msg.includes("403") ||
-      /leaked|revoked|invalid.*api.*key|api.*key.*invalid/i.test(msg)
+      /leaked|revoked|invalid.*api.*key|api.*key.*invalid|api.*key.*not.*valid/i.test(msg)
     );
   }
 
@@ -319,7 +319,7 @@ class GoogleAIService {
         apiKey: this.apiKey ? "Set" : "Missing",
       });
       let hint = "";
-      if (/403|404|leaked|revoked|not found|invalid/i.test(error.message)) {
+      if (/403|404|leaked|revoked|not found|invalid|api.*key.*not.*valid/i.test(error.message)) {
         hint = " Create a new API key at https://aistudio.google.com/apikey and set GOOGLE_AI_API_KEY in backend/.env";
       } else if (/429|quota|rate limit|limit: 0/i.test(error.message)) {
         hint = this.apiKeys.length > 1
@@ -366,7 +366,7 @@ class GoogleAIService {
       };
     } catch (error) {
       console.error("❌ generatePostFromPlanContext error:", error.message);
-      const hint = /403|404|leaked|revoked|not found|invalid/i.test(error.message)
+      const hint = /403|404|leaked|revoked|not found|invalid|api.*key.*not.*valid/i.test(error.message)
         ? " Create a new API key at https://aistudio.google.com/apikey and set GOOGLE_AI_API_KEY in backend/.env"
         : "";
       throw new Error("Failed to generate post from plan: " + error.message + hint);
@@ -438,7 +438,7 @@ RULES:
         message: error.message,
         apiKey: this.apiKey ? "Set" : "Missing",
       });
-      const hint = /403|404|leaked|revoked|not found|invalid/i.test(error.message)
+      const hint = /403|404|leaked|revoked|not found|invalid|api.*key.*not.*valid/i.test(error.message)
         ? " Create a new API key at https://aistudio.google.com/apikey and set GOOGLE_AI_API_KEY in backend/.env"
         : "";
       throw new Error(`Google AI Error: ${error.message}` + hint);
@@ -537,7 +537,7 @@ RULES:
       };
     } catch (error) {
       console.error("Google AI API Error:", error.message);
-      const hint = /403|404|leaked|revoked|not found|invalid/i.test(error.message)
+      const hint = /403|404|leaked|revoked|not found|invalid|api.*key.*not.*valid/i.test(error.message)
         ? " Create a new API key at https://aistudio.google.com/apikey and set GOOGLE_AI_API_KEY in backend/.env"
         : "";
       throw new Error("Failed to generate comment content: " + error.message + hint);
